@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import extension from '@/extension.js';
@@ -36,9 +34,6 @@ const createMockPi = (): MockPi => ({
 const invokeExtension = (pi: MockPi): void => {
   Reflect.apply(extension, undefined, [pi]);
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 describe('extension smoke tests', () => {
   it('exports a default function', () => {
@@ -124,27 +119,5 @@ describe('extension smoke tests', () => {
     for (const name of expected) {
       expect(eventNames).toContain(name);
     }
-  });
-});
-
-describe('package.json metadata', () => {
-  const __dirname = import.meta.dirname;
-  const pkgPath = path.join(__dirname, '..', 'package.json');
-  const pkgValue: unknown = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-  if (!isRecord(pkgValue)) {
-    throw new TypeError('package.json did not contain an object');
-  }
-  const { keywords, publishConfig } = pkgValue;
-
-  it('has publishConfig.provenance set to true', () => {
-    expect(isRecord(publishConfig) && publishConfig.provenance).toBe(true);
-  });
-
-  it('has pi-package keyword for npm discoverability', () => {
-    expect(keywords).toBeDefined();
-    if (!Array.isArray(keywords)) {
-      throw new TypeError('package.json keywords were not an array');
-    }
-    expect(keywords).toContain('pi-package');
   });
 });

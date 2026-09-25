@@ -31,11 +31,8 @@ export const installModeAutoDetect = (pi: ExtensionAPI, state: MaestriaState): v
       persistState: () => {
         persistState(pi, state);
       },
-      restoreOriginalState: async (ctx) => {
-        if (isExtensionContext(ctx)) {
-          await restoreOriginalState(pi, ctx, state);
-        }
-      },
+      restoreOriginalState: async (ctx) =>
+        isExtensionContext(ctx) ? await restoreOriginalState(pi, ctx, state) : false,
       transform: (text) => ({ text }),
     },
   );
@@ -66,11 +63,8 @@ export const installModeCommands = (pi: ModeCommandsHost, state: MaestriaState):
       persistState: () => {
         persistState(pi, state);
       },
-      restoreOriginalState: async (ctx) => {
-        if (isExtensionContext(ctx)) {
-          await restoreOriginalState(pi, ctx, state);
-        }
-      },
+      restoreOriginalState: async (ctx) =>
+        isExtensionContext(ctx) ? await restoreOriginalState(pi, ctx, state) : false,
     },
   );
 };

@@ -19,11 +19,16 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 
 ## What It Provides
 
-- **4 methodology skills** - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session.
-- **3 workflow modes** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Methodology skills** (4 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session.
+- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi-omp/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
 - **Compaction preservation** - session state survives compaction with structured summaries.
 - **Subagent dispatch** - delegation to specialist subagents via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
+- **Root project customization** - `.maestria/workflow.md` then `.maestria/rules.md` from the session directory, injected every turn as subordinate guidance (never waives safety, authorization, or host permissions).
+
+## Root Project Customization
+
+Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (rules) at the root of the directory you open the session in. Scope is root-only: no ancestor scan, no nested inheritance, and the root is the host-selected session cwd read live each turn (never a process-global). Files are re-read in full on every `before_agent_start` turn, so additions, edits, and deletions apply on the next turn with no restart; nothing is persisted to session entries or compaction state, and post-compaction turns pick up the same fresh read. Absent or empty files leave the prompt unchanged. A present-but-unusable file (directory, special file, unreadable, unresolvable, or a symlink escaping the root) surfaces via a UI notification plus a STOP banner in the system prompt telling the model to report the error and wait, instead of running with silently absent config. Diagnostics name only the relative file and the failure kind. Whether subagent turns automatically receive the same injection is unverified, so delegation briefs still carry the active constraints. Limitation: the Pi host swallows `before_agent_start` handler exceptions, so a broken file cannot cancel the model call itself; the notification plus banner is the loudest supported signal.
 
 ## Support / Platform Notes
 

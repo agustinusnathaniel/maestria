@@ -17,17 +17,16 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
-    git diff*: allow
-    git log*: allow
     git status*: allow
-    git show*: allow
-    git branch*: allow
     opensrc*: allow
-    pnpm*: allow
-    npm*: allow
     npm view *: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*: allow
   edit: deny
   glob: allow
   grep: allow
@@ -86,6 +85,8 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 ## Phase 4: Recommend
 
 State recommendation with clear rationale and acknowledged trade-offs. Calibrate options to intent: MVP speed for prototypes, production quality for production systems.
+
+When the decision guides implementation, include a concise design brief: intended behavior, affected boundaries, changes, trade-offs, and verification. Use a table or diagram when it clarifies the relationships.
 
 ## Phase 5: Record the Decision
 

@@ -4,7 +4,6 @@ import picocolors from 'picocolors';
 import { freshnessOf } from '@/lib/freshness.js';
 import type { PlatformResult, PlatformStatus, StatusOutput } from '@/types.js';
 
-/** Wrapper around @clack/prompts spinner that respects --quiet */
 export const createSpinner = (quiet: boolean) => {
   if (quiet) {
     return {
@@ -22,7 +21,6 @@ export const createSpinner = (quiet: boolean) => {
   return clackSpinner();
 };
 
-/** Render a status table to terminal */
 export const renderStatusTable = (platforms: PlatformStatus[]): string => {
   const lines: string[] = [
     picocolors.bold('\n  Maestria Status'),
@@ -59,7 +57,6 @@ export const renderStatusTable = (platforms: PlatformStatus[]): string => {
   return `${lines.join('\n')}\n`;
 };
 
-/** Render result lines after install/update */
 export const renderResults = (results: PlatformResult[]): string => {
   const lines = results.map((r) => {
     const status = r.ok ? picocolors.green('✓') : picocolors.red('✗');
@@ -76,10 +73,8 @@ export const renderResults = (results: PlatformResult[]): string => {
   return `${lines.join('\n')}\n`;
 };
 
-/** JSON output for status */
 export const formatStatusJson = (output: StatusOutput): string => JSON.stringify(output, null, 2);
 
-/** Compact status output - one line per platform, no colors */
 export const renderCompactStatus = (platforms: PlatformStatus[]): string =>
   `${platforms
     .map((p) => {
@@ -95,7 +90,6 @@ export const renderCompactStatus = (platforms: PlatformStatus[]): string =>
     })
     .join('\n')}\n`;
 
-/** Compact result output - one line per platform, no colors */
 export const renderCompactResults = (results: PlatformResult[]): string =>
   `${results
     .map((r) => {
@@ -116,7 +110,6 @@ export const renderCompactResults = (results: PlatformResult[]): string =>
       ) {
         return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
       }
-      // Install or other success with a version
       const version = r.nextVersion ?? r.prevVersion ?? '';
       return `${r.id}: installed ${version}`;
     })

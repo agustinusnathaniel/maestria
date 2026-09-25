@@ -282,6 +282,19 @@ describe('content invariants', () => {
     expect(text).toContain('`blitz`');
   });
 
+  it('keeps both the global-rules load and the project files in the orchestrator skill', async () => {
+    const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
+    // The sync transform must not reduce the project-loading clause to a
+    // global-rules-only load: both the skill load and the root files stay.
+    expect(text).toContain('`global-rules` skill');
+    expect(text).toContain('.maestria/workflow.md');
+    expect(text).toContain('.maestria/rules.md');
+    expect(text.indexOf('.maestria/workflow.md')).toBeLessThan(text.indexOf('.maestria/rules.md'));
+    expect(text).toMatch(/root only/iu);
+    // The Prime integration appendix states the host capability explicitly.
+    expect(text).toMatch(/mode prompt injection plus project-customization injection/iu);
+  });
+
   it('generates the global-rules skill from canonical rules with the Prime heading', async () => {
     const text = await readFile(path.join(SKILLS_DIR, 'global-rules', 'SKILL.md'), 'utf-8');
     expect(text).toContain('# Global Agent Rules - @maestria/prime-agent');

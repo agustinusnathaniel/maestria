@@ -13,6 +13,7 @@ import type { PlatformStatus } from '@/types.js';
 
 export interface CheckArgs {
   all?: boolean;
+  compact?: boolean;
   json?: boolean;
   platform?: string;
   quiet?: boolean;
@@ -143,6 +144,16 @@ const handleCheckSingle = async (platformId: string, args: CheckArgs): Promise<C
 };
 
 export const handleCheck = async (args: CheckArgs): Promise<CommandResult> => {
+  // The global root --compact flag parses everywhere, but check has no compact
+  // rendering; fail loud instead of silently ignoring it.
+  if (args.compact === true) {
+    throw new CliError(
+      args.quiet === true
+        ? ''
+        : "--compact is not supported for 'maestria check'. Use --json or --quiet instead.",
+      1,
+    );
+  }
   const platformId = args.platform;
   if (args.all === true && platformId !== undefined && platformId !== null && platformId !== '') {
     throw new CliError(

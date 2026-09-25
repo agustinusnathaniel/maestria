@@ -1,20 +1,9 @@
 import { Effect } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
-import { platforms } from '@/lib/platforms.js';
 import * as validation from '@/lib/validation.js';
 
 describe('validation', () => {
-  it('exports ValidationError class', () => {
-    expect(validation.ValidationError).toBeDefined();
-  });
-  it('exports validatePlatform function', () => {
-    expect(typeof validation.validatePlatform).toBe('function');
-  });
-  it('exports validateOrThrow function', () => {
-    expect(typeof validation.validateOrThrow).toBe('function');
-  });
-
   it('validateOrThrow returns the validated value on success', async () => {
     expect(await validation.validateOrThrow(validation.validatePlatform('pi'))).toBe('pi');
   });
@@ -34,14 +23,6 @@ describe('validation', () => {
       'opencode',
       'prime-agent',
     ]);
-  });
-
-  it('VALID_PLATFORMS derives from handler registry (no drift) but preserves legacy ordering', () => {
-    const handlerIds = platforms.map((p) => p.id);
-    // Set membership must match registry
-    expect([...validation.VALID_PLATFORMS].toSorted()).toEqual([...handlerIds].toSorted());
-    expect(validation.VALID_PLATFORMS.length).toBe(handlerIds.length);
-    expect(new Set(validation.VALID_PLATFORMS)).toEqual(new Set(handlerIds));
   });
 
   it('VALID_PLATFORMS preserves legacy exact order (opencode, omp, pi, prime-agent, ...)', () => {

@@ -17,22 +17,18 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
-    git log*: allow
-    git diff*: allow
     git status*: allow
-    git show*: allow
-    git branch*: allow
     git rev-parse*: allow
-    git remote*: allow
-    git stash*: allow
-    git config*: allow
-    pnpm*: allow
-    npm*: allow
     opensrc*: allow
     agent-browser*: allow
     rtk*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*: allow
   edit: deny
   glob: allow
   grep: allow
@@ -110,7 +106,7 @@ Your report should let the next agent start work immediately without re-explorin
 - What was NOT found (negative findings save downstream time)
 - What the downstream specialist should focus on first
 
-**If the scoping is unclear or the request is ambiguous, document your scope assumption in the report with rationale and proceed.** Don't ask for clarification - make the best call based on what's given.
+**If scoping is unclear or the request is ambiguous, make the best call, document that scope assumption with rationale in the report, and proceed without asking for clarification.**
 
 ## Rules
 

@@ -7,6 +7,7 @@ import { parse as parseYaml } from 'yaml';
 import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import type { MaestriaPluginOptions } from '@/modes/types.js';
+import { formatProjectSection, loadProjectSections, resolveProjectRoot } from '@/project-config.js';
 import { AGENTS_DIR, RULES_PATH } from '@/root.js';
 
 type OpenCodeAgentConfig = NonNullable<NonNullable<Config['agent']>[string]>;
@@ -161,7 +162,26 @@ const applyModeToMessage = (
 
 const configureAgents = (input: ConfigInput, agents: NonNullable<Config['agent']>): void => {
   input.agent = merge(input.agent ?? {}, agents);
-  input.instructions = [...(input.instructions ?? []), RULES_PATH];
+  const instructions = [...(input.instructions ?? [])];
+  if (!instructions.includes(RULES_PATH)) {
+    instructions.push(RULES_PATH);
+  }
+  input.instructions = instructions;
+};
+
+type SystemTransformOutput = Parameters<
+  NonNullable<Hooks['experimental.chat.system.transform']>
+>[1];
+
+/**
+ * Inject project contents in place, fresh on every call. Unusable files
+ * throw here, which the host propagates as a failed model call.
+ */
+const injectProjectSystem = (output: SystemTransformOutput, projectRoot: string): void => {
+  const sections = loadProjectSections(projectRoot);
+  for (const section of sections) {
+    output.system.push(formatProjectSection(section));
+  }
 };
 
 const appendCompactionContext = (output: CompactingOutput): void => {
@@ -169,11 +189,14 @@ const appendCompactionContext = (output: CompactingOutput): void => {
     'Session was compacted. Task tracking is maintained via todowrite. ' +
       'Active context (files, decisions, blockers) was captured before compaction. ' +
       'Continue where you left off.',
+    'When project customization from .maestria/workflow.md or .maestria/rules.md ' +
+      'is present, it is injected on every model call. Preserve the active project ' +
+      'constraints and decisions in the summary.',
   );
 };
 
 export const MaestriaPlugin: Plugin = async (
-  _input: PluginInput,
+  input: PluginInput,
   options?: MaestriaPluginOptions,
 ) => {
   const parsed = maestriaOptionsSchema.parse(options ?? {});
@@ -181,6 +204,8 @@ export const MaestriaPlugin: Plugin = async (
     (parsed.modes?.disabledKeywords ?? []).map((keyword) => keyword.toLowerCase()),
   );
   const agents = loadAgents();
+  // File contents read fresh on every call, so edits need no restart.
+  const projectRoot = resolveProjectRoot(input);
   await Promise.resolve();
 
   return {
@@ -188,8 +213,14 @@ export const MaestriaPlugin: Plugin = async (
       applyModeToMessage(hookInput, hookOutput, disabledKeywords);
       await Promise.resolve();
     },
-    config: async (input) => {
-      configureAgents(input, agents);
+    config: async (configInput) => {
+      configureAgents(configInput, agents);
+      await Promise.resolve();
+    },
+    'experimental.chat.system.transform': async (_systemInput, systemOutput) => {
+      if (projectRoot !== undefined) {
+        injectProjectSystem(systemOutput, projectRoot);
+      }
       await Promise.resolve();
     },
     'experimental.session.compacting': async (_compactingInput, output) => {

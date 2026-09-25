@@ -1,6 +1,6 @@
 # Per-Agent Model Selection: `maestria configure`
 
-**Status:** Done; historical implementation record. The command shipped for OpenCode, Pi, and OMP, and later CLI releases added Codex CLI and Cursor. Current user documentation is in the [CLI command reference](https://maestria.sznm.dev/cli/commands/#configure). [verified] 2026-09-14: `maestria configure` lists opencode, codex, cursor, pi, and omp; no variant/thinking support is present.
+**Status:** Done; historical implementation record. The command shipped for OpenCode, Pi, OMP, Codex CLI, and Cursor. Current user guidance is in the [CLI command reference](https://maestria.sznm.dev/cli/commands/#configure).
 
 ## Durable decisions
 
@@ -9,18 +9,16 @@
 - **Validate against live model lists** (`opencode models`, `pi --list-models`, `omp models --json`) before writing; the interactive flow picks from the same list.
 - **Surgical writes preserve user content.** JSONC path edits keep comments and sibling keys; frontmatter edits keep the agent body.
 
-A verification bug fixed here: the OpenCode plugin's `config` hook did a shallow per-agent spread, dropping user-set `model`/`variant` keys. It now deep-merges (`packages/opencode/src/index.ts`); a config hook that returns merged config must deep-merge.
+The OpenCode plugin's shallow per-agent merge once dropped user-set `model` and `variant` keys. The hook now deep-merges configuration; a hook returning merged config must preserve user values.
 
-## Verification
+## Deferred capabilities
 
-`apps/maestria-cli/tests/model-config.test.ts` (18 tests), an OpenCode regression test preserving user model/variant through the plugin hook, end-to-end `opencode serve` + `GET /agent` against opencode 1.18.11, and mock-CLI smoke tests with fake HOME for all three original platforms.
+Status recorded in the 2026-09-14 snapshot; use the CLI reference for current support.
 
-## Open follow-ups
-
-- Variant / thinking effort (`--set builder=provider/model:variant` was the proposed syntax) is not implemented.
-- Unified canonical config remains deferred.
-- Per-agent config for kimi-code is not supported.
+- Variant or thinking-effort selection is not implemented.
+- A unified canonical config remains deferred; settings are written to each runtime's native format.
+- Per-agent config for Kimi Code is not supported.
 
 ## Next step
 
-None - informational. Use the CLI command reference for current usage.
+None. Use the CLI command reference for current usage and the package source for implementation details.

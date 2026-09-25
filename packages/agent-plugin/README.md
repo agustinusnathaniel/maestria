@@ -4,7 +4,7 @@ Maestria's portable [Agent Plugins v1](https://agent-plugins.org/) package. It d
 
 ## Status / Support Boundary
 
-This package contains a standard `plugin.json` manifest and 14 generated skills. Use a native Maestria integration if you need executable agents, commands, hooks, MCP servers, or client-specific extensions.
+This package contains a standard `plugin.json` manifest and generated skills (14 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugin/skills) for the current list). Use a native Maestria integration if you need executable agents, commands, hooks, MCP servers, or client-specific extensions.
 
 Skills describe workflow behavior. The consuming client remains responsible for discovery, invocation, delegation, permissions, session state, installation, and trust decisions. Read-only roles are advisory in this package and do not enforce tool restrictions.
 
@@ -13,6 +13,7 @@ Skills describe workflow behavior. The consuming client remains responsible for 
 - **Specialist skills** - `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`.
 - **Workflow skills** - `orchestrator`, `global-rules`, `handoff`, and `iteration-limits`.
 - **Mode skills** - `fein`, `sonar`, and `blitz`.
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
 The skills are generated from the canonical directives in `packages/core/agent-directives/`. The portable projection removes host-specific role syntax while preserving the methodology. Native packages remain responsible for runtime-specific agents, commands, hooks, permissions, and extensions.
 

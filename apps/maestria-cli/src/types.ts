@@ -24,4 +24,6 @@ export interface PlatformResult {
   readonly message: string;
   readonly prevVersion?: string;
   readonly nextVersion?: string;
+  /** Active skill selection applied by this operation (absent when untouched). */
+  readonly skills?: string[];
 }

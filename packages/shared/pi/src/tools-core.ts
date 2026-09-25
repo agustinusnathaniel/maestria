@@ -1,11 +1,4 @@
-/**
- * Shared tool interceptor utilities for Maestria platform packages.
- *
- * Pure TypeScript - no platform-specific dependencies.
- * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
- *
- * @module
- */
+/** Shared tool interceptor utilities for Pi-family packages. */
 
 import {
   persistState as persistStateCore,
@@ -13,11 +6,11 @@ import {
   recordFileRead,
 } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
+import { isReadOnlyBashCommand } from './bash-policy.js';
 
-/**
- * Dangerous bash command patterns that should always be blocked,
- * regardless of mode or specialist role.
- */
+export { isReadOnlyBashCommand } from './bash-policy.js';
+
+/** Bash patterns that are always blocked, regardless of mode or role. */
 export const DANGEROUS_PATTERNS = [
   /rm\s+-rf\s+\//u,
   /dd\s+if=/u,
@@ -32,43 +25,9 @@ export const DANGEROUS_PATTERNS = [
   /crontab\s+-r/u,
 ];
 
-/**
- * Read-only bash command prefixes allowed for the orchestrator's recon and
- * verification. Anything not matching - or chaining into a mutation - is
- * blocked; mutations belong to specialists.
- */
-const READ_ONLY_BASH_PREFIX =
-  /^(?<command>ls|cat|head|tail|git status|git diff|git log|git branch|find|grep|rg|pnpm test|npm test|pwd|which)\b/u;
+export const REVIEW_READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'] as const;
 
-/**
- * True when a bash command performs no mutation.
- *
- * A naive prefix check is bypassable - `git status && git checkout .` or
- * `ls; rm -rf dist` both pass a prefix-only match - so every segment of a
- * chained command (`;`, `&&`, `||`, `|`, or newline) must itself be
- * read-only, and command substitution (`$(...)`, backticks) and output
- * redirection (`>` / `>>`) are rejected because they can hide a mutation
- * behind a read-only prefix. `2>&1`-style fd redirects are allowed (they
- * don't write).
- */
-export const isReadOnlyBashCommand = (rawCommand: string): boolean => {
-  const command = rawCommand.trim();
-  if (command.includes('$(') || command.includes('`')) {
-    return false;
-  }
-  // Strip `2>&1`-style fd redirects first so the `&` inside them is not
-  // mistaken for a command separator and the `>` is not counted as output
-  // redirection.
-  const withoutFdRedirects = command.replaceAll(/\d?>&[12]/gu, '');
-  if (withoutFdRedirects.includes('>')) {
-    return false;
-  }
-  return withoutFdRedirects
-    .split(/[\n;&|]+/u)
-    .every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
-};
-
-// ── Pure helpers ──
+const REVIEW_READ_ONLY_TOOL_SET: ReadonlySet<string> = new Set(REVIEW_READ_ONLY_TOOLS);
 
 export const findDangerousPattern = (command: string): RegExp | null => {
   for (const pattern of DANGEROUS_PATTERNS) {
@@ -78,15 +37,6 @@ export const findDangerousPattern = (command: string): RegExp | null => {
   }
   return null;
 };
-
-const getBlockedReviewReason = (toolName: string): string | null => {
-  if (toolName === 'edit' || toolName === 'write' || toolName === 'bash') {
-    return 'Review mode is active. Report findings, do not edit.';
-  }
-  return null;
-};
-
-// ── Factory ──
 
 export interface ToolCallEventLike {
   toolName?: string;
@@ -123,7 +73,21 @@ export interface ToolCallHandlerOptions {
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isMutationToolEvent = (
+  event: ToolCallEventLike,
+  options: ToolCallHandlerOptions,
+): boolean => {
+  if (options.isMutationTool !== undefined) {
+    return options.isMutationTool(event);
+  }
+  const name = event.toolName ?? '';
+  return (
+    ['bash', 'edit', 'patch', 'write'].includes(name) ||
+    options.extraMutations?.some((mutation) => mutation === name) === true
+  );
+};
 
 const resolveDelegationHint = (delegationTool: string, hint?: string): string =>
   hint ??
@@ -138,20 +102,10 @@ const checkOrchestratorBlock = (
   delegationTool: string,
   hint: string,
 ): { block: boolean; reason: string } | undefined => {
-  if (state.mode === null || !options.getActiveTools().some((t) => t === delegationTool)) {
+  if (state.mode === null || !options.getActiveTools().some((tool) => tool === delegationTool)) {
     return undefined;
   }
-  const isMutationTool =
-    options.isMutationTool ??
-    ((e: ToolCallEventLike) => {
-      const name = e.toolName ?? '';
-      const base = name === 'edit' || name === 'write' || name === 'patch' || name === 'bash';
-      if (base) {
-        return true;
-      }
-      return options.extraMutations?.some((m) => m === name) === true;
-    });
-  if (!isMutationTool(event) || event.toolName === delegationTool) {
+  if (!isMutationToolEvent(event, options) || event.toolName === delegationTool) {
     return undefined;
   }
   if (options.isBashTool(event)) {
@@ -176,18 +130,18 @@ const checkDangerousPattern = async (
     return undefined;
   }
   const input = isRecord(event.input) ? event.input : undefined;
-  if (!input) {
+  if (input === undefined) {
     return undefined;
   }
   const { command } = input;
-  if (typeof command !== 'string' || !command) {
+  if (typeof command !== 'string' || command === '') {
     return undefined;
   }
   const matched = findDangerousPattern(command);
-  if (!matched) {
+  if (matched === null) {
     return undefined;
   }
-  if (ctx.hasUI === true && ctx.ui) {
+  if (ctx.hasUI === true && ctx.ui !== undefined) {
     const confirmed = await ctx.ui.confirm(
       'Dangerous Pattern Detected',
       `This command matches a dangerous pattern:\n${command}\nProceed?`,
@@ -205,15 +159,15 @@ const trackFileAccess = (
   options: ToolCallHandlerOptions,
 ): boolean => {
   if (options.isReadTool(event)) {
-    const p = isRecord(event.input) ? event.input.path : undefined;
-    if (typeof p === 'string' && p) {
-      Object.assign(state, recordFileRead(state, p));
+    const filePath = isRecord(event.input) ? event.input.path : undefined;
+    if (typeof filePath === 'string' && filePath !== '') {
+      Object.assign(state, recordFileRead(state, filePath));
       return true;
     }
   } else if (options.isWriteTool(event)) {
-    const p = isRecord(event.input) ? event.input.path : undefined;
-    if (typeof p === 'string' && p) {
-      Object.assign(state, recordFileModified(state, p));
+    const filePath = isRecord(event.input) ? event.input.path : undefined;
+    if (typeof filePath === 'string' && filePath !== '') {
+      Object.assign(state, recordFileModified(state, filePath));
       return true;
     }
   }
@@ -224,11 +178,11 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
   const { delegationTool } = options;
   const hint = resolveDelegationHint(delegationTool, options.delegationHint);
   const doPersist = (): void => {
-    if (options.persist) {
+    if (options.persist !== undefined) {
       options.persist();
       return;
     }
-    if (options.pi) {
+    if (options.pi !== undefined) {
       persistStateCore(options.pi, options.getState());
     }
   };
@@ -240,18 +194,23 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
       return undefined;
     }
     const state = options.getState();
-    const { toolName } = event;
     const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool, hint);
-    if (orchestrator) {
+    if (orchestrator !== undefined) {
       return orchestrator;
     }
-    if (state.reviewMode && (options.isWriteTool(event) || options.isBashTool(event))) {
-      const reason =
-        getBlockedReviewReason(toolName) ?? 'Review mode is active. Report findings, do not edit.';
-      return { block: true, reason };
+    const reviewBlocked =
+      state.reviewMode &&
+      (event.toolName === delegationTool ||
+        isMutationToolEvent(event, options) ||
+        !REVIEW_READ_ONLY_TOOL_SET.has(event.toolName));
+    if (reviewBlocked) {
+      return {
+        block: true,
+        reason: 'Review mode is active. Only read-only inspection tools are allowed.',
+      };
     }
     const dangerous = await checkDangerousPattern(event, options, ctx);
-    if (dangerous) {
+    if (dangerous !== undefined) {
       return dangerous;
     }
     if (trackFileAccess(state, event, options)) {

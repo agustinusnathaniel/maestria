@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { handleConfigure } from '@/commands/configure.js';
 import { CliError } from '@/lib/command-result.js';
 import type { ModelConfigHandler } from '@/lib/model-config.js';
+import { createTtyTestSupport } from './tty-test-support.js';
 
 const modelConfigMocks = vi.hoisted(() => ({
   agents: ['architect', 'builder'],
@@ -64,26 +65,7 @@ const captureCliError = async (promise: Promise<unknown>): Promise<CliError> => 
   throw new Error('Expected handler to throw CliError');
 };
 
-const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY');
-const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
-
-const setTty = (value: boolean): void => {
-  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value });
-  Object.defineProperty(process.stdin, 'isTTY', { configurable: true, value });
-};
-
-const restoreTty = (): void => {
-  if (stdoutTty) {
-    Object.defineProperty(process.stdout, 'isTTY', stdoutTty);
-  } else {
-    Reflect.deleteProperty(process.stdout, 'isTTY');
-  }
-  if (stdinTty) {
-    Object.defineProperty(process.stdin, 'isTTY', stdinTty);
-  } else {
-    Reflect.deleteProperty(process.stdin, 'isTTY');
-  }
-};
+const { restoreTty, setTty } = createTtyTestSupport();
 
 describe('configure handlers', () => {
   beforeEach(() => {

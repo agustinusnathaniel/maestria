@@ -281,48 +281,28 @@ The projection baseline is local `codex 0.145.0` (`rust-v0.145.0`, commit `25af1
 
 ---
 
+## Project customization loading (reviewed 2026-09-18)
+
+Dated evidence for root `.maestria/workflow.md` then `.maestria/rules.md` loading. Order is workflow first, then rules, on every engine. Scope is project root only with no ancestor or nested lookup. Absent or empty files leave defaults unchanged. Diagnostics name only the relative file and the failure kind. This section records loading evidence only; support levels in the [snapshot](#snapshot) are unchanged.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-PROJ-OC-01 | OpenCode | `experimental.chat.system.transform` | Project files are injected as full fresh content on every model call through the transform hook, not through `config.instructions`; a transform error propagates as a failed model call | Host `1.18.31` | `/tmp/opencode/src/packages/opencode/src/session/llm/request.ts:70`; `/tmp/opencode/src/packages/opencode/src/plugin/index.ts` (trigger); `packages/opencode/src/index.ts` (`injectProjectSystem`) | 2026-09-18 | tested: source inspection + package/unit tests (no live model run) |
+| E-PROJ-OC-02 | OpenCode | Instruction/config loading | The host instruction file reader swallows read failures to empty, and plugin init/config errors are swallowed, so `config.instructions` paths are not the project-loading path | Host `1.18.31` | `/tmp/opencode/src/packages/opencode/src/session/instruction.ts` (`read` catches to `""`); `packages/opencode/src/index.ts` (`configureAgents` only appends the bundled rules path) | 2026-09-18 | tested: source inspection (no live model run) |
+| E-PROJ-OC-03 | OpenCode | Project root | Root resolves from SDK project worktree, then worktree path, then session directory; `/` is skipped as a sentinel for non-git opens | Host `1.18.31` | `/tmp/opencode/src/packages/opencode/src/project/project.ts` (non-VCS worktree `"/"`); `/tmp/opencode/src/packages/opencode/src/project/instance-context.ts` (skip `"/"`); `packages/opencode/src/project-config.ts` (`resolveProjectRoot`) | 2026-09-18 | tested: source inspection + package/unit tests |
+| E-PROJ-PI-01 | Pi | `before_agent_start` | Both files are re-read in full every turn from host-selected session cwd; a present-but-unusable file surfaces via notify plus STOP banner and the handler never throws because the host swallows handler errors | Package cites pinned host `0.84.2` (`emitBeforeAgentStart` into `emitError`); no independent pinned-source read in this change | `packages/pi/src/rules.ts`; `packages/shared/pi/src/project-config.ts` | 2026-09-18 | tested: package/unit tests (no live runtime E2E) |
+| E-PROJ-OMP-01 | OMP | `before_agent_start` | Both files are re-read in full every turn from host-selected session cwd; a present-but-unusable file surfaces via notify plus STOP banner and the handler never throws because the host swallows handler errors | Package cites pinned host `17.4.0` (`#runHandlerWithTimeout` into `emitError`); no independent pinned-source read in this change | `packages/omp/src/rules.ts`; `packages/shared/pi/src/project-config.ts` | 2026-09-18 | tested: package/unit tests (no live runtime E2E) |
+| E-PROJ-PRIME-01 | Prime Agent | `before_agent_start` | Prime-local loader re-reads both files in full every turn from `ctx.cwd`; error surfaces via notify plus STOP banner; handler-error swallowing is `[inferred]` from Pi-lineage behavior with no pinned Prime source verified | Unpinned Prime host; Prime-local module | `packages/prime-agent/src/project-config.ts`; `packages/prime-agent/src/modes.ts` | 2026-09-18 | tested: package/unit tests (no live runtime E2E) |
+| E-PROJ-HERMES-01 | Hermes | `pre_llm_call` | Both files are re-read in full every turn from the process working directory at call time after the mode context; the hook runs fail-open and inject-only, so a broken file yields a visible error banner plus a host log warning without cancelling the turn | Local pinned source `d4625b5` | `~/.hermes/hermes-agent` (payload carries no working-directory field); `packages/hermes/src/maestria_hermes/project_config.py`; `packages/hermes/src/maestria_hermes/hooks/pre_llm.py` | 2026-09-18 | tested: source inspection + package tests (no live runtime E2E) |
+| E-PROJ-SHARED-01 | All engines | Loader contract | Deterministic workflow-first order; root-only scope; sanitized relative-path diagnostics; symlink root canonicalized with resolved-target regular-file check; call-time checks are not an atomic snapshot; content stays subordinate and never waives safety, authorization, or host permissions; subagent auto-injection is unverified so briefs still carry constraints | Working-tree loaders | `packages/opencode/src/project-config.ts`; `packages/shared/pi/src/project-config.ts`; `packages/prime-agent/src/project-config.ts`; `packages/hermes/src/maestria_hermes/project_config.py` | 2026-09-18 | tested: package/unit tests |
+
+Capability notes: OpenCode transform injection is `Supported` and `Advisory`; Pi/OMP/Prime `before_agent_start` injection is `Supported` and `Advisory`; Hermes `pre_llm_call` injection is `Supported` and `Advisory`. STOP banners and notifications advise stopping and waiting; none of them programmatically cancels the model call, so none is labeled `Enforced`.
+
 ## Cross-cutting boundaries
 
-### Capability vs control summary
-
-- Control is runtime-specific and frequently narrower than vendor descriptions suggest: Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` on plugin subagents (`Ignored`); Codex runs only `type: "command"` hooks, with non-managed hooks `Trust-gated` and `prompt`/`agent` handlers `Unsupported`.
-- Prime Agent execution and Crush config are `Not a sandbox`; restrict both to trusted inputs.
-- Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled `Enforced` as security controls; `Enforced` is reserved for actual controls.
-
-### Package and sync boundaries
-
-- Canonical methodology lives in `packages/core/agent-directives/`; per-platform output is generated by the core sync pipeline (ADR-CORE-005).
-- CLI installation/version handlers (ADR-CORE-007) and model-config handlers are separate and outside this batch.
-- Prime Agent must not reuse `@maestria/pi`: it is Pi-based, so shipping the Pi extension under a Prime Agent package would create a false or conflicting dependency claim and blur the package boundary.
-
-### Promotion gates
-
-A runtime moves from `Provisional`/`Deferred`/`Native candidate` to a shipped `Native` adapter only when all of the following hold:
-
-1. A first-class package or extension API is confirmed against current official docs.
-2. The security and trust model is verified; no ignored fields are relied on.
-3. Upstream evidence for every material claim is reverified against a pinned release/version, an immutable commit, or a fixed docs revision.
-4. A generated projection exists via the core sync pipeline and `scripts/check-sync` passes.
-5. Desktop/local parity, where claimed, is verified; otherwise no parity claim is made.
-6. The runtime-specific `sync.config.ts` and package boundaries are defined and reviewed.
-
-Withdrawal downgrades or removes a runtime's claims (support level, delivery, capability, and control); there is no automatic re-promotion. Per-runtime rollback and re-promotion rules are in the lifecycle table in [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md).
-
-### Deprecation and reverification triggers
-
-- Any runtime whose official API changes such that the recorded shape or trust model is stale triggers reverification before further work.
-- A mechanism marked `Enforced` that is actually advisory (or vice versa) triggers an update to this ledger and ADR-CORE-014.
-- Version-sensitive claims are re-dated on each review; a claim older than the runtime's current documented state is not treated as current.
-- Upstream docs on `main`/`latest` are research-only. Reverify any material claim before implementation, promotion, or re-promotion, after upstream API or security changes, and within 30 days of the review date.
+This file is the dated evidence ledger. The controlled support vocabulary, capability-versus-control rules, package boundaries, promotion and withdrawal gates, and reverification triggers are defined in [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and [ADR-CORE-005](adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md).
 
 ---
-
-## Assumptions documented
-
-- `[inferred]` This ledger defines an internal decision boundary, not a production support guarantee.
-- `[inferred]` Claude Code, Prime Agent, and Codex CLI are the first implementation candidates; JCode and Crush remain bounded experiments.
-- `[verified]` Canonical content remains in `packages/core/agent-directives/`, and projections follow ADR-CORE-005.
-- `[inferred]` Runtime behavior reflects the per-record review dates (mostly 2026-08-11) and must be reverified before implementation.
 
 ## Sources
 
@@ -350,9 +330,11 @@ Withdrawal downgrades or removes a runtime's claims (support level, delivery, ca
 | E-DSH-03, E-DSH-04, E-DSH-06 | DeepSeek Harness | https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/subagent.md ; https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/config-catalog.md ; https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/preset/agent-presets/README.md | 2026-09-06 | not tested |
 | E-DSH-05 | DeepSeek Harness | https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/system-prompt.md | 2026-09-06 | tested |
 | E-DSH-08 | DeepSeek Harness | https://registry.npmjs.org (npm view, 2026-09-06) | 2026-09-06 | tested: typecheck |
+| E-PROJ-OC-01, E-PROJ-OC-02, E-PROJ-OC-03 | OpenCode | Pinned host `1.18.31` (`/tmp/opencode/src`) plus `packages/opencode/src/` | 2026-09-18 | tested: source inspection + package/unit tests (no live model run) |
+| E-PROJ-PI-01 | Pi | `packages/pi/src/rules.ts`; `packages/shared/pi/src/project-config.ts` (working-tree snapshot; pinned host `0.84.2` cited in package comment, not independently re-read) | 2026-09-18 | tested: package/unit tests (no live runtime E2E) |
+| E-PROJ-OMP-01 | OMP | `packages/omp/src/rules.ts`; `packages/shared/pi/src/project-config.ts` (working-tree snapshot; pinned host `17.4.0` cited in package comment, not independently re-read) | 2026-09-18 | tested: package/unit tests (no live runtime E2E) |
+| E-PROJ-PRIME-01 | Prime Agent | `packages/prime-agent/src/project-config.ts`; `packages/prime-agent/src/modes.ts` (working-tree snapshot; host swallowing `[inferred]`) | 2026-09-18 | tested: package/unit tests (no live runtime E2E) |
+| E-PROJ-HERMES-01 | Hermes | Local pinned `~/.hermes/hermes-agent` at `d4625b5`; `packages/hermes/src/maestria_hermes/project_config.py`; `packages/hermes/src/maestria_hermes/hooks/pre_llm.py` | 2026-09-18 | tested: source inspection + package tests (no live runtime E2E) |
+| E-PROJ-SHARED-01 | All engines | Working-tree loaders (see Evidence section) | 2026-09-18 | tested: package/unit tests |
 
 Upstream sources above are research-only (`unpinned - reverify before implementation`); E-CLAUDE-08 and E-PRIME-08 are local working-tree package snapshots (`Working-tree package snapshot; verify at landing`), not upstream research sources. Reverify material claims before implementation, promotion, or re-promotion.
-
-## Related
-
-- [ADR-CORE-014: Runtime Support and Adapter Policy](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md)

@@ -5,7 +5,9 @@ description: Combined reference for @maestria/pi and @maestria/omp - mode comman
 
 import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
-## Spec-Driven Delegation
+## Contract-Driven Delegation
+
+> Historically called Spec-Driven Delegation. The model is now [contract-driven delegation](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/core/ADR-CORE-026-contract-driven-delegation.md): compact handoffs, spec-aware but format-agnostic, with persistent intent refs via the [spec-contract skill](https://github.com/agustinusnathaniel/maestria/blob/main/skills/spec-contract/SKILL.md) only when they reduce risk.
 
 The orchestrator gives each specialist a **compact, material handoff**: outcome, relevant context and constraints, acceptance or expected evidence, material assumptions or known problems, and the next step or blocker. There is no fixed field count; the orchestrator validates handoffs before dispatch and rejects incomplete ones.
 
@@ -182,6 +184,10 @@ This enforces the maker/checker split at the subagent tool level: builder and wr
 ### Persistence
 
 Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP), so user-customized agents with the same name stay put. To reset to Maestria defaults, remove the files from the discovery directory and restart your session.
+
+## Project Loading
+
+`.maestria/workflow.md` then `.maestria/rules.md` load from the session working directory, read fresh on every agent turn and composed with the mode prompt. Missing or empty files are skipped; a present-but-unusable file surfaces via notification plus a STOP banner instead of executing the request. See [Workflow Patterns](/core/workflow-patterns/) for order, precedence, and carry-over.
 
 ## See Also
 

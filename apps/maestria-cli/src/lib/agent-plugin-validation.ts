@@ -14,7 +14,6 @@ import type { JsonRecord } from '@/lib/primitives.js';
 import { validateMcp } from './agent-plugin-mcp.js';
 
 export const AGENT_PLUGIN_SCHEMA = 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json';
-export { AGENT_PLUGIN_MCP_SCHEMA } from './agent-plugin-mcp.js';
 
 const PLUGIN_NAME_RE = /^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/u;
 const SKILL_NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u;

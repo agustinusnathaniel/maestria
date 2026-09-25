@@ -44,6 +44,11 @@ const install = (pi: MockPi, state: ReturnType<typeof createInitialState>): void
   installToolInterceptors(pi, state);
 };
 
+// Guarded git invocations are the only read-only git form under the shared
+// bash policy: global safety flags are required and diff/log need patch guards.
+const GUARDED_GIT =
+  'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
+
 describe('installToolInterceptors', () => {
   it('registers a tool_call handler', () => {
     const pi = createMockPi();
@@ -161,7 +166,10 @@ describe('installToolInterceptors', () => {
     install(pi, state);
 
     const handler = getHandler(pi);
-    const result = await handler({ input: { command: 'git status' }, toolName: 'bash' }, {});
+    const result = await handler(
+      { input: { command: `${GUARDED_GIT} status --short` }, toolName: 'bash' },
+      {},
+    );
     expect(result).toBeUndefined();
   });
 
@@ -196,7 +204,12 @@ describe('installToolInterceptors', () => {
 
     const handler = getHandler(pi);
     const result = await handler(
-      { input: { command: 'git log --oneline | head -5' }, toolName: 'bash' },
+      {
+        input: {
+          command: `${GUARDED_GIT} log --no-ext-diff --no-textconv --oneline | head -5`,
+        },
+        toolName: 'bash',
+      },
       {},
     );
     expect(result).toBeUndefined();

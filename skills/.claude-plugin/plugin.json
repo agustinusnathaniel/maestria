@@ -1,0 +1,4 @@
+{
+  "name": "maestria-skills",
+  "skills": ["./create-pull-request", "./docs-update", "./spec-contract"]
+}

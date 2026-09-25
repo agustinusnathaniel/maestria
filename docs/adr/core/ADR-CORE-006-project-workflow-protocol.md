@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted - 2026-06-24
+Accepted (2026-06-24)
 
 ## Context
 
@@ -24,7 +24,7 @@ Add a lightweight protocol where projects define workflow instructions in `.maes
 - `.maestria/rules.md` - project-specific non-negotiable (`!!!`) rules that supplement the core `rules.md` for all agents, propagated via delegation prompts.
 - **Loading mechanism:** the orchestrator delegates to `@adventurer` to check for these files at project start. Contents stay in conversation history; if history is compacted, the orchestrator reloads them next turn.
 - **Usage in delegations:** workflow context goes into the "Access list" and "Context" sections of delegation prompts; project rules go into the "Known problems" section. The orchestrator does not implement work routed to a specialist - it sequences and delegates; direct-route turns run on the host.
-- **Precedence:** core rules (never implement routed work yourself, maker/checker split, commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
+- **Precedence:** core rules (never implement routed work yourself, maker/checker split [ADR-CORE-012](ADR-CORE-012-deterministic-review-signals-fail-loud-exit.md), commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
 
 ### Canonical Source Changes
 
@@ -68,6 +68,25 @@ Extend the mode system to support user-defined keywords discovered from a `.maes
 
 - ADR-OC-003: Keyword-Triggered Workflow Modes - the existing mode system that this protocol complements but does not replace
 - ADR-CORE-005: Shared Agent Directives Core Sync - the sync pipeline that propagates the orchestrator prompt changes to all platforms
+
+## Amendment 2026-09-18: Cross-Host Runtime Loading
+
+The prompt-based protocol above still applies on every host. Each runtime host now also loads both project-root files through its own mechanism; project content stays subordinate and never waives safety, authorization, or host permissions. Order is workflow then rules on every engine. Scope is project root only with no ancestor or nested lookup. Absent or empty files leave defaults unchanged. Error diagnostics name only the relative file and the failure kind, with no raw cause or content leak; symlink roots are canonicalized and the resolved target must be a regular file. Checks observe the filesystem at call time and are not an atomic snapshot, so a residual filesystem TOCTOU remains with no sandbox promise.
+
+| Host | Root | Read-error signal | Freshness | Subagent reach | Compaction | Source and limit |
+| --- | --- | --- | --- | --- | --- | --- |
+| OpenCode (`@maestria/opencode`) | SDK project worktree, then worktree path, then session directory; `/` sentinel skipped | Present-but-unusable file throws in `experimental.chat.system.transform`, which propagates as a failed model call | Full content read fresh on every model call; no restart, no snapshot | Same pinned pipeline covers primary and subagent calls | Same fresh read covers post-compaction calls; a compaction note asks the summary to preserve active constraints | Pinned host v1.18.31 source inspection (`packages/opencode/src/session/llm/request.ts:70` transform trigger, `packages/opencode/src/session/instruction.ts` file-read swallow to empty, `packages/opencode/src/plugin/index.ts` trigger propagation, `packages/opencode/src/project/project.ts` worktree) plus package tests; no live model run. Separate from `config.instructions`. |
+| Pi (`@maestria/pi`) | Host-selected session cwd (`ctx.cwd`) read live each turn | UI notification plus STOP banner in the returned system prompt; handler never throws because the host swallows `before_agent_start` exceptions | Full content re-read every turn; no restart and no persisted copies | Unverified whether subagent turns automatically receive the injection; delegation briefs still carry constraints | Fresh read covers post-compaction turns; no separate compaction preservation of project content | Package source (`packages/pi/src/rules.ts`, `@maestria/shared-pi/project-config` wrapper, `@maestria/shared-project-config` loader since ADR-CORE-027) citing pinned host 0.84.2 `emitBeforeAgentStart` behavior; no independent pinned-source read in this change and no live eval. |
+| OMP (`@maestria/omp`) | Host-selected session cwd (`ctx.cwd`) read live each turn | UI notification plus STOP banner appended to the system prompt; handler never throws because the host swallows `before_agent_start` exceptions | Full content re-read every turn; no restart and no persisted copies | Unverified whether subagent turns automatically receive the injection; delegation briefs still carry constraints | Fresh read covers post-compaction turns; no separate compaction preservation of project content | Package source (`packages/omp/src/rules.ts`, `@maestria/shared-pi/project-config` wrapper, `@maestria/shared-project-config` loader since ADR-CORE-027) citing pinned host 17.4.0 `#runHandlerWithTimeout` behavior; no independent pinned-source read in this change and no live eval. |
+| Prime (`@maestria/prime-agent`) | Host-selected session cwd (`ctx.cwd`) read live each turn | UI notification plus STOP banner in the system prompt | Full content re-read every turn; no restart and no persisted copies | Unverified whether subagent turns automatically receive the injection; delegation briefs still carry constraints | Fresh read covers post-compaction turns; no separate compaction preservation of project content | Prime-local adapter (`packages/prime-agent/src/project-config.ts`, `packages/prime-agent/src/modes.ts`) uses `@maestria/shared-project-config` for loading since ADR-CORE-027, with no `shared-pi` runtime import. Handler-error swallowing is [inferred] from Pi-lineage behavior only; no pinned Prime source was verified in this change. |
+| Hermes (`maestria-hermes`) | Process working directory at call time (`os.getcwd()`), retargeted by the host CLI on session resume; closest supported signal | Visible `[MAESTRIA PROJECT CONFIG ERROR]` banner in the injected context plus a host log warning; hook runs fail-open and inject-only | Full content re-read every turn after the mode context; no restart | Injection runs through the shared turn pipeline where the hook runs; no separate child-turn guarantee is stated | Fresh read covers later turns; no persisted copies | Pinned local source `~/.hermes/hermes-agent` at `d4625b5`: `pre_llm_call` payload carries no working-directory field, and concurrent gateway sessions share one process directory. Banner advises report and wait without guaranteeing cancellation. |
+| Declarative (Claude Code, Codex, Cursor, Kimi, agent-plugin) | Project root, read with host tools | Present-but-unreadable file is disclosed and needed content is requested rather than invented; no silent override run | Advisory read when not already supplied; no runtime cache | Constraints travel in delegation briefs | Constraints are re-established when missing after compaction | Canonical orchestrator prompt plus per-host sync notes (Prime sync preserves the global-rules plus project-files wording). No new plugins or hooks in this scope. |
+
+Runtime scope ports the same contract to all appropriate host mechanisms. This amendment adds no new setup, doctor, skill-extraction, installation, or persisted state.
+
+### Note 2026-09-22: read-only `maestria doctor` exists alongside this contract
+
+The scope sentence above records this amendment's boundary at the time (2026-09-18). Since #323 (2026-09-22), `maestria doctor` provides read-only skill-setup diagnostics (`apps/maestria-cli/src/lib/doctor.ts`): it collects and reports per-platform state only and never installs, updates, removes, or writes records. It does not change the loading contract above; project content still stays subordinate and reaches agents through delegation briefs and host injection.
 
 ## Date
 

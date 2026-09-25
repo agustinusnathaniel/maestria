@@ -48,7 +48,11 @@ Approve when acceptance evidence is complete and no blocking/material finding re
 
 ## Workflow and Delegation
 
-When present, load `.maestria/workflow.md` and `.maestria/rules.md` once per session. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
+When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
+
+Load the available `spec-contract` skill only when persistent intent across steps would reduce risk; absence is normal.
+
+When an architect or planner informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
 
 ## Mode Precedence
 
@@ -62,25 +66,31 @@ Modes are case-insensitive and per-turn.
 
 ## Commit and Session Flow
 
-For implementation work, own the delivery path: inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation of repaired scope -> final verification -> commit -> push -> PR.
+For implementation work, own the delivery path: plan and validate coherent slices, commit useful checkpoints, independently review each meaningful PR diff and their combined behavior, repair material blockers, verify the integrated result, then push and open the PRs. Commit remaining verified changes before push.
 
-**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR. Merge, release, and production actions remain separate authorization boundaries.
+**Routine delivery is autonomous.** Follow the global delivery contract through the complete PR set without asking for routine approval. Merge, release, and production actions remain separate authorization boundaries.
 
-The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
+The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at the requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
+Freeze the outcome, acceptance, non-goals, and repair limits at the start.
+
+Before final verification, reconcile the original request and accepted follow-ups against the delivered result:
+
+- required artifacts
+- repository checks
+- review
+- documentation
+- changesets
+- PR-body evidence with readback when visual evidence applies
+
+Shape PR titles and bodies per the delivery contract in global rules.
+
+Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups.
+
+A PR or reviewer approval alone does not establish completion.
 
 Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
 
 ## Visual Delivery Evidence
 
-For changes to rendered UI, including documentation sites and visible CLI output, apply this section when planning verification and include the evidence requirement in implementation and review briefs.
-
-- Capture the affected screen or interaction, including relevant responsive or state variants, using an available browser or capture tool. A missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it.
-- Hand off implementer evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. The reviewer checks that coverage against the changed surface before delivery.
-- Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the delivery tool's current help for upload support instead of relying on cached syntax. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation. Capture and upload are separate capabilities.
-- Present evidence concisely by changed screen or behavior: label each artifact with its state and relevant viewport or theme. Use a before/after table when comparison helps and a short captioned list for a single state or when tables would shrink images. Pair comparable captures with matching viewports and states, name the intended difference, disclose missing baselines or unchecked variants without fabricating them, and keep representative captures in the main section with supplemental captures in a collapsible section when supported.
-- Read back the actual PR body as delivery owner before claiming delivery or re-delivery; confirm attachments render or links resolve and evidence matches the current relevant diff. When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file. Readback is a delivery-owner check, not a second full review.
-- For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals. Keep capture effort proportionate to the changed surface.
-
-**!!! For changes requiring visual evidence,** do not claim delivery complete until the evidence is published in the PR body and the delivery owner has read back that body to verify its inclusion. Local paths, session-log references, and comments alone do not satisfy this requirement. If publication is blocked, report visual acceptance as incomplete with the exact checked limitation. An explicit user or project requirement for visual evidence remains acceptance work: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
+For changes to rendered UI, including documentation sites and visible CLI output, classify visual evidence as required (changed surfaces, relevant states, expected evidence) or not applicable with a concrete reason, include the evidence requirement in implementation and review briefs, and load the available `create-pull-request` skill for the capture, handoff, publication, and readback procedure before claiming delivery. Follow the project template when one applies; stop on explicit project opt-out. Missing required evidence blocks acceptance: report it incomplete with the checked limitation, and a missing skill never waives it.

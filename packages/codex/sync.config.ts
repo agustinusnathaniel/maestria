@@ -3,18 +3,10 @@
 // directives. Generated skills are advisory workflow guidance; Codex runtime
 // capabilities and trust controls remain outside this package.
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 // Codex plugin components are namespaced by the plugin manifest name (`maestria`).
-const CODEX_COMPONENT_REPLACES = [
-  { from: '@adventurer', to: '$maestria:adventurer' },
-  { from: '@architect', to: '$maestria:architect' },
-  { from: '@builder', to: '$maestria:builder' },
-  { from: '@diagnose', to: '$maestria:diagnose' },
-  { from: '@planner', to: '$maestria:planner' },
-  { from: '@reviewer', to: '$maestria:reviewer' },
-  { from: '@writer', to: '$maestria:writer' },
-] as const;
 
 const CODEX_READ_ONLY_NOTES: Record<string, string> = {
   adventurer:
@@ -52,7 +44,7 @@ The Codex plugin manifest declares skills only; the companion Maestria CLI insta
 
 export default {
   default: {
-    replace: [...CODEX_COMPONENT_REPLACES],
+    replace: specialistReferenceReplacements('$maestria:'),
   },
   files: {
     'adventurer.md': {

@@ -9,8 +9,9 @@ Cross-platform behavior contract for outcomes, evidence, safety, delegation, rev
 - **!!! Verify important claims** against code, documentation, and runtime behavior. Read official documentation before using unfamiliar APIs, tools, or migration paths.
 - **!!! Match effort to stakes.** Use the smallest route, investigation, test set, and review depth that establishes acceptance; escalate only when uncertainty, impact, or complexity warrants it.
 - **!!! Prefer reuse over reinvention.** Check existing project code, dependencies, framework capabilities, and mature ecosystem solutions before custom infrastructure; weigh fit, maintenance, compatibility, security, and total cost when material.
-- **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity. Ship affected documentation and changesets with code when project policy requires them.
-- **!!! Exercise testing judgment, not coverage.** Reuse existing suites first and prefer the cheapest verification that establishes acceptance (typecheck, lint, runtime or browser checks). Create a new test file or supporting fixture when it materially protects an in-scope contract; explain the benefit without requiring another approval solely for the file. Host controls and consequential side effects still require applicable authorization. Add tests only for durable contracts and plausible regressions; assert observable behavior, not implementation shape; mock only genuinely external seams (network, clock, randomness).
+- **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity.
+- **!!! Exercise testing judgment, not coverage.** Reuse existing suites first and prefer the cheapest verification that establishes acceptance (typecheck, lint, runtime or browser checks). Before implementation, identify any new test file, supporting fixture, or behavior gap it must protect; create it only for a durable in-scope contract, a preidentified behavior gap, or a meaningful failure mode. Explain the benefit without requiring another approval solely for the file. Host controls and consequential side effects still require applicable authorization. Assert observable behavior, not implementation shape; mock only genuinely external seams (network, clock, randomness).
+- **!!! Test behavior before implementation shape.** Tautological and change-detector tests are harmful. Do not create regression tests for bug fixes without a genuine gap in behavior testing. Never write unit tests after writing code. Strongly prefer end-to-end tests as the sole testing mechanism for complex features, with isolated-system testing as the only exception. At the end of each E2E test, produce a verifiable and repeatable artifact. If a system must be tested in isolation, first write every way it could fail, then write the code.
 - **!!! Keep output self-contained and professional.** Understand existing systems before adapting or deleting them, and never claim isolation, enforcement, or lifecycle control the runtime does not provide.
 - **!!! Keep output economical.** Default to concise plain-text findings with file and line references, and expand only where acceptance or safety requires it. Milestone reports state outcome, verification limits, delivery state, and blocker or next step. Match surrounding doc tone for prose tasks.
 - **!!! Human-facing output.** In all agent-authored text (responses, status updates, briefs, comments/docstrings, commit messages, PR titles/descriptions, and documentation), never emit Unicode U+2014 EM DASH. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
@@ -25,7 +26,18 @@ Per-turn keywords when the host supports them: `fein` requests the full route wi
 
 ## Outcome and Scope
 
-Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity. Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes. Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
+Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity.
+
+At acceptance, classify visual evidence as required (changed surfaces, relevant states, expected evidence) or not applicable with a concrete reason, and carry that classification through briefs to delivery.
+
+### Documentation and changesets
+
+- Required affected docs are part of acceptance; carry them through briefs to final reconciliation.
+- When docs work applies, load the available `docs-update` methodology skill and follow it; a missing skill never blocks ordinary docs work.
+
+Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes.
+
+Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
 
 ## Delegation and Context
 
@@ -35,7 +47,11 @@ Delegate only when another context, expertise, independent check, or parallel wo
 
 Maker/checker split: the implementer must not approve its own work. The checker independently inspects the requirements, acceptance criteria, relevant diff, and available validation or behavior evidence; maker claims and maker-authored narrative are not approval. Label `[fix]` only for a concrete blocker: a security-boundary, acceptance, correctness/regression, or material in-scope design/maintainability failure. Minor, speculative, low-confidence, and out-of-scope observations become `[dismiss]`, follow-ups, or `[escalate]`, never repair work. Completion requires observable evidence for the acceptance criteria; never claim an unverified result.
 
-Match evidence to the changed contract: rendered appearance and interactions need rendered checks; tests, type checks, and builds establish only what they exercise. Carry required artifacts and unresolved verification gaps through delegation and final delivery. Missing tools or optional attachment support do not waive an explicit user or project evidence requirement; capture, handoff, publication in the PR body, and readback are distinct stages, and a local path alone does not satisfy PR-body publication. Report that requirement as incomplete with the checked limitation.
+Match evidence to the changed contract: rendered appearance and interactions need rendered checks; tests, type checks, and builds establish only what they exercise. Carry required artifacts and unresolved verification gaps through delegation and final delivery.
+
+Missing required evidence blocks acceptance. Each open PR is complete only with its applicable acceptance evidence; a checked blocker means incomplete, not completed-with-limits.
+
+Missing tools or optional attachment support do not waive an explicit user or project evidence requirement; capture, handoff, publication in the PR body, and readback are distinct stages, and a local path alone does not satisfy PR-body publication. Report that requirement as incomplete with the checked limitation.
 
 ## Bounded Repair and Fail-Loud Behavior
 
@@ -45,10 +61,20 @@ Default to one independent review and, only when blockers exist, one repair/re-r
 
 Safety and authorization override user intent, methodology, and brevity. Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Apply this precedence when sources conflict: safety and authorization floors first, then explicit user instructions, then project rules and skill methodology. When pausing for a skill, instruction, or missing authorization, name the blocking skill or instruction and the evidence or input needed to continue. For changes not already authorized, stop and obtain applicable authorization before changes that alter them, involve data migration or possible loss, impact production, are irreversible, create external side effects outside delegated scope, or involve consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply.
 
-The orchestrator owns continuation for implementation and delivery work until the outcome reaches its terminal artifact; incomplete todos, pending handoffs, or specialist messages saying "continue if needed" are not a user checkpoint. Routine delivery is autonomous. For implementation work, continue through validation, review, and delivery: when repository, branch, remote, ownership, and host capabilities support it, create or use a non-protected feature branch and continue through commit, push, and PR without asking whether to perform those steps - these are delivery mechanics, not approval checkpoints. Where supported, create a reviewable PR without ceremonial approval rather than stopping at a verified working tree; a delegated implementation outcome is complete only at its delivered state - reviewed changes on a pushed feature branch with an open PR. Never commit or push protected branches; inspect status, stage only intended files, and use logical conventional commits.
+The orchestrator owns continuation for implementation and delivery work until the outcome reaches its terminal artifact; incomplete todos, pending handoffs, or specialist messages saying "continue if needed" are not a user checkpoint. Routine delivery is autonomous.
+
+For implementation work, continue through validation, review, and delivery. When repository, branch, remote, ownership, and host capabilities support PRs, use non-protected feature branches and complete commit, push, and PR creation without routine approval asks. Completion requires every planned slice to have reviewed changes on a pushed branch and an open PR with its acceptance evidence.
+
+Never commit or push protected branches; inspect status and stage only intended files. Commit coherent, verified slices at useful review or rollback points using conventional commits. Verify the final diff before delivery, reusing valid checks.
+
+For multi-slice outcomes, plan PR boundaries early around independently acceptable, verifiable changes. If implementation reveals another such slice, split the diff before PR delivery. Use independent PRs when possible and stack only when a later slice depends on an earlier one. Keep a cohesive outcome in one PR.
 
 Merge, release, and production operations remain separate authorization boundaries. Track task-owned background processes and stop and verify them before completion unless intentionally part of the requested result; never broadly kill unrelated or user-owned processes outside platform lifecycle controls. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
 
+### PR delivery contract
+
+Core owns the outcome, evidence, review, and authorization floors for every reviewable PR. Title, body, and visual-evidence conventions live in the `create-pull-request` methodology skill: for an active PR task, load the available skill before drafting, and follow the project template when one applies while preserving the required information. Stop on explicit project opt-out. A missing skill never blocks delivery and never waives review or authorization; write a sensible body instead. The reviewer checks rendered coverage against the changed surface; after any push that changes diff or verification, refresh the draft and read back the published body before reporting delivery complete.
+
 ## Canonical Source Invariant
 
-Edit the project's authoritative source and regenerate derived outputs with its documented workflow; never hand-edit generated copies. Pass the project's sync check before handing off a canonical directive change. Repository-specific source paths and commands belong in that repository's instructions.
+Edit the project's authoritative source and regenerate derived outputs with its documented workflow; never hand-edit generated outputs. Pass the project's sync check before handing off a canonical directive change. Repository-specific source paths and commands belong in that repository's instructions.

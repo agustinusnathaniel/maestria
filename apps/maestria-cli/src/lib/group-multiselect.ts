@@ -1,8 +1,5 @@
-// ── Enhanced group multiselect with toggle-all (a key) ──
-// Parity probe vs native (@clack/prompts@1.8.0): cancel MATCH, validation
-// MATCH, exit-code MATCH; toggle-all LOSS (native lacks `a` handler) and
-// instructions LOSS (native 3-item single line vs custom 4-item multi-line).
-// Fallback retains renderer/toggle, reuses native constants/types.
+// Custom group multiselect: native (@clack/prompts@1.8.0) lacks toggle-all,
+// so this retains the renderer plus the `a` toggle and reuses native types.
 
 import { GroupMultiSelectPrompt } from '@clack/core';
 import {
@@ -18,11 +15,9 @@ import type {
 } from '@clack/prompts';
 import { styleText } from 'node:util';
 
-// ── Public API (alias to native shape, preserved contract) ──
-
 export type GroupMultiSelectOptions<Value> = NativeGroupMultiSelectOptions<Value>;
 
-// Submit diamond kept as U+25C6 (native uses U+25C7) to avoid visual change.
+// Submit diamond kept as U+25C6 to avoid visual change.
 const SYMBOL_STYLE: Record<string, [Parameters<typeof styleText>[0], string]> = {
   active: ['cyan', '◆'],
   cancel: ['red', '■'],
@@ -35,8 +30,6 @@ const symbol = (state: string): string => {
   const styled = SYMBOL_STYLE[state];
   return styled === undefined ? '' : styleText(styled[0], styled[1]);
 };
-
-// ── Instructions with toggle-all hint ──────────────────
 
 const ENHANCED_INSTRUCTIONS = [
   '\u2191/\u2193 to navigate',
@@ -54,7 +47,6 @@ const formatInstructions = (hasGuide: boolean): string[] => {
   );
 };
 
-// Toggle-all across groups (native lacks this; 8-line logic preserved).
 class TogglableGroupMultiSelectPrompt<Value> extends GroupMultiSelectPrompt<Option<Value>> {
   constructor(opts: ConstructorParameters<typeof GroupMultiSelectPrompt<Option<Value>>>[0]) {
     super(opts);
@@ -76,8 +68,6 @@ class TogglableGroupMultiSelectPrompt<Value> extends GroupMultiSelectPrompt<Opti
         : items.map((o) => o.value);
   }
 }
-
-// ── Option renderer (mirrors native, preserves trailing elbow) ──
 
 type RenderState =
   | 'inactive'

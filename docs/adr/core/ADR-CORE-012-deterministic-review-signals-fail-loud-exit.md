@@ -8,15 +8,9 @@ Revised (2026-07-28) - supersedes the initial proposed version from 2026-07-28.
 
 ### The Review Protocol Today
 
-Maestria's maker/checker split is its core reliability pattern:
+Maestria's maker/checker split is its core reliability pattern: the implementer must not approve its own work, and a read-only checker validates code against acceptance criteria with bounded repair (one repair/re-review pass by default, at most three per outcome). The full contract lives in the canonical directives and is not restated here: `packages/core/agent-directives/rules.md` (Acceptance and Blind Review; Bounded Repair and Fail-Loud Behavior), `specialists/orchestrator.md` (Review and Triage), `specialists/reviewer.md`, and `skills/iteration-limits.md`.
 
-1. `@builder` implements code, writes tests, and runs validation.
-2. `@reviewer` (with `edit: deny`) performs quality review across multiple lenses.
-3. The orchestrator triages concrete blockers as `[fix]`; non-blocking observations are `[dismiss]` or follow-ups, and boundary decisions are `[escalate]`.
-4. One repair/re-review pass is the default; further passes require a named unresolved or newly introduced material blocker, with a maximum of 3 for one outcome.
-5. Targeted re-review plus final verification terminates the pipeline when no blocker remains.
-
-The pattern addresses three known failure modes of self-review: commitment bias, context blindness, and toolset overlap (see PATTERNS.md). The `edit: deny` enforcement prevents the checker from becoming the writer.
+The pattern addresses three known failure modes of self-review: commitment bias, context blindness, and toolset overlap (see PATTERNS.md). The read-only checker rule prevents the checker from becoming the writer.
 
 ### The Critique
 
@@ -40,13 +34,13 @@ The checker should review the code against the original requirements/spec, not a
 
 ### Gap 1: Reviewer Receives Biasing Signals from the Builder
 
-`[corrected]` The builder and reviewer are both LLMs from the same model family. The orchestrator delegates implementation to `@builder`, which produces code, tests, and a handoff output, then delegates review to `@reviewer` with the builder's handoff output in the access list, including the builder's self-assessment and claims about the work. This matters because:
+`[corrected]` The builder and reviewer are both LLMs from the same model family. The orchestrator delegates implementation to `@builder`, which produces code, tests, and a handoff output, then delegates review to `@reviewer` with the builder's handoff output (including self-assessment and claims) in the access list. This matters because:
 
-- **Biasing the reviewer.** Reading the builder's narrative before examining the code primes the reviewer to agree; LLM reviewers exhibit rationalization drift toward accepting a narrative that mostly matches the code.
-- **Shared blind spots.** The builder's narrative encodes their assumptions, so an omission (for example, a missed edge case) is invisible in it; a primed reviewer is less likely to discover it.
-- **Self-assessment is circular.** The builder evaluating their own work in the handoff and the reviewer reading that evaluation creates a feedback loop where the reviewer's judgment tracks the builder's confidence, not an independent code-against-spec assessment.
+- **Biasing the reviewer.** Reading the builder's narrative before examining the code primes the reviewer to agree; LLM reviewers drift toward accepting a narrative that mostly matches the code.
+- **Shared blind spots.** The narrative encodes the builder's assumptions, so an omission (for example, a missed edge case) is invisible in it, and a primed reviewer is less likely to discover it.
+- **Circular self-assessment.** The reviewer's judgment tracks the builder's confidence rather than an independent code-against-spec assessment.
 
-The completions promise (acceptance criteria defined before work begins) partially mitigates this, but the problem is not the reference point: the reviewer's attention is diverted toward the builder's narrative and away from the acceptance criteria plus the actual diff. The root cause is the orchestrator's delegation pattern, whose access list rule forbids "full conversation history" and biasing outputs in principle but does not explicitly forbid the builder's handoff output, which is a concentrated form of bias. The rule needs to name what the reviewer must and must not receive.
+The completions promise (acceptance criteria defined before work begins, see PATTERNS.md) mitigates the reference point but not the attention problem: the reviewer is drawn toward the builder's narrative and away from the acceptance criteria plus the actual diff. The root cause is the orchestrator's delegation pattern, whose access list rule forbids "full conversation history" and biasing outputs in principle but does not explicitly forbid the builder's handoff output, a concentrated form of bias. The rule needs to name what the reviewer must and must not receive.
 
 ### Gap 2: No Explicit Fail-Loud at Iteration Limit
 
@@ -108,7 +102,7 @@ Two changes to the orchestrator's delegation pattern.
 
 #### Relationship with Existing Protocol
 
-The completions promise (PATTERNS.md) defines acceptance criteria before work begins; this decision reinforces that contract by making the reviewer evaluate against the promise rather than the builder's narrative. The orchestrator's "Cognitive Hygiene" checks (Vague, Midwit, Attachment, Rumination, Overwhelm) remain unchanged; blind review adds one check: before delegating to the reviewer, verify the access list contains no biasing builder-authored content.
+The completions promise (PATTERNS.md) defines acceptance criteria before work begins; this decision reinforces that contract by making the reviewer evaluate against the promise rather than the builder's narrative. Existing orchestrator checks remain unchanged; blind review adds one check: before delegating to the reviewer, verify the access list contains no biasing builder-authored content.
 
 #### Why Access List Discipline and Not Another Approach
 
@@ -184,6 +178,8 @@ Silent escalation (flag to the user but proceed) was rejected because the user s
 ---
 
 ## Assumptions
+
+Note (2026-09-22): the `[verified]` items below record what was checked when this revision landed; they are history, not a re-verification procedure. The current canonical directives carry the same substance in `packages/core/agent-directives/rules.md` (Acceptance and Blind Review; Bounded Repair and Fail-Loud Behavior) and `specialists/orchestrator.md` (Review and Triage) rather than a verbatim REQUIRED/FORBIDDEN block. Read the block-quoted rule text in Decision 1 as the historical specification and the directives as its current home.
 
 - `[verified]` The access list rule lives in the orchestrator directive's delegation-pattern access-list section, with the REQUIRED/FORBIDDEN specification in place.
 - `[verified]` The builder produces a handoff output that includes self-assessment, per the orchestrator's Work Results format requirement and the builder's "validate before handoff" rule.
@@ -276,10 +272,12 @@ At max cycles with unresolved `[fix]` items, the pipeline is permanently blocked
 
 ## References
 
-- The canonical orchestrator directive - review protocol, delegation pattern, access list rule, Work Results format
-- The canonical reviewer directive - review checklist, iteration limits, multi-lens swarm
-- The canonical builder directive - test-writing responsibility, verification step, handoff output
-- The canonical rules - handoff contract, escalation format, iteration limits
+- `packages/core/agent-directives/rules.md` - maker/checker split, triage contract, escalation format, repair bounds
+- `packages/core/agent-directives/specialists/orchestrator.md` - review and triage, delegation briefs
+- `packages/core/agent-directives/specialists/reviewer.md` - review checklist, triage contract, read-only checker
+- `packages/core/agent-directives/specialists/builder.md` - test-writing responsibility, verification step, handoff output
+- `packages/core/agent-directives/skills/iteration-limits.md` - repair bounds and fail-loud report format
+- `packages/core/agent-directives/skills/handoff.md` - concise handoff contents (the orchestrator consumes the builder handoff; the reviewer must not receive it)
 - `PATTERNS.md` - maker/checker split (commitment bias, context blindness, toolset overlap), completions promise
 - `docs/testing.md` - testing philosophy (test from contracts, avoid mocks)
 - ADR-CORE-011 - boundary checkpoints vs mid-phase questions, autonomy philosophy
@@ -288,7 +286,7 @@ At max cycles with unresolved `[fix]` items, the pipeline is permanently blocked
 ## Related Decisions
 
 - ADR-CORE-011 (Eliminate Questions - Autonomy) - the boundary checkpoint concept (commit/push/PR) extends to the fail-loud exit; access list discipline reinforces "exhaust data, document assumptions, proceed"
-- ADR-CORE-005 (Shared Agent Directives via core-sync Bridge) - both decisions change canonical sources that flow through the sync pipeline
+- ADR-CORE-005 (Shared Agent Directives via core-sync Bridge) - both decisions change canonical sources that flow through the sync pipeline; verify propagation with `scripts/check-sync`
 - ADR-CORE-009 (CI Quality Gates) - schema gates, if added as a future enhancement, could integrate with CI
 
 ## Date

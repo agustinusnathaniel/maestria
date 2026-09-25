@@ -9,7 +9,7 @@ lastUpdated: false
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 import { marks } from '@/data/marks.js';
@@ -132,7 +132,13 @@ import { marks } from '@/data/marks.js';
       </div>
     </PluginSection>
 
-    <SiblingPlatforms excludeId="deepseek" />
+    <RelatedDocs
+      links={[
+        { label: 'Quick start', href: '/deepseek/getting-started/quick-start/' },
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+      ]}
+    />
 
     <SiteFooter />
 

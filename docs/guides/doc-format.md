@@ -1,168 +1,97 @@
 # Documentation Format: Internal Conventions
 
-## Purpose
+## Purpose and audience
 
-Define required content for Maestria decision records, plans, notes, guides, and published package READMEs. This is the internal format convention, not an ADR.
-
-## Audience
-
-Contributors writing and maintainers reviewing documentation. Public docs help consumers use the product without repository context; internal docs preserve decisions, scope, rationale, and evidence.
+Use these conventions for new documents and substantial rewrites. Internal documentation preserves scope, rationale, and evidence; public documentation helps consumers install and use Maestria without repository context.
 
 ## Choose a template
 
-- [Published package README](#publishable-readme-template): explain the package, installation, features, and support boundaries.
-- [ADR](#template-for-new-adrs): record a decision, its scope, alternatives, and consequences.
-- [Plan](#plan-template): define work, dependencies, acceptance, verification, and rollback.
-- [Note or guide](#notes-and-guides-template): state purpose, audience, dated evidence, and the next step.
+- [Published package README](#published-package-readme): explain the package, installation, capabilities, and support boundaries.
+- [ADR](#new-adrs): record a decision, its rationale, alternatives, and consequences.
+- [Plan](#plans): define scoped work and how to verify and roll it back.
+- [Note or guide](#notes-and-guides): record purpose, audience, dated evidence, and next step.
 
-Required sections are review requirements. In published READMEs, required information may be covered concisely without a separate section per item.
+Apply the requirements below to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template. Changelogs keep their chronological format; JSDoc, docstrings, and inline comments are outside this guide. There is no format linter or schema gate. Put deliberately deferred work in **Future Considerations**, not **Non-Goals**.
 
-## Scope and exceptions
+These conventions make scope and rejected alternatives easier to review, and keep internal rationale from reading like a product promise. They add authoring overhead; the goal is recoverable reasoning, not uniform document length.
 
-Apply these conventions to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template.
+## Published package README
 
-- Changelogs keep their chronological format.
-- JSDoc, docstrings, and inline comments are outside this guide's scope.
-- No format linter or schema gate is introduced; reviewers check compliance. The docs-site build described in [ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) is a separate build/link check, not a format gate.
-- Put deliberately deferred work in **Future Considerations**, rather than treating it as permanently excluded in **Non-Goals**.
+Published package READMEs are concise landing pages, not internal design records. Each README must cover:
 
-## Why these conventions exist
+| Information | What to include |
+| --- | --- |
+| Title and description | Package name and one-sentence purpose |
+| Installation or usage | One canonical command or path, plus a short verification step when useful |
+| What it provides | Shipped features, components, or artifacts |
+| Support and platform notes | Material limits, provisional status, version boundaries, and whether controls are host-enforced or methodology-only |
+| Documentation and release history | Public docs route and package changelog where available; otherwise state pre-release status |
+| Development or contributing | Optional; link to repository guidance when useful |
+| License | SPDX identifier |
 
-The earlier ADR format left scope boundaries implicit, so decisions could expand during implementation and readers had to infer exclusions from scattered tables or notes. Goals and Non-Goals give reviewers one place to check scope; Assumptions and Alternatives Considered preserve the evidence and rejected options.
+Use package-specific headings and target roughly 40–80 lines. Avoid standalone Motivation, Goals, and Non-Goals sections, long architecture narratives, implementation details, and repeated role descriptions. Put detailed rationale in internal documents. Link `INSTALL.md` where a package ships one; describe generation and sync in the contributing guide, not the consumer README.
 
-Separating internal rationale from public usage keeps design discussions from being mistaken for product promises. State each material support boundary in both places, phrased for its audience.
+### README links
 
-This adds authoring overhead and depends on reviewer discipline; the benefit is clearer scope and recoverable decision history, not uniform document length. Legacy documents may keep older formats.
+Published READMEs render outside the repository, so links to repository files must use canonical GitHub URLs: `https://github.com/agustinusnathaniel/maestria/blob/main/<path>`. Link user-facing docs at `https://maestria.sznm.dev/<route>/`. Verify each target. Relative links and bare filenames do not resolve as links in a published README; anchor-only links are fine. Internal docs may use relative links.
 
-## Templates and shared rules
+## New ADRs
 
-### Publishable README Template
+Every new ADR must cover **Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, and Date**. Use `Proposed`, `Accepted`, or `Deprecated` for status; write the date as `YYYY-MM-DD`.
 
-Publishable package READMEs (packages published to npm/PyPI and the CLI app) are **concise landing pages**, not internal design documents. They tell a consumer what the package is, how to install it, what it provides, and what it does not promise. A published README must cover:
+- Tag material assumptions `[verified]` or `[inferred]` so readers can distinguish evidence from best-effort conclusions.
+- Record the alternatives deliberately rejected and why; preserve the evidence behind the decision.
+- Add `Lessons Learned`, `Rollback`, `Verification`, or `Related Decisions` when they help explain or operate the decision.
+- Do not rewrite historical ADRs just to match this template. Preserve their original context, decision, consequences, and date when revising them.
 
-| Information | Required | Content |
-| --- | --- | --- |
-| Title and description | Yes | Package name and a one-sentence description of what it is for |
-| Installation or Usage | Yes | One canonical command/path, plus short verification or quick usage when useful |
-| What It Provides | Yes | The features, components, or artifacts the package ships (short bullets) |
-| Support / Platform Notes | Yes | Material limitations and truthful support boundaries (see below) |
-| Documentation and release history | Yes | Link to the public docs route and the package changelog where one exists; state the pre-release status when it does not |
-| Development / Contributing | No | Only if useful; link to repository guidance rather than duplicating it |
-| License | Yes | SPDX license identifier |
+The `Context` heading is retained for compatibility with existing records. The original format drew on the [Agent Trace RFC](https://agent-trace.dev/) (Motivation → Goals → Non-Goals → Specification).
 
-Target roughly 40-80 lines; keep each README package-specific, not copy-paste uniform.
+## Plans
 
-Rules of thumb:
+Plans must define:
 
-- **No verbose standalone sections.** Do not include full `Motivation`, `Goals`, or `Non-Goals` sections, long architecture narratives, implementation internals, or repeated role descriptions. Fold essential context into the opening description and Support / Platform Notes. Detailed rationale and design history belong in internal documents (ADRs, plans, `docs/`).
-- **"Installation or Usage" is the one allowed wording variant.** Title that section `Installation`, `Usage`, or `Installation & Usage` depending on the package.
-- **Keep truthful support boundaries.** Include provisional or verified-subset status, version-pinning limits, and host-enforced-vs-methodology-only distinctions where they apply.
-- **Link `INSTALL.md` where the package ships one.** Keep generation and sync mechanics out of the published README; how packages are produced from canonical directives belongs in the contributing guide.
-- **Package-specific concise content is expected.** Each README keeps its own truthful details, commands, and platform notes; version numbers appear only where a support boundary requires them.
+| Section      | What it records                                   |
+| ------------ | ------------------------------------------------- |
+| Goal         | A testable outcome                                |
+| Scope        | Files, packages, and runtimes affected            |
+| Non-Goals    | Deliberate exclusions                             |
+| Dependencies | Prerequisites and external systems                |
+| Acceptance   | Observable completion criteria                    |
+| Verification | Checks tied to acceptance criteria                |
+| Rollback     | How to revert the work                            |
+| Status       | Draft, In review, In progress, Done, or Cancelled |
 
-#### Link Policy for Published READMEs
+Plans are living documents: update their status as work progresses. A plan without a rollback step is not ready for implementation.
 
-Published package READMEs are consumed **outside the repository** (rendered by npm, PyPI, or another registry), where repository-relative links do not resolve. Links to repository files or public docs must therefore be absolute:
+## Notes and guides
 
-- **Repository files** (root `VISION.md`, `CONTRIBUTING.md`, `LICENSE`, package `INSTALL.md`/`CHANGELOG.md`, and files under `docs/`) must use canonical GitHub links: `https://github.com/agustinusnathaniel/maestria/blob/main/<path>`. Use `/blob/main/` (never PR branches or `/tree/`) because the README is published as of the default branch after merge.
-- **User-facing docs** must use the public docs origin: `https://maestria.sznm.dev/<route>/`.
-- Do not leave relative Markdown links (`./...`, `../...`, `/...`) or bare repository file names (`INSTALL.md`, `CHANGELOG.md`) in a published README when intended as links; verify every target exists in the repository or as a docs route. Anchor-only links (e.g. `#installation`) are fine if retained; avoid adding unnecessary anchors.
-- **Internal docs are different.** ADRs, plans, notes, guides, and this file are read inside the repository, where relative links remain acceptable. Only published package READMEs require absolute links.
+Notes and guides must state:
 
-### Template for New ADRs
+| Section        | What it records                                                                |
+| -------------- | ------------------------------------------------------------------------------ |
+| Purpose        | Why the document exists                                                        |
+| Audience       | Who should read and act on it                                                  |
+| Dated evidence | Facts and findings, their date and source, tagged `[verified]` or `[inferred]` |
+| Next step      | Follow-up action or `None - informational`                                     |
 
-All new ADRs must follow the expanded format:
+Point-in-time claims need dates and sources so readers can judge whether they remain current.
 
-| Section | Required | Content |
-| --- | --- | --- |
-| Status | Yes | Proposed / Accepted / Deprecated (optionally with a date) |
-| Context | Yes | Background, problem description, relevant prior decisions |
-| Goals | Yes | Bulleted list of what this decision achieves (testable scope) |
-| Non-Goals | Yes | Bulleted list of what this decision explicitly excludes |
-| Decision | Yes | The change being proposed, with rationale |
-| Consequences | Yes | Positive and negative effects of the decision |
-| Assumptions | Yes | Material assumptions behind the decision, tagged `[verified]`/`[inferred]` |
-| Alternatives Considered | Yes | Options weighed and rejected, with the reason each was rejected |
-| Date | Yes | YYYY-MM-DD |
-| Lessons Learned | No | Retrospective insights (added after implementation) |
-| Rollback | No | How to revert the decision (strongly recommended for infrastructure) |
-| Verification | No | Commands/checks that prove the decision is implemented (when applicable) |
-| Related Decisions | No | Links to ADRs this decision builds on or interacts with |
+## Evidence and detail
 
-Every new ADR must include **Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, and Date**. `Assumptions` tags confirmed facts versus best-effort guesses with `[verified]`/`[inferred]`; `Alternatives Considered` records options deliberately rejected and why, keeping the decision auditable.
+- Use `[verified]` for facts confirmed from code, documentation, a live run, or an immutable commit; use `[inferred]` for conclusions not directly confirmed.
+- Name the mechanism or module instead of giving line numbers. Link the source of changing facts rather than copying its inventory.
+- Do not maintain exhaustive lists of directory or registry contents. If a count helps, label it as a dated snapshot and point to its source.
+- In public docs, describe the capability and link its owning page. Do not require consumers to understand internal paths or ADR numbers.
+- When an internal rationale also defines a product boundary, explain it in both places using audience-appropriate language.
 
-### Plan Template
+## Convention history
 
-Plans (design/implementation plans) must include these sections:
-
-| Section      | Required | Content                                                  |
-| ------------ | -------- | -------------------------------------------------------- |
-| Goal         | Yes      | What the plan achieves, in one testable statement        |
-| Scope        | Yes      | What files/packages/runtimes the plan touches            |
-| Non-Goals    | Yes      | What the plan deliberately does not do                   |
-| Dependencies | Yes      | Prerequisites (other plans, ADRs, external systems)      |
-| Acceptance   | Yes      | Observable criteria that prove the plan is complete      |
-| Verification | Yes      | Commands/checks to run against the acceptance criteria   |
-| Rollback     | Yes      | How to revert the plan's changes if something goes wrong |
-| Status       | Yes      | Draft / In review / In progress / Done / Cancelled       |
-
-Plans are living documents: `Status` moves as work progresses, and reviewers check `Acceptance`/`Verification`. A plan without an explicit rollback step is not ready for implementation.
-
-### Notes and Guides Template
-
-Notes and guides (ad-hoc records, conventions, process notes) must include:
-
-| Section | Required | Content |
-| --- | --- | --- |
-| Purpose | Yes | Why this note/guide exists, in one or two sentences |
-| Audience | Yes | Who is expected to read and act on it |
-| Dated evidence | Yes | Facts and findings with a date and source; tag `[verified]`/`[inferred]` |
-| Next step | Yes | What happens after this note/guide (or "none - informational") |
-
-Notes and guides are point-in-time records; recording when evidence was gathered and where it came from keeps them useful as context ages.
-
-> **Exemption:** This format guide may organize its template reference differently from other guides; it includes the purpose, audience, dated evidence, and next step defined above.
-
-### Evidence Tagging
-
-Anywhere a fact, assumption, or finding is stated in internal documentation, mark its certainty:
-
-- `[verified]` - confirmed from source (code, docs, a live run, an immutable commit).
-- `[inferred]` - a best-effort conclusion from context that was not directly confirmed.
-
-Tagging is required in ADRs (`Assumptions`), plans (`Acceptance`/`Verification`), and notes/guides (`Dated evidence`), so downstream readers, including agents, can distinguish confirmed facts from guesses.
-
-### Avoid Volatile Detail
-
-- Name the mechanism, symbol, or module instead of line counts or `file:line` locations.
-- Reference manifests, lockfiles, or support boundaries rather than restating versions they already record.
-- In public documents, describe the capability and link its owning page instead of listing internal source files.
-- Dated evidence is a snapshot; mark the date so readers know when it was checked.
-
-### Internal Rationale vs Public Usage
-
-- **Internal documents** (ADRs, plans, notes, guides, this file) capture _why_ a decision was made and its evidence trail; contributors and maintainers read them.
-- **Public documents** (publishable READMEs, the docs site) capture _how to use_ an artifact and what it provides; consumers without repository context read them.
-
-Rules of thumb:
-
-- A published README is a concise landing page, not an architecture retrospective; internal docs carry rationale and design history.
-- ADR rationale that is also a product boundary (e.g. "this package does not claim runtime enforcement") should appear in _both_ places, but phrased for each audience.
-- Do not reference `packages/core/agent-directives/` paths or internal ADR numbers as the _only_ explanation in a public README; pair them with consumer-facing guidance.
-
-## Dated evidence
-
-- 2026-08-13: [ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) records the documentation standard and the decision to keep public READMEs concise and hand-authored. `[verified]`
-- 2026-09-05: This guide's navigation and framing were revised; template requirements, support caveats, link rules, and legacy-document exemptions are retained. `[verified]`
-
-The original format drew on the [Agent Trace RFC](https://agent-trace.dev/) (Motivation → Goals → Non-Goals → Specification); Maestria retains **Context** as the ADR background heading for compatibility and adds explicit scope sections.
+[ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) records the original fixed section order for published package READMEs. This 2026-09-25 clarification replaces that order and the default requirement for standalone Motivation, Goals, Non-Goals, and Development sections. Use concise, package-specific headings while keeping every required information item findable; Development or Contributing is optional when it helps the reader. The ADR keeps its original decision, evidence, and rationale as historical record.
 
 ## Next step
 
-Use the relevant template when creating or substantively revising a document. Review its required content, evidence tags, and links before handoff.
+Choose the template that matches the reader's task. Check required content, evidence tags, and links before handoff.
 
 ## Future Considerations
 
-The proposed retrofit of ADR-CORE-001 through ADR-CORE-004 and ADR-OC-000 through ADR-OC-002 remains separate work and is not required by this guide. If undertaken, extract implicit boundaries into Goals and Non-Goals while preserving the original decision, context, consequences, and date.
-
-Published README simplification is recorded as completed in this guide; review each package's commands and support boundaries when they change.
+A proposed retrofit of ADR-CORE-001 through ADR-CORE-004 and ADR-OC-000 through ADR-OC-002 remains separate work. If undertaken, extract implicit boundaries into Goals and Non-Goals while preserving the original decision, context, consequences, and date.

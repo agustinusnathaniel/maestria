@@ -1,0 +1,77 @@
+---
+title: OpenSpec and Spec Kit
+description: Independent spec tools Maestria reads alongside its own contract header, without owning or managing them.
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+OpenSpec is an independent project under the MIT license, maintained by Fission AI and OpenSpec contributors. Spec Kit is an independent project under the MIT license, maintained by GitHub. Neither is part of Maestria, and Maestria does not require, install, or manage either tool.
+
+## What They Are
+
+OpenSpec is a lightweight spec framework for capturing what to build and tracking how the work evolves. It keeps specs in `openspec/specs` and active proposals in `openspec/changes`.
+
+Spec Kit is a spec-driven toolkit for defining what to build before building it with any AI coding agent. It keeps feature specs in `specs/<feature>` alongside a project constitution.
+
+## Why Use Them With Maestria
+
+Maestria detects specs owned by other tools and references them read-only. If a project already uses OpenSpec (`openspec/specs` or `openspec/changes`) or Spec Kit (`specs/<feature>` plus constitution), the spec-contract skill carries pointers to that owning truth across steps and leaves those files to their owning workflow.
+
+Absence of a spec is normal; tiny work skips the header.
+
+## Installation
+
+Install and update specs with their own upstream instructions. Run these commands yourself; Maestria never runs installs for you.
+
+**OpenSpec:**
+
+```bash
+npm install -g @fission-ai/openspec@latest
+```
+
+Then initialize inside your project:
+
+```bash
+openspec init
+```
+
+**Spec Kit** (replace `vX.Y.Z` with a tag from the Spec Kit releases page):
+
+```bash
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@vX.Y.Z
+```
+
+Then initialize inside your project:
+
+```bash
+specify init <PROJECT_NAME>
+```
+
+## Quick Start
+
+Work in the owning tool first (OpenSpec or Spec Kit), then let Maestria reference the result. The spec-contract header points at the existing spec, and each step keeps carrying that pointer while the owning workflow stays in charge of its own files.
+
+## Resources
+
+<CardGrid>
+  <LinkCard
+    title="OpenSpec Docs"
+    description="Official docs for creating and managing OpenSpec specs."
+    href="https://openspec.dev/"
+  />
+  <LinkCard
+    title="OpenSpec Repository"
+    description="Source code, issues, and releases for OpenSpec."
+    href="https://github.com/Fission-AI/OpenSpec"
+  />
+  <LinkCard
+    title="Spec Kit Docs"
+    description="Official docs for the Spec Kit workflow and CLI."
+    href="https://github.github.com/spec-kit/"
+  />
+  <LinkCard
+    title="Spec Kit Repository"
+    description="Source code, issues, and releases for Spec Kit."
+    href="https://github.com/github/spec-kit"
+  />
+</CardGrid>

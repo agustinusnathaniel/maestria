@@ -2,19 +2,11 @@ import { Effect } from 'effect';
 
 import { CliError, exitCodeForResults } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
-import { renderCompactResults, renderResults } from '@/lib/output.js';
+import { detectInstalled } from '@/lib/detect.js';
+import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
 import { getPlatformOrResult } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformResult } from '@/types.js';
-
-/**
- * Shared skeleton for the install/update/uninstall batch commands.
- *
- * Each command keeps its own detection filters, prompts, and messages; this
- * module owns the pieces that must stay identical across them: quiet
- * resolution, result rendering, the concurrency-1 selection runner, and the
- * non-interactive usage guard.
- */
 
 export interface BatchCommandArgs {
   compact?: boolean;
@@ -27,11 +19,9 @@ export interface BatchSelection {
   label?: string;
 }
 
-/** Quiet mode follows either explicit --quiet or machine-friendly --compact. */
 export const resolveBatchQuiet = (args: BatchCommandArgs): boolean =>
   args.quiet === true || args.compact === true;
 
-/** Render per-platform results as JSON, compact text, or the colored default. */
 export const renderBatchOutput = (
   results: PlatformResult[],
   args: { compact?: boolean; json?: boolean },
@@ -45,10 +35,6 @@ export const renderBatchOutput = (
   return renderResults(results);
 };
 
-/**
- * Run a per-platform operation for each selection, strictly one at a time so
- * lifecycle side effects keep a deterministic order.
- */
 export const runBatchSelected = async (
   selections: readonly BatchSelection[],
   isQuiet: boolean,
@@ -64,7 +50,28 @@ export const runBatchSelected = async (
     ),
   );
 
-/** Throw the shared usage error when stdin/stdout is not an interactive terminal. */
+export const detectWithSpinner = async <A>(
+  isQuiet: boolean,
+  effect: Effect.Effect<A>,
+): Promise<A> => {
+  const spinner = createSpinner(isQuiet);
+  spinner.start('Detecting platforms...');
+  const result = await Effect.runPromise(effect);
+  spinner.stop('Done');
+  return result;
+};
+
+export const detectInstalledOr = async (
+  isQuiet: boolean,
+  emptyOutput: string,
+): Promise<BatchSelection[] | CommandResult> => {
+  const installed = await detectWithSpinner(isQuiet, detectInstalled());
+  if (installed.length === 0) {
+    return { exitCode: 0, output: emptyOutput };
+  }
+  return installed.map((p) => ({ id: p.id, label: p.label }));
+};
+
 export const assertInteractiveTerminal = (command: string): void => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     throw new CliError(
@@ -78,7 +85,6 @@ export const assertInteractiveTerminal = (command: string): void => {
   }
 };
 
-/** Exit code plus rendered output for a completed batch selection. */
 export const batchCommandResult = (
   results: PlatformResult[],
   args: BatchCommandArgs,

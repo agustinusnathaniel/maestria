@@ -1,16 +1,11 @@
 // packages/cursor/sync.config.ts
 // Sync config: derives Cursor plugin agents/skills/rules from canonical core directives
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 const CURSOR_TOOL_REPLACES = [
-  { from: '@adventurer', to: 'adventurer' },
-  { from: '@architect', to: 'architect' },
-  { from: '@builder', to: 'builder' },
-  { from: '@diagnose', to: 'diagnose' },
-  { from: '@planner', to: 'planner' },
-  { from: '@reviewer', to: 'reviewer' },
-  { from: '@writer', to: 'writer' },
+  ...specialistReferenceReplacements(),
   { from: 'run in parallel', to: 'run in parallel via multiple `Task` calls' },
 ] as const;
 

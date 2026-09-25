@@ -287,70 +287,27 @@ def is_recognized_top_level_platform(platform: object) -> bool:
 
 # -- Registry bookkeeping ---------------------------------------------------
 
-def _set_trust_state(key: str, state: str) -> bool:
-    """Set the trust state for a validated *key* and keep registry bounds.
+def _refresh_tombstone(key: str, is_tombstone: bool) -> None:
+    """Move *key* to the back of the FIFO when it is a tombstone.
 
-    Maintains the FIFO tombstone queue: *key* is moved to the back when it
-    transitions INTO an evictable state (ENDED / INVALID_CHILD) - including
-    when it was already a tombstone, so a repeated end/invalid terminal
-    transition refreshes its reuse protection - and removed when it leaves
-    one (re-established active trust).  Prunes the registry after the write
-    so the cap is enforced on every mutating transition.
-
-    Returns True when the state was recorded.  Returns False (fail closed)
-    for a NEW key when the registry is at hard capacity with nothing
-    evictable left: the entry is not recorded and the id stays UNKNOWN,
-    which denies all tools.  Active trust is never evicted to make room -
-    only the oldest tombstones are pruned, so recent tombstone reuse
-    protection is preserved.
+    A repeat tombstone transition refreshes recency (re-arming reuse
+    protection); leaving tombstone state drops the key from the queue.
     """
-    if key not in _session_trust:
-        # Hard bound: admitting a new key must never push the registry past
-        # _TRUST_REGISTRY_CAP.  Evict the oldest tombstones first to make
-        # room (recent ENDED reuse protection is preserved).  When the
-        # registry is at capacity with active trust only, the admission
-        # fails closed: the id stays UNKNOWN (denies all tools) rather than
-        # evicting active trust.
-        while len(_session_trust) >= _TRUST_REGISTRY_CAP:
-            if not _evict_one_tombstone():
-                logger.warning(
-                    "maestria trust admission refused: registry at capacity "
-                    "(session=%r); id stays UNKNOWN (fail closed)",
-                    key,
-                )
-                return False
-    was_tombstone = _session_trust.get(key) in _EVICTABLE_STATES
-    _session_trust[key] = state
-    is_tombstone = state in _EVICTABLE_STATES
+    try:
+        _tombstones.remove(key)
+    except ValueError:
+        pass
     if is_tombstone:
-        # Refresh FIFO recency: a tombstone transition - including a repeat
-        # of an existing tombstone's end/invalid state - moves the key to
-        # the back of the queue, re-arming its reuse protection.  Without
-        # this, re-ending an old tombstone would leave it at a stale oldest
-        # position and the next admission would evict it to UNKNOWN
-        # immediately, defeating the recent-reuse guarantee.
-        if was_tombstone:
-            try:
-                _tombstones.remove(key)
-            except ValueError:
-                pass
         _tombstones.append(key)
-    elif was_tombstone:
-        try:
-            _tombstones.remove(key)
-        except ValueError:
-            pass
-    _prune_tombstones()
-    return True
 
 
-def _evict_one_tombstone() -> bool:
+def _evict_oldest_tombstone() -> bool:
     """Evict the oldest evictable tombstone, if any.
 
-    Returns True when an entry was evicted (a registry slot freed).  Skips
-    stale queue entries whose key no longer holds an evictable state.  An
-    evicted id becomes UNKNOWN on the next read, which denies all tools -
-    pruning never grants trust.
+    Returns True when a registry slot was freed.  Skips stale queue
+    entries whose key no longer holds an evictable state.  An evicted id
+    becomes UNKNOWN on the next read, which denies all tools - pruning
+    never grants trust.
     """
     while _tombstones:
         key = _tombstones.popleft()
@@ -360,20 +317,37 @@ def _evict_one_tombstone() -> bool:
     return False
 
 
-def _prune_tombstones() -> None:
-    """Evict oldest ended/invalid tombstones while the registry is over cap.
+def _ensure_room(for_new_key: bool) -> bool:
+    """Evict oldest tombstones until the registry fits the cap.
 
-    Deterministic FIFO: the oldest tombstones (in the order they became
-    ended/invalid) are removed first.  Active/trusted entries (TOP_LEVEL,
-    TRUSTED_CHILD) are NEVER evicted.  An evicted id becomes UNKNOWN on
-    the next read, which denies all tools - pruning never grants trust.
-
-    The hard bound enforced at admission (see _set_trust_state) keeps the
-    registry at or under the cap; this remains as a safety net for bulk
-    transitions such as revoke_all_trust.
+    New admissions need a free slot (len < cap); existing-key writes only
+    need len <= cap.  Returns False when the registry holds active trust
+    only - active trust is never evicted, so the caller fails closed.
     """
-    while len(_session_trust) > _TRUST_REGISTRY_CAP and _evict_one_tombstone():
-        pass
+    limit = _TRUST_REGISTRY_CAP if for_new_key else _TRUST_REGISTRY_CAP + 1
+    while len(_session_trust) >= limit:
+        if not _evict_oldest_tombstone():
+            return False
+    return True
+
+
+def _set_trust_state(key: str, state: str) -> bool:
+    """Record *key*'s trust state, keeping registry bounds (fail closed).
+
+    Returns False for a NEW key when only active trust remains: the id
+    stays UNKNOWN (denies all tools) rather than evicting active trust.
+    """
+    if key not in _session_trust and not _ensure_room(for_new_key=True):
+        logger.warning(
+            "maestria trust admission refused: registry at capacity "
+            "(session=%r); id stays UNKNOWN (fail closed)",
+            key,
+        )
+        return False
+    _session_trust[key] = state
+    _refresh_tombstone(key, state in _EVICTABLE_STATES)
+    _ensure_room(for_new_key=False)
+    return True
 
 
 # -- Trust-state API --------------------------------------------------------
@@ -498,7 +472,7 @@ def revoke_all_trust() -> None:
     """
     for key in list(_session_trust):
         _set_trust_state(key, ENDED)
-    _prune_tombstones()
+    _ensure_room(for_new_key=False)
 
 
 def clear_trust(session_id: object) -> None:

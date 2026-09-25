@@ -1,5 +1,39 @@
 # maestria
 
+## 0.13.3
+
+### Patch Changes
+
+- [#343](https://github.com/agustinusnathaniel/maestria/pull/343) [`ec3c94d`](https://github.com/agustinusnathaniel/maestria/commit/ec3c94d47663d3fb339ee249869071ea7795ac17) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Keep recorded skill ownership after a failed add or removal when another skill succeeds, so retries can recover safely. Verify project-scoped setup sources in the requested directory and recognize xtarterize JSON status responses containing nested data.
+
+- [#341](https://github.com/agustinusnathaniel/maestria/pull/341) [`19c70ae`](https://github.com/agustinusnathaniel/maestria/commit/19c70aeaab15638a151466089c8c0c0a34d3f661) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify global scope and cancel semantics in `maestria setup`. Maestria skill prompts, review lines, summary output, and action reports now carry global scope labels, and the final confirm states the target directory role plus full cancel semantics. Display strings only, no behavior change.
+
+## 0.13.2
+
+### Patch Changes
+
+- [#339](https://github.com/agustinusnathaniel/maestria/pull/339) [`8e0ca35`](https://github.com/agustinusnathaniel/maestria/commit/8e0ca35b67a54223d25c496d349e1e815bcb0937) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fail loud when `--compact` is passed to `maestria check` or `maestria doctor`. These commands have no compact rendering, so they now exit 1 with guidance to use `--json` or `--quiet` instead of silently ignoring the flag.
+
+- [#337](https://github.com/agustinusnathaniel/maestria/pull/337) [`8b8d54e`](https://github.com/agustinusnathaniel/maestria/commit/8b8d54e5649af9400f39b236c07bad92b8a4a841) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Skip redundant `maestria setup` confirmations when there is nothing to change. Selections left unchanged no longer trigger the trailing skills confirmation, fully no-op plans exit 0 with an already-set-up summary instead of prompting, and the ecosystem picker labels detected tools as already installed.
+
+## 0.13.1
+
+### Patch Changes
+
+- [#335](https://github.com/agustinusnathaniel/maestria/pull/335) [`cd5fc25`](https://github.com/agustinusnathaniel/maestria/commit/cd5fc2544d3957088bed0c0c4f22938827bb4b3d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Tidy `maestria doctor` human output without changing JSON or behavior. Observed lists show managed skills only with an omitted count pointing to `--json` for the full list, platforms sharing one agent inventory render it once with later platforms referencing the first, and Next shows a single actionable step (install first, then record, then the first remaining step).
+
+## 0.13.0
+
+### Minor Changes
+
+- [#322](https://github.com/agustinusnathaniel/maestria/pull/322) [`971ff4b`](https://github.com/agustinusnathaniel/maestria/commit/971ff4b7378ddd8654b97196cd19fce4343185ed) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add the `docs-update` methodology skill as a standalone root skill and distribute it through the existing skills CLI selection. Fresh installs default to `create-pull-request` plus `docs-update`; recorded per-platform choices (including `[]`) are preserved exactly, and updates of legacy installs without a record infer only `create-pull-request`, never silently adding the new skill. The selection record moves to version 2 only with per-skill observed source/path; reconcile, preflight, removal guards, and uninstall now operate per skill with partial successes recorded recoverably and failed skills never marked installed. Interactive update still reviews skills with final confirmation when plugins are already current. Core keeps only a short docs obligation plus the skill pointer.
+
+- [#323](https://github.com/agustinusnathaniel/maestria/pull/323) [`5fc031e`](https://github.com/agustinusnathaniel/maestria/commit/5fc031e21b261a2335f9670051b176e735c6e84d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add read-only `maestria doctor` diagnostics for skill setup. Per platform it reports plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`, with unmanaged copy warnings, shared canonical path notes, and actionable next commands. Supports `--json` and `--quiet`; home directories in paths render as `~`. A corrupt record fails loud before any observation; unknown platforms or agents degrade honestly with a note. No installs, updates, removals, or record writes.
+
+- [#328](https://github.com/agustinusnathaniel/maestria/pull/328) [`f4376e8`](https://github.com/agustinusnathaniel/maestria/commit/f4376e8f62c1229e807851bd44abdbdc62edae92) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add optional `maestria setup` coordinator across ecosystem tools and skills. Detection stays read-only (platforms, record, doctor snapshot, binary `--version` probes, xtarterize PATH lookup); mutations run only after the review screen plus final confirm. Ecosystem tools report detected or manual steps and are never auto-installed; xtarterize runs `add agent/skills-install --json --cwd <dir>` gated on the JSON status field with `.gitignore` changes reported; skill sources install per-source project/global scope via the skills CLI transport; Maestria skills reuse the existing selection record and `--skills`/`--exclude-skills` semantics with no other state writes. Non-TTY requires full flags plus `--yes`; reports are per action with resume guidance and idempotent reruns.
+
+- [#320](https://github.com/agustinusnathaniel/maestria/pull/320) [`6430ee9`](https://github.com/agustinusnathaniel/maestria/commit/6430ee95ed03908e535e2e069e0672fda4e5eaef) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Install, update, and reconcile the `create-pull-request` methodology skill through the official `skills` CLI instead of bundling skill bodies into plugins. `install` and `update` accept `--skills` (CSV, or `none`), `--exclude-skills` (CSV), and `--yes`; per-platform selections persist only after actual success, independently installed copies are never adopted or deleted, and shared native skill directories are preserved while another owned platform still uses them. The visual-evidence procedure lives once in the root skill, with the core and integration routers pointing at it.
+
 ## 0.12.5
 
 ### Patch Changes

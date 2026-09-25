@@ -6,11 +6,10 @@ editUrl: false
 lastUpdated: false
 ---
 
-import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { marks } from '@/data/marks.js';
 
@@ -50,26 +49,14 @@ import { marks } from '@/data/marks.js';
       />
     </PluginSection>
 
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
-        <DocsLinkList
-          items={[
-            { title: 'Getting Started', description: 'Install through Maestria and verify skill discovery.', href: '/codex/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Route a real task through the orchestrator and specialist skills.', href: '/codex/getting-started/quick-start/' },
-            { title: 'Core Methodology', description: 'Roles, permissions, and when to use each of the 7 specialists.', href: '/core/agents/' },
-            { title: 'Changelog', description: 'Release history and support-boundary changes.', href: '/codex/changelog/' },
-            { title: 'Contributing', description: 'Understand the generated skill projection and sync pipeline.', href: '/codex/contributing/' },
-          ]}
-        />
-      </div>
-    </PluginSection>
-
-    <SiblingPlatforms excludeId="codex" />
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/codex/changelog/' },
+        { label: 'Contributing', href: '/codex/contributing/' },
+      ]}
+    />
 
     <SiteFooter />
 

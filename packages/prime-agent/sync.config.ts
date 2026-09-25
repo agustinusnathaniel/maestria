@@ -19,17 +19,8 @@
 // Specialist references (`@adventurer`, ...) become plain skill names so the
 // content reads as "load the skill" rather than "spawn an agent".
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
-
-const AGENT_REF_REPLACES = [
-  { from: '@adventurer', to: 'adventurer' },
-  { from: '@architect', to: 'architect' },
-  { from: '@builder', to: 'builder' },
-  { from: '@diagnose', to: 'diagnose' },
-  { from: '@planner', to: 'planner' },
-  { from: '@reviewer', to: 'reviewer' },
-  { from: '@writer', to: 'writer' },
-] as const;
 
 // Read-only role notes. Prime Agent has no skill-level tool enforcement (the
 // Agent Skills `allowed-tools` field only pre-approves tools and is
@@ -53,7 +44,7 @@ The universal contracts live in the \`global-rules\` skill; load it once at sess
 
 ### Executable extension (verified subset)
 
-This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (\`pi.extensions\`) covering the workflow-mode slash commands (\`/fein\`, \`/sonar\`, \`/blitz\`, \`/mode-clear\`, \`/maestria-status\`) and mode prompt injection on each agent turn via \`before_agent_start\`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
+This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (\`pi.extensions\`) covering the workflow-mode slash commands (\`/fein\`, \`/sonar\`, \`/blitz\`, \`/mode-clear\`, \`/maestria-status\`) and mode prompt injection plus project-customization injection on each agent turn via \`before_agent_start\`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
 
 ### Deferred: recursive-subagent dispatch
 
@@ -76,7 +67,7 @@ Research-only mode. Load the \`orchestrator\` skill for routing and delegation m
 
 export default {
   default: {
-    replace: [...AGENT_REF_REPLACES],
+    replace: specialistReferenceReplacements(),
   },
   files: {
     'adventurer.md': {
@@ -147,8 +138,8 @@ export default {
       output: 'orchestrator/SKILL.md',
       replace: [
         {
-          from: '`.maestria/workflow.md` and `.maestria/rules.md`',
-          to: 'the `global-rules` skill',
+          from: 'load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools',
+          to: 'load the `global-rules` skill plus project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools',
         },
       ],
     },

@@ -104,9 +104,9 @@ When a platform's behavior differs from the core contract, document the boundary
 
 ## Tests and Quality Gates
 
-Test observable contracts at the highest practical boundary. Prefer real lightweight boundaries or explicit fakes over mocks, and add regression tests only for durable contracts or meaningful failure modes.
+Use the testing discipline in `packages/core/agent-directives/rules.md` and the definitions and workflow in `docs/testing.md`. Pre-code selection is required; post-code unit tests and duplicate regression tests are out. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
 
-Before a commit, the delivery owner runs:
+Validate each coherent implementation slice before committing it. Before delivery, the delivery owner runs the integrated gates:
 
 ```bash
 pnpm check
@@ -128,6 +128,13 @@ If agent directives changed, `scripts/check-sync` is required. If a package has 
 ## Changesets and Pull Requests
 
 Create a changeset for a user-facing change to a published package or a package awaiting its first release. Private packages such as `@maestria/core` and `@maestria/docs` do not require one.
+
+Assess four categories separately and update only those the change affects, with a concise reason when a plausible category needs no update; keep the assessment proportionate to the change:
+
+- Internal docs in `docs/` (guides, ADRs, plans, notes): update when the change alters contributor process, architecture, or conventions.
+- User-facing docs: `apps/docs/` site pages plus the affected package README for a new platform or user-visible feature where the README and changeset alone are insufficient.
+- Changelog and release notes: curated public `changelog.mdx` summaries for meaningful methodology or platform behavior changes; do not hand-edit generated package `CHANGELOG.md` files.
+- Required changesets in `.changeset/`: one entry covering all changed published packages for a user-facing change; none for private packages or source-only internal edits with no published effect.
 
 For a pull request:
 
