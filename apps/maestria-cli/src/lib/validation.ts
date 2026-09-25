@@ -1,38 +1,44 @@
-import { Data, Effect, Exit, Cause } from 'effect';
+import { Cause, Data, Effect, Exit } from 'effect';
+
+import { CliError } from './command-result.js';
+import { PLATFORM_IDS, platforms } from './platforms.js';
+import type { PlatformId } from './platforms.js';
 import { isValidVersion } from './version.js';
 
-// ── Errors ───────────────────────────────────────────
 export class ValidationError extends Data.TaggedError('ValidationError')<{
   readonly message: string;
 }> {}
 
-// ── Validators ───────────────────────────────────────
+export type ValidPlatform = PlatformId;
 
-const VALID_PLATFORMS = ['opencode', 'omp', 'pi', 'kimi-code', 'hermes', 'cursor'] as const;
-export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
+// Ordering follows the legacy help/error order; membership comes from the registry.
+const LEGACY_INDEX = new Map<ValidPlatform, number>(
+  PLATFORM_IDS.map((id, idx) => [id, idx] as const),
+);
 
-/**
- * Validate a platform ID string.
- * Returns the validated platform ID or fails with ValidationError.
- */
-export function validatePlatform(input: string): Effect.Effect<ValidPlatform, ValidationError> {
+// Single source for membership, sorted to preserve prior message ordering.
+export const VALID_PLATFORMS: readonly ValidPlatform[] = platforms
+  .map((p) => p.id)
+  .toSorted((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
+
+const isValidPlatform = (id: string): id is ValidPlatform =>
+  (VALID_PLATFORMS as readonly string[]).includes(id);
+
+export const validatePlatform = (input: string): Effect.Effect<ValidPlatform, ValidationError> => {
   const normalized = input.trim().toLowerCase();
-  if (!VALID_PLATFORMS.includes(normalized as ValidPlatform)) {
+  if (!isValidPlatform(normalized)) {
     return Effect.fail(
       new ValidationError({
         message: `Unknown platform '${input}'. Valid platforms: ${VALID_PLATFORMS.join(', ')}`,
       }),
     );
   }
-  return Effect.succeed(normalized as ValidPlatform);
-}
+  return Effect.succeed(normalized);
+};
 
-/**
- * Validate a comma-separated list of platform IDs.
- * Splits on comma, trims whitespace, validates each.
- * Returns an array of validated platform IDs or fails on the first invalid one.
- */
-export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[], ValidationError> {
+export const validatePlatforms = (
+  input: string,
+): Effect.Effect<ValidPlatform[], ValidationError> => {
   const parts = [
     ...new Set(
       input
@@ -50,59 +56,44 @@ export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[],
   }
   const results: ValidPlatform[] = [];
   for (const part of parts) {
-    if (!VALID_PLATFORMS.includes(part as ValidPlatform)) {
+    if (!isValidPlatform(part)) {
       return Effect.fail(
         new ValidationError({
           message: `Unknown platform '${part}'. Valid platforms: ${VALID_PLATFORMS.join(', ')}`,
         }),
       );
     }
-    results.push(part as ValidPlatform);
+    results.push(part);
   }
   return Effect.succeed(results);
-}
+};
 
-/**
- * Validate a version string.
- * Accepts semver (0.5.0) or 'latest'.
- */
-export function validateVersion(input: string): Effect.Effect<string, ValidationError> {
+export const validateVersion = (input: string): Effect.Effect<string, ValidationError> => {
   const trimmed = input.trim();
-  if (isValidVersion(trimmed)) return Effect.succeed(trimmed);
+  if (isValidVersion(trimmed)) {
+    return Effect.succeed(trimmed);
+  }
   return Effect.fail(
     new ValidationError({
       message: `Invalid version '${input}'. Use semver format (e.g., 0.5.0) or 'latest'.`,
     }),
   );
-}
+};
 
-/**
- * Check that --all and a platform positional aren't both provided.
- */
-export function validateNotAllAndPlatform(
-  all: boolean,
-  platform?: string,
-): Effect.Effect<void, ValidationError> {
-  if (all && platform) {
-    return Effect.fail(
-      new ValidationError({
-        message: 'Cannot use --all with a specific platform. Choose one.',
-      }),
-    );
+/** First typed failure's string `message`, or undefined when none is present. */
+export const failureMessage = (cause: Cause.Cause<unknown>): string | undefined => {
+  const failure: unknown = cause.reasons.find(Cause.isFailReason)?.error;
+  if (typeof failure !== 'object' || failure === null || !('message' in failure)) {
+    return undefined;
   }
-  return Effect.void;
-}
+  return typeof failure.message === 'string' ? failure.message : undefined;
+};
 
-/**
- * Run a validation effect at the CLI boundary.
- * Prints the error and exits with code 1 on failure, returns the value on success.
- */
-export async function validateOrExit<A>(effect: Effect.Effect<A, ValidationError>): Promise<A> {
+/** Run a validation effect at the CLI boundary (failure becomes CliError exit 1). */
+export const validateOrThrow = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
-  const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  console.error(firstFailure?.error?.message ?? 'Validation failed');
-  process.exit(1);
-}
+  throw new CliError(failureMessage(exit.cause) ?? 'Validation failed', 1);
+};

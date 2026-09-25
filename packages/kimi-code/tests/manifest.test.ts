@@ -1,14 +1,12 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vite-plus/test';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
-const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
-const AGENTS_MD_MAX_BYTES = 32 * 1024;
-
+const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/u;
+const SYSTEM_PROMPT_MAX_BYTES = 32 * 1024;
 const EXPECTED_SKILLS = [
   'orchestrator',
   'builder',
@@ -20,46 +18,55 @@ const EXPECTED_SKILLS = [
   'diagnose',
 ] as const;
 
-const COMMAND_SKILLS = ['fein', 'sonar', 'blitz'] as const;
+const EXPECTED_COMMANDS = ['fein', 'sonar', 'blitz'] as const;
 
-const ALL_SKILLS = [...EXPECTED_SKILLS, ...COMMAND_SKILLS] as const;
+type JsonObject = Record<string, unknown>;
 
-/** Resolve the subdirectory for a given skill (command skills live under `commands/`). */
-function skillDir(skill: string): string {
-  return (COMMAND_SKILLS as readonly string[]).includes(skill) ? `commands/${skill}` : skill;
-}
+const isJsonObject = (value: unknown): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
-interface RawManifest {
-  name?: string;
-  version?: string;
-  description?: string;
-  keywords?: string[];
-  author?: { name?: string; email?: string };
-  homepage?: string;
-  license?: string;
-  skills?: string | string[];
-  sessionStart?: { skill?: string };
-  skillInstructions?: string;
-  interface?: Record<string, string | undefined>;
-}
+const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
 
-async function readJson<T>(relativePath: string): Promise<T> {
+const readJson = async (relativePath: string): Promise<JsonObject> => {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
-  return JSON.parse(raw) as T;
-}
+  const raw = await readFile(absolute, 'utf-8');
+  const value: unknown = JSON.parse(raw);
+  if (!isJsonObject(value)) {
+    throw new Error(`expected a JSON object: ${relativePath}`);
+  }
+  return value;
+};
 
-async function pathExists(absolutePath: string): Promise<boolean> {
+const pathExists = async (absolutePath: string): Promise<boolean> => {
   try {
     await stat(absolutePath);
     return true;
   } catch {
     return false;
   }
-}
+};
 
-function parseFrontmatter(text: string): { data: Record<string, unknown>; body: string } {
-  const lines = text.split(/\r?\n/);
+const parseFrontmatterValue = (value: string): string | string[] => {
+  if (value === '[]' || value === '') {
+    return value === '[]' ? [] : '';
+  }
+  if (value.startsWith('[') && value.endsWith(']')) {
+    const inner = value.slice(1, -1).trim();
+    return inner === ''
+      ? []
+      : inner.split(',').map((entry) => entry.trim().replaceAll(/^['"]|['"]$/gu, ''));
+  }
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+  return value;
+};
+
+const parseFrontmatter = (text: string): { data: Record<string, unknown>; body: string } => {
+  const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
@@ -73,93 +80,102 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   // robust YAML support, swap in `js-yaml`; we avoid the dependency
   // because this is a manifest validator, not a skill parser.
   const data: Record<string, unknown> = {};
-  for (const line of yamlText.split(/\r?\n/)) {
-    const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (m === null) continue;
-    const [, key, rawValue] = m;
-    if (rawValue === undefined) continue;
-    const value = rawValue.trim();
-    if (value === '[]' || value === '') {
-      data[key] = value === '[]' ? [] : '';
+  for (const line of yamlText.split(/\r?\n/u)) {
+    const m = /^(?<key>[A-Za-z][A-Za-z0-9_-]*):\s*(?<rawValue>.*)$/u.exec(line);
+    const key = m?.groups?.key;
+    const rawValue = m?.groups?.rawValue;
+    if (key === undefined || rawValue === undefined) {
       continue;
     }
-    if (value.startsWith('[') && value.endsWith(']')) {
-      // basic array of strings
-      const inner = value.slice(1, -1).trim();
-      data[key] =
-        inner === ''
-          ? []
-          : inner.split(',').map((entry) => entry.trim().replace(/^["']|["']$/g, ''));
-    } else if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      data[key] = value.slice(1, -1);
-    } else {
-      data[key] = value;
-    }
+    const value = rawValue.trim();
+    data[key] = parseFrontmatterValue(value);
   }
   const body = lines.slice(close + 1).join('\n');
-  return { data, body };
-}
+  return { body, data };
+};
 
 describe('kimi.plugin.json manifest', () => {
   it('exists and parses as valid JSON', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(typeof manifest).toBe('object');
     expect(manifest).not.toBeNull();
   });
 
   it('has a "name" matching the Kimi Code PLUGIN_NAME_REGEX', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(typeof manifest.name).toBe('string');
     expect(manifest.name).toMatch(PLUGIN_NAME_REGEX);
   });
 
+  it('keeps the plugin version aligned with package metadata', async () => {
+    const [manifest, pkg] = await Promise.all([
+      readJson('kimi.plugin.json'),
+      readJson('package.json'),
+    ]);
+    expect(manifest.version).toBe(pkg.version);
+  });
+
   it('has "skills" field that starts with "./"', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
-    expect(manifest.skills).toBeDefined();
-    if (Array.isArray(manifest.skills)) {
-      expect(manifest.skills.length).toBeGreaterThan(0);
-      for (const entry of manifest.skills) {
-        expect(entry.startsWith('./')).toBe(true);
+    const manifest = await readJson('kimi.plugin.json');
+    const { skills } = manifest;
+    expect(skills).toBeDefined();
+    if (isUnknownArray(skills)) {
+      expect(skills.length).toBeGreaterThan(0);
+      for (const entry of skills) {
+        expect(typeof entry).toBe('string');
+        if (typeof entry === 'string') {
+          expect(entry.startsWith('./')).toBe(true);
+        }
       }
     } else {
-      expect(typeof manifest.skills).toBe('string');
-      expect(manifest.skills?.startsWith('./')).toBe(true);
+      expect(typeof skills).toBe('string');
+      if (typeof skills === 'string') {
+        expect(skills.startsWith('./')).toBe(true);
+      }
     }
   });
 
+  it('declares native plugin slash commands', async () => {
+    const manifest = await readJson('kimi.plugin.json');
+    expect(manifest.commands).toBe('./commands/');
+  });
+
   it('has "sessionStart.skill" pointing at the orchestrator skill', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(manifest.sessionStart).toBeDefined();
-    expect(manifest.sessionStart?.skill).toBe('orchestrator');
+    const sessionStart = isJsonObject(manifest.sessionStart) ? manifest.sessionStart : undefined;
+    expect(sessionStart?.skill).toBe('orchestrator');
     const skillPath = path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md');
     expect(await pathExists(skillPath)).toBe(true);
   });
 
+  it('uses the native systemPromptPath for global rules', async () => {
+    const manifest = await readJson('kimi.plugin.json');
+    expect(manifest.systemPromptPath).toBe('./SYSTEM.md');
+    expect(await pathExists(path.join(PACKAGE_ROOT, 'SYSTEM.md'))).toBe(true);
+  });
+
   it('includes required interface fields', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(manifest.interface).toBeDefined();
-    expect(manifest.interface?.displayName).toBeDefined();
-    expect(manifest.interface?.shortDescription).toBeDefined();
-    expect(manifest.interface?.longDescription).toBeDefined();
-    expect(manifest.interface?.developerName).toBeDefined();
-    expect(manifest.interface?.websiteURL).toBeDefined();
+    const manifestInterface = isJsonObject(manifest.interface) ? manifest.interface : undefined;
+    expect(manifestInterface?.displayName).toBeDefined();
+    expect(manifestInterface?.shortDescription).toBeDefined();
+    expect(manifestInterface?.longDescription).toBeDefined();
+    expect(manifestInterface?.developerName).toBeDefined();
+    expect(manifestInterface?.websiteURL).toBeDefined();
   });
 
   it('includes author with name', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
-    expect(manifest.author?.name).toBeDefined();
+    const manifest = await readJson('kimi.plugin.json');
+    const author = isJsonObject(manifest.author) ? manifest.author : undefined;
+    expect(author?.name).toBeDefined();
   });
 
   it('does not include unsupported runtime fields', async () => {
-    const raw = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, 'kimi.plugin.json'), 'utf8'),
-    ) as Record<string, unknown>;
+    const raw = await readJson('kimi.plugin.json');
     const unsupported = [
       'tools',
-      'commands',
       'hooks',
       'apps',
       'inject',
@@ -174,34 +190,42 @@ describe('kimi.plugin.json manifest', () => {
 });
 
 describe('skills directory', () => {
-  it('contains all expected skills (8 specialist + 3 command)', async () => {
-    for (const skill of ALL_SKILLS) {
-      const skillPath = path.join(PACKAGE_ROOT, 'skills', skillDir(skill), 'SKILL.md');
-      expect(await pathExists(skillPath)).toBe(true);
-    }
+  it('contains all 8 methodology skills', async () => {
+    await Promise.all(
+      EXPECTED_SKILLS.map(async (skill) => {
+        const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+        expect(await pathExists(skillPath)).toBe(true);
+      }),
+    );
   });
 
-  for (const skill of ALL_SKILLS) {
-    const relDir = `skills/${skillDir(skill)}`;
+  for (const skill of EXPECTED_SKILLS) {
+    const relDir = `skills/${skill}`;
     describe(`${relDir}/SKILL.md`, () => {
       it('parses with valid frontmatter', async () => {
         const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
-        const text = await readFile(skillPath, 'utf8');
+        const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.name).toBe('string');
-        expect((data.name as string).length).toBeGreaterThan(0);
+        if (typeof data.name === 'string') {
+          expect(data.name.length).toBeGreaterThan(0);
+        }
         expect(typeof data.description).toBe('string');
-        expect((data.description as string).length).toBeGreaterThan(0);
+        if (typeof data.description === 'string') {
+          expect(data.description.length).toBeGreaterThan(0);
+        }
         expect(data.name).toBe(skill);
         expect(data.type).toBe('prompt');
       });
 
       it('has a whenToUse field', async () => {
         const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
-        const text = await readFile(skillPath, 'utf8');
+        const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.whenToUse).toBe('string');
-        expect((data.whenToUse as string).trim().length).toBeGreaterThan(0);
+        if (typeof data.whenToUse === 'string') {
+          expect(data.whenToUse.trim().length).toBeGreaterThan(0);
+        }
       });
     });
   }
@@ -209,7 +233,7 @@ describe('skills directory', () => {
   it('orchestrator skill mentions AgentSwarm and the 7-specialist table', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     expect(text).toContain('AgentSwarm');
     // The 7 specialist names appear in the orchestrator routing table.
@@ -226,37 +250,64 @@ describe('skills directory', () => {
     }
   });
 
+  it('preserves the plan-to-coder capability split', async () => {
+    const orchestrator = await readFile(
+      path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
+      'utf-8',
+    );
+    const builder = await readFile(
+      path.join(PACKAGE_ROOT, 'skills', 'builder', 'SKILL.md'),
+      'utf-8',
+    );
+
+    expect(orchestrator).toMatch(/Subagent profile.*`plan`/u);
+    expect(orchestrator).toMatch(/do \*\*not\*\* have .*Write.*Edit/iu);
+    expect(orchestrator).toContain('builder | `coder`');
+    expect(builder).toMatch(/Subagent profile.*`coder`/u);
+    expect(builder).toMatch(/Write, Edit/u);
+    expect(orchestrator).toContain('Runtime Authority');
+  });
+
   it('reviewer skill has the explicit do-not-edit constraint near the top', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf-8');
     const head = text.slice(0, 1500);
-    expect(head).toMatch(/do not edit/i);
+    expect(head).toMatch(/do not edit/iu);
   });
 
   it('adventurer skill has the explicit read-only Bash constraint near the top', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'adventurer', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     const head = text.slice(0, 2000);
-    expect(head).toMatch(/read-only/i);
-    expect(head).toMatch(/Bash/);
+    expect(head).toMatch(/read-only/iu);
+    expect(head).toMatch(/Bash/u);
   });
 });
 
-describe('rules/AGENTS.md', () => {
-  it('exists', async () => {
-    const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
-    expect(await pathExists(rulesPath)).toBe(true);
-  });
+describe('native plugin commands', () => {
+  for (const command of EXPECTED_COMMANDS) {
+    it(`commands/${command}.md exists with command frontmatter`, async () => {
+      const commandPath = path.join(PACKAGE_ROOT, 'commands', `${command}.md`);
+      expect(await pathExists(commandPath)).toBe(true);
+      const text = await readFile(commandPath, 'utf-8');
+      const { data, body } = parseFrontmatter(text);
+      expect(data.name).toBe(command);
+      expect(typeof data.description).toBe('string');
+      expect(body).toContain(`[MODE: ${command}]`);
+    });
+  }
+});
 
+describe('SYSTEM.md plugin instructions', () => {
   it('is under the 32 KB Kimi Code truncation budget', async () => {
-    const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
+    const rulesPath = path.join(PACKAGE_ROOT, 'SYSTEM.md');
     const stats = await stat(rulesPath);
-    expect(stats.size).toBeLessThanOrEqual(AGENTS_MD_MAX_BYTES);
+    expect(stats.size).toBeLessThanOrEqual(SYSTEM_PROMPT_MAX_BYTES);
   });
 
   it('contains the 7-specialist delegation table', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'SYSTEM.md'), 'utf-8');
     for (const specialist of [
       'adventurer',
       'architect',
@@ -268,97 +319,19 @@ describe('rules/AGENTS.md', () => {
     ]) {
       expect(text).toContain(specialist);
     }
-    // All three sections from the opencode rules are preserved.
-    expect(text).toContain('## Orchestration');
-    expect(text).toContain('## Delegation');
-    expect(text).toContain('## Context Management');
+    // The compact shared contract preserves its behavioral layers.
+    expect(text).toContain('## Outcome and Scope');
+    expect(text).toContain('## Delegation and Context');
+    expect(text).toContain('## Acceptance and Blind Review');
+    expect(text).not.toContain('## Work Unit and Child Budgets');
   });
 });
 
 describe('package.json', () => {
   it('has the expected name, private flag, and files', async () => {
-    const pkg = await readJson<Record<string, unknown>>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.name).toBe('@maestria/kimi-code');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
   });
-});
-
-describe('tool name PascalCase compliance', () => {
-  const CANONICAL_TOOLS = new Set([
-    'Read',
-    'Write',
-    'Edit',
-    'Grep',
-    'Glob',
-    'ReadMediaFile',
-    'Bash',
-    'WebSearch',
-    'FetchURL',
-    'Agent',
-    'AgentSwarm',
-    'Skill',
-    'AskUserQuestion',
-    'TodoList',
-    'EnterPlanMode',
-    'ExitPlanMode',
-    'TaskList',
-    'TaskOutput',
-    'TaskStop',
-    'CronCreate',
-    'CronList',
-    'CronDelete',
-  ]);
-
-  // Known non-tool backtick words commonly found in skill files
-  const ALLOWED_VARIATIONS = new Set([
-    'explore',
-    'plan',
-    'coder', // subagent types
-    'fein',
-    'sonar',
-    'blitz', // workflow modes
-    'praise',
-    'suggestion',
-    'issue',
-    'nitpick',
-    'question', // conventional comments
-    'opensrc', // skill name, not a tool
-    'vp',
-    'pnpm',
-    'npm',
-    'npx',
-    'node',
-    'git',
-    'curl', // CLI commands
-  ]);
-
-  for (const skill of ALL_SKILLS) {
-    const relDir = `skills/${skillDir(skill)}`;
-    it(`${relDir}/SKILL.md has PascalCase tool references`, async () => {
-      const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
-      const text = await readFile(skillPath, 'utf8');
-      // Find all backtick-quoted words
-      const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/g) || [];
-      const violations: string[] = [];
-      for (const match of backtickWords) {
-        const word = match.slice(1, -1); // strip backticks
-        // Skip things that start with lowercase (unlikely to be tools)
-        if (word[0] === word[0]?.toLowerCase()) continue;
-        // Skip known non-tool words
-        if (ALLOWED_VARIATIONS.has(word)) continue;
-        // If it looks like a tool name (PascalCase) but isn't in canonical list
-        if (CANONICAL_TOOLS.has(word)) continue;
-        // Check for potential Kimi Code tool names that might be missing
-        // We flag unrecognized PascalCase as warnings
-        violations.push(word);
-      }
-      // Allow violations to be empty - no assertions needed
-      // This test is meant for monitoring, not blocking
-      // (since skill references may vary)
-      if (violations.length > 0) {
-        console.warn(`Unrecognized PascalCase references in ${skill}: ${violations.join(', ')}`);
-      }
-    });
-  }
 });

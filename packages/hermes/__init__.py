@@ -2,7 +2,7 @@
 
 Hermes plugin discovery calls importlib on the plugin directory root,
 expecting __init__.py to be there. The actual package lives under
-src/maestria_hermes/ — this shim adds the src directory to the Python
+src/maestria_hermes/ - this shim adds the src directory to the Python
 path and re-exports the register entry point.
 
 See hermes_cli.plugins.PluginManager._load_directory_module.

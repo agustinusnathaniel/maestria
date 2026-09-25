@@ -3,28 +3,99 @@ title: Changelog
 description: Release history for @maestria/hermes.
 ---
 
+## Unreleased
+
+- Project customization (`.maestria/workflow.md` then `.maestria/rules.md`) loads as subordinate guidance, re-read every `pre_llm_call` turn with a visible error banner; see the [methodology changelog](/core/changelog/).
+
+## 0.1.20 (2026-09-18)
+
+- Consistent PR delivery contract with proportional documentation assessment; see the [methodology changelog](/core/changelog/).
+
+## 0.1.19 (2026-09-17)
+
+- Stricter visual delivery evidence contract, with capture, PR-body publication, and readback as distinct stages; see the [methodology changelog](/core/changelog/).
+
+## 0.1.18 (2026-09-16)
+
+- Defined when Sonar research is complete, with Blitz reusing valid context and switching routes for investigation or design work; see the [methodology changelog](/core/changelog/).
+
+## 0.1.17 (2026-09-11)
+
+- Removed dead role and permission scaffolding that ADR-HM-002 already recorded as removed, unified slash-command mode text, and restored the fail-closed denial for unknown mode values; generated skill guidance no longer describes the removed role model.
+
+## 0.1.16 (2026-09-06)
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.15 (2026-09-04)
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.14 (2026-09-03)
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.13 (2026-08-12)
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.12 (2026-08-11)
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+- Hardened the Hermes adapter by wiring native session and subagent lifecycle trust, immutable mode and child safety allowlists, and the current Hermes plugin registration contracts.
+
+## 0.1.11 (2026-08-04)
+
+### Fixed
+
+- Fixed the Hermes delegation rules adaptation in the synced global rules. The route-scoped rewrite of the canonical Delegation section had left a sync `findAndReplace` transform silently no-oping, so the generated `global-rules/SKILL.md` shipped the raw canonical wording instead of the Hermes adaptation. Hermes agents again get the correct guidance: on focused/full routes, use only the 7 maestria specialists and never delegate to Hermes' built-in `explore` or `general` agents, which bypass the pipeline.
+
+## 0.1.10 (2026-08-03)
+
+### Selective routing contract
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.9 (2026-07-29)
+
+### Rule-override conditions and communication conventions
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.8 (2026-07-28)
+
+### Blind review and fail-loud iteration exit
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.1.7 (2026-07-22)
+
+### Directive recomposition
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
 ## 0.1.6 (2026-07-21)
 
-- Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## 0.1.5 (2026-07-21)
 
 ### Compact agent directives
 
-Agent directives compressed to cut orchestrator context usage by ~38% without removing rules or intent.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## 0.1.4 (2026-07-17)
 
 ### Changed
 
-- **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead — no action needed on your part.
+- **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead - no action needed on your part.
 
 ## 0.1.3 (2026-07-17)
 
 ### Added
 
 - **pre_gateway_dispatch hook**: Intercepts `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan` commands before the agent-busy check
-- **Role-based permission enforcement**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforces per-specialist tool restrictions
+- **Role-based permission enforcement (historical implementation)**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforced per-specialist tool restrictions
 - **Transform hook**: Write operations in fein/blitz mode append methodology annotation to tool results
 
 ### Fixed
@@ -35,11 +106,11 @@ Agent directives compressed to cut orchestrator context usage by ~38% without re
 
 ### Fixed
 
-- Plugin loading failure due to `src/` layout — added root `__init__.py` shim
+- Plugin loading failure due to `src/` layout - added root `__init__.py` shim
 
 ## 0.1.1 (2026-07-16)
 
-Initial release — same as 0.1.0 (versioning alignment).
+Initial release - same as 0.1.0 (versioning alignment).
 
 ## 0.1.0 (2026-07-16)
 
@@ -51,16 +122,16 @@ Initial release — same as 0.1.0 (versioning alignment).
 - `pre_llm_call` hook for mode injection into user message
 - `pre_tool_call` hook for mode-based tool gating (sonar write-block)
 - `llm_execution` middleware (opt-in mode footer via `MAESTRIA_MODE_FOOTER=1`)
-- 6 slash commands: `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`
+- 7 slash commands: `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear`, `/review`, `/plan`
 - OpenCode CLI routing tool (`opencode_route`) for delegating complex coding tasks
 - Subagent lifecycle hooks (`subagent_start`/`stop` for pipeline tracking)
 - Session lifecycle hooks (`on_session_start`/`end`)
 - `transform_tool_result` hook (observer-mode write logging)
-- Distribution via `hermes plugins install` (git-based, not PyPI)
+- Distribution via `hermes plugins install` from this repository (git-based)
 
 ### Changed (post-release design doc alignment)
 
-- Memory engine agnosticism — removed stale Mnemosyne integration claim, removed memory/kanban probes
+- Memory engine agnosticism - removed stale Mnemosyne integration claim, removed memory/kanban probes
 - Dead code removed: `memory.py` (MemoryManager.record() never called)
 - Cross-platform detection: `shutil.which()` replaces `subprocess.run(["which", ...])`
 - Plugin check: `node -e "require(...)"` replaces fragile npm filesystem walker

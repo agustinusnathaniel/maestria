@@ -1,12 +1,65 @@
 /* ============================================
+   TAILWIND LAYERS
+   ============================================ */
+
+@layer base, starlight, theme, components, utilities;
+
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* ============================================
    FONTS
    ============================================ */
 
 @import '@fontsource-variable/alan-sans';
+@import '@fontsource-variable/jetbrains-mono';
 @import '@fontsource-variable/sn-pro';
 @import '@fontsource-variable/sn-pro/wght-italic.css';
 
-/* Dark mode colors. */
+/* ============================================
+   TAILWIND THEME
+   ============================================ */
+
+@theme {
+  --font-sans: 'SN Pro Variable', sans-serif;
+  --font-heading: 'Alan Sans Variable', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --color-home-bg: #0b0d0b;
+  --color-home-surface: #111411;
+  --color-home-surface-raised: #171b17;
+  --color-home-border: rgba(240, 245, 239, 0.16);
+  --color-home-border-strong: rgba(240, 245, 239, 0.34);
+  --color-home-text: #f1f4ef;
+  --color-home-text-soft: #c4cbc2;
+  --color-home-text-muted: #899289;
+  --color-home-accent: #b7ef5f;
+  --color-home-accent-strong: #cdf58a;
+  --color-home-accent-ink: #0b0d0b;
+  --color-home-focus: #b7ef5f;
+
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 640px;
+  --breakpoint-lg: 768px;
+  --breakpoint-xl: 900px;
+  --breakpoint-2xl: 1100px;
+}
+
+/* ============================================
+   MONOSPACE SYSTEM
+   ============================================ */
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+}
+
+/* ============================================
+   STARLIGHT OVERRIDES (dark mode)
+   ============================================ */
+
 :root {
   --sl-color-accent-low: #072d00;
   --sl-color-accent: #247f00;
@@ -19,8 +72,9 @@
   --sl-color-gray-5: #303c2d;
   --sl-color-gray-6: #1f2a1c;
   --sl-color-black: #151a13;
+  --sl-font: 'SN Pro Variable', sans-serif;
 }
-/* Light mode colors. */
+
 :root[data-theme='light'] {
   --sl-color-accent-low: #c0e2b8;
   --sl-color-accent: #165800;
@@ -34,25 +88,25 @@
   --sl-color-gray-6: #eaf0e8;
   --sl-color-gray-7: #f4f7f3;
   --sl-color-black: #ffffff;
-}
 
-:root {
-  --sl-font: 'SN Pro Variable', sans-serif;
+  /* Tailwind theme tokens for light mode */
+  --color-home-bg: #f3f5ef;
+  --color-home-surface: #ffffff;
+  --color-home-surface-raised: #e9ede4;
+  --color-home-border: rgba(15, 20, 13, 0.14);
+  --color-home-border-strong: rgba(15, 20, 13, 0.32);
+  --color-home-text: #141713;
+  --color-home-text-soft: #434a3e;
+  --color-home-text-muted: #5f6858;
+  --color-home-accent: #1c5b1e;
+  --color-home-accent-strong: #144816;
+  --color-home-accent-ink: #f3f5ef;
+  --color-home-focus: #1c5b1e;
 }
 
 /* ============================================
-   HEADING FONTS (documentation pages only;
-   the homepage overrides these below)
+   HOMEPAGE - UNLAYERED (preserves specificity)
    ============================================ */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Alan Sans Variable', serif;
-}
 
 /* ============================================
    LANDING PAGE - SHELL
@@ -65,9 +119,8 @@ h6 {
 }
 
 /* Homepage shell: the page is a full-bleed canvas. The content-panel padding
-   and the Starlight content width are removed only on the homepage; a
-   `.home-inner` wrapper inside `.home` restores the 75rem measure, and the
-   `.home-punch` band breaks out to the full viewport between wrappers. */
+   and Starlight content width are removed only on the homepage; `.home-inner`
+   restores the 75rem measure. */
 .content-panel:has(.home) {
   padding: 0;
 }
@@ -98,11 +151,182 @@ h6 {
   margin-top: 0;
 }
 
+/* Plugin overview pages: same full-bleed canvas treatment as .home */
+.content-panel:has(.plugin-root) {
+  padding: 0;
+}
+
+.sl-container:has(.plugin-root) {
+  max-width: none;
+}
+
+.sl-container:has(.plugin-root) > * + * {
+  margin-top: 0;
+}
+
+:where(.sl-markdown-content .plugin-root)
+  :not(a, strong, em, del, span, input, code, br)
+  + :not(a, strong, em, del, span, input, code, br) {
+  margin-top: 0;
+}
+
+:where(.sl-markdown-content .plugin-root) :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0;
+}
+
+.plugin-root {
+  position: relative;
+  overflow: clip;
+  background: var(--home-bg);
+  color: var(--home-text);
+  padding-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+/* Starlight renders each plugin page's title (h1#_top) as a bare package
+   identifier above the custom hero. Browsers treat hyphens and slashes as
+   break opportunities, so narrow viewports split "@maestria/claude-code"
+   mid-identifier. Keep single-identifier titles on one line and scale them
+   to fit: 21ch measures ~11.1x the font size in Alan Sans 600, and
+   100vw/12 - 0.2rem stays under the padded panel width down to ~280px
+   viewports before the --sl-text-h1 cap takes over on wide screens. Titles
+   holding several identifiers (pi-omp: "@maestria/pi & @maestria/omp") opt
+   out via .plugin-title-wrap in the page source so they wrap between
+   identifiers at the normal size instead. */
+.page:has(.plugin-root) h1#_top {
+  white-space: nowrap;
+  font-size: min(var(--sl-text-h1), calc(100vw / 12 - 0.2rem));
+}
+
+.page:has(.plugin-title-wrap) h1#_top {
+  white-space: normal;
+  font-size: var(--sl-text-h1);
+}
+
+/* Splash shells end with the custom SiteFooter on the canvas. Starlight's
+   own footer (edit/last-updated meta + prev/next pagination) renders BELOW
+   it on the lighter body background - a visible seam in the wrong order.
+   These pages disable edit links and last-updated in frontmatter and
+   credits are off, so Starlight's footer carries only pagination there, and
+   splash landings should not paginate. Collapse it along with main's
+   trailing padding so the canvas color runs to the end of the document. */
+.page:has(.plugin-root) main footer.sl-flex,
+.page:has(.home) main footer.sl-flex {
+  display: none;
+}
+
+.page:has(.plugin-root) main,
+.page:has(.home) main {
+  padding-bottom: 0;
+}
+
+/* --------------------------------------------
+   PLUGIN PAGES - CODE BLOCKS & INLINE CODE
+   Scoped to .plugin-root so ordinary docs pages
+   keep Starlight/Expressive Code defaults.
+   -------------------------------------------- */
+
+/* Code blocks on plugin pages sit on a full-bleed canvas without Starlight's
+   markdown column, and long lines must never dead-clip at the container
+   edge. Every Expressive Code block in this scope therefore wraps, mirroring
+   EC's own `wrap` transformer: lines reflow instead of scrolling out of
+   view, so no variant (plain frames, terminal frames, or the
+   starlight-package-managers tab frames, which render the same EC markup)
+   can be cut under the copy button. `anywhere` (not EC's `break-word`) is
+   required so the min-content size of the flex/grid line boxes shrinks with
+   the viewport instead of forcing a residual horizontal overflow. */
+.plugin-root .expressive-code pre .ec-line .code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The frame's copy control (`.copy`) is a 40px button absolutely positioned
+   against the figure ~9px from the right edge, floating above the first
+   code line. Reserve that zone as a real gutter: wrapped lines stop short of
+   it via the trailing padding below, and the pre's right edge dissolves into
+   the gutter so any content that somehow does not wrap fades out instead of
+   being sliced mid-character. mask-image anchors to the element box - not
+   the scrolled content - so the exclusion holds at every row and scroll
+   offset. */
+.plugin-root .expressive-code pre {
+  overflow-x: auto;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 69px),
+    transparent calc(100% - 53px)
+  );
+  mask-image: linear-gradient(to right, #000 calc(100% - 69px), transparent calc(100% - 53px));
+}
+
+/* Trailing space in the wrapped body so text stops clear of the button
+   gutter (the button spans ~9-49px from the right edge). border-box keeps
+   the reserved gutter inside the pre's content width, and min-width: 0
+   lets the flex item shrink so wrapped blocks have no residual horizontal
+   overflow. */
+.plugin-root .expressive-code pre > code {
+  min-width: 0;
+  box-sizing: border-box;
+  padding-right: 56px;
+}
+
+/* Render the gutter as part of the block: backfill the masked strip with the
+   editor background and separate it with a hairline. Anchored to the
+   non-scrolling figure. Terminal frames render a 34px caption bar above the
+   code body, so the strip starts below it; plain frames have no visible
+   caption and start at the top. Measured across every plugin page: figures
+   are either `.is-terminal` (caption visible) or plain (caption
+   display:none). */
+.plugin-root .expressive-code figure::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 53px;
+  background: var(--sl-color-gray-6);
+  border-left: 1px solid var(--home-border);
+  border-right: 1px solid var(--home-border);
+  border-bottom: 1px solid var(--home-border);
+  pointer-events: none;
+}
+
+.plugin-root .expressive-code figure.is-terminal::after {
+  top: 34px;
+}
+
+/* Inline code chips on plugin pages: path-like literals (`pkg/a/b --flag`)
+   used to stretch edge-to-edge and break mid-token anywhere in the word.
+   Make them shrink-to-fit boxes that cap at the container width, keep a
+   hair of breathing room against adjacent text, and prefer wrapping like
+   paths. Desktop rendering is unchanged for chips shorter than the line. */
+.plugin-root code:not(pre code) {
+  display: inline-block;
+  max-width: 100%;
+  margin-inline: 0.125em;
+  overflow-wrap: anywhere;
+}
+
+/* ============================================
+   HEADING FONTS (documentation pages only;
+   the homepage overrides these below)
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Alan Sans Variable', sans-serif;
+}
+
 /* ============================================
    LANDING PAGE - TOKENS
    ============================================ */
 
-.home {
+/* Theme tokens shared by the homepage canvas (.home) and plugin overview
+   pages (.plugin-root). Shell properties stay on their own selectors below. */
+.home,
+.plugin-root {
   --home-bg: #0b0d0b;
   --home-surface: #111411;
   --home-surface-raised: #171b17;
@@ -115,35 +339,61 @@ h6 {
   --home-accent-strong: #cdf58a;
   --home-accent-ink: #0b0d0b;
   --home-focus: #b7ef5f;
-  /* The punch band is the brand's single full-bleed accent: lime with
-     near-black ink in both themes. */
-  --home-punch-bg: #b7ef5f;
-  --home-punch-ink: #0b0d0b;
-  --home-punch-ink-soft: rgba(11, 13, 11, 0.7);
+  --home-glow: rgba(183, 239, 95, 0.07);
+  --home-grid-line: rgba(240, 245, 239, 0.045);
+}
 
+.home {
+  /* Shared vertical rhythm between major homepage sections. Applied as
+     `margin-bottom` on the preceding section - never margin-top, which the
+     markdown reset below zeroes between block siblings. */
+  --home-section-gap: clamp(4.5rem, 9vw, 7rem);
   background: var(--home-bg);
   color: var(--home-text);
   max-width: 100%;
+  position: relative;
+  /* Contain the absolutely-positioned atmosphere layers (.home-glow is wider
+     than small viewports). `clip` is used instead of `hidden` so .home never
+     becomes a scroll container: sticky positioning and in-page anchors keep
+     their normal viewport-relative behavior. */
+  overflow: clip;
   /* Carry the final section gap as canvas padding. Without it, the last
      section's bottom margin collapses through .home and renders as a
      body-colored band above the footer. */
   padding-bottom: clamp(4rem, 9vw, 6rem);
 }
 
-:root[data-theme='light'] .home {
+:root[data-theme='light'] .home,
+:root[data-theme='light'] .plugin-root {
   --home-bg: #f3f5ef;
   --home-surface: #ffffff;
   --home-surface-raised: #e9ede4;
   --home-border: rgba(15, 20, 13, 0.14);
   --home-border-strong: rgba(15, 20, 13, 0.32);
   --home-text: #141713;
-  --home-text-soft: #434a3e;
+  --home-text-soft: #363d31;
   /* 5.30:1 on --home-bg (#f3f5ef), >= 4.5:1 for normal labels. */
   --home-text-muted: #5f6858;
   --home-accent: #1c5b1e;
   --home-accent-strong: #144816;
   --home-accent-ink: #f3f5ef;
   --home-focus: #1c5b1e;
+  --home-glow: rgba(28, 91, 30, 0.06);
+  --home-grid-line: rgba(15, 20, 13, 0.055);
+
+  /* Override Tailwind theme tokens for light mode */
+  --color-home-bg: #f3f5ef;
+  --color-home-surface: #ffffff;
+  --color-home-surface-raised: #e9ede4;
+  --color-home-border: rgba(15, 20, 13, 0.14);
+  --color-home-border-strong: rgba(15, 20, 13, 0.32);
+  --color-home-text: #141713;
+  --color-home-text-soft: #363d31;
+  --color-home-text-muted: #5f6858;
+  --color-home-accent: #1c5b1e;
+  --color-home-accent-strong: #144816;
+  --color-home-accent-ink: #f3f5ef;
+  --color-home-focus: #1c5b1e;
 }
 
 .home-inner {
@@ -151,9 +401,10 @@ h6 {
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 4vw, 2.5rem);
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
-.home-hero,
 .home-section {
   min-width: 0;
 }
@@ -163,348 +414,11 @@ h6 {
   font-family: var(--sl-font);
 }
 
-/* ============================================
-   LANDING PAGE - HERO
-   ============================================ */
-
-.home-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding-top: clamp(3rem, 8vw, 5.5rem);
-  /* Gap from the hero to the console, then to the punch band. */
-  margin-bottom: clamp(4.25rem, 10vw, 7rem);
-}
-
-.hero-eyebrow {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-  margin-bottom: 1.25rem;
-}
-
-/* Scoped under .home so the homepage heading token out-specifies Starlight's
-   splash hero h1 rule (`.hero h1` / compiled `h1:where(.astro-*)`). */
-.home .home-hero h1 {
-  font-size: clamp(2.75rem, 7vw, 4.75rem);
-  font-weight: 540;
-  line-height: 1.04;
-  letter-spacing: -0.045em;
-  text-wrap: balance;
-  color: var(--home-text);
-  max-width: 18ch;
-}
-
 .home h1,
 .home h2,
 .home h3,
 .home h4 {
   font-family: 'Alan Sans Variable', sans-serif;
-}
-
-.hero-lede {
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
-  line-height: 1.6;
-  color: var(--home-text-soft);
-  max-width: 40rem;
-  margin: 1.5rem auto 0;
-  text-wrap: pretty;
-}
-
-.hero-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1.75rem;
-  margin-top: 2.25rem;
-}
-
-.cta-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0.625rem 1.5rem;
-  background: var(--home-accent);
-  color: var(--home-accent-ink);
-  border: 1px solid var(--home-accent);
-  border-radius: 3px;
-  font-family: var(--sl-font);
-  font-size: 0.9375rem;
-  font-weight: 560;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    transform 100ms ease-out;
-}
-
-.cta-primary:hover {
-  background: var(--home-accent-strong);
-  border-color: var(--home-accent-strong);
-}
-
-.cta-primary:active {
-  transform: scale(0.98);
-}
-
-.cta-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 44px;
-  padding: 0.25rem 0.125rem;
-  color: var(--home-text-soft);
-  font-family: var(--sl-font);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  text-decoration: none;
-  border-bottom: 1px solid var(--home-border-strong);
-  transition:
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.cta-text:hover {
-  color: var(--home-text);
-  border-color: var(--home-accent);
-}
-
-.cta-arrow {
-  transition: transform 120ms ease;
-}
-
-.cta-text:hover .cta-arrow {
-  transform: translateX(3px);
-}
-
-/* ============================================
-   HERO CONSOLE
-   ============================================ */
-
-.hero-console {
-  max-width: 1120px;
-  width: 100%;
-  margin-inline: auto;
-  /* Gap from the console to the punch band (collapses through .home-inner). */
-  margin-bottom: clamp(4.25rem, 10vw, 7rem);
-  min-height: 360px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--home-border);
-  border-radius: 3px;
-  background: var(--home-surface);
-}
-
-.console-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
-  padding: 0.625rem 1rem;
-  border-bottom: 1px solid var(--home-border);
-}
-
-.console-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--home-text);
-}
-
-.console-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 1px;
-  background: var(--home-accent);
-}
-
-.console-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  font-size: 0.75rem;
-}
-
-.console-count {
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--home-text-soft);
-}
-
-.console-note {
-  color: var(--home-text-muted);
-}
-
-.console-body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.console-col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.console-workspace,
-.console-inspector {
-  border-left: 1px solid var(--home-border);
-}
-
-.console-col-label,
-.stage-label {
-  padding: 0.625rem 0.9rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-  border-bottom: 1px solid var(--home-border);
-}
-
-.console-stage + .console-stage {
-  border-top: 1px solid var(--home-border);
-}
-
-.stage-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.625rem 0.9rem;
-  font-size: 0.8125rem;
-  min-width: 0;
-}
-
-.stage-row + .stage-row {
-  border-top: 1px solid var(--home-border);
-}
-
-.stage-role {
-  color: var(--home-text);
-  font-weight: 560;
-  white-space: nowrap;
-}
-
-.stage-task {
-  color: var(--home-text-muted);
-  text-align: right;
-}
-
-.stage-artifact {
-  color: var(--home-text-soft);
-  font-size: 0.75rem;
-  text-align: right;
-}
-
-.ws-row,
-.insp-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.625rem 0.9rem;
-  min-width: 0;
-}
-
-.ws-row + .ws-row,
-.insp-row + .insp-row {
-  border-top: 1px solid var(--home-border);
-}
-
-.ws-phase {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--home-accent);
-  white-space: nowrap;
-}
-
-.ws-item {
-  font-size: 0.8125rem;
-  color: var(--home-text-soft);
-  text-align: right;
-}
-
-.ws-state {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-  white-space: nowrap;
-}
-
-.insp-k {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-  white-space: nowrap;
-}
-
-.insp-v {
-  font-size: 0.8125rem;
-  color: var(--home-text-soft);
-  text-align: right;
-}
-
-/* ============================================
-   PUNCH BAND
-   ============================================ */
-
-.home-punch {
-  width: 100%;
-  background: var(--home-punch-bg);
-  color: var(--home-punch-ink);
-  /* Gap from the punch band to the next section (collapses through the
-     following .home-inner). */
-  margin-bottom: clamp(5rem, 12vw, 9rem);
-}
-
-.punch-inner {
-  max-width: 75rem;
-  margin-inline: auto;
-  padding: clamp(2.75rem, 6vw, 4.25rem) clamp(1.25rem, 4vw, 2.5rem);
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-.punch-num {
-  display: block;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 560;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  color: var(--home-punch-ink);
-}
-
-.punch-label {
-  display: block;
-  margin-top: 0.625rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--home-punch-ink-soft);
 }
 
 /* ============================================
@@ -534,545 +448,58 @@ h6 {
   text-wrap: balance;
 }
 
-/* Section-to-section rhythm. Deliberately uneven, scaled down on mobile.
-   Each gap is a `margin-bottom` on the preceding section because the
-   homepage reset zeroes `margin-top` between block siblings. The docs-map
-   is the last section; its bottom gap is carried by .home's
-   padding-bottom so it stays on the canvas background. */
-.principles {
-  margin-bottom: clamp(6rem, 14vw, 11rem);
-}
-
-.agent-system {
-  margin-bottom: clamp(4.5rem, 11vw, 8rem);
-  scroll-margin-top: calc(var(--sl-nav-height) + 2rem);
-}
-
-.platforms {
-  margin-bottom: clamp(5.5rem, 13vw, 10rem);
-}
+/* Section-to-section rhythm. One shared token (--home-section-gap) keeps
+   every inter-section gap in the same fluid scale; the adapters section
+   uses a slightly smaller pre-band variant (never below 4rem). Each gap is
+   a `margin-bottom` on the preceding section because the homepage reset
+   zeroes `margin-top` between block siblings. The docs-map is the last
+   section; its bottom gap is carried by .home's padding-bottom so it stays
+   on the canvas background. */
 
 /* ============================================
-   PRINCIPLES
+   HERO ATMOSPHERE
+   Fixed-position decoration layers inside .home.
+   Purely decorative; content wrappers must sit above them.
    ============================================ */
 
-.principles-cols {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.principle {
-  padding: 0 clamp(1.5rem, 3vw, 2.5rem);
-  border-left: 1px solid var(--home-border);
-  min-width: 0;
-}
-
-.principle:first-child {
-  border-left: 0;
-  padding-left: 0;
-}
-
-.principle:last-child {
-  padding-right: 0;
-}
-
-.principle-mark {
-  width: 26px;
-  height: 26px;
-  color: var(--home-text-muted);
-  margin-bottom: 1.25rem;
-}
-
-.principle h3 {
-  font-size: 1.125rem;
-  font-weight: 560;
-  letter-spacing: -0.01em;
-  color: var(--home-text);
-  margin-bottom: 0.5rem;
-}
-
-.principle p {
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  color: var(--home-text-soft);
-}
-
-/* ============================================
-   AGENT SYSTEM
-   ============================================ */
-
-.agent-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
-  gap: clamp(1.5rem, 3vw, 2.5rem);
-  align-items: start;
-}
-
-.agent-tabs {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Override Starlight's .sl-markdown-content margin rule that adds unwanted
-   margin-top between block-level elements. */
-.sl-markdown-content .agent-tabs {
-  margin-top: 0;
-}
-
-.sl-markdown-content .agent-tab + .agent-tab {
-  margin-top: 0;
-}
-
-.agent-tab {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 44px;
-  padding: 0.5rem 0.625rem 0.5rem 0;
-  background: transparent;
-  border: 0;
-  border-top: 1px solid var(--home-border);
-  border-radius: 0;
-  color: var(--home-text-muted);
-  font-family: var(--sl-font);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: color 120ms ease;
-}
-
-.agent-tab:last-child {
-  border-bottom: 1px solid var(--home-border);
-}
-
-.agent-tab:hover {
-  color: var(--home-text);
-}
-
-.agent-tab[aria-selected='true'] {
-  color: var(--home-text);
-  font-weight: 560;
-}
-
-.agent-tab[aria-selected='true']::before {
-  content: '';
+.home-glow {
   position: absolute;
-  inset-inline-start: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--home-accent);
+  top: -18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(75rem, 130vw);
+  aspect-ratio: 2 / 1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse closest-side, var(--home-glow), transparent 70%);
+  pointer-events: none;
 }
 
-.agent-mark {
-  width: 20px;
-  height: 20px;
-  flex: none;
-}
-
-.agent-tab[aria-selected='true'] .agent-mark {
-  color: var(--home-accent);
-}
-
-.agent-panels {
-  border: 1px solid var(--home-border);
-  border-radius: 3px;
-  background: var(--home-surface);
-  min-height: 24rem;
-}
-
-.agent-panel {
-  padding: clamp(1.5rem, 3vw, 2rem);
-}
-
-.agent-panel[hidden] {
-  display: none;
-}
-
-.panel-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.panel-mark {
-  width: 28px;
-  height: 28px;
-  flex: none;
-  color: var(--home-text-muted);
-  margin-top: 0.2rem;
-}
-
-.panel-head h3 {
-  font-size: clamp(1.375rem, 2.5vw, 1.75rem);
-  font-weight: 560;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--home-text);
-  margin: 0;
-}
-
-.agent-role {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-  font-weight: 550;
-  color: var(--home-accent);
-}
-
-.agent-desc {
-  margin-top: 1.25rem;
-  max-width: 46rem;
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  color: var(--home-text-soft);
-}
-
-.agent-meta {
-  margin: 1.75rem 0 0;
-  padding: 0;
-  border-top: 1px solid var(--home-border);
-}
-
-.agent-meta > div {
-  display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
-  gap: 1rem;
-  padding: 0.8125rem 0;
-  border-bottom: 1px solid var(--home-border);
-}
-
-.agent-meta dt,
-.agent-meta dd {
-  margin: 0;
-  padding-inline-start: 0;
-}
-
-.agent-meta dt {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-}
-
-.agent-meta dd {
-  font-size: 0.875rem;
-  color: var(--home-text-soft);
-}
-
-/* ============================================
-   PLATFORMS
-   ============================================ */
-
-.platform-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 1px solid var(--home-border);
-  border-left: 1px solid var(--home-border);
-}
-
-.platform-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4rem;
-  padding: clamp(1.25rem, 2.5vw, 1.75rem);
-  border-right: 1px solid var(--home-border);
-  border-bottom: 1px solid var(--home-border);
-  background: transparent;
-  text-decoration: none;
-  color: inherit;
-  min-width: 0;
-  transition: background-color 120ms ease;
-}
-
-.cell-mark {
-  width: 22px;
-  height: 22px;
-  color: var(--home-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.cell-name {
-  font-size: 1.0625rem;
-  font-weight: 560;
-  letter-spacing: -0.01em;
-  color: var(--home-text);
-  transition: color 120ms ease;
-}
-
-.cell-desc {
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: var(--home-text-muted);
-}
-
-.cell-arrow {
-  margin-top: 0.75rem;
-  color: var(--home-text-muted);
-  transition:
-    color 120ms ease,
-    transform 120ms ease;
-}
-
-/* ============================================
-   DOCS MAP
-   ============================================ */
-
-.docs-group-label {
-  margin: 2.25rem 0 0;
-  padding-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-}
-
-.docs-group:first-child .docs-group-label {
-  margin-top: 0;
-}
-
-.docs-row {
-  display: grid;
-  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 1rem;
-  padding: 0.875rem 0.125rem;
-  border-top: 1px solid var(--home-border);
-  text-decoration: none;
-  min-width: 0;
-}
-
-.docs-group .docs-row:last-child {
-  border-bottom: 1px solid var(--home-border);
-}
-
-.docs-row-title {
-  font-size: 0.9375rem;
-  font-weight: 560;
-  color: var(--home-text);
-  transition: color 120ms ease;
-}
-
-.docs-row-desc {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--home-text-muted);
-}
-
-.docs-row-arrow {
-  color: var(--home-text-muted);
-  transition:
-    color 120ms ease,
-    transform 120ms ease;
-}
-
-/* ============================================
-   LANDING PAGE - INTERACTION & FOCUS
-   ============================================ */
-
-@media (hover: hover) and (pointer: fine) {
-  .platform-cell:hover {
-    background: var(--home-surface);
-  }
-
-  .platform-cell:hover .cell-name {
-    color: var(--home-accent);
-  }
-
-  .platform-cell:hover .cell-arrow {
-    color: var(--home-accent);
-    transform: translateX(3px);
-  }
-
-  .docs-row:hover .docs-row-title {
-    color: var(--home-accent);
-  }
-
-  .docs-row:hover .docs-row-arrow {
-    color: var(--home-accent);
-    transform: translateX(3px);
-  }
-}
-
-.home :is(.cta-primary, .cta-text, .agent-tab, .platform-cell, .docs-row):focus-visible {
-  outline: 2px solid var(--home-focus);
-  outline-offset: 2px;
-}
-
-/* One short fade-up on first load: the hero statement and the console.
-   No looping, no scroll choreography, no per-card reveals. */
-@keyframes home-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .home-hero {
-    animation: home-reveal 340ms ease-out 40ms both;
-  }
-
-  .hero-console {
-    animation: home-reveal 340ms ease-out 140ms both;
-  }
+.home-grid {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: clamp(30rem, 90vh, 48rem);
+  background-image:
+    linear-gradient(var(--home-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--home-grid-line) 1px, transparent 1px);
+  background-size: 4.5rem 4.5rem;
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+  pointer-events: none;
 }
 
 /* ============================================
    LANDING PAGE - RESPONSIVE
    ============================================ */
 
-@media (max-width: 1100px) {
-  .home-hero {
-    padding-top: clamp(2.5rem, 6vw, 4rem);
-    margin-bottom: clamp(3rem, 8vw, 5.5rem);
-  }
-}
-
-@media (max-width: 900px) {
-  .console-body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .console-workspace,
-  .console-inspector {
-    border-left: 0;
-    border-top: 1px solid var(--home-border);
-  }
-
-  .agent-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .principles-cols {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .principle {
-    padding: 1.5rem 0;
-    border-left: 0;
-    border-top: 1px solid var(--home-border);
-  }
-
-  .principle:first-child {
-    border-top: 0;
-    padding-top: 0;
-  }
-
-  .principle:last-child {
-    padding-bottom: 0;
-  }
-
-  .platform-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .home-hero {
-    padding-top: 1.5rem;
-    margin-bottom: 1.125rem;
-  }
-
-  .hero-eyebrow {
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .home .home-hero h1 {
-    font-size: clamp(1.875rem, 9vw, 2.5rem);
-  }
-
-  .hero-lede {
-    font-size: 0.875rem;
-    line-height: 1.55;
-    margin-top: 0.75rem;
-  }
-
-  .hero-cta {
-    margin-top: 1rem;
-    gap: 1.25rem;
-  }
-
-  .hero-console {
-    margin-bottom: 2rem;
-  }
-
-  .console-head {
-    padding: 0.4375rem 0.75rem;
-  }
-
-  .console-col-label,
-  .stage-label {
-    padding: 0.375rem 0.75rem;
-  }
-
-  .stage-row,
-  .ws-row,
-  .insp-row {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-  }
-
-  .punch-inner {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2rem;
-  }
-
-  .docs-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .docs-row-desc {
-    grid-column: 1 / -1;
-  }
-
-  .docs-row-arrow {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-}
-
-/* At <=480px the console header would otherwise wrap to three rows, crowding
-   the mobile fold. The "ILLUSTRATIVE, NOT LIVE TELEMETRY" note duplicates the
-   honesty of the status ("EXAMPLE RUN / READY") and the section's aria-label,
-   so visually remove it from layout while keeping it in the accessibility
-   tree for screen readers. */
-@media (max-width: 480px) {
-  .console-note {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
-}
-
 /* Starlight hides the header's theme switcher and social links below 50rem,
    relying on the sidebar drawer (MobileMenuFooter) to surface them instead.
-   Splash pages such as this homepage have no sidebar, so there is no mobile
-   fallback and the controls become unreachable. Restore them in the header
-   on the homepage only: scoped to the splash shell without a sidebar and a
-   `.home` wrapper, so docs pages and the 404/pi-omp splash pages keep their
-   existing behavior. */
+   Sidebar-less splash shells - the `.home` homepage and the `.plugin-root`
+   plugin overview pages - have no drawer fallback, so those controls would
+   be unreachable there. Restore them in the header for these shells only;
+   docs pages, which do have a sidebar, keep Starlight's default behavior. */
 @media (max-width: 50rem) {
-  :root:not([data-has-sidebar]):has(.home) .right-group {
+  :root:not([data-has-sidebar]):has(.home) .right-group,
+  :root:not([data-has-sidebar]):has(.plugin-root) .right-group {
     display: flex;
   }
 }
@@ -1118,31 +545,22 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-
-  .home-hero,
-  .hero-console {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  /* Homepage surfaces are opaque by design; nothing depends on translucency. */
-  .home-hero,
-  .hero-console {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 @media (prefers-contrast: more) {
-  .home {
+  .home,
+  .plugin-root {
     --home-border: rgba(240, 245, 239, 0.4);
     --home-border-strong: rgba(240, 245, 239, 0.66);
+    --color-home-border: rgba(240, 245, 239, 0.4);
+    --color-home-border-strong: rgba(240, 245, 239, 0.66);
   }
 
-  :root[data-theme='light'] .home {
+  :root[data-theme='light'] .home,
+  :root[data-theme='light'] .plugin-root {
     --home-border: rgba(15, 20, 13, 0.4);
     --home-border-strong: rgba(15, 20, 13, 0.66);
+    --color-home-border: rgba(15, 20, 13, 0.4);
+    --color-home-border-strong: rgba(15, 20, 13, 0.66);
   }
 }

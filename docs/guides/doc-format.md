@@ -1,128 +1,97 @@
-# Documentation Format: Motivation, Goals, and Non-Goals
+# Documentation Format: Internal Conventions
 
-> This is an internal convention guide, not a formal ADR.
+## Purpose and audience
 
-## Context
+Use these conventions for new documents and substantial rewrites. Internal documentation preserves scope, rationale, and evidence; public documentation helps consumers install and use Maestria without repository context.
 
-This guide describes how we structure decision records and project documentation. It was inspired by the [Agent Trace RFC](https://agent-trace.dev/) format - Motivation → Goals → Non-Goals → Specification - which directly addresses gaps in our earlier documentation.
+## Choose a template
 
-Our documentation has grown alongside the project: several ADRs, a README, agent files, and global rules. The ADR format has served us well, but as we move from a single-plugin project to a multi-harness ecosystem (Kimi Code plugin, Hermes, Eve meta-agent), gaps in the format are becoming costly.
+- [Published package README](#published-package-readme): explain the package, installation, capabilities, and support boundaries.
+- [ADR](#new-adrs): record a decision, its rationale, alternatives, and consequences.
+- [Plan](#plans): define scoped work and how to verify and roll it back.
+- [Note or guide](#notes-and-guides): record purpose, audience, dated evidence, and next step.
 
-### Pain Points
+Apply the requirements below to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template. Changelogs keep their chronological format; JSDoc, docstrings, and inline comments are outside this guide. There is no format linter or schema gate. Put deliberately deferred work in **Future Considerations**, not **Non-Goals**.
 
-1. **Scope creep in decisions.** Returning to a decision document weeks later, the original intent is fuzzy. Without explicit boundaries, decisions expand beyond their original scope during implementation. What starts as "add a tool-guidance rule" becomes a full permission-model rewrite because nothing says where the scope stops.
+These conventions make scope and rejected alternatives easier to review, and keep internal rationale from reading like a product promise. They add authoring overhead; the goal is recoverable reasoning, not uniform document length.
 
-2. **Lost rationale.** A background section captures context but doesn't distinguish _why_ a decision was made from _what problem_ it solves. When the same problem resurfaces months later, the document doesn't answer "why did we pick X over Y?" - just "here's what happened."
+## Published package README
 
-3. **Audience confusion.** Contributors and downstream plugin authors assume the project does things it was never designed for. Non-Goals are implicit or scattered across "What We Avoid" tables, decision tables, or retrospective sections. There's no single place to find "this project does NOT do X."
+Published package READMEs are concise landing pages, not internal design records. Each README must cover:
 
-4. **Inflection point.** The project is at a structural transition (single plugin → multi-harness). Each new plugin (Kimi, Hermes, Eve) brings scope-expansion pressure. Without explicit boundaries in every decision record, the architecture drifts silently.
+| Information | What to include |
+| --- | --- |
+| Title and description | Package name and one-sentence purpose |
+| Installation or usage | One canonical command or path, plus a short verification step when useful |
+| What it provides | Shipped features, components, or artifacts |
+| Support and platform notes | Material limits, provisional status, version boundaries, and whether controls are host-enforced or methodology-only |
+| Documentation and release history | Public docs route and package changelog where available; otherwise state pre-release status |
+| Development or contributing | Optional; link to repository guidance when useful |
+| License | SPDX identifier |
 
-### Inspiration
+Use package-specific headings and target roughly 40–80 lines. Avoid standalone Motivation, Goals, and Non-Goals sections, long architecture narratives, implementation details, and repeated role descriptions. Put detailed rationale in internal documents. Link `INSTALL.md` where a package ships one; describe generation and sync in the contributing guide, not the consumer README.
 
-The [Agent Trace RFC](https://agent-trace.dev/) uses a Motivation → Goals → Non-Goals → Specification structure that directly addresses these gaps. Goals provide a testable checklist for the decision's scope; Non-Goals provide an explicit boundary for what is _deliberately excluded_. This format is common in RFC culture (IETF, Python PEPs, Rust RFCs) and has proven effective at preventing scope creep during implementation review.
+### README links
 
-Our existing ADR format (Status → Context → Decision → Consequences → Date) has the right bones but lacks these two critical structural elements. Some earlier ADRs already have de facto Non-Goals tables ("What We Avoid") or retrospective boundary sections - but neither is structured as a first-class section.
+Published READMEs render outside the repository, so links to repository files must use canonical GitHub URLs: `https://github.com/agustinusnathaniel/maestria/blob/main/<path>`. Link user-facing docs at `https://maestria.sznm.dev/<route>/`. Verify each target. Relative links and bare filenames do not resolve as links in a published README; anchor-only links are fine. Internal docs may use relative links.
 
-## Goals
+## New ADRs
 
-This guide achieves the following:
+Every new ADR must cover **Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, and Date**. Use `Proposed`, `Accepted`, or `Deprecated` for status; write the date as `YYYY-MM-DD`.
 
-1. **Consistent preamble structure** - a background section (Context for ADRs, Motivation for READMEs) followed by Goals and Non-Goals, making docs navigable by pattern rather than by content.
+- Tag material assumptions `[verified]` or `[inferred]` so readers can distinguish evidence from best-effort conclusions.
+- Record the alternatives deliberately rejected and why; preserve the evidence behind the decision.
+- Add `Lessons Learned`, `Rollback`, `Verification`, or `Related Decisions` when they help explain or operate the decision.
+- Do not rewrite historical ADRs just to match this template. Preserve their original context, decision, consequences, and date when revising them.
 
-2. **Clear scope boundaries for decisions** - Every future ADR defines what it does (Goals) and what it does not do (Non-Goals) up front. Reviewers can check "does this implementation stay within scope?" against a single list.
+The `Context` heading is retained for compatibility with existing records. The original format drew on the [Agent Trace RFC](https://agent-trace.dev/) (Motivation → Goals → Non-Goals → Specification).
 
-3. **Better contributor onboarding** - A new contributor reading an ADR or README can tell at a glance what's in scope and what's explicitly out of scope. No need to infer boundaries from prose or "What We Avoid" tables buried in subsections.
+## Plans
 
-4. **Proof by example** - This guide itself uses the new format, so readers can evaluate the format before adopting it.
+Plans must define:
 
-## Non-Goals
+| Section      | What it records                                   |
+| ------------ | ------------------------------------------------- |
+| Goal         | A testable outcome                                |
+| Scope        | Files, packages, and runtimes affected            |
+| Non-Goals    | Deliberate exclusions                             |
+| Dependencies | Prerequisites and external systems                |
+| Acceptance   | Observable completion criteria                    |
+| Verification | Checks tied to acceptance criteria                |
+| Rollback     | How to revert the work                            |
+| Status       | Draft, In review, In progress, Done, or Cancelled |
 
-This guide does NOT cover the following:
+Plans are living documents: update their status as work progresses. A plan without a rollback step is not ready for implementation.
 
-1. **Does NOT change the changelog format.** Changelogs are chronological records of changes, not specification documents. They are exempt from this format.
+## Notes and guides
 
-2. **Does NOT enforce the format programmatically.** No lint rule, CI check, or schema validation is introduced. Compliance is by convention, documented in this guide and its successor format guides.
+Notes and guides must state:
 
-3. **Does NOT apply to in-code comments.** JSDoc, docstrings, and inline comments are outside the scope of this guide. The format applies to documentation files only (ADRs, README, and similar structured docs).
+| Section        | What it records                                                                |
+| -------------- | ------------------------------------------------------------------------------ |
+| Purpose        | Why the document exists                                                        |
+| Audience       | Who should read and act on it                                                  |
+| Dated evidence | Facts and findings, their date and source, tagged `[verified]` or `[inferred]` |
+| Next step      | Follow-up action or `None - informational`                                     |
+
+Point-in-time claims need dates and sources so readers can judge whether they remain current.
+
+## Evidence and detail
+
+- Use `[verified]` for facts confirmed from code, documentation, a live run, or an immutable commit; use `[inferred]` for conclusions not directly confirmed.
+- Name the mechanism or module instead of giving line numbers. Link the source of changing facts rather than copying its inventory.
+- Do not maintain exhaustive lists of directory or registry contents. If a count helps, label it as a dated snapshot and point to its source.
+- In public docs, describe the capability and link its owning page. Do not require consumers to understand internal paths or ADR numbers.
+- When an internal rationale also defines a product boundary, explain it in both places using audience-appropriate language.
+
+## Convention history
+
+[ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) records the original fixed section order for published package READMEs. This 2026-09-25 clarification replaces that order and the default requirement for standalone Motivation, Goals, Non-Goals, and Development sections. Use concise, package-specific headings while keeping every required information item findable; Development or Contributing is optional when it helps the reader. The ADR keeps its original decision, evidence, and rationale as historical record.
+
+## Next step
+
+Choose the template that matches the reader's task. Check required content, evidence tags, and links before handoff.
 
 ## Future Considerations
 
-The following are explicitly deferred to follow-up tasks, not permanently excluded:
-
-1. **Retrofit existing ADRs (ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002) with Goals and Non-Goals sections** - planned as a follow-up task.
-
-2. **Update the README with Motivation/Goals/Non-Goals sections** - completed - see `packages/opencode/README.md`.)
-
-## Decision
-
-### ADR Template Expansion
-
-The ADR template evolves from:
-
-```
-## Status
-## Context
-## Decision
-## Consequences
-## Date
-```
-
-To:
-
-```
-## Status
-## Context          (maps to "Motivation" in RFC-style formats; retains backward compatibility with existing ADRs)
-## Goals             (NEW - bulleted list of what this ADR achieves)
-## Non-Goals         (NEW - bulleted list of what this ADR explicitly excludes)
-## Decision
-## Consequences
-## Date
-```
-
-The `## Context` section remains the primary place for background, rationale, and problem description. `## Goals` and `## Non-Goals` are additive sections that sit between Context and Decision, providing a structured scope boundary for the decision itself.
-
-### README Template Expansion (Future)
-
-README-level documentation evolves to include a section with Motivation, Goals, and Non-Goals as a preamble, before "How It Works" or "Installation". This was documented here as a goal but its execution is a separate task (completed - see `packages/opencode/README.md`.)
-
-### Template for New ADRs
-
-All new ADRs must follow the expanded format:
-
-| Section         | Required | Content                                                       |
-| --------------- | -------- | ------------------------------------------------------------- |
-| Status          | Yes      | Proposed / Accepted / Deprecated                              |
-| Context         | Yes      | Background, problem description, relevant prior decisions     |
-| Goals           | Yes      | Bulleted list of what this decision achieves (testable scope) |
-| Non-Goals       | Yes      | Bulleted list of what this decision explicitly excludes       |
-| Decision        | Yes      | The change being proposed, with rationale                     |
-| Consequences    | Yes      | Positive and negative effects of the decision                 |
-| Date            | Yes      | YYYY-MM-DD                                                    |
-| Lessons Learned | No       | Retrospective insights (added after implementation)           |
-
-### Retrofit Existing ADRs
-
-Existing ADRs (ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002) are not rewritten as part of this convention (see Future Considerations #1). A follow-up task ("ADR Retrofit: Add Goals/Non-Goals to ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002") will handle this in a separate pass. The retrofit task will:
-
-1. Extract implicit boundaries from existing "What We Avoid" tables, decision tables, and `## Lessons Learned` sections.
-2. Add `## Goals` and `## Non-Goals` sections without altering the original decision text.
-3. Preserve the original context, consequences, and date.
-
-## Consequences
-
-- Positive: Every future ADR has explicit scope boundaries - reviewers and implementers can check "is this in scope?" against a single list rather than inferring from prose
-- Positive: The Goals section provides a testable checklist for implementation completion - all goals must be addressed before the decision is considered fully implemented
-- Positive: Non-Goals prevent silent scope creep - a reviewer can point to the Non-Goals section and say "that's explicitly excluded"
-- Positive: Contributors can evaluate a project's fit at a glance - "does this project do X?" can be answered by looking at the Non-Goals section before reading implementation details
-- Positive: The format matches RFC culture (IETF, Python PEPs, Rust RFCs) - familiar to contributors from those ecosystems
-- Positive: Existing "What We Avoid" tables are formalized as a first-class section instead of a buried subsection
-- Positive: This guide proves the format by example - readers can evaluate it before adopting it
-- Negative: Adds section overhead to every ADR (~5-10 lines for Goals, ~5-10 for Non-Goals) - the payoff depends on whether the boundaries prevent more work than they add
-- Negative: Existing ADRs remain in the old format until retrofitted - creates temporary inconsistency between new and old ADRs
-- Negative: No programmatic enforcement means the format depends on reviewer discipline - an unwritten Non-Goals section is indistinguishable from a decision with no exclusions
-- Negative: Non-Goals sections can be abused as "we'll do this later" lists - the Future Considerations section mitigates this by providing a structured home for tasks that are explicitly postponed rather than permanently excluded
-
-## Date
-
-2026-06-17
+A proposed retrofit of ADR-CORE-001 through ADR-CORE-004 and ADR-OC-000 through ADR-OC-002 remains separate work. If undertaken, extract implicit boundaries into Goals and Non-Goals while preserving the original decision, context, consequences, and date.

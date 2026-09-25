@@ -1,0 +1,27 @@
+{
+  "name": "maestria",
+  "version": "0.4.10",
+  "description": "Maestria methodology for Codex CLI: specialist workflow skills, orchestration, and review contracts",
+  "author": {
+    "name": "agustinusnathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
+  "interface": {
+    "displayName": "Maestria",
+    "shortDescription": "Specialist workflow skills for Codex CLI",
+    "longDescription": "Maestria's Codex CLI integration: namespaced specialist skills, native custom-agent roles, automatic orchestration guidance, handoffs, bounded repair, and review contracts. The host retains runtime and permission enforcement.",
+    "developerName": "agustinusnathaniel",
+    "category": "Developer Tools",
+    "capabilities": ["Skills"],
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex",
+    "defaultPrompt": [
+      "Route this task through the Maestria specialists.",
+      "Review this change independently before implementation.",
+      "Create a concise handoff with evidence and blockers."
+    ]
+  },
+  "skills": "./skills/"
+}

@@ -1,18 +1,49 @@
 # @maestria/hermes
 
-Maestria methodology plugin for [Hermes Agent](https://hermes-agent.ai).
+Maestria's agent methodology - structured specialist delegation, maker/checker review, and mode-based workflows - for [Hermes Agent](https://hermes-agent.nousresearch.com), delivered as a Python plugin.
 
-Brings maestria's proven agent methodology -- pipeline composition, maker/checker split, specialist delegation, and mode-based workflows -- to the general-purpose Hermes AI agent.
+> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
+
+Install the Hermes plugin directly from this repository:
 
 ```bash
 hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
 ```
 
-This clones the maestria monorepo, extracts `packages/hermes/`, and enables the plugin. See the [user-facing docs](https://maestria.sznm.dev/hermes/getting-started/installation/) for details.
+This clones the maestria repository and enables the plugin. See the [user-facing docs](https://maestria.sznm.dev/hermes/getting-started/installation/) for details, or the [Hermes docs](https://hermes-agent.nousresearch.com) for how plugin installation works.
 
-## Documentation
+## What It Provides
 
-- [User-facing docs](https://maestria.sznm.dev/hermes/) -- installation, commands, quick start
-- [Design doc](https://github.com/agustinusnathaniel/maestria/blob/main/docs/hermes-maestria-plugin.md) -- architecture and implementation plan
+- **Skills** (12 as of 2026-09-22; see the [user-facing docs](https://maestria.sznm.dev/hermes/) for the current list) - 9 methodology skills (7 specialists + orchestrator + global rules) plus 3 command workflow skills (`/fein`, `/sonar`, `/blitz`).
+- **Workflow modes** - `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear` with mode-based tool gating (for example, sonar write-blocking).
+- **Mode prompt injection** - the active mode is injected into the model context.
+- **Project customization** - when the session working directory contains `.maestria/workflow.md` or `.maestria/rules.md`, each file that exists is appended to the injected context in deterministic order (workflow first, then rules), after the mode context. Projects without these files see no behavior change. See below for the exact failure posture.
+- **Slash commands** (7 as of 2026-09-22; see the [user-facing docs](https://maestria.sznm.dev/hermes/) for the current list) - `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear`, `/review`, `/plan`.
+- **OpenCode CLI routing** - an `opencode_route` tool for delegating complex coding tasks.
+- **Session and subagent tracking** - pipeline tracking across sessions and subagents.
+
+## Support / Platform Notes
+
+- The plugin installation path is git-based and uses Hermes's plugin manager. The repository also defines a `maestria-hermes` Python distribution, but this package README documents the Hermes plugin path rather than a separate Python installation flow.
+- Mode gating and role restrictions are applied at the tool layer; the methodology is otherwise advisory prompt guidance, not a sandbox.
+
+## Project Customization (.maestria/)
+
+Only the session working directory is read (the process working directory at call time, which the host retargets on session resume); no ancestor or nested lookup applies. The pinned `pre_llm_call` payload carries no working-directory field, so this is the closest supported root signal; concurrent gateway sessions share one process directory. Both files are read fresh in full on every model call, so edits apply on the next turn with no restart, and the injection runs through the shared turn pipeline alongside the mode context. Loaded project guidance stays subordinate: it may replace configurable workflows but never waives safety, authorization, or host permissions, and it never grants tool capability.
+
+A project file that exists but cannot be used (a directory, a special file, an unreadable or non-UTF8 file, an unresolvable link, a link resolving outside the root, or a resolved target that is not a regular file) is surfaced as a visible `[MAESTRIA PROJECT CONFIG ERROR]` banner in the injected context, naming only the relative file and the failure kind. Hermes runs `pre_llm_call` fail-open and inject-only, so the turn cannot be cancelled from this hook; the banner plus a host log warning is the supported failure signal, and the mode context is still injected alongside it. The banner advises reporting the error and waiting for the file to be fixed, without guaranteeing cancellation.
+
+## Documentation and Changelog
+
+- [User-facing documentation](https://maestria.sznm.dev/hermes/) - installation, commands, quick start
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/hermes/CHANGELOG.md)
+
+## Contributing
+
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
+
+## License
+
+MIT

@@ -1,0 +1,64 @@
+---
+title: '@maestria/codex'
+description: Codex CLI integration that packages Maestria's methodology as namespaced skills and native custom agents.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <div class="relative min-w-0">
+      <PlatformHero
+        eyebrow="@MAESTRIA/CODEX"
+        title="Maestria skills for Codex CLI."
+        lead="Install Maestria to activate the orchestrator in Codex's primary session and make seven native specialists available for delegation."
+        mark={marks.codex}
+        primaryCta={{ href: '/codex/getting-started/installation/', label: 'Get started' }}
+        secondaryCta={{ href: '/codex/getting-started/quick-start/', label: 'Quick start' }}
+        installCommand="npx maestria install codex"
+      />
+    </div>
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Seven specialists, as namespaced skills."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Specialist skills', desc: 'The seven-specialist roster as namespaced Codex skills.' },
+          { title: 'Native specialist agents', desc: 'Seven native maestria-* agent roles with Codex sandbox settings and configurable model inheritance.' },
+          { title: 'Automatic orchestration', desc: "A marked global instruction block makes Codex's primary agent use $maestria:orchestrator and delegate to native maestria-* roles." },
+          { title: 'Global rules', desc: '$maestria:global-rules carries the universal evidence, safety, authorization, and review contract.' },
+          { title: 'Bounded multi-stage work', desc: '$maestria:handoff and $maestria:iteration-limits keep long work units contained with explicit handoff and repair budgets.' },
+          { title: 'Workflow-mode skills', desc: '$maestria:fein, $maestria:sonar, and $maestria:blitz expose the workflow mode system as invocable skills.' },
+          { title: 'Advisory by design', desc: 'Read-only specialist boundaries are documented guidance; Codex sandbox, approvals, and hook trust model remain the runtime boundary.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/codex/changelog/' },
+        { label: 'Contributing', href: '/codex/contributing/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

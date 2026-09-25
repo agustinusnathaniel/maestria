@@ -1,77 +1,60 @@
 ---
 title: '@maestria/hermes'
-description: Hermes Agent plugin that brings the Maestria methodology — 7 specialists, pipeline orchestration, and mode system — to any domain.
+description: Hermes Agent plugin that brings the Maestria methodology - 7 specialists, pipeline orchestration, and mode system - to any domain.
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Methodology for Any Agent'
-  tagline: 'Install one plugin. Get 7 specialists, role-gated tool access, and discipline-aware mode switching — on the Hermes Agent platform.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /hermes/getting-started/installation/
-    - text: View on GitHub
-      icon: external
-      variant: minimal
-      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/hermes
 ---
 
-import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
 
-## How It Works
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-1. **Install the plugin** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
-2. **Plugin activates** — Registers 9 methodology skills, 6 slash commands, permission roles, and lifecycle hooks. The plugin has no startup probes for external tools — it is self-contained.
-3. **Pick your mode** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) — each enables the right specialists and tool gates
-4. **Dispatch specialists** — The orchestrator decomposes work via `delegate_task` and enforces maker/checker separation. Complex coding tasks can use the `opencode_route` tool if OpenCode CLI is installed.
-5. **Review before delivery** — Reviewer validates output before anything reaches you
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/HERMES"
+      title="Methodology for any agent."
+      lead="Install one plugin. Get 7 specialists, disciplined mode switching, and clear limits for delegated child sessions on the Hermes Agent platform."
+      mark={marks.hermes}
+      primaryCta={{ href: '/hermes/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/hermes/commands/', label: 'Commands' }}
+    />
 
-## Quick Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="A methodology worker, not a general assistant."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Methodology skills', desc: 'Activation registers 9 methodology skills plus 3 command skills and 7 slash commands.' },
+          { title: 'Disciplined mode switching', desc: '/fein runs the full pipeline, /sonar is research only, /blitz is fast implementation, /mode-clear resets neutral; each enables its specialists and tool gates.' },
+          { title: 'Role-neutral child trust', desc: 'Delegated children are read/research/LLM-only; they cannot write, execute code, shell, delegate, or invoke OpenCode.' },
+          { title: 'Trusted coding path', desc: 'Code changes and opencode_route (when the OpenCode CLI is installed) run in a trusted top-level fein session.' },
+          { title: 'Self-contained plugin', desc: 'No startup probes for external tools. Hermes discovers its hooks, commands, and skills from plugin.yaml.' },
+          { title: 'Advisory review', desc: 'Hermes has no native review gate; the reviewer pass validates output as guidance, not an enforced gate.' },
+        ]}
+      />
+    </PluginSection>
 
-```bash
-hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
-```
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/hermes/changelog/' },
+        { label: 'Contributing', href: '/hermes/contributing/' },
+      ]}
+    />
 
-The plugin is fully self-configuring — Hermes discovers its hooks, commands, and skills from `plugin.yaml`. No manual setup needed.
+    <SiteFooter />
 
-<LinkButton href="/hermes/getting-started/installation/" size="lg">
-  Installation Guide →
-</LinkButton>
-
-## Explore the Docs
-
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session with the Hermes plugin."
-    href="/hermes/getting-started/installation/"
-  />
-  <LinkCard
-    title="Commands"
-    description="Reference for all slash commands: modes, review, plan, session management."
-    href="/hermes/commands/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/hermes/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Project structure and how to extend the plugin."
-    href="/hermes/contributing/"
-  />
-</CardGrid>
-
-## Comparison: Hermes vs Other Platforms
-
-| Aspect            | @maestria/opencode   | @maestria/hermes                         |
-| ----------------- | -------------------- | ---------------------------------------- |
-| Primary domain    | Software engineering | Any domain                               |
-| Distribution      | npm plugin           | Git-based (`hermes plugins install`)     |
-| Subagent dispatch | `task()` function    | `delegate_task` (Hermes native)          |
-| Tool gating       | YAML frontmatter     | `pre_tool_call` hook                     |
-| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz` |
-| Coding path       | Built-in             | Routes to OpenCode CLI (optional)        |
-| Permissions       | Agent-level          | Role-based (`PermissionRole`)            |
+  </div>
+</div>

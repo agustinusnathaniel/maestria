@@ -1,0 +1,31 @@
+---
+title: Contributing
+description: Maintain the generated Codex CLI integration and its marketplace-facing package metadata.
+---
+
+`@maestria/codex` is generated from the canonical directives in `packages/core/agent-directives/`. The package adapts those directives to Codex's namespaced skill format and pairs them with lightweight native custom-agent templates and an instruction resource. For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/).
+
+## Package Boundary
+
+Hand-authored files are the plugin manifest (`.codex-plugin/plugin.json`), the native agent templates under `agents/`, the managed orchestration block under `instructions/`, and `sync.config.ts`. Everything under `skills/` is generated. The repository-level `.agents/plugins/marketplace.json` entry points Codex at the published npm package and is the native-install path; the Maestria CLI stages that package locally at install time, and the staging directory is not a second canonical source.
+
+## Canonical Source Workflow
+
+Edit `packages/core/agent-directives/`, never generated files under `packages/codex/skills/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/codex test
+```
+
+## Validation
+
+Run the Codex plugin-creator validator against the package and inspect the generated skill files:
+
+```bash
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
+pnpm --filter @maestria/codex test
+```
+
+The verified support boundary is Codex CLI plugin skills and native CLI installation. Codex desktop parity and runtime permission enforcement remain outside this package.

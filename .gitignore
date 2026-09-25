@@ -25,10 +25,13 @@ dist-ssr
 *.sw?
 
 .plans
-plans
+/plans
 
 # Package archives
 *.tgz
+
+# Local CLI tooling artifacts (unrelated to the repo; do not track)
+.commandcode/taste/taste.md
 
 # Plan artifacts (local execution plans)
 packages/core/agent-directives/PLAN-*.md
@@ -37,3 +40,21 @@ packages/core/agent-directives/PLAN-*.md
 __pycache__/
 *.py[cod]
 *$py.class
+*.egg-info/
+
+# Environment / secrets (never commit real credentials)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+**/handoffs/
+
+# xtarterize internal artifacts
+/.xtarterize/
+
+# Fail-closed E2E evidence (regen via pnpm e2e:fail-closed; do not track)
+/artifacts/

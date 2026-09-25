@@ -2,7 +2,7 @@
 
 This document catalogs the two design patterns that Maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
 
-If you're porting maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to OpenCode's subagents, Kimi Code's AgentSwarm, or Claude Code's hooks.
+If you're porting Maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to the target runtime's native agents, skills, commands, hooks, or extension APIs.
 
 ---
 
@@ -21,51 +21,41 @@ Input → @adventurer (recon) → @planner or @architect (plan/design)
   → @builder (implement) → @reviewer (validate) → Output
 ```
 
-Each arrow is a structured handoff, not a loose "figure it out" delegation. Planner and architect are alternatives at the same pipeline stage - the orchestrator delegates to whichever fits the task. For simple features, one suffices. For complex features, both may participate (planner scopes the work, architect evaluates approach). The output of one stage is the input briefing for the next.
+Each arrow carries a concise, material handoff, not a loose "figure it out" delegation. Planner and architect are alternatives at the same pipeline stage - the orchestrator delegates to whichever fits the task. For simple features, one suffices. For complex features, both may participate (planner scopes the work, architect evaluates approach). The output of one stage is the input briefing for the next.
 
 ### Sub-Elements
 
 #### Handoff Contract
 
-Every delegation crossing an agent boundary must be a complete briefing. Without this structure, agents lose context, invent assumptions, or produce output that doesn't connect to the next stage.
+Give each recipient the information needed to act:
 
-The contract has seven fields:
+- Relevant context and constraints.
+- Acceptance evidence.
+- Material assumptions or blockers.
+- The next step.
 
-| Field                      | Purpose                                                         |
-| -------------------------- | --------------------------------------------------------------- |
-| **Goal**                   | What to achieve and why it matters                              |
-| **Context**                | Relevant paths, constraints, prior decisions, what's been tried |
-| **Requirements**           | Specific expectations and boundaries                            |
-| **Known problems**         | Issues already identified, things to watch for                  |
-| **Assumptions documented** | Explicit assumptions made during the task and their evidence    |
-| **Success criteria**       | How to verify the work is done (the completions promise)        |
-| **Next step**              | What happens after this task completes                          |
-
-Every handoff ends with: _"If anything is unclear or ambiguous, exhaust available data first, document your assumption, and proceed."_
+This is guidance, not a fixed schema. Omit empty parts, scale the brief to the task, and link existing artifacts instead of copying history.
 
 Example:
 
 ```
-Goal: Map the auth module's session handling paths before we refactor login.
-Context: /src/auth/session.ts (the main file), ADR-CORE-003 in docs/adr/core/.
-  We already know the token refresh path has a race condition (issue #42).
-Requirements: Trace every code path that reads or writes session state.
-  Do not edit any files - read only. List files and line numbers.
-Known problems: The JWT expiration check in session.ts line 89 uses wall
-  clock time instead of server time, which causes intermittent failures
-  across timezones.
-Success criteria: A complete call graph of session operations with file
-  paths, line numbers, and the race condition's entry points documented.
+Outcome: Map the auth module's session handling paths before we refactor login.
+Context and constraints: /src/auth/session.ts (the main file) and ADR-CORE-003
+  in docs/adr/core/. Trace every code path that reads or writes session state;
+  do not edit files. We already know the token refresh path has a race condition
+  (issue #42), and session.ts line 89 uses wall-clock rather than server time.
+Acceptance/evidence: Return a complete call graph with file paths, line numbers,
+  and the race condition's entry points documented.
 Next step: @architect receives this map to design the fix strategy.
 ```
 
 #### Iteration Limits
 
-Every pipeline stage must have three controls:
+Every substantial pipeline stage needs three controls:
 
 1. **Verifiable termination condition** - a concrete, measurable state that stops execution. Not "done when it feels right." Done when the success criteria in the handoff contract are met.
 
-2. **Max-N hard limit** - usually 3 attempts before escalation. If a stage fails after N tries, it's not a persistence problem; it's a context, skill, or approach problem that needs human judgment.
+2. **Bounded attempts** - normally three repair rounds, extended only when the latest attempt shows observable progress. Repeated causes or no new evidence require a strategy change or escalation.
 
 3. **Escalation format** - a structured signal so the next stage or the human operator can take over without guessing what went wrong:
 
@@ -81,11 +71,13 @@ Every pipeline stage must have three controls:
 
 2. **Full pipeline when selected** - a multi-file, cross-module, or new-feature task may follow `adventurer → planner or architect → builder → reviewer` when the task's risk or uncertainty justifies it. Skipping stages is expected for direct and focused routes. The handoff should state why the selected route is appropriate.
 
-3. **Parallel fan-out is allowed for independent tasks** - max 3-5 subtasks per turn. Examples: `@adventurer` mapping auth + `@adventurer` tracing billing in parallel; `@reviewer` checking PR #7 + `@builder` fixing bug #42 + `@architect` evaluating a dependency decision.
+3. **Parallel fan-out is allowed for independent tasks** - keep the fan-out bounded by usefulness and host limits. Examples: `@adventurer` mapping auth and tracing billing in parallel; `@reviewer` checking PR #7, `@builder` fixing bug #42, and `@architect` evaluating a dependency decision.
 
-4. **Stages are ordered by dependency** - later stages cannot proceed without earlier stages' output. The builder cannot implement what the planner hasn't scoped. The reviewer cannot validate what the builder hasn't built. This seems obvious. It gets violated when someone tries to parallelize dependent work.
+4. **Stages are ordered by dependency** - wait for prerequisite outputs before starting dependent work. For example, finish scoping before implementation and implementation before review. Parallelize only independent tasks.
 
 ### Platform Adaptation
+
+Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; OMP and Pi enforce dispatcher behavior in workflow-mode sessions; Hermes is direct-capable by default and gates modes and roles at the tool layer; and Cursor and Claude Code depend more on host/session permissions. Codex, Prime Agent, and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
 
 How each platform implements this pattern:
 
@@ -94,9 +86,13 @@ How each platform implements this pattern:
 | **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `read` and `edit` denied, and Bash denied except `npx --yes skills@latest *` for skill installation. Git inspection and runtime queries are delegated to `@adventurer`, which allow-lists read-only shell and git commands. All other shell commands are denied. |
 | **Kimi Code** | AgentSwarm with persona-per-stage | Seven roles map onto three native profiles. Persona boundaries are advisory by default; `[[permission.rules]]` can enforce review-only behavior, but those rules apply to the session rather than one subagent. |
 | **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
-| **Claude Code** | Hooks and agent extensions | Stages are implemented as hooks that load agent definitions and tool configurations per phase. Handoff contracts pass through context variables. |
+| **Claude Code** | Declarative agents, skills, and commands | Specialists ship as generated `agents/*.md`; the orchestrator and global rules ship as generated skills; workflow modes ship as generated commands. `disallowedTools` protects the read-only roles. This package ships no hooks. |
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
 | **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
+| **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the Maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
+| **Hermes** | Python plugin with skills, commands, and tool-layer gating | Methodology ships as skills and slash commands through the Hermes plugin manager. Mode and per-role tool access is gated at the tool layer; pipeline sequencing is advisory prompt guidance. |
+| **Prime Agent** | Agent Skills + verified extension subset | The 7 specialists, orchestrator, rules, and modes ship as Agent Skills; a small extension adds mode commands and prompt injection. Native `rlm` subagent dispatch has no public JS bridge, so delegation is skill loading plus methodology, not runtime dispatch. |
+| **Agent Plugins v1 (portable)** | Skills-only package | `@maestria/agent-plugin` ships the methodology as standard skills with no runtime adapter, agents, commands, or hooks. The consuming client owns dispatch, context, and permissions. |
 
 ---
 
@@ -106,7 +102,7 @@ How each platform implements this pattern:
 
 The agent that produces work should not be the agent that validates it. In a full pipeline, a different agent performs verification. The strength of that boundary depends on the platform: OpenCode enforces it at the tool layer, while other platforms may provide only persona guidance unless users configure review-only permissions or sessions.
 
-The KB (from `loop-engineering.mdx`) puts it bluntly: _"The model that wrote the code is too nice grading its own homework."_ The model that produced a result has committed to it - every subsequent reasoning step is biased toward confirming correctness, not finding flaws. A fresh agent, seeing the work for the first time, catches what the implementer overlooked.
+The model that produced a result has already committed to it, so its later reasoning is biased toward confirming correctness instead of finding flaws. A fresh agent, seeing the work for the first time, can catch what the implementer overlooked.
 
 The maker/checker split applies recursively to _itself_: a fresh model decides if the work is done, not the one that did the work.
 
@@ -160,6 +156,10 @@ Self-review fails for three reasons, each documented from real sessions:
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
 | **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`, but the session-wide rules also affect builder and writer work. |
 | **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
-| **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |
+| **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer, adventurer, and planner agents deny `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
 | **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
+| **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, planner, and reviewer. The skills themselves are advisory and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
+| **Hermes** | Tool-layer role allowlists | `permissions.py` defines positive per-role allowlists (for example reviewer gets `read` and `llm`), and mode gating blocks writes in `sonar`. Role switching is enforced at the tool layer; prompts remain guidance. |
+| **Prime Agent** | Advisory roles only | Skills and role prompts state read-only intent, but Prime has no skill-level tool-denial mechanism and the package makes no enforcement claim. |
+| **Agent Plugins v1 (portable)** | Advisory roles only | Read-only roles are prompt guidance; the consuming client owns permissions, tool access, and review setup. |

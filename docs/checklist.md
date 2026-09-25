@@ -1,11 +1,12 @@
 # Completion Checklist
 
-Before marking any task as complete in this repo:
+Validate each implementation slice before committing it. Before delivery, the delivery owner checks the integrated result, including changes made after earlier commits. Read-only audits, research, and planning end at their requested artifact and need only artifact-relevant checks:
 
-- [ ] Quality pipeline passes (`vp test`, `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm check`)
-- [ ] If editing canonical agent directives: `scripts/sync-all` run && `scripts/check-sync` passes
-- [ ] If adding/removing files: `package.json` files array and export map are up to date
+- [ ] `pnpm check` passes (build, formatting, lint/type analysis, workspace tests, sync and manifest checks); `vp check` passes before delivery. Reuse those results rather than rerunning constituent commands unchanged.
+- [ ] If editing canonical agent directives: run `scripts/sync-all`, then confirm `scripts/check-sync` passes
+- [ ] If editing canonical agent directives: confirm before-after obligation dispositions (preserved/moved/consolidated/intentionally retired) with evidence and context reachability, per [directive change review](directive-change-review.md)
+- [ ] If changing packaged or exported files: `package.json` files array and export map are up to date
 - [ ] If changing agent prompts: README in `core/agent-directives/` is still accurate
 - [ ] If introducing a new design decision: has a corresponding ADR been written?
-- [ ] Documentation audit completed - checked READMEs, ADRs, changelogs, guides for needed updates
+- [ ] Documentation assessment completed for internal docs, user-facing docs (`apps/docs/`, package README), changelog/release notes (curated `changelog.mdx`, not generated `CHANGELOG.md`), and required changesets (`.changeset/`, published packages only): affected categories updated, plausible unaffected categories noted with reason; proportionate to the change
 - [ ] Changeset created if change is user-facing

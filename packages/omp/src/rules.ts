@@ -1,44 +1,53 @@
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type {
-  BeforeAgentStartEvent,
-  BeforeAgentStartEventResult,
-  ExtensionContext,
-} from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
+import {
+  formatProjectErrorBanner,
+  formatProjectSection,
+  tryLoadProjectSections,
+} from '@maestria/shared-pi/project-config';
+import type { ProjectConfigFs, ProjectPromptContext } from '@maestria/shared-pi/project-config';
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
+import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = __dirname + '/../agents/commands';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+
+const __dirname = import.meta.dirname;
+const COMMANDS_DIR = `${__dirname}/../agents/commands`;
 
 /**
- * Creates a before_agent_start handler that injects workflow mode prompts.
- *
- * This is the only dynamic prompt injection needed from the extension.
- * Static behavioral content (orchestrator prompt + global rules) is
- * auto-injected by the platform's skill system via SKILL.md files registered in
- * omp's agent discovery mechanism.
- *
- * When no mode is active, the handler returns void (no modification),
- * letting the platform's prompt assembly (skills + context files + tools)
- * stand as-is.
+ * before_agent_start handler: mode prompt plus root project customization,
+ * read fresh each turn. Undefined when idle. Never throws: broken files
+ * surface via notify plus a STOP banner. See ADR-CORE-006.
  */
-export function createModePromptHandler(state: MaestriaState) {
-  return (
+export const createModePromptHandler =
+  (state: MaestriaState, fs?: ProjectConfigFs) =>
+  (
     event: BeforeAgentStartEvent,
-    _ctx: ExtensionContext,
-  ): BeforeAgentStartEventResult | void => {
-    if (!state.mode) return;
+    ctx?: ProjectPromptContext,
+  ): BeforeAgentStartEventResult | undefined => {
+    const loaded = tryLoadProjectSections(ctx, fs);
+    if (loaded.errorMessage !== undefined) {
+      return {
+        systemPrompt: [...event.systemPrompt, '', formatProjectErrorBanner(loaded.errorMessage)],
+      };
+    }
+    const { sections } = loaded;
 
-    const parts: string[] = [
-      ...event.systemPrompt,
-      '',
-      getModePrompt(state.mode, COMMANDS_DIR),
-      '',
-      `The user has set workflow mode to "${state.mode}". ` +
-        'Honor this mode throughout the session until changed via /command.',
-    ];
+    if (!state.mode && sections.length === 0) {
+      return undefined;
+    }
+
+    const parts: string[] = [...event.systemPrompt, ''];
+    if (state.mode) {
+      parts.push(
+        getModePrompt(state.mode, COMMANDS_DIR),
+        '',
+        `The user has set workflow mode to "${state.mode}". ` +
+          'Honor this mode throughout the session until changed via /command.',
+        '',
+      );
+    }
+    for (const section of sections) {
+      parts.push(formatProjectSection(section), '');
+    }
 
     return { systemPrompt: parts };
   };
-}

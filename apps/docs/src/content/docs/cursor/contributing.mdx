@@ -1,50 +1,23 @@
 ---
 title: Contributing
-description: How to contribute to @maestria/cursor — sync config, agents, and commands.
+description: How to contribute to @maestria/cursor - sync config, agents, and commands.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+For general setup and PR workflow, see the [Contributing Guide](/core/contributing/).
 
-Thank you for contributing to `@maestria/cursor`. For general setup and PR workflow, see the [Contributing Guide](/core/contributing/).
+## Package Boundary
 
-## Project structure
+`@maestria/cursor` generates its agents, skills, rules, and workflow commands from `packages/core/agent-directives/`; the plugin manifest, `sync.config.ts`, and assets are hand-authored. Keep commands thin (mode marker plus pipeline instructions) by editing the canonical directives, not the generated files.
 
+## Editing Methodology
+
+Edit `packages/core/agent-directives/`, never generated files under `agents/`, `skills/`, or `rules/`, and keep Cursor-specific transforms in `sync.config.ts`. Then sync and verify:
+
+```bash
+./scripts/sync-all
+./scripts/check-sync
+pnpm --filter @maestria/cursor test
 ```
-packages/cursor/
-├── .cursor-plugin/plugin.json   # Manifest
-├── sync.config.ts               # Transforms from core directives
-├── agents/                      # Generated specialists (do not edit)
-├── skills/orchestrator/         # Generated (do not edit)
-├── rules/                       # Generated (do not edit)
-├── commands/                    # Hand-authored workflow commands
-├── tests/
-├── INSTALL.md
-├── README.md
-└── CHANGELOG.md
-```
-
-<Aside type="caution">
-  Never edit generated files under `agents/`, `skills/`, or `rules/` directly. Edit
-  `packages/core/agent-directives/` and run sync.
-</Aside>
-
-## Editing methodology
-
-1. Change canonical files in `packages/core/agent-directives/`
-2. Adjust `packages/cursor/sync.config.ts` if Cursor-specific transforms are needed
-3. Run sync:
-
-   ```bash
-   cd packages/cursor && npx tsx ../core/scripts/sync.ts --verbose
-   # or from repo root
-   ./scripts/sync-all
-   ```
-
-4. Verify: `./scripts/check-sync` and `pnpm --filter @maestria/cursor test`
-
-## Editing commands
-
-Workflow commands in `commands/` are hand-authored (not synced). Keep them thin: mode marker + pipeline instructions that point at the orchestrator skill and `Task` agents.
 
 ## ADR
 

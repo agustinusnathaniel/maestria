@@ -1,7 +1,7 @@
 {
   "name": "maestria",
-  "version": "0.1.0",
-  "description": "Maestria methodology for Cursor — pipeline specialists, orchestrator skill, and workflow commands",
+  "version": "0.2.13",
+  "description": "Maestria methodology for Cursor - pipeline specialists, orchestrator skill, and workflow commands",
   "author": {
     "name": "agustinusnathaniel"
   },

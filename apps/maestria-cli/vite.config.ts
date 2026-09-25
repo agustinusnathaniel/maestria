@@ -2,19 +2,18 @@ import { defineConfig } from 'vite-plus';
 
 export default defineConfig({
   pack: {
-    entry: ['src/index.ts'],
-    target: 'node22',
-    sourcemap: true,
-    minify: true,
-    fixedExtension: false,
     deps: {
-      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'jsonc-parser', 'picocolors'],
+      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'jsonc-parser', 'picocolors', 'yaml'],
     },
-  },
-  test: {
-    include: ['tests/**/*.test.ts'],
+    entry: ['src/index.ts'],
+    fixedExtension: false,
+    minify: true,
+    target: 'node22',
   },
   resolve: {
     tsconfigPaths: true,
+  },
+  test: {
+    include: ['tests/**/*.test.ts'],
   },
 });

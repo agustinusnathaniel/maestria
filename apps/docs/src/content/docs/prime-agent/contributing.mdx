@@ -1,0 +1,32 @@
+---
+title: Contributing
+description: Maintain the generated Prime Agent skills projection and its hand-authored Prime/Pi extension.
+---
+
+`@maestria/prime-agent` delivers the canonical Maestria directives to Prime Agent as standard Agent Skills, plus a small hand-authored Prime/Pi extension. For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/).
+
+## Package Boundary
+
+Skills under `packages/prime-agent/skills/` are generated from `packages/core/agent-directives/`; `src/`, `sync.config.ts`, and the tests are hand-authored. Platform-specific derivation stays in `sync.config.ts`.
+
+## Canonical Source Workflow
+
+Edit `packages/core/agent-directives/`, never generated files under `packages/prime-agent/skills/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/prime-agent test
+```
+
+Skills are emitted at `skills/<name>/SKILL.md`, the layout Prime discovers in all documented skill locations, with only the required Agent Skills frontmatter (`name` matching the directory, and `description`). Read-only roles are advisory, not a runtime boundary.
+
+## Validation
+
+```bash
+pnpm --filter @maestria/prime-agent validate   # frontmatter + layout
+pnpm --filter @maestria/prime-agent build      # compile dist/extension.mjs
+pnpm --filter @maestria/prime-agent test       # skills + extension + manifest + tarball tests
+```
+
+Support remains a `Native candidate` until runtime behavior in a live Prime session has been verified end to end.

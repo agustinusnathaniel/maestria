@@ -1,69 +1,27 @@
-import {
-  isToolCallEventType,
-  type ExtensionAPI,
-  type ToolCallEvent,
-  type ExtensionContext,
-} from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
-import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
 
-export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
-  pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
-    if (!event || !event.toolName) return;
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { persistState } from '@maestria/shared-pi/state-core';
 
-    // ── Pure dispatcher enforcement ──
-    // When a maestria workflow mode is active, restrict the root session
-    // (orchestrator) to ONLY the maestria_subagent delegation tool.
-    // Subagent sessions are detected by the absence of the pi-subagents
-    // 'subagent' tool (stripped by applyRecursionGuard in child sessions).
-    if (state.mode !== null && pi.getActiveTools().includes('subagent')) {
-      if (event.toolName !== 'maestria_subagent') {
-        return {
-          block: true,
-          reason:
-            `Tool '${event.toolName}' is blocked for the orchestrator. ` +
-            `Use 'maestria_subagent' to delegate tasks to specialists.`,
-        };
-      }
-    }
+export type ToolApi = Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'on'>;
 
-    // Block destructive tools in review mode
-    if (state.reviewMode) {
-      if (
-        isToolCallEventType('edit', event) ||
-        isToolCallEventType('write', event) ||
-        isToolCallEventType('bash', event)
-      ) {
-        return {
-          block: true,
-          reason: 'Review mode is active. Report findings, do not edit.',
-        };
-      }
-    }
-
-    // Block dangerous bash patterns regardless of mode
-    if (isToolCallEventType('bash', event)) {
-      if (!event.input || typeof event.input !== 'object') return undefined;
-      const command = event.input.command;
-      if (command) {
-        for (const pattern of DANGEROUS_PATTERNS) {
-          if (pattern.test(command)) {
-            if (ctx.hasUI) {
-              const confirmed = await ctx.ui.confirm(
-                'Dangerous Pattern Detected',
-                `This command matches a dangerous pattern:\n${command}\nProceed?`,
-              );
-              if (confirmed) return undefined;
-            }
-            return {
-              block: true,
-              reason: `Command matches dangerous pattern: ${pattern}`,
-            };
-          }
-        }
-      }
-    }
-
-    return undefined; // allow
+export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
+  const handler = createToolCallHandler({
+    delegationTool: 'subagent',
+    getActiveTools: () => pi.getActiveTools(),
+    getState: () => state,
+    isBashTool: (e) => e.toolName === 'bash',
+    isMutationTool: (e) =>
+      e.toolName === 'edit' ||
+      e.toolName === 'write' ||
+      e.toolName === 'patch' ||
+      e.toolName === 'bash',
+    isReadTool: (e) => e.toolName === 'read',
+    isWriteTool: (e) => e.toolName === 'edit' || e.toolName === 'write',
+    persist: () => {
+      persistState(pi, state);
+    },
   });
-}
+  pi.on('tool_call', handler);
+};

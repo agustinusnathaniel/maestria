@@ -1,5 +1,16 @@
 # @maestria/shared-pi
 
+## 0.4.0
+
+### Minor Changes
+
+- [#175](https://github.com/agustinusnathaniel/maestria/pull/175) [`6f21b47`](https://github.com/agustinusnathaniel/maestria/commit/6f21b47e4c3e03353163ad4f83e49a227a798687) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Extend the platform-agnostic shared state contract with a native-goal mirror
+  containing an objective and status, including the new shape in initial state,
+  persistence, and summaries.
+
+  The `@maestria/pi` patch bundles this shared state-core update in its published
+  extension artifact, so Pi recognizes and renders the new state shape.
+
 ## 0.3.0
 
 ### Minor Changes

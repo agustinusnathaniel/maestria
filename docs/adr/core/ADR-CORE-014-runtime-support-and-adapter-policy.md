@@ -1,0 +1,148 @@
+# ADR-CORE-014: Runtime Support and Adapter Policy for Claude Code, Prime Agent, Codex, JCode, and Crush
+
+## Status
+
+Accepted (2026-08-11; updated 2026-08-26). This ADR records the runtime support policy and decision boundary, accompanied by the evidence ledger in [runtime-support-matrix.md](../../runtime-support-matrix.md).
+
+The original 2026-08-11 decision promoted no runtime to `Native`; support levels change only through the promotion gates below. The current table records Codex CLI as `Native`, Claude Code and Prime Agent as `Native candidate`, and the other runtimes at their documented dispositions.
+
+The projections and CLI marketplace adapters have since been implemented. The Codex CLI rows were reverified against the then-current Codex CLI release, official documentation, and upstream source on 2026-08-26, which promotes Codex CLI to `Native` below; other rows retain their independently documented gates.
+
+JCode and Crush were evaluated and are not shipped (as of 2026-09-10), and both remain `Deferred` (projection/experiment only) with no confirmed first-class package/extension API. The title names them because they were in the original review scope, not because adapters exist.
+
+## Context
+
+Maestria is a behavior layer for AI coding agents. The canonical methodology lives in `packages/core/agent-directives/` and is projected to platform plugins by the core sync pipeline (ADR-CORE-005); adapters already ship for OpenCode, Kimi Code, Cursor, Oh My Pi, Pi, and Hermes.
+
+A feasibility review examined five additional runtimes: Claude Code, Prime Agent, Codex (CLI and desktop), JCode, and Crush. Before committing effort, we needed to know which expose a first-class package or extension API we can target, which only support projections or experiments, and what the security and trust boundaries are. Later reverifications and amendments record what has since been built or promoted; they do not turn unverified claims into support promises.
+
+Upstream evidence is mostly unpinned moving documentation on `main`/`latest`: research-only, not production support proof. Every material claim is reverified before implementation, promotion, or re-promotion, or within 30 days of the review date.
+
+## Goals
+
+Record a per-runtime support level from the controlled vocabulary with no delivery terms, the delivery shape separately from the support level, capability status separately from control/enforcement status, the security and trust boundaries (enforced versus advisory), per-runtime promotion, rollback, withdrawal, and re-promotion rules, and deprecation and reverification triggers. Establish package and sync boundaries consistent with the canonical source invariant (ADR-CORE-005).
+
+## Non-Goals
+
+At the time of the original decision (2026-08-11) this ADR was a decision and scope record, not an implementation. That framing still holds for the other runtimes here, but the reverifications below supersede it for Prime Agent and Codex CLI (see Status and Reverification). It does not modify canonical agent directives or generated platform output; does not define model-config handlers for these runtimes (CLI installation/version handlers remain under ADR-CORE-007, and adapters only stage packages and invoke host-native marketplace commands); does not make a public-facing support promise (all runtime claims are internal, dated, and version-sensitive); does not reuse `@maestria/pi` for Prime Agent (Pi-based; doing so would create a false or conflicting dependency claim); and does not claim desktop/local parity where parity is unverified.
+
+## Decision
+
+### Controlled vocabulary
+
+Support levels describe progress and contain no delivery terms; delivery shape is recorded separately.
+
+| Term               | Meaning                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| `Native`           | Shipped first-class adapter whose promotion gates passed      |
+| `Native candidate` | Targetable first-class API; not shipped/promoted              |
+| `Provisional`      | Bounded experiment with incomplete/version-sensitive evidence |
+| `Deferred`         | No implementation in the current batch                        |
+| `Withdrawn`        | Removed pending requalification                               |
+
+Capability statuses describe what a runtime can do: `Supported`, `Available`, `Unverified`, `Unavailable`. Control statuses describe what it enforces: `Enforced`, `Trust-gated`, `Ignored`, `Advisory`, `Not a sandbox`, `Unsupported`. A capability is not a security control, and skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled security `Enforced`.
+
+### Decision baseline per runtime
+
+Support level, delivery shape, and disposition per runtime; full evidence is in [runtime-support-matrix.md](../../runtime-support-matrix.md). `Evidence ID` values link to matrix records (runtime/surface, claim, pinned state, source, review date, test status); claims are verified against their record, never inferred from a heading.
+
+| Runtime | Support level | Delivery | Disposition | Rationale | Evidence ID |
+| --- | --- | --- | --- | --- | --- |
+| Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 |
+| Prime Agent | Native candidate | Skills-first + verified extension subset | skills + mode-command extension; native rlm dispatch deferred | Skills-first package plus a small verified extension subset (mode commands, mode prompt injection); native `rlm` dispatch/JSON-RPC deferred until a public JS bridge is verified | E-PRIME-01 |
+| Codex CLI | Native | Plugin + CLI-managed native agents/instructions | shipped native CLI adapter | Plugin, skills, custom-agent, `agent_type`, and global instruction surfaces verified and exercised by the Maestria CLI adapter | E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15 |
+| Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 |
+| JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 |
+| Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 |
+
+### Principle: canonical source, per-platform output
+
+All canonical methodology remains in `packages/core/agent-directives/`. Adapters are generated projections from the core sync pipeline (ADR-CORE-005); runtime-specific derivation (frontmatter, file layout, skill names) is owned by each package's `sync.config.ts`, never by hand-edited copies. CLI installation/version and model-config handlers remain separate concerns; the Codex CLI handler manages only the native agent files and marked global instruction block documented in its package.
+
+### Security and trust boundaries (capability vs control)
+
+The review surfaced mandatory gaps so implementers do not rely on mechanisms the runtime ignores or does not enforce.
+
+| Runtime | Mechanism | Capability | Control | Implication for Maestria | Evidence ID |
+| --- | --- | --- | --- | --- | --- |
+| Claude Code | Plugin-subagent `hooks`, `mcpServers`, `permissionMode` frontmatter | `Unavailable` | `Ignored` | Do not rely on this frontmatter for enforcement; use project/user agent files or permission rules if required | E-CLAUDE-07 |
+| Claude Code | Matching `PreToolUse` hook returning `hookSpecificOutput.permissionDecision: "deny"` | `Supported` | `Enforced` | Blocks the matched call, conditionally on event, matcher, handler, decision format, and installation scope; best-effort `if` filters can fail open | E-CLAUDE-04 |
+| Claude Code | Plugin `hooks/hooks.json` resource | `Supported` | `Advisory` | Shareable resource, but presence alone is not enforcement; a matching blocking handler is required | E-CLAUDE-05 |
+| Claude Code | `@maestria/claude-code` first package hook resources and handlers | `Unavailable` | `Advisory` | Package ships no `hooks/` directory and no package-level hook enforcement; this does not downgrade runtime/plugin capability | E-CLAUDE-08 |
+| Codex CLI | Non-managed command hooks | `Supported` | `Trust-gated` | Use command-only hooks as the reliable path; expect a trust review flow for non-managed hooks | E-CODEX-CLI-03 |
+| Codex CLI | Managed hook policy and trust-bypass exception | `Supported` | `Advisory` | Managed hooks are trusted by managed policy; the documented trust-bypass configuration is an explicit security exception, not an enforcement path | E-CODEX-CLI-05, E-CODEX-CLI-06 |
+| Codex CLI | `prompt` and `agent` hook handlers | `Unavailable` | `Unsupported` | Parsed, not executed | E-CODEX-CLI-04 |
+| Codex CLI | Plugins, skills, subagents, AGENTS.md | `Supported` | `Advisory` | Documented surfaces; presence is not enforcement | E-CODEX-CLI-02 |
+| Prime Agent | Execution (skills, subagent dispatch, JSON/RPC headless) | `Supported` | `Not a sandbox` | Do not claim sandboxing; restrict to trusted repositories and skills | E-PRIME-01, E-PRIME-02, E-PRIME-06, E-PRIME-07 |
+| Crush | Config (`crushrc`/`crush.json`) | `Supported` | `Not a sandbox` | Config is trusted code; review before launching | E-CRUSH-04 |
+| Crush | Top-level `PreToolUse` hooks | `Unavailable` | `Advisory` | Preliminary; incomplete subagent enforcement; do not claim hook-based subagent enforcement | E-CRUSH-05 |
+| Crush | Skills discovery and MCP | `Supported` | `Advisory` | Agent Skills standard and MCP (stdio, http, sse); presence is not enforcement | E-CRUSH-01 |
+
+Codex hook trust is not uniform: only non-managed command hooks are `Trust-gated` (E-CODEX-CLI-03); managed hooks are trusted by managed policy (E-CODEX-CLI-05), and the documented trust-bypass configuration is an explicit security exception (E-CODEX-CLI-06).
+
+### Scope of the first batch
+
+Claude Code (`Native candidate`, plugin) is the primary candidate pending approved docs and a blind review, with Prime Agent (`Native candidate`, skills-first plus verified extension subset) as secondary. Prime Agent's executable extension ships only the verified subset (workflow-mode slash commands, mode prompt injection, session-scoped mode state); native `rlm` dispatch and JSON/RPC headless mode remain deferred. Codex CLI is a `Native` CLI adapter; Codex desktop, JCode, and Crush remain `Deferred`.
+
+## Consequences
+
+Clear evidence-backed boundary against scope creep across five runtimes: controlled support vocabulary, capability separated from control, dated version- and trust-sensitive claims, the canonical-source invariant preserved, and security gaps explicit rather than discovered mid-implementation. Costs: JCode and Crush get projection/experiment scope only; Codex support is version-sensitive and split (native CLI adapter, common-subset desktop projection with no parity claim); Prime Agent's extension covers only the verified subset; documentation alone cannot enforce the boundary, so reviewers must check implementation stays within scope.
+
+## Alternatives Considered
+
+- **Treat all five runtimes as `Native`.** Rejected: JCode and Crush have no confirmed first-class distribution API, and Prime Agent is not a sandbox.
+- **Reuse `@maestria/pi` for Prime Agent.** Rejected: Prime Agent is a Pi-based harness; shipping the Pi extension under a Prime Agent package would create a false dependency claim and blur the package boundary.
+- **Ship all adapters in a single batch.** Rejected in favor of bounded batches: this ADR's boundary is the documentation batch scope, with implementation delegated per runtime starting with Claude Code.
+
+## Promotion Gates
+
+A runtime moves to a shipped `Native` adapter only when all of the following hold:
+
+1. The runtime exposes a first-class package or extension API Maestria can target, confirmed against current official docs rather than an earlier review.
+2. The security and trust model is verified: enforcement boundaries are known, and no ignored fields are relied on.
+3. The upstream evidence for every material claim is reverified against a pinned release/version, an immutable commit, or a fixed docs revision.
+4. A generated projection exists via the core sync pipeline (see [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md)), and `scripts/check-sync` passes.
+5. Desktop/local parity, where claimed, is verified; otherwise no parity claim is made.
+6. The runtime-specific `sync.config.ts` and package boundaries are defined and reviewed.
+
+## Per-runtime lifecycle rules
+
+| Runtime | Promotion | Rollback | Withdrawal | Re-promotion |
+| --- | --- | --- | --- | --- |
+| Claude Code | Approved docs (blind review), then a plugin package via [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) (`scripts/check-sync` passes), promotion gates verified | Revert the generated projection/package; canonical content stays in core | Downgrade or remove support, delivery, capability, and control claims | Only after the promotion gates are re-verified |
+| Prime Agent | Verify a stable supported API for the executable extension beyond the verified subset (mode commands, mode prompt injection, session state); skills-first package plus the verified subset via [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) (`scripts/check-sync` passes) | Revert the generated package and/or the extension subset | Replace or remove claims; native `rlm` dispatch and JSON/RPC headless mode stay deferred until verified | Only after re-verification |
+| Codex CLI | Reverify the current Codex CLI release and upstream source, retain the generated projection, native-agent/instruction tests, and `check-sync` | Remove the native-agent and instruction management while leaving unrelated Codex configuration untouched | Downgrade or remove claims after a material host change invalidates the evidence | Only after the version and evidence are re-verified |
+| Codex desktop | Separate from CLI; verify a desktop extension surface exists first | Remove the common-subset projection | Downgrade or remove parity-adjacent claims | Only after the desktop surface is re-verified |
+| JCode | Requires a confirmed first-class package/extension distribution API | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
+| Crush | Requires a confirmed first-class API and verified hooks | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
+
+Withdrawal downgrades or removes a runtime's claims with no automatic re-promotion: re-promotion requires the promotion gates to be re-verified against current, pinned upstream evidence.
+
+## Deprecation and Reverification Triggers
+
+- Any runtime whose official API changes such that the recorded shape or trust model is stale triggers reverification before further work.
+- A mechanism marked enforced later found advisory (or vice versa) triggers an update to this ADR and the evidence ledger.
+- Version-sensitive claims are re-dated on each review; a claim older than the runtime's current documented state is not treated as current.
+- Upstream docs on `main`/`latest` are research-only; reverify any material claim before implementation, promotion, or re-promotion, after upstream API or security changes, or within 30 days of the review date.
+
+## Related Decisions
+
+- ADR-CORE-002 (plugin architecture) - the pure plugin, markdown agents, hooks pattern Claude Code's plugin shape aligns with.
+- ADR-CORE-005 (shared agent directives core sync) - the canonical-source, per-platform generated output invariant this ADR relies on.
+- ADR-CORE-007 (CLI package for plugin management) - CLI host adapters are separate from runtime support promotion and use native marketplace commands.
+- ADR-CORE-008 (CLI dependency bundling) - dependency policy applies to any future adapter package.
+- ADR-PI-000 and ADR-PI-001 - Prime Agent is Pi-based, so `@maestria/pi` is not reused for it (see Non-Goals).
+
+## References
+
+Sources reviewed on 2026-08-11 are cited with URLs, review dates, test status, and pinned/unpinned state in [runtime-support-matrix.md](../../runtime-support-matrix.md). They are research-only and must be reverified before implementation, promotion, or re-promotion.
+
+## Reverification and amendments
+
+On 2026-08-13, Prime Agent evidence E-PRIME-01 through E-PRIME-07 was reverified against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`. Prime Agent remains `Native candidate`: it ships the skills-first package and only the verified extension subset; native `rlm` dispatch and JSON/RPC headless integration remain deferred. The package also makes no sandbox or enforcement claim. The detailed discovery paths, extension surface, and evidence limits are in the [runtime-support matrix](../../runtime-support-matrix.md).
+
+On 2026-08-26, Codex CLI evidence was reverified against the then-current release, official documentation, and upstream source. Codex CLI became `Native` because Maestria ships a skills projection, native custom agents, per-agent model configuration, and an idempotent global orchestration block. Codex desktop remains separately `Deferred`. The matrix holds the detailed surface and evidence records (E-CODEX-CLI-07 through E-CODEX-CLI-15).
+
+## Date
+
+2026-08-11 (decision). Prime Agent evidence re-verified 2026-08-13 at immutable commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; Codex CLI promoted in the 2026-08-26 update above.

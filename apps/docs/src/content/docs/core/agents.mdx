@@ -1,52 +1,58 @@
 ---
 title: Specialist Reference
-description: The 8 specialists in the Maestria methodology - orchestrator and 7 domain experts. Roles, responsibilities, and when to call each one.
+description: 'The 8 Maestria agents: one orchestrator and 7 domain specialists. Roles, responsibilities, and when to call each one.'
 ---
 
-import { LinkCard, CardGrid } from '@astrojs/starlight/components';
-
-The Maestria methodology defines 8 specialists. One is the **orchestrator** - a router that delegates focused and full work to specialists, while direct-route turns execute on the host. The remaining 7 are domain experts, each with a focused scope, clear permissions, and a specific place in the pipeline.
-
-This page describes each specialist, their role, and when to delegate to them. It is platform-agnostic - the mapping to your platform's invocation syntax lives in the plugin documentation.
+Maestria defines 8 agents: one **orchestrator** and 7 domain specialists, each with a focused scope, clear permissions, and a specific place in the pipeline. Direct-route turns execute on the host; platform invocation syntax lives in the plugin documentation.
 
 ## Orchestration Model
 
-The orchestrator is the router and manager. It decomposes complex tasks into atomic units, delegates each unit to the appropriate specialist, integrates the results, and verifies completion. It does not implement work it has delegated - its job is coordination. Direct-route turns execute on the host; focused and full work is delegated, and platform enforcement varies.
+The orchestrator routes and manages: it decomposes complex tasks into atomic units, delegates each to a specialist, integrates the results, and verifies completion. It does not implement work it has delegated.
 
-When full orchestration is selected, the default pipeline for non-trivial work groups the remaining 7 specialists into three roles:
+For multi-slice implementation, it plans reviewable PR boundaries early and commits coherent slices after validating them. Each PR receives its own review and evidence; the integrated outcome receives final verification. When an architect or planner guides implementation, the orchestrator first presents a concise design brief so the user can understand the intended changes, sequence, and trade-offs. Tables or diagrams are used when they help explain the design.
+
+Full orchestration groups the 7 specialists into three roles:
 
 - **Thinker** - reconnaissance, design, planning, analysis
 - **Worker** - implementation, documentation
 - **Verifier** - validation, quality gates
 
-The orchestrator routes work dynamically based on task needs. The pipeline terminates when the verifier accepts the result.
+The orchestrator routes dynamically; a pipeline that includes a verifier terminates when the verifier accepts the result.
 
-Three workflow modes are available to control pipeline depth. Their activation and enforcement depend on the platform:
+See [When to Use Maestria](/core/when-to-use/) for when orchestration is worth its coordination cost.
 
-| Mode      | Full Form           | Pipeline                                          | Use Case                                    |
-| --------- | ------------------- | ------------------------------------------------- | ------------------------------------------- |
-| **fein**  | Full pipeline       | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work, mandatory validation |
-| **sonar** | Research            | Thinker only - STOP after analysis/design         | Understanding before committing             |
-| **blitz** | Fast implementation | Worker only - skip recon and review               | Quick fixes, known territory                |
+## Modes
 
-## When to Use the Orchestrator
+Three workflow modes control pipeline depth; activation and enforcement depend on the platform:
 
-The orchestrator adds structure and validation at the cost of coordination overhead. It is most valuable for work that spans multiple phases or sessions - tasks that benefit from dedicated exploration before implementation, or multi-step processes where built-in commit discipline and progress tracking prevent drift.
+| Mode | Full Form | Pipeline | Use Case |
+| --- | --- | --- | --- |
+| **fein** | Full pipeline | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work, mandatory validation |
+| **sonar** | Research only | Read-only `@adventurer`/`@planner` specialists - STOP before implementation | Understanding before committing |
+| **blitz** | Fast implementation | Direct execution when permitted; otherwise the permitted specialist, skipping optional recon/design but keeping required safeguards/review. | Quick fixes, known territory |
 
-If you mostly use strong, expensive, or slow models and already have a clear, well-scoped goal, going without the orchestrator is often faster and cheaper. Direct execution or a single specialist avoids delegation round-trips, context transfers, and review loops. The orchestrator trades speed and token usage for structure and validation. Choose the approach that fits the task, and start with the [usage decision guide](/core/when-to-use/).
+Where keyword detection is supported, mode keywords are recognized anywhere in a message and case-insensitively; matches inside code fences or inline code are ignored, and the most restrictive mode wins when several keywords appear (fein > sonar > blitz).
 
 ## Specialist Reference
 
-| Specialist       | Role                                                                                                    | When to Use                                                                                          | Key Constraints                                                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Orchestrator** | Router and manager - decomposes complex tasks, delegates routed work to specialists, integrates results | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination             | Cannot implement work it has delegated; focused and full work goes to the 7 specialists. Direct-route turns execute on the host. Platform enforcement varies. |
-| **Adventurer**   | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files                    | Before implementing in unfamiliar code, understanding how something works, finding where logic lives | Read/search only - no editing                                                                                                                                 |
-| **Architect**    | Architecture decisions - evaluates options through trade-off analysis, documents decisions              | Choosing between technologies, making design decisions, evaluating implementation approaches         | No state-mutating work; may research external sources                                                                                                         |
-| **Builder**      | Focused implementation - one atomic task per invocation                                                 | Bug fixes, feature work, tests, refactors - after reconnaissance and design are complete             | Full edit access. One atomic task per invocation. Reports at signature level.                                                                                 |
-| **Diagnose**     | Systematic debugging - traces errors from symptom to root cause                                         | Bugs, regressions, crashes, mysterious errors, failing tests                                         | Edit access only for confirmed fixes                                                                                                                          |
-| **Planner**      | Implementation plans - phased milestones with verification criteria                                     | Complex features needing structured rollout, migration plans, multi-phase work                       | No shell access; pure planning output                                                                                                                         |
-| **Reviewer**     | Code review - correctness, edge cases, security, performance, maintainability                           | Pre-merge review, security audit, post-implementation validation                                     | Read-only - cannot edit; supports multi-lens review swarms, observation-first verification, and triage output with [fix]/[dismiss]/[escalate] labels          |
-| **Writer**       | Documentation - structured patterns for READMEs, API docs, changelogs, decision records                 | Documenting code, writing READMEs, API docs, changelogs, architecture decisions                      | Full edit access for documentation files only                                                                                                                 |
+| Specialist | Role | When to Use | Key Constraints |
+| --- | --- | --- | --- |
+| **Orchestrator** | Router and manager - decomposes complex tasks, delegates routed work, integrates results | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination | Cannot implement delegated work; direct-route turns execute on the host. |
+| **Adventurer** | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files | Unfamiliar code, tracing how something works, finding where logic lives | Read/search only - no editing |
+| **Architect** | Architecture decisions - trade-off analysis and decision records | Technology or design choices, comparing implementation approaches | No state-mutating work; may research external sources |
+| **Builder** | Focused implementation - one atomic task per invocation | Bug fixes, features, tests, refactors after reconnaissance and design | Full edit access. One atomic task per invocation. Reports at signature level. |
+| **Diagnose** | Systematic debugging - traces errors from symptom to root cause | Bugs, regressions, crashes, mysterious errors, failing tests | Edit access only for confirmed fixes |
+| **Planner** | Implementation plans - phased milestones with verification criteria | Complex features needing structured rollout, migration plans, multi-phase work | Plan-only output; investigates with read-only tools |
+| **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Pre-merge review, security audit, post-implementation validation | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
+| **Writer** | Documentation - structured patterns for READMEs, API docs, changelogs, ADRs | READMEs, API docs, changelogs, architecture decisions | Documentation scope; not a code-editing role |
+
+## Methodology Skills
+
+Standalone skills the CLI installs and agents load when the assignment calls for them. A missing skill never blocks the work; follow the core directive instead.
+
+- **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
+- **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/skills/docs-update/SKILL.md)** - Documentation update procedure. Load it when docs work applies and follow it; ordinary docs work proceeds without it.
+- **[spec-contract](https://github.com/agustinusnathaniel/maestria/blob/main/skills/spec-contract/SKILL.md)** - Optional contract header shape for persistent intent across steps. Load it only when cross-step intent refs would reduce risk; absence is normal, and reviewers apply its drift and acceptance-coverage rules only when a header or owning spec is linked.
 
 ## See Also
 

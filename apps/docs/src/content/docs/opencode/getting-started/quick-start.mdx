@@ -5,21 +5,21 @@ description: Your first session with @maestria/opencode - delegating to speciali
 
 import { Aside } from '@astrojs/starlight/components';
 
-Once you've installed the plugin, all agents and rules are loaded automatically in every session - no extra commands, no manual setup.
+Once installed, all agents and rules load automatically in every session.
 
 <Aside type="caution" title="Choose the workflow before choosing the orchestrator">
   Maestria adds coordination and review sessions. For small changes or expensive, slow models,
-  direct execution or one specialist is often the better path. Read [When to use
+  direct execution or one specialist is often better. Read [When to use
   Maestria](/core/when-to-use/) first.
 </Aside>
 
 ## Start a Session
 
-Launch OpenCode as usual. The plugin wires itself in. Just start working.
+Launch OpenCode as usual. The plugin loads with it.
 
 ## Delegate to a Specialist
 
-Call any of the 7 specialists directly:
+Call any specialist directly:
 
 ```markdown
 @adventurer Explore the auth module and trace the login flow.
@@ -31,11 +31,9 @@ For unfamiliar, multi-file, or high-risk work, hand it to the orchestrator:
 @orchestrator I need to add rate limiting to the API. Plan and implement it.
 ```
 
-The orchestrator breaks the task down, delegates to the right specialists, and integrates the results.
+The orchestrator decomposes the task, delegates to specialists, and integrates the results. It routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles: `fein` for the full pipeline, `sonar` for research only, `blitz` for fast implementation. See the [Agent Reference](/core/agents/).
 
-The orchestrator routes work through [thinker → worker → verifier](/core/agents/#orchestration-model)
-roles. Use `fein` for full pipeline, `sonar` for research only, or `blitz` for fast implementation.
-See the [Agent Reference](/core/agents/) for details.
+For longer autonomous runs, the independent [OpenCode Goal Plugin](/ecosystem/opencode-goal-plugin/) adds Codex-style goal mode; Maestria neither requires nor activates it.
 
 ## Next Steps
 

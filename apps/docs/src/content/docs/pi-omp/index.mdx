@@ -4,88 +4,59 @@ description: Extend Pi or Oh My Pi with spec-driven orchestration, workflow mode
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Portable Engineering Workflows'
-  tagline: 'Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - configured in seconds.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /pi-omp/getting-started/installation/
-    - text: View on GitHub (Pi)
-      icon: external
-      variant: minimal
-      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/pi
-    - text: View on GitHub (OMP)
-      icon: external
-      variant: minimal
-      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/omp
 ---
 
-import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
 
-The same Maestria methodology that works on OpenCode is adapted for **Pi** and **Oh My Pi (OMP)**. The role names and workflow ideas carry over, but runtime behavior is not identical. Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read [When to use Maestria](/core/when-to-use/) before assuming that a workflow transfers unchanged.
+<div class="plugin-root plugin-title-wrap">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-<Aside type="tip">
-  **Pi** uses `@gotgenes/pi-subagents` for subagent dispatch via the `maestria_subagent` tool.
-  **OMP** has built-in `task()` dispatch - no external dependency needed.
-</Aside>
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow={'@MAESTRIA/PI & @MAESTRIA/OMP'}
+      title="Spec-driven, portable workflows."
+      lead="Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration."
+      mark={marks.piOmp}
+      primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/pi-omp/reference/', label: 'Reference' }}
+      installCommand="npx maestria install pi"
+    />
 
-## How It Works
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Two runtimes, one discipline."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Same method, adapted', desc: 'The Maestria methodology from OpenCode, adapted for Pi and Oh My Pi (OMP). Role names and workflow ideas carry over; runtime behavior does not.' },
+          { title: '7 specialist subagents', desc: 'Activation deploys 7 specialist agent files and auto-discovers the methodology skills.' },
+          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation. Each mode activates its subagents in sequence.' },
+          { title: 'Dispatch per runtime', desc: 'Pi dispatches through the @gotgenes/pi-subagents extension; OMP uses its built-in task() tool with no external dependency.' },
+          { title: 'Session tree tracking', desc: 'Every subagent dispatch records its parent task ID, preserving the session tree across turns.' },
+          { title: 'Honest about differences', desc: 'Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read When to Use before assuming a workflow transfers unchanged.' },
+        ]}
+      />
+    </PluginSection>
 
-1. **Install the extension** - one command for your platform
-2. **Extension activates** - deploys 7 specialist agent files, auto-discovers methodology skills, registers mode commands (`/fein`, `/sonar`, `/blitz`)
-3. **Mode commands drive the pipeline** - `/fein` (full pipeline), `/sonar` (research), `/blitz` (fast impl) - each activates the right subagents in sequence
-4. **Orchestrator dispatches** - decomposes work, delegates to specialists via subagent dispatch (Pi or OMP), enforces phase gates
-5. **Session tree tracks state** - each subagent invocation records its parent task ID, preserving the full session tree across turns
+    <RelatedDocs
+      links={[
+        { label: 'Quick start', href: '/pi-omp/getting-started/quick-start/' },
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Reference', href: '/pi-omp/reference/' },
+        { label: 'Changelog', href: '/pi-omp/changelog/' },
+        { label: 'Contributing', href: '/pi-omp/contributing/' },
+      ]}
+    />
 
-## Quick Install
+    <SiteFooter />
 
-```bash
-# Pi
-pnpx maestria@latest install pi
-
-# Oh My Pi
-omp install @maestria/omp
-```
-
-Both extensions are fully self-configuring - no manual config editing needed.
-
-<LinkButton href="/pi-omp/getting-started/installation/" size="lg">
-  Installation Guide →
-</LinkButton>
-
-## Platform Comparison
-
-| Feature             | Pi                                 | OMP                                             |
-| ------------------- | ---------------------------------- | ----------------------------------------------- |
-| Subagent dispatch   | `@gotgenes/pi-subagents` extension | Built-in `task()` tool                          |
-| Dispatch tool       | `maestria_subagent(agent, task)`   | `task(agent, task)` or `maestria_subagent(...)` |
-| Peer dependency     | `@gotgenes/pi-subagents`           | None                                            |
-| Enforcement tools   | `maestria_subagent` only           | `task` and `maestria_subagent`                  |
-| Agent discovery dir | `~/.pi/agent/agents/`              | `~/.omp/agent/agents/`                          |
-| Install command     | `pnpx maestria@latest install pi`  | `omp install @maestria/omp`                     |
-
-## Explore the Docs
-
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session."
-    href="/pi-omp/getting-started/installation/"
-  />
-  <LinkCard
-    title="Reference"
-    description="Commands, subagent dispatch, review mode, and session management."
-    href="/pi-omp/reference/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/pi-omp/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Project structure and how to extend."
-    href="/pi-omp/contributing/"
-  />
-</CardGrid>
+  </div>
+</div>

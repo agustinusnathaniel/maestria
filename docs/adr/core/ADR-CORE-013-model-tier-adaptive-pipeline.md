@@ -2,15 +2,13 @@
 
 ## Status
 
-Proposed evolution (2026-07-31). Unit 1 documents the contract; no adaptive routing is implemented by this ADR.
+Accepted (2026-07-31; updated 2026-09-10). Unit 1's three-route contract (direct, focused, full) is implemented in the canonical directives. Unit 2's model-economics tier model and selective routing remain proposed; `MAESTRIA_TIER` and automatic route selection are not implemented.
 
 ## Context
 
 ### The Pipeline Is a Token Multiplier by Construction
 
-Maestria's pipeline forces discipline through delegation: a "simple" task spawns `@adventurer` (recon) -> `@builder` (implement) -> `@reviewer` (verify), and a complex task adds `@architect`/`@planner`, the review loop (max 3 cycles), and the commit protocol (which spawns `@adventurer` for git inspection, `@builder` for execution). Each spawn loads a fresh 40-150K context plus megabytes of cached context, and every delegation briefing, result, and Work Results table accumulates in the orchestrator session forever.
-
-This is the mechanism of Maestria's discipline - and it is also a constant token multiplier on top of whatever the model costs.
+The pipeline forces discipline through delegation: a simple task spawns recon, implement, and verify; a complex task adds architecture and planning, the review loop (max 3 cycles), and the commit protocol. Each spawn loads a fresh context window plus cached context, and every briefing accumulates in the orchestrator session: a constant token multiplier on top of the model's cost.
 
 ### Session Data: The Multiplier's Cost Scales With Model Price
 
@@ -22,24 +20,23 @@ Usage data from the opencode session database (620 Maestria sessions) shows the 
 | Total cost              | $7.16                            | $6.60                            |
 | Cost per adventurer run | ~$0.011                          | ~$0.68                           |
 
-The same pipeline that costs pennies on flash costs dollars on kimi-k3. A frontier-model session (gpt-5.6-luna) shows the structural shape: one task spawned a long chain of sequential subagents, consuming far more cached than fresh input. The orchestrator's own session cost was negligible next to the amplification from delegation.
-
-A flash-class session (deepseek-v4-flash) shows the other failure mode: a day of frequent subagent spawns stays cheap, but the orchestrator session grows large and every spawn adds latency.
-
-Across the recon report, a Kimi adventurer run averaged about $0.683 and 452
-seconds, compared with about $0.011 and 81 seconds for flash. Orchestrator cache-read versus fresh-input cost differed by roughly 45x, and observed fan-out reached 58 children. These figures establish the cost and latency problem; they do not establish a universal route or a promised reduction. [verified]
+Kimi adventurer runs averaged about $0.68 and 452 seconds versus $0.011 and 81 seconds for flash, with cache-read cost roughly 45x fresh-input cost and fan-out reaching 58 children. A frontier session showed long sequential subagent chains with negligible orchestrator cost; on flash, frequent spawns stay cheap but the growing orchestrator session adds latency. These figures establish the cost and latency problem, not a universal route or a promised reduction. [verified]
 
 ### The Gap
 
-The orchestrator has no awareness of its own model's price or latency. It applies the same pipeline depth, fan-out caps (3-5 parallel), and review loops regardless of whether tokens cost a few cents or nearly a dollar per million and whether each spawn takes 2 seconds or 2 minutes. The workflow modes (`fein`/`sonar`/`blitz`) are platform-dependent, user-initiated mechanisms; they do not express persistent model economics. No universal tier variable or automatic adaptive route exists today. [verified]
-
-The result: Maestria is implicitly optimized for cheap, fast, weak-advantage models (flash-class), and becomes a net negative on frontier models, where the quality premium of narrow-focus delegation shrinks while the cost and latency multipliers stay constant.
+The orchestrator has no awareness of its own model's price or latency. It applies the same pipeline depth, fan-out caps (3-5 parallel), and review loops regardless of token price or spawn latency. The workflow modes (`fein`/`sonar`/`blitz`) are platform-dependent, user-initiated mechanisms; they do not express persistent model economics, and no universal tier variable or automatic adaptive route exists today. [verified] Maestria is therefore implicitly optimized for cheap, fast models and becomes a net negative on frontier models, where the quality premium of narrow-focus delegation shrinks while cost and latency multipliers stay constant.
 
 ## Decision
 
-Adopt staged evolution rather than claiming a runtime feature that does not exist. Unit 1 narrows the public contract to three routes: direct execution, a focused specialist or review, and the full pipeline. Users select a route based on task risk, uncertainty, model economics, and platform behavior. The full pipeline is explicitly selected or justified by the task; it is not a universal default. [inferred]
+Adopt staged evolution rather than claiming a runtime feature that does not exist. Unit 1 narrows the public contract to three routes: direct execution, a focused specialist or review, and the full pipeline. Users select a route based on task risk, uncertainty, model economics, and platform behavior; the full pipeline is explicitly selected or justified by the task, not a universal default. [inferred] Unit 2 may implement selective routing informed by model economics, preserving the route contract while making any new configuration or runtime behavior explicit.
 
-Unit 2 may implement selective routing informed by model economics. That future work must preserve the route contract while making any new configuration or runtime behavior explicit.
+### Runtime authority clarification (2026-08-12)
+
+The shared directive defines route selection and behavioral principles; the host runtime defines execution authority. OpenCode, OMP, and Kimi may require pure-dispatcher behavior where adapters or session permissions restrict the orchestrator; direct-capable runtimes may execute a direct route when their host permits. Delegated work remains owned by its specialist, and maker/checker requirements stay honest about the enforcement the host actually provides.
+
+### Unit 1 implementation status (2026-09-10)
+
+The three-route contract is implemented in the canonical directives: the orchestrator directive defines the `direct`/`focused`/`full` routing table, and the rules carry the smallest-route rule and mode overrides. Unit 2 remains unimplemented: no `MAESTRIA_TIER` variable and no automatic route selection.
 
 ### Proposed future tier model
 
@@ -49,7 +46,7 @@ Unit 2 may implement selective routing informed by model economics. That future 
 | `mid`      | mid-price models               | $0.5-2/M input | moderate |
 | `frontier` | gpt-5.6, kimi-k3 class         | > $2/M input   | slow     |
 
-This table is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is not implemented. No platform currently provides a universal tier setting or automatic route selection. [verified]
+This table is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is not implemented, and no platform currently provides a universal tier setting or automatic route selection. [verified]
 
 ### Future tier-scaled levers
 
@@ -65,50 +62,41 @@ This table is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is 
 
 ### What Does Not Change
 
-- **Tier scales the pipeline, not the rules.** `!!!` rules (never implement routed work yourself, maker/checker split, handoff contracts, iteration limits) still bind. Direct-route turns run on the host; focused and full turns delegate to the 7 specialists, and the orchestrator does not implement work routed to a specialist. A frontier orchestrator delegates fewer times and to fewer specialists. The maker/checker split is preserved on every code change that lands; only its frequency scales.
-- **Mode keywords still win.** `fein`/`sonar`/`blitz` are per-turn overrides that beat the tier default for that turn. Tier is the default; mode is the exception.
-- **The 7 specialists stay.** No specialist is removed at any tier. `frontier` skips stages, it does not delete agents.
-- **The sync pipeline is unaffected.** This is content (prompts) + config (tier declaration), not new plumbing. The orchestrator prompt gains a Tier section; platform frontmatter gains a tier setting.
+- **Tier scales the pipeline, not the safety principles.** Evidence-based completion, maker/checker review, bounded repair, and authorization floors still bind. The host runtime defines whether the orchestrator may execute directly; a frontier orchestrator delegates fewer times and to fewer specialists. The maker/checker split remains required where the route and host can provide it, and the directive must not claim stronger enforcement than the host provides.
+- **Mode keywords still win.** `fein`/`sonar`/`blitz` are per-turn overrides that beat the tier default.
+- **The 7 specialists stay.** No specialist is removed; `frontier` skips stages, not agents.
+- **The sync pipeline is unaffected.** This is prompt content plus a tier config declaration, not new plumbing.
 
 ## Consequences
 
 ### Positive
 
-- **The current contract becomes honest.** Users can choose direct, focused, or full work without inferring that every task receives the same pipeline.
-- **Cost and latency become explicit trade-offs.** The evidence shows large variation: 620 sessions cost $19.17 in aggregate; Kimi K3 sessions cost
-  $6.60 for 11 sessions versus $7.16 for 547 DeepSeek flash sessions. These figures describe observed usage, not a promised saving.
+- **The contract becomes honest.** Users can choose direct, focused, or full work without inferring that every task receives the same pipeline.
+- **Cost and latency become explicit trade-offs.** The observed variation is large (11 Kimi K3 sessions cost $6.60 versus $7.16 for 547 DeepSeek flash sessions), but these figures describe usage, not a promised saving.
 - **Future routing remains measurable.** Unit 2 can compare cost, latency, correction rate, and review findings by route.
 
 ### Negative
 
-- **Selective routing can miss useful checks.** A direct route gives up some structured handoffs and independent review. The guide therefore recommends escalation when uncertainty or risk increases.
-- **Platform differences limit portability.** OpenCode has stronger tool-level maker/checker enforcement. Kimi reviewer behavior is advisory unless a review-only session is configured. Pi and OMP have inherited-context and dispatch differences. Hermes defaults to `fein` but does not automatically create maker/checker enforcement for direct work.
+- **Selective routing can miss useful checks.** A direct route gives up structured handoffs and independent review; the guide recommends escalation when uncertainty or risk increases.
+- **Platform differences limit portability.** OpenCode has stronger tool-level maker/checker enforcement; Kimi reviewer behavior is advisory unless a review-only session is configured; Pi and OMP have inherited-context and dispatch differences; Hermes defaults to `fein` without automatic maker/checker enforcement for direct work.
 
 ## Alternatives Considered
 
 ### Option A: Keep the Pipeline Universal, Document the Constraint
 
-Document "Maestria is designed for cheap fast models" and leave the pipeline untouched.
-
-Rejected for the public contract. It hides a measurable cost and contradicts observed model and platform differences. [verified]
+Document "Maestria is designed for cheap fast models" and leave the pipeline untouched. Rejected for the public contract: it hides a measurable cost and contradicts observed model and platform differences. [verified]
 
 ### Option B: Collapse the Pipeline Only Via User-Initiated `blitz` Mode
 
-Require users on frontier models to prefix tasks with `blitz`.
-
-Rejected as the complete solution. `blitz` is not universal across platforms, and it is a task mode rather than a model-economics policy. [verified]
+Require users on frontier models to prefix tasks with `blitz`. Rejected as the complete solution: `blitz` is not universal across platforms and is a task mode, not a model-economics policy. [verified]
 
 ### Option C: Runtime Cost Feedback Loop
 
-The orchestrator reads its own session token/cost telemetry (where the platform exposes it) and adjusts fan-out dynamically.
-
-Deferred. Platform telemetry is inconsistent across opencode/kimi-code/pi, and dynamic self-tuning is a reliability risk in the core loop. The static tier is deterministic, testable, and covers the observed failure mode (steady-state amplification). Telemetry-driven tuning can be layered on later if the static tier proves too coarse.
+The orchestrator reads its own token/cost telemetry and adjusts fan-out dynamically. Deferred: platform telemetry is inconsistent across opencode/kimi-code/pi, and dynamic self-tuning is a reliability risk in the core loop. The static tier is deterministic, testable, and covers the observed failure mode; telemetry-driven tuning can be layered on later if the tier proves too coarse.
 
 ### Option D: Model Detection at Session Start
 
-The platform passes the resolved model name into the orchestrator context; Maestria maps known model IDs to tiers automatically.
-
-Deferred for the same reason as Option C: the mapping is platform-specific and brittle across model aliases and providers. Automatic capability classification is a non-goal for Unit 1. [inferred]
+The platform passes the resolved model name into orchestrator context and Maestria maps model IDs to tiers. Deferred for the same reason as Option C: the mapping is platform-specific and brittle across aliases and providers. Automatic capability classification is a non-goal for Unit 1. [inferred]
 
 ## Related Decisions
 

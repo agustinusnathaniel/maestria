@@ -1,15 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { MODE_KEYWORDS } from '@maestria/shared-mode';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+
 import {
-  MODE_KEYWORDS,
-  MODE_MARKERS,
-  loadModePrompt,
-  getModePrompt,
-  detectModeInText,
   buildModeText,
-} from '../src/modes-core.js';
+  detectModeInText,
+  getModePrompt,
+  loadModePrompt,
+  MODE_MARKERS,
+} from '@/modes-core.js';
+import type { ModeDetectResult } from '@/modes-core.js';
+
+const requireModeResult = (result: ModeDetectResult | null): ModeDetectResult => {
+  if (result === null) {
+    throw new Error('Expected a mode detection result');
+  }
+  return result;
+};
 
 // ── Constants ──
 
@@ -22,9 +31,9 @@ describe('MODE_KEYWORDS', () => {
 describe('MODE_MARKERS', () => {
   it('contains markers for all keywords', () => {
     expect(MODE_MARKERS).toEqual({
+      blitz: '[MODE: blitz]',
       fein: '[MODE: fein]',
       sonar: '[MODE: sonar]',
-      blitz: '[MODE: blitz]',
     });
   });
 });
@@ -53,17 +62,17 @@ describe('loadModePrompt', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = join(tmpdir(), `maestria-load-${Date.now()}`);
+    tmpDir = path.join(tmpdir(), `maestria-load-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('reads content after ## MODE: marker', () => {
     writeFileSync(
-      join(tmpDir, 'fein.md'),
+      path.join(tmpDir, 'fein.md'),
       '# Title\n\nSome intro text.\n\n## MODE: fein\n\nFull pipeline for fein.\n',
     );
     const result = loadModePrompt('fein', tmpDir);
@@ -71,13 +80,13 @@ describe('loadModePrompt', () => {
   });
 
   it('returns entire content if no mode marker is found', () => {
-    writeFileSync(join(tmpDir, 'sonar.md'), 'Some text without a marker.\n');
+    writeFileSync(path.join(tmpDir, 'sonar.md'), 'Some text without a marker.\n');
     const result = loadModePrompt('sonar', tmpDir);
     expect(result).toBe('Some text without a marker.\n');
   });
 
   it('trims trailing whitespace before appending newline', () => {
-    writeFileSync(join(tmpDir, 'blitz.md'), '## MODE: blitz\n\ncontent   \n  \n');
+    writeFileSync(path.join(tmpDir, 'blitz.md'), '## MODE: blitz\n\ncontent   \n  \n');
     const result = loadModePrompt('blitz', tmpDir);
     expect(result).toBe('## MODE: blitz\n\ncontent\n');
   });
@@ -89,16 +98,15 @@ describe('getModePrompt', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = join(tmpdir(), `maestria-prompt-${Date.now()}`);
-    mkdirSync(tmpDir, { recursive: true });
+    tmpDir = mkdtempSync(path.join(tmpdir(), 'maestria-prompt-'));
     // Create minimal prompt files
     for (const kw of MODE_KEYWORDS) {
-      writeFileSync(join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\nFull pipeline for ${kw}.`);
+      writeFileSync(path.join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\nFull pipeline for ${kw}.`);
     }
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('returns marker + loaded prompt for a keyword', () => {
@@ -109,15 +117,40 @@ describe('getModePrompt', () => {
 
   it('separates marker and body with blank line', () => {
     const result = getModePrompt('sonar', tmpDir);
-    expect(result).toMatch(/^\[MODE: sonar\]\n\n## MODE:/);
+    expect(result).toMatch(/^\[MODE: sonar\]\n\n## MODE:/u);
   });
 
   it('returns marker with empty body for unknown prompt file', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     // Remove one file to simulate missing prompt
-    rmSync(join(tmpDir, 'blitz.md'));
-    const result = getModePrompt('blitz', tmpDir);
-    // Should still produce the marker, empty body due to catch in getModePrompt
-    expect(result).toBe('[MODE: blitz]\n\n');
+    rmSync(path.join(tmpDir, 'blitz.md'));
+    try {
+      const result = getModePrompt('blitz', tmpDir);
+      // Should still produce the marker, empty body due to catch in getModePrompt
+      expect(result).toBe('[MODE: blitz]\n\n');
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load mode prompt "blitz"'),
+        expect.any(Error),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('loads prompt content independently for each commands directory', () => {
+    const initial = getModePrompt('fein', tmpDir);
+    expect(initial).toContain('Full pipeline for fein.');
+
+    const alternateDir = mkdtempSync(path.join(tmpdir(), 'maestria-prompt-alt-'));
+    try {
+      writeFileSync(
+        path.join(alternateDir, 'fein.md'),
+        '## MODE: fein\n\nAlternate pipeline for fein.',
+      );
+      expect(getModePrompt('fein', alternateDir)).toContain('Alternate pipeline for fein.');
+    } finally {
+      rmSync(alternateDir, { force: true, recursive: true });
+    }
   });
 });
 
@@ -127,38 +160,40 @@ describe('detectModeInText', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = join(tmpdir(), `maestria-detect-${Date.now()}`);
-    mkdirSync(tmpDir, { recursive: true });
+    tmpDir = mkdtempSync(path.join(tmpdir(), 'maestria-detect-'));
     // Create minimal prompt files
     for (const kw of MODE_KEYWORDS) {
-      writeFileSync(join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\nFull pipeline for ${kw}.`);
+      writeFileSync(path.join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\nFull pipeline for ${kw}.`);
     }
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('detects fein at start of text', () => {
     const result = detectModeInText('fein implement login', tmpDir);
     expect(result).not.toBeNull();
-    expect(result!.keyword).toBe('fein');
-    expect(result!.strippedText).toBe('implement login');
-    expect(result!.prompt).toContain('[MODE: fein]');
+    const detected = requireModeResult(result);
+    expect(detected.keyword).toBe('fein');
+    expect(detected.strippedText).toBe('implement login');
+    expect(detected.prompt).toContain('[MODE: fein]');
   });
 
   it('detects sonar at start', () => {
     const result = detectModeInText('sonar investigate auth', tmpDir);
     expect(result).not.toBeNull();
-    expect(result!.keyword).toBe('sonar');
-    expect(result!.strippedText).toBe('investigate auth');
+    const detected = requireModeResult(result);
+    expect(detected.keyword).toBe('sonar');
+    expect(detected.strippedText).toBe('investigate auth');
   });
 
-  it('detects blitz in middle of text', () => {
+  it('detects blitz in middle of text, collapsing double spaces', () => {
     const result = detectModeInText('quick blitz fix', tmpDir);
     expect(result).not.toBeNull();
-    expect(result!.keyword).toBe('blitz');
-    expect(result!.strippedText).toBe('quick  fix');
+    const detected = requireModeResult(result);
+    expect(detected.keyword).toBe('blitz');
+    expect(detected.strippedText).toBe('quick fix');
   });
 
   it('returns null for text without keywords', () => {
@@ -172,8 +207,9 @@ describe('detectModeInText', () => {
   it('is case insensitive', () => {
     const result = detectModeInText('FEIN implement login', tmpDir);
     expect(result).not.toBeNull();
-    expect(result!.keyword).toBe('fein');
-    expect(result!.strippedText).toBe('implement login');
+    const detected = requireModeResult(result);
+    expect(detected.keyword).toBe('fein');
+    expect(detected.strippedText).toBe('implement login');
   });
 
   it('matches whole words only (not substring)', () => {
@@ -181,10 +217,46 @@ describe('detectModeInText', () => {
     expect(detectModeInText('coffein', tmpDir)).toBeNull();
   });
 
-  it('detects first matching keyword in iteration order (fein > sonar > blitz)', () => {
-    // If multiple keywords appear, the first in iteration order wins
-    const result = detectModeInText('fein sonar blitz', tmpDir);
+  it('most restrictive keyword wins (fein > sonar > blitz)', () => {
+    // If multiple keywords appear, the most restrictive wins regardless of position
+    const r1 = detectModeInText('fein sonar blitz', tmpDir);
+    expect(r1).not.toBeNull();
+    expect(requireModeResult(r1).keyword).toBe('fein');
+
+    const r2 = detectModeInText('blitz sonar', tmpDir);
+    expect(r2).not.toBeNull();
+    expect(requireModeResult(r2).keyword).toBe('sonar');
+
+    const r3 = detectModeInText('blitz sonar fein', tmpDir);
+    expect(r3).not.toBeNull();
+    expect(requireModeResult(r3).keyword).toBe('fein');
+  });
+
+  it('does not match inside fenced code blocks', () => {
+    const result = detectModeInText('```blitz this```', tmpDir);
+    expect(result).toBeNull();
+  });
+
+  it('does not match inside inline backtick content', () => {
+    const result = detectModeInText('run `blitz` command', tmpDir);
+    expect(result).toBeNull();
+  });
+
+  it('detects keyword outside code block correctly', () => {
+    const result = detectModeInText('some code:\n```\nconst x = 1;\n```\nfein then build', tmpDir);
     expect(result).not.toBeNull();
-    expect(result!.keyword).toBe('fein');
+    const detected = requireModeResult(result);
+    expect(detected.keyword).toBe('fein');
+    // Code fences are preserved; only the keyword is removed. The keyword sat
+    // after a newline, so the leftover space stays (trim only strips string ends).
+    expect(detected.strippedText).toBe('some code:\n```\nconst x = 1;\n```\n then build');
+  });
+
+  it('strips trailing colon after keyword', () => {
+    const result = detectModeInText('fein: build the feature', tmpDir);
+    expect(result).not.toBeNull();
+    const detected = requireModeResult(result);
+    expect(detected.keyword).toBe('fein');
+    expect(detected.strippedText).toBe('build the feature');
   });
 });

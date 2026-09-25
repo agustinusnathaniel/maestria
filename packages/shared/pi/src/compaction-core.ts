@@ -1,7 +1,7 @@
 /**
  * Shared compaction handlers for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
  *
  * @module
@@ -10,44 +10,77 @@
 import { renderMaestriaSummary } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
 
+export interface CompactionEvent {
+  preparation?: {
+    firstKeptEntryId?: string;
+    tokensBefore?: number;
+  };
+}
+
+export interface TreeEvent {
+  preparation?: {
+    userWantsSummary?: boolean;
+  };
+}
+
+export interface CompactionResult {
+  compaction?: {
+    details?: unknown;
+    firstKeptEntryId: string;
+    summary: string;
+    tokensBefore: number;
+  };
+}
+
+export interface TreeResult {
+  summary?: {
+    summary: string;
+  };
+}
+
+export type CompactionOn = (
+  ...args:
+    | ['session_before_compact', (event: CompactionEvent) => CompactionResult]
+    | ['session_before_tree', (event: TreeEvent) => TreeResult | undefined]
+) => void;
+
+/**
+ * Event registration surface shared by the pi-family hosts. Declared as
+ * overloaded call signatures (matching the host `ExtensionAPI.on` shape) so
+ * both hosts satisfy it structurally without casts.
+ */
+export interface CompactionPi {
+  on: {
+    (event: 'session_before_compact', handler: (event: CompactionEvent) => CompactionResult): void;
+    (event: 'session_before_tree', handler: (event: TreeEvent) => TreeResult | undefined): void;
+  };
+}
+
 /**
  * Install handlers for session compaction and tree events to persist
  * and restore maestria state across session compaction boundaries.
- *
- * Uses duck-typed `pi` parameter — both Pi and OMP ExtensionAPI types
- * satisfy the `{ on(event: string, handler): void }` shape needed here.
  */
-export function installCompactionHandlers(
-  pi: {
-    on: (event: string, handler: (...args: unknown[]) => unknown) => void;
-  },
-  state: MaestriaState,
-): void {
-  pi.on('session_before_compact', (event: unknown) => {
-    const prep = (event as Record<string, unknown>).preparation as
-      | Record<string, unknown>
-      | undefined;
+export const installCompactionHandlers = (pi: CompactionPi, state: MaestriaState): void => {
+  pi.on('session_before_compact', (event: CompactionEvent) => {
+    const prep = event.preparation;
     return {
       compaction: {
-        summary: renderMaestriaSummary(state),
         details: { ...state },
-        firstKeptEntryId: prep?.firstKeptEntryId,
-        tokensBefore: prep?.tokensBefore,
+        firstKeptEntryId: prep?.firstKeptEntryId ?? '',
+        summary: renderMaestriaSummary(state),
+        tokensBefore: prep?.tokensBefore ?? 0,
       },
     };
   });
 
-  pi.on('session_before_tree', (event: unknown) => {
-    const prep = (event as Record<string, unknown>).preparation as
-      | Record<string, unknown>
-      | undefined;
-    if (prep?.userWantsSummary) {
-      return {
-        summary: {
-          summary: renderMaestriaSummary(state),
-        },
-      };
-    }
-    return undefined;
+  pi.on('session_before_tree', (event: TreeEvent) => {
+    const prep = event.preparation;
+    return prep?.userWantsSummary === true
+      ? {
+          summary: {
+            summary: renderMaestriaSummary(state),
+          },
+        }
+      : undefined;
   });
-}
+};

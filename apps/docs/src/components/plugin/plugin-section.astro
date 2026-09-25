@@ -1,0 +1,56 @@
+---
+/**
+ * Numbered section scaffold for plugin overview pages - the homepage section
+ * header language (`01 / THE METHOD`) as a reusable component. Spacing
+ * between sections is owned by the page: pass `class="mb-[…]"` like the
+ * homepage does.
+ */
+interface Props {
+  /** Section number shown lime-dim before the kicker, e.g. '01'. */
+  index: string;
+  /** Uppercase kicker after the number, e.g. 'CAPABILITIES'. */
+  kicker: string;
+  title: string;
+  /** Optional id for in-page anchors; also wires aria-labelledby. */
+  id?: string;
+}
+
+const { index, kicker, title, id } = Astro.props;
+---
+
+<section class:list={['home-section', Astro.props.class]} aria-labelledby={id ? `${id}-title` : undefined} id={id}>
+  <p class="section-eyebrow plugin-eyebrow">
+    <span class="plugin-index">{index}</span>
+    <span aria-hidden="true"> / </span>{kicker}
+  </p>
+  <h2 id={id ? `${id}-title` : undefined} class="plugin-title">{title}</h2>
+  <slot />
+</section>
+
+<style>
+  /* Match the homepage eyebrow treatment (mono identity moment). The global
+     `.section-eyebrow` provides color/case/margin; these scoped rules add the
+     mono family and tracking used on the homepage. */
+  .plugin-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+  }
+
+  .plugin-index {
+    color: var(--home-accent);
+    opacity: 0.75;
+  }
+
+  /* Sub-page headings run one step smaller than homepage section headings. */
+  .plugin-title {
+    margin-bottom: 2rem;
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 560;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--home-text);
+    text-wrap: balance;
+  }
+</style>

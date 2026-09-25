@@ -1,8 +1,14 @@
 {
   "name": "@maestria/core",
-  "version": "0.7.0",
+  "version": "0.8.5",
   "private": true,
   "type": "module",
+  "exports": {
+    "./skill-validator": {
+      "types": "./scripts/lib/skill-validator.ts",
+      "import": "./scripts/lib/skill-validator.ts"
+    }
+  },
   "scripts": {
     "test": "vp test"
   },

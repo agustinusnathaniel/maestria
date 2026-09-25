@@ -1,77 +1,49 @@
 # @maestria/pi
 
-A [Pi coding agent](https://pi.software/) extension that brings Maestria's structured agent orchestration to Pi.
+A [Pi coding agent](https://pi.software/) extension that brings Maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
 
-## Features
-
-- **4 Methodology Skills** - Orchestrator dispatcher, global agent rules, handoff contract, and iteration limits - automatically injected into every session via Pi's standard skill system (`SKILL.md` files registered in `pi.skills`)
-- **3 Workflow Modes** - `fein` (full pipeline), `sonar` (research only), `blitz` (fast implementation)
-- **Skill-Based Prompt Injection** - Behavioral instructions injected via Pi's native skill mechanism, not custom event hooks. Skills are auto-discovered from the package manifest and loaded into the system prompt by Pi's resource loader - the standard pattern used by all major Pi extensions.
-- **Compaction Preservation** - Session state survives compaction with structured summaries
-- **Subagent Dispatch** - Delegation via `@gotgenes/pi-subagents` with 6-field handoff validation
-- **Maker/Checker Split** - Review mode blocks destructive tools. Dangerous bash patterns flagged.
+> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
-### Recommended: via maestria CLI
-
 ```bash
+# Recommended: via the maestria CLI (installs the peer dependency too)
 pnpx maestria@latest install pi
-```
 
-The CLI automatically installs both `@gotgenes/pi-subagents` (required peer dependency for subagent dispatch) and `@maestria/pi` in the correct order.
-
-### Alternative: manual Pi CLI
-
-```bash
-# Install required peer dependency first
+# Manual: install the required peer dependency first, then the extension
 pi install npm:@gotgenes/pi-subagents
-
-# Install the extension
 pi install npm:@maestria/pi
 ```
 
-### Uninstall
+Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` peer dependency is shared with other Pi extensions; only remove it separately if nothing else needs it.
 
-```bash
-# Via maestria CLI (removes @maestria/pi)
-pnpx maestria@latest uninstall pi
-```
+## What It Provides
 
-Note: `@gotgenes/pi-subagents` is a shared dependency that other Pi extensions may use. Only remove it if no other extensions need it:
+- **Methodology skills** (4 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session.
+- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi-omp/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Compaction preservation** - session state survives compaction with structured summaries.
+- **Subagent dispatch** - delegation to specialist subagents via the `@gotgenes/pi-subagents` peer package.
+- **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
+- **Root project customization** - `.maestria/workflow.md` then `.maestria/rules.md` from the session directory, injected every turn as subordinate guidance (never waives safety, authorization, or host permissions).
 
-```bash
-pi uninstall @gotgenes/pi-subagents
-```
+## Root Project Customization
 
-## Commands
+Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (rules) at the root of the directory you open the session in. Scope is root-only: no ancestor scan, no nested inheritance, and the root is the host-selected session cwd read live each turn (never a process-global). Files are re-read in full on every `before_agent_start` turn, so additions, edits, and deletions apply on the next turn with no restart; nothing is persisted to session entries or compaction state, and post-compaction turns pick up the same fresh read. Absent or empty files leave the prompt unchanged. A present-but-unusable file (directory, special file, unreadable, unresolvable, or a symlink escaping the root) surfaces via a UI notification plus a STOP banner in the system prompt telling the model to report the error and wait, instead of running with silently absent config. Diagnostics name only the relative file and the failure kind. Whether subagent turns automatically receive the same injection is unverified, so delegation briefs still carry the active constraints. Limitation: the Pi host swallows `before_agent_start` handler exceptions, so a broken file cannot cancel the model call itself; the notification plus banner is the loudest supported signal.
 
-| Command | Description |
-| --- | --- |
-| `/fein <goal>` | Set workflow mode to full pipeline (recon → design → impl → review) |
-| `/sonar <goal>` | Set workflow mode to research only (recon → design → stop) |
-| `/blitz <goal>` | Set workflow mode to fast implementation (builder directly) |
-| `/review <target>` | Enter review mode - blocks destructive tools, sets read-only toolset |
-| `/restore-model` | Restore the original model and tools active before review mode |
-| `/handoff <goal>` | Generate a structured handoff prompt for a new task context |
-| `/review-model <model-id>` | Set which model to use when entering review mode |
-| `/maestria-status` | Show current maestria session state including handoff history |
+## Support / Platform Notes
 
-## Development
+- Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package; the maestria CLI installs it for you.
+- The methodology is advisory prompt guidance; the maker/checker split is enforced at the tool level only where Pi supports review-mode tool blocking.
+- Pi-specific: `@maestria/omp` is a separate package for Oh My Pi.
 
-```bash
-# Install dependencies
-pnpm install
+## Documentation and Changelog
 
-# Build
-vp pack
+- [User-facing documentation](https://maestria.sznm.dev/pi-omp/) on the docs site (shared with `@maestria/omp`)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/CHANGELOG.md)
 
-# Test
-vp test
+## Contributing
 
-# Format, lint, type-check
-vp check
-```
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

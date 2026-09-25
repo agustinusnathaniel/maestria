@@ -2,15 +2,15 @@
 
 import { createTwoFilesPatch } from 'diff';
 
-export function unifiedDiff(
+export const unifiedDiff = (
   oldPath: string,
   newPath: string,
   oldContent: string,
   newContent: string,
-): string {
+): string => {
   try {
     return createTwoFilesPatch(oldPath, newPath, oldContent, newContent);
   } catch {
     return '[diff generation failed]\n';
   }
-}
+};

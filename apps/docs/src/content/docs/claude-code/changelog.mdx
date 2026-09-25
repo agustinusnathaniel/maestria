@@ -1,0 +1,108 @@
+---
+title: Changelog
+description: Release history for @maestria/claude-code.
+---
+
+## v0.3.11
+
+_September 23, 2026_
+
+- Project customization (`.maestria/workflow.md` then `.maestria/rules.md`) loads as subordinate guidance; see the [methodology changelog](/core/changelog/).
+- `create-pull-request` and `docs-update` skills install through the skills CLI with per-skill selection; see the [CLI changelog](/cli/changelog/).
+
+## v0.3.10
+
+_September 18, 2026_
+
+- Consistent PR delivery contract with proportional documentation assessment; see the [methodology changelog](/core/changelog/).
+
+## v0.3.9
+
+_September 17, 2026_
+
+- Stricter visual delivery evidence contract, with capture, PR-body publication, and readback as distinct stages; see the [methodology changelog](/core/changelog/).
+
+## v0.3.8
+
+_September 16, 2026_
+
+- Defined when Sonar research is complete, with Blitz reusing valid context and switching routes for investigation or design work; see the [methodology changelog](/core/changelog/).
+
+## v0.3.7
+
+_September 15, 2026_
+
+- Clarified rendered verification and visual delivery evidence, keeping required artifacts and verification gaps in handoffs; see the [methodology changelog](/core/changelog/).
+
+## v0.3.6
+
+_September 11, 2026_
+
+- Internal consolidation; duplicated specialist guidance was removed from generated orchestrator skills, with the guidance unchanged in substance.
+
+## v0.3.5
+
+_September 6, 2026_
+
+- Clarified installation paths, prerequisites, and support boundaries in the package documentation.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.4
+
+_September 4, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.3
+
+_September 3, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.2
+
+_August 25, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.1
+
+_August 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.0
+
+_August 22, 2026_
+
+### Leaner directives, explicit delivery autonomy
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.2.1
+
+### Marketplace and CLI installation
+
+- The published package can be installed, checked, updated, and removed with `maestria install claude-code`, `maestria status`, `maestria update claude-code`, and `maestria uninstall claude-code`.
+- The Maestria CLI stages the npm package in a local marketplace and delegates installation state to Claude Code's native plugin manager.
+- Exact version pinning is not supported for `maestria update claude-code --version`; the host marketplace selects the latest package.
+- Plugin metadata now stays aligned with package versions: release-time version sync is generalized across plugins and a `--check` mode fails the build on drift, so the published plugin artifact can no longer diverge from npm metadata.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.2.0
+
+_Initial release_
+
+### Declarative Claude Code plugin
+
+`@maestria/claude-code` is a declarative Claude Code plugin generated from the canonical directives in `packages/core/agent-directives/`:
+
+- **7 specialist agents** with global-rules skill preloading - `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` - available as `@maestria:<agent>` mentions
+- **Orchestrator and global-rules skills** - `/maestria:orchestrator` routes work to specialists; `maestria:global-rules` is preloaded into every agent
+- **Workflow commands** - `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` select the pipeline depth
+- **Read-only enforcement** - `adventurer`, `planner`, and `reviewer` deny `Write`/`Edit` via `disallowedTools` (user-authorized; the only runtime enforcement)
+- **Local validation** - `claude plugin validate --strict` is the automated gate; marketplace installation is available through Claude Code or the Maestria CLI
+
+### Shared directive updates
+
+The plugin tracks the shared agent directives as they evolve. Cross-cutting changes reflected in this release are tracked in the [methodology changelog](/core/changelog/).

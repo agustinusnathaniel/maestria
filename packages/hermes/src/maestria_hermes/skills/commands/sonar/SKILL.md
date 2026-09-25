@@ -1,6 +1,6 @@
 ---
-name: maestria-command-sonar
 description: "Research-only mode: reconnaissance and design only, no implementation"
+name: maestria-command-sonar
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
@@ -10,4 +10,6 @@ description: "Research-only mode: reconnaissance and design only, no implementat
 
 ## MODE: sonar (Research Only)
 
-Research mode: reconnaissance and design only. Delegate to adventurer (recon) followed by architect or planner (analysis/design). STOP after delivering findings and design. Do NOT implement, write code, or create any production files.
+Activate research-only mode. Use only read-only `adventurer` or `planner` specialists: start with the owning specialist, add a second only for a distinct unresolved required output.
+
+Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties. Do not implement, write code, or create production files.

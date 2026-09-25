@@ -1,0 +1,42 @@
+# Engineering Documentation
+
+## Purpose
+
+Find the current instructions, design rationale, and historical context needed to work on Maestria.
+
+## Audience
+
+Contributors, maintainers, and platform adapter authors. To install or use Maestria, start with the [public documentation](https://maestria.sznm.dev) or a [package README](../README.md#packages).
+
+## Start with Your Task
+
+| Task | Read |
+| --- | --- |
+| Set up the repository and submit a change | [Contributing](../CONTRIBUTING.md) |
+| Understand project goals and workflow patterns | [Vision](../VISION.md) and [Patterns](../PATTERNS.md) |
+| Work as an agent in this repository | [Repository instructions](../AGENTS.md) |
+| Edit prompts, rules, or workflow modes | [Canonical directive ownership](../packages/core/agent-directives/README.md) |
+| Check a platform's support boundary | [Runtime support matrix](runtime-support-matrix.md) |
+| Choose verification for a change | [Testing philosophy](testing.md), [completion checklist](checklist.md), and [directive change review](directive-change-review.md) for canonical directive edits |
+| Write or revise documentation | [Documentation conventions](guides/doc-format.md) |
+
+## Find a Design Decision
+
+ADRs record why a design was chosen, including alternatives and trade-offs. Read the relevant record before changing architecture; use current guides and source code to confirm present behavior.
+
+| Area                                                      | Records                          |
+| --------------------------------------------------------- | -------------------------------- |
+| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/)           |
+| OpenCode permissions and workflow modes                   | [OpenCode ADRs](adr/opencode/)   |
+| Kimi Code distribution and integration                    | [Kimi Code ADRs](adr/kimi-code/) |
+| Cursor integration                                        | [Cursor ADRs](adr/cursor/)       |
+| Hermes integration and orchestration                      | [Hermes ADRs](adr/hermes/)       |
+| Pi and Oh My Pi ecosystem and lifecycle                   | [Pi ADRs](adr/pi/)               |
+
+## Plans
+
+[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
+
+## Next Step
+
+Choose the document for your task above. When adding a new engineering guide, link it here if it provides a new entry point.

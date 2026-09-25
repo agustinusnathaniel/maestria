@@ -1,6 +1,6 @@
 {
   "name": "@maestria/shared-pi",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -16,6 +16,14 @@
       "import": "./src/compaction-core.ts",
       "types": "./src/compaction-core.ts"
     },
+    "./commands-core": {
+      "import": "./src/commands-core.ts",
+      "types": "./src/commands-core.ts"
+    },
+    "./review-core": {
+      "import": "./src/review-core.ts",
+      "types": "./src/review-core.ts"
+    },
     "./state-core": {
       "import": "./src/state-core.ts",
       "types": "./src/state-core.ts"
@@ -27,10 +35,19 @@
     "./tools-core": {
       "import": "./src/tools-core.ts",
       "types": "./src/tools-core.ts"
+    },
+    "./project-config": {
+      "import": "./src/project-config.ts",
+      "types": "./src/project-config.ts"
     }
   },
   "scripts": {
     "test": "vp test"
+  },
+  "dependencies": {
+    "@maestria/shared-mode": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
+    "es-toolkit": "^1.52.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

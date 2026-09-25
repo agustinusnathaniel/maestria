@@ -1,28 +1,75 @@
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
-import { persistState, restoreOriginalState } from '@/state.js';
+import type {
+  ExtensionAPI,
+  ExtensionContext,
+  InputEventResult,
+} from '@earendil-works/pi-coding-agent';
 import {
   installModeAutoDetect as installAutoDetect,
   installModeCommands as installCommands,
 } from '@maestria/shared-pi/modes-core';
+import type { ModeCommandContext } from '@maestria/shared-pi/modes-core';
+import { persistState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import path from 'node:path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
+import { restoreOriginalState } from '@/state/review.js';
 
-export function installModeAutoDetect(pi: ExtensionAPI, state: MaestriaState): void {
-  installAutoDetect((handler) => pi.on('input', handler as never), state, COMMANDS_DIR, {
-    restoreOriginalState: (ctx) => restoreOriginalState(pi, ctx as ExtensionContext, state),
-    persistState: () => persistState(pi, state),
-    noMatch: { action: 'continue' as const },
-    transform: (text) => ({ action: 'transform' as const, text }),
-  });
-}
+const __dirname = import.meta.dirname;
+const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');
 
-export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): void {
-  installCommands((name, opts) => pi.registerCommand(name, opts as never), state, {
-    restoreOriginalState: (ctx) => restoreOriginalState(pi, ctx as ExtensionContext, state),
-    persistState: () => persistState(pi, state),
-  });
-}
+const isExtensionContext = (value: unknown): value is ExtensionContext => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  return 'modelRegistry' in value && 'ui' in value;
+};
+
+export const installModeAutoDetect = (pi: ExtensionAPI, state: MaestriaState): void => {
+  installAutoDetect<ExtensionContext, InputEventResult>(
+    (handler) => {
+      pi.on('input', handler);
+    },
+    state,
+    COMMANDS_DIR,
+    {
+      noMatch: { action: 'continue' as const },
+      persistState: () => {
+        persistState(pi, state);
+      },
+      restoreOriginalState: async (ctx) =>
+        isExtensionContext(ctx) ? await restoreOriginalState(pi, ctx, state) : false,
+      transform: (text) => ({ action: 'transform' as const, text }),
+    },
+  );
+};
+
+type ModeCommandsHost = Pick<ExtensionAPI, 'appendEntry' | 'setActiveTools' | 'setModel'> & {
+  registerCommand: (
+    name: string,
+    options: {
+      description: string;
+      handler: (args: string, ctx: ModeCommandContext) => Promise<void>;
+    },
+  ) => void;
+};
+
+export const installModeCommands = (pi: ModeCommandsHost, state: MaestriaState): void => {
+  installCommands<ModeCommandContext>(
+    (name, opts) => {
+      pi.registerCommand(name, {
+        description: opts.description,
+        handler: async (args, ctx) => {
+          await opts.handler(args, ctx);
+        },
+      });
+    },
+    state,
+    {
+      persistState: () => {
+        persistState(pi, state);
+      },
+      restoreOriginalState: async (ctx) =>
+        isExtensionContext(ctx) ? await restoreOriginalState(pi, ctx, state) : false,
+    },
+  );
+};

@@ -6,7 +6,7 @@ Accepted (2026-06-18)
 
 ## Context
 
-As more plugins land (opencode, kimi-code, future Cursor/Copilot variants), a flat `docs/adr/` directory becomes hard to navigate. ADRs for different plugins have no clear separation, and cross-cutting decisions get mixed with plugin-specific ones. A pre-existing duplicate under the old flat naming scheme (what was then ADR-004 existed for both opencode and kimi-code) made the flat layout actively confusing - upstream collision resolution was brittle and required manual renumbering.
+As more plugins land (opencode, kimi-code, future Cursor/Copilot variants), a flat `docs/adr/` directory becomes hard to navigate. Plugin-specific decisions mix with cross-cutting ones, and a pre-existing duplicate under the old flat naming scheme (what was then ADR-004 existed for both opencode and kimi-code) made upstream collision resolution brittle and required manual renumbering.
 
 ## Decision
 
@@ -32,37 +32,16 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 
 ### Current Prefix Assignments
 
-| Prefix | Name      | Subdirectory          | ADR Range |
-| ------ | --------- | --------------------- | --------- |
-| CORE   | Core      | `docs/adr/core/`      | 000–014   |
-| CR     | Cursor    | `docs/adr/cursor/`    | 001–0xx   |
-| HM     | Hermes    | `docs/adr/hermes/`    | 000–002   |
-| OC     | Opencode  | `docs/adr/opencode/`  | 000–005   |
-| KC     | Kimi Code | `docs/adr/kimi-code/` | 000–001   |
-| PI     | Pi + OMP  | `docs/adr/pi/`        | 000–002   |
-
-A new plugin (e.g. Cursor) gets its own subdirectory and prefix (e.g. `docs/adr/cursor/`, prefix `CR`, range 000–0xx) without disturbing existing ADRs.
+Prefixes: CORE (Core, `docs/adr/core/`), CR (Cursor, `docs/adr/cursor/`), HM (Hermes, `docs/adr/hermes/`), OC (Opencode, `docs/adr/opencode/`), KC (Kimi Code, `docs/adr/kimi-code/`), PI (Pi + OMP, `docs/adr/pi/`). A new plugin (e.g. Cursor) gets its own subdirectory and prefix without disturbing existing ADRs.
 
 ## Consequences
 
 - Plugin-specific ADRs are scoped under their plugin's subdir, making ownership and discoverability clearer.
 - Prefix-scoping eliminates cross-directory number collisions - no conflict resolution or renumbering needed.
-- A new plugin (e.g. Cursor) gets its own subdir and prefix without disturbing existing ADRs.
 - Cross-references between ADRs use relative paths; see existing ADRs for examples (e.g. `core/ADR-CORE-001-...` referenced from a `kimi-code/` ADR uses `../core/...`).
 
 ## Related Decisions
 
-- ADR-CORE-001 (global rules scope)
-- ADR-CORE-002 (plugin architecture)
-- ADR-CORE-003 (agent conventions)
-- ADR-CORE-004 (agent prompt template)
-- ADR-OC-000 (skill install flow)
-- ADR-OC-001 (tool permission design)
-- ADR-OC-002 (opensrc vs webfetch guidance)
-- ADR-OC-003 (keyword-triggered workflow modes)
-- ADR-OC-004 (commit authorization rules)
-- ADR-KC-000 (kimi-code distribution)
-- ADR-KC-001 (kimi-code architecture)
-- ADR-PI-000 (pi ecosystem reuse)
-- ADR-PI-001 (rules injection)
-- ADR-PI-002 (compaction state preservation)
+- ADR directories (the current list lives in each subdirectory; do not enumerate ADRs here): [core](./), [opencode](../opencode/), [kimi-code](../kimi-code/), [cursor](../cursor/), [hermes](../hermes/), [pi](../pi/).
+- [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - extends this layout with the shared core content package.
+- [ADR-CORE-018](ADR-CORE-018-documentation-standard.md) - documents ADRs as a doc type under the documentation standard.

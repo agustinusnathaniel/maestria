@@ -1,238 +1,115 @@
 ---
 title: Getting Started
-description: Install and use maestria to manage maestria plugins across OpenCode, Kimi Code, Pi, and Hermes.
+description: Install and use maestria to manage runtime integrations and portable Agent Plugins across supported coding agent platforms.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`maestria` runs anywhere Node.js 22+ is available. No install required - use `npx` to run it directly from npm.
+The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: invoke it with npx or another package runner.
 
 ## Quick Start
 
-### Check what's installed
+### Check Your Platforms
 
-```bash
-npx maestria status
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
-This detects which coding agent platforms are available on your machine and shows the install status for each:
+This checks which supported coding-agent CLIs are on your PATH and whether Maestria is installed for each one. With no command, maestria defaults to status.
 
-```
-  Maestria Status
-  ─────────────────────────────────────
-  OpenCode
-    Available:  ✓
-    Installed:  ✓ v0.6.0
-    Latest:     0.6.2
-  Pi
-    Available:  ✓
-    Installed:  - not installed
-    Latest:     0.4.1
-  Kimi Code
-    Available:  ✗
-    Installed:  - not installed
-    Latest:     unknown
-```
+### Install a Runtime Integration
 
-Run `npx maestria` with no arguments - it defaults to `status`.
+Install all detected platforms:
 
-### Install for a platform
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
-**Interactive install** (pick from a list of detected platforms):
+Or select one platform:
 
-```bash
-npx maestria install
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install opencode" />
 
-**Install for all detected platforms:**
+Replace opencode with the platform ID you want. The [command reference](/cli/commands/#install) lists every supported ID.
 
-```bash
-npx maestria install --all
-```
+### Stage a Portable Agent Plugin
 
-**Install for a specific platform:**
+Use the plugin namespace when the client supports Agent Plugins v1:
 
-```bash
-npx maestria install opencode
-pnpx maestria@latest install pi
-npx maestria install kimi-code
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-### Update to the latest version
+The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. The client controls activation, permissions, trust, and session behavior.
 
-**Interactive update:**
+For a local package:
 
-```bash
-npx maestria update
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="plugin install /path/to/plugin --destination ./staged-plugin"
+/>
 
-**Update all:**
+### Update an Integration
 
-```bash
-npx maestria update --all
-```
+Update all installed integrations:
 
-**Update a specific platform:**
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update --all" />
 
-```bash
-npx maestria update opencode
-```
+To update one platform or pin a version:
 
-**Update to a specific version:**
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode --version <version>" />
 
-```bash
-npx maestria update opencode --version 0.5.0
-```
+### Configure Specialist Models
 
-### Configure per-agent models
+Assign a model to a specialist when the platform supports per-agent configuration:
 
-Give each maestria specialist its own model. Interactively:
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash"
+/>
 
-```bash
-npx maestria configure opencode
-```
+See the [configure reference](/cli/commands/#configure) for supported platforms and reset syntax.
 
-Or non-interactively for CI:
+### Diagnose Skill Setup
 
-```bash
-npx maestria configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash
-```
+Check methodology skill state without changing anything:
 
-Use an empty value to reset an agent to inherit the session model:
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="doctor" />
 
-```bash
-npx maestria configure opencode --set reviewer=
-```
+This reports the skill record path, per-platform plugin state, recorded selections, and observed skills with next steps. See the [doctor reference](/cli/commands/#doctor).
 
-Per-agent models are supported on opencode, pi, and omp. See the [command reference](/cli/commands/#configure) for details.
+### Coordinate Project Setup
+
+Check ecosystem tools and reconcile skills for a project:
+
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="setup --ecosystem codegraph,opensrc --yes"
+/>
+
+Setup is read-only until the final confirmation. Ecosystem tools are detection plus manual steps only; the CLI never installs them automatically. Use `--skills` and `--exclude-skills` to select the `create-pull-request` and `docs-update` methodology skills. See the [setup reference](/cli/commands/#setup).
 
 ## Prerequisites
 
-- **Node.js 22+** - required for the bundled `.mjs` distribution
-- **Platform CLI tool** - the CLI detects platforms by checking for their binary on `$PATH`. The platform must be installed before maestria can be installed for it:
-  - [OpenCode](https://opencode.ai) - `opencode` binary
-  - [Pi](https://pi.ai) - `pi` binary
-  - [Kimi Code](https://kimi.ai) - `kimi` binary
-  - [Hermes Agent](https://hermes-agent.nousresearch.com) - `hermes` binary
+- Node.js 22.12 or later
+- npm on PATH when plugin install fetches a package from npm
+- The target platform installed before Maestria can detect or install its integration
+- An Agent Plugins v1 client for the portable package path
 
-## JSON Output
+The CLI detects runtime platforms by their executable:
 
-All commands accept `--json` for machine-readable output. Useful for CI scripts, dashboards, or IDE integrations:
-
-```bash
-npx maestria status --json
-```
-
-```json
-{
-  "platforms": [
-    {
-      "id": "opencode",
-      "label": "OpenCode",
-      "available": true,
-      "installed": true,
-      "installedVersion": "0.6.0",
-      "latestVersion": "0.6.2"
-    }
-  ]
-}
-```
-
-```bash
-npx maestria install --all --json
-```
-
-## Compact Output
-
-Use `--compact` for minimal machine-friendly text output suitable for AI agents
-and token-sensitive environments:
-
-```bash
-npx maestria status --compact
-```
-
-```
-opencode: available installed=0.2.1 latest=0.2.1
-pi: not-available not-installed
-```
-
-Compact output works on `install` and `update` too, showing one line per platform result:
-
-```
-opencode: installed 0.2.1
-```
-
-The compact flag implies `--quiet` (no spinner animations).
-
-## Quiet Mode
-
-Use `--quiet` to suppress spinner animations. Commands still print final output:
-
-```bash
-npx maestria install --all --quiet
-```
-
-<Aside type="tip">
-  Combine `--quiet` with `--json` for clean CI output: `npx maestria status --json --quiet`
-</Aside>
-
-## Exit Codes
-
-| Code  | Meaning                                |
-| ----- | -------------------------------------- |
-| `0`   | Success                                |
-| `1`   | Validation or command error            |
-| `130` | User cancelled (interactive mode only) |
-
-The `install` and `update` commands detect non-interactive terminals (e.g., CI
-pipelines) and exit with code `1` showing a clear error message instead of
-attempting an interactive prompt.
-
-Run any command with `--help` to see in-terminal examples, exit code documentation,
-and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
-
-## Input Validation
-
-The CLI catches invalid input early with clear error messages:
-
-**Unknown platform:**
-
-```bash
-npx maestria update unknown-platform
-# > Unknown platform 'unknown-platform'. Valid platforms: opencode, pi, kimi-code, hermes, cursor
-```
-
-**Invalid version format:**
-
-```bash
-npx maestria update opencode --version 2.0
-# > Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
-```
-
-**Conflicting flags:**
-
-```bash
-npx maestria install opencode --all
-# > Cannot use --all with a specific platform. Choose one.
-```
-
-## Version Caching
-
-The CLI caches version lookups from npm for 1 hour in `~/.cache/maestria/versions.json`:
-
-```bash
-cat ~/.cache/maestria/versions.json
-# {"@maestria/opencode":{"version":"0.6.2","cachedAt":1719600000000}}
-```
-
-To force a fresh version check, delete the cache:
-
-```bash
-rm ~/.cache/maestria/versions.json
-```
-
-The cache is automatically invalidated after a successful update, ensuring `maestria status` always shows the correct latest version after an upgrade.
+| Platform     | Executable            |
+| ------------ | --------------------- |
+| OpenCode     | opencode              |
+| Pi           | pi                    |
+| Oh My Pi     | omp                   |
+| Prime Agent  | prime-agent           |
+| Kimi Code    | kimi                  |
+| Hermes Agent | hermes                |
+| Claude Code  | claude                |
+| Codex CLI    | codex                 |
+| Cursor       | agent or cursor-agent |
 
 ## Next Steps
 
-- [Command Reference](/cli/commands/) - full reference for all commands and flags
+- [Command Reference](/cli/commands/) for every command, flag, JSON schema, and exit code
+- [Platform guides](/) for host-specific installation and usage
+- [Portable Agent Plugin](/agent-plugin/) for client-owned activation and permissions

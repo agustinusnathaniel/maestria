@@ -1,287 +1,258 @@
-import picocolors from 'picocolors';
+import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { isCancel, cancel } from '@clack/prompts';
+import picocolors from 'picocolors';
+
+import {
+  assertInteractiveTerminal,
+  detectInstalledOr,
+  resolveBatchQuiet,
+} from '@/lib/batch-command.js';
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
+import { detectInstalled } from '@/lib/detect.js';
+import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getPlatform } from '@/lib/platforms.js';
-import type { PlatformHandler } from '@/lib/platforms.js';
-import { detectInstalled } from '@/lib/detect.js';
-import { invalidateVersionCache } from '@/lib/shell.js';
-import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { validatePlatforms, validateVersion, validateOrExit } from '@/lib/validation.js';
-import { isVersionEq, isVersionDifferent } from '@/lib/version.js';
-import type { PlatformResult } from '@/types.js';
+import { updateOne } from '@/lib/platform-transaction.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
+import type { SkillsRecord } from '@/lib/skills.js';
+import {
+  VALID_PLATFORMS,
+  validateOrThrow,
+  validatePlatforms,
+  validateVersion,
+} from '@/lib/validation.js';
+
+export interface UpdateArgs {
+  all?: boolean;
+  compact?: boolean;
+  excludeSkills?: string;
+  json?: boolean;
+  platform?: string;
+  quiet?: boolean;
+  skills?: string;
+  version?: string;
+  yes?: boolean;
+}
+
+interface UpdateStatus {
+  id: string;
+  label: string;
+  installedVersion: string;
+  latestVersion: string;
+  needsUpdate: boolean;
+}
+
+// oxlint-disable-next-line max-lines-per-function -- interactive update picker keeps version checks, filtering, and selection in one flow.
+const collectInteractiveUpdateTargets = async (): Promise<
+  { id: string; label?: string }[] | CommandResult
+> => {
+  assertInteractiveTerminal('update');
+  const installed = await Effect.runPromise(detectInstalled());
+  if (installed.length === 0) {
+    return {
+      exitCode: 0,
+      output: 'No maestria installations found to update.',
+    };
+  }
+  const statuses = await Effect.runPromise(
+    Effect.all(
+      installed.flatMap((p) => {
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          return [];
+        }
+        return [
+          Effect.all(
+            [
+              platform.getInstalledVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
+              platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
+            ],
+            { concurrency: 2 },
+          ).pipe(
+            Effect.map(
+              ([pv, lv]) =>
+                ({
+                  id: p.id,
+                  installedVersion: pv,
+                  label: p.label,
+                  latestVersion: lv,
+                  needsUpdate: needsUpdateOf(pv, lv),
+                }) satisfies UpdateStatus,
+            ),
+          ),
+        ];
+      }),
+      { concurrency: 1 },
+    ),
+  );
+  const needsUpdate = statuses.filter((s) => s.needsUpdate);
+  if (needsUpdate.length === 0) {
+    const lines = statuses
+      .filter((s) => !s.needsUpdate)
+      .map((s) => `  ${picocolors.green('✓')} ${s.label}: ${s.installedVersion}`)
+      .join('\n');
+    return { exitCode: 0, output: `\nAll platforms are up to date.\n${lines}\n` };
+  }
+  const selected = await groupMultiselect({
+    message: 'Which platforms do you want to update?',
+    options: {
+      'All platforms': needsUpdate.map((s) => ({
+        hint: `${s.installedVersion} → ${s.latestVersion}`,
+        label: s.label,
+        value: s.id,
+      })),
+    },
+    required: true,
+    selectableGroups: true,
+  });
+  if (isCancel(selected) || !Array.isArray(selected) || selected.length === 0) {
+    cancel('Update cancelled.');
+    throw new CliError('', 130);
+  }
+  const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
+  return toUpdate.flatMap((p) =>
+    getPlatform(p.id) === undefined ? [] : [{ id: p.id, label: p.label }],
+  );
+};
+
+/**
+ * Skill-only review when every installed plugin is already current. The
+ * plugin step is a reported no-op per platform while companions reconcile
+ * normally through the shared install/update tail.
+ */
+const reviewCurrentInstallSkills = async (
+  args: UpdateArgs,
+  record: SkillsRecord | null,
+  upToDate: CommandResult,
+  isQuiet: boolean,
+): Promise<CommandResult> => {
+  const installed = await Effect.runPromise(detectInstalled());
+  if (installed.length === 0) {
+    return upToDate;
+  }
+  const targets = installed.map((p) => ({ id: p.id, label: p.label }));
+  return await runSkillBatch(
+    targets,
+    record,
+    'Update',
+    args,
+    isQuiet,
+    (platform) =>
+      Effect.succeed({
+        id: platform.id,
+        label: platform.label,
+        message: 'Already up to date',
+        ok: true,
+      }),
+    { updateBootstrap: true },
+  );
+};
+
+export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
+  const args = normalizeSkillArgs(rawArgs);
+  const isQuiet = resolveBatchQuiet(args);
+  let platformIds: string[] | undefined;
+  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
+    platformIds = await validateOrThrow(validatePlatforms(args.platform));
+  }
+  if (args.version !== undefined && args.version !== null && args.version !== '') {
+    await validateOrThrow(validateVersion(args.version));
+  }
+  const record = await readSkillsRecord();
+  validateSkillFlags(platformIds ?? [], args, record);
+
+  let targets: { id: string; label?: string }[];
+  if (platformIds && platformIds.length > 0) {
+    targets = platformIds.map((id) => ({ id }));
+  } else if (args.all === true) {
+    const outcome = await detectInstalledOr(isQuiet, 'No maestria installations found to update.');
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    targets = outcome;
+  } else {
+    const outcome = await collectInteractiveUpdateTargets();
+    if (!Array.isArray(outcome)) {
+      return await reviewCurrentInstallSkills(args, record, outcome, isQuiet);
+    }
+    targets = outcome;
+  }
+  // Same-version updates skip the plugin reinstall but still reconcile the
+  // companion independently.
+  return await runSkillBatch(
+    targets,
+    record,
+    'Update',
+    args,
+    isQuiet,
+    (platform, quiet) => updateOne(platform, quiet, args.version),
+    { updateBootstrap: true },
+  );
+};
 
 export const updateCommand = defineCommand({
-  meta: {
-    name: 'update',
-    description: 'Update maestria plugins to the latest (or specified) version',
-  },
   args: {
-    platform: {
-      type: 'positional',
-      description:
-        'Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). ' +
-        'One of: opencode, pi, kimi-code, hermes, cursor, omp. Pass directly to skip interactive selection.',
-      required: false,
-    },
-    version: {
-      type: 'string',
-      description: 'Target version to install (e.g., 0.5.0). Defaults to latest available version.',
-      alias: 'V',
-      required: false,
-    },
     all: {
-      type: 'boolean',
-      description: 'Update all installed platforms',
       alias: 'a',
       default: false,
-    },
-    json: {
+      description: 'Update all installed platforms',
       type: 'boolean',
-      description:
-        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
     },
     compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
+    },
+    'exclude-skills': {
+      description:
+        'Methodology skills to skip (CSV). Never touches independently installed copies.',
+      required: false,
+      type: 'string',
+    },
+    json: {
+      default: false,
+      description:
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
+    platform: {
+      description: `Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). One of: ${VALID_PLATFORMS.join(', ')}. Pass directly to skip interactive selection.`,
+      required: false,
+      type: 'positional',
+    },
+    quiet: {
+      default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
+    },
+    skills: {
+      description:
+        "Methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request for legacy installs without a record. Known: create-pull-request, docs-update. Validated before any change.",
+      required: false,
+      type: 'string',
+    },
+    version: {
+      alias: 'V',
+      description: 'Target version to install (e.g., 0.5.0). Defaults to latest available version.',
+      required: false,
+      type: 'string',
+    },
+    yes: {
+      alias: 'y',
+      default: false,
+      description:
+        'Confirm skill selection non-interactively (required for non-TTY when it changes).',
+      type: 'boolean',
     },
   },
-  run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
-
-    // Validate CLI args
-    let platformIds: string[] | undefined;
-    if (args.platform) {
-      platformIds = await validateOrExit(validatePlatforms(args.platform as string));
-    }
-    if (args.version) {
-      await validateOrExit(validateVersion(args.version as string));
-    }
-
-    const results: PlatformResult[] = [];
-
-    if (platformIds && platformIds.length > 0) {
-      for (const id of platformIds) {
-        const platform = getPlatform(id);
-        if (!platform) {
-          results.push({
-            id,
-            label: id,
-            ok: false,
-            message: 'Platform definition not found. This is a bug.',
-          } satisfies PlatformResult);
-          continue;
-        }
-        const result = await Effect.runPromise(
-          updateOne(platform, isQuiet, args.version as string | undefined),
-        );
-        results.push(result);
-      }
-    } else if (args.all) {
-      const spinner = createSpinner(isQuiet);
-      spinner.start('Detecting platforms...');
-      const installed = await Effect.runPromise(detectInstalled());
-      spinner.stop('Done');
-
-      if (installed.length === 0) {
-        console.log('No maestria installations found to update.');
-        process.exit(0);
-      }
-
-      for (const p of installed) {
-        const platform = getPlatform(p.id);
-        if (!platform) {
-          results.push({
-            id: p.id,
-            label: p.label,
-            ok: false,
-            message: 'Platform definition not found. This is a bug.',
-          } satisfies PlatformResult);
-          continue;
-        }
-        const result = await Effect.runPromise(
-          updateOne(platform, isQuiet, args.version as string | undefined),
-        );
-        results.push(result);
-      }
-    } else {
-      // Non-TTY guard: don't try interactive prompts
-      if (!process.stdout.isTTY || !process.stdin.isTTY) {
-        console.error('No platform specified and not in an interactive terminal.');
-        console.error('Usage: maestria update <platform> or maestria update --all');
-        console.error("Run 'maestria update --help' for details.");
-        process.exit(1);
-      }
-
-      // Interactive - check versions before showing picker
-      const installed = await Effect.runPromise(detectInstalled());
-
-      if (installed.length === 0) {
-        console.log('No maestria installations found to update.');
-        process.exit(0);
-      }
-
-      // Check which platforms actually need updating
-      const statuses: Array<{
-        id: string;
-        label: string;
-        installedVersion: string;
-        latestVersion: string;
-        needsUpdate: boolean;
-      }> = [];
-      for (const p of installed) {
-        const platform = getPlatform(p.id);
-        if (!platform) continue;
-
-        const prevVersion = platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
-        );
-        const latestVersion = platform.getLatestVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
-        );
-        const [pv, lv] = await Effect.runPromise(
-          Effect.all([prevVersion, latestVersion], { concurrency: 2 }),
-        );
-
-        statuses.push({
-          id: p.id,
-          label: p.label,
-          installedVersion: pv,
-          latestVersion: lv,
-          needsUpdate: isVersionDifferent(pv, lv),
-        });
-      }
-
-      const needsUpdate = statuses.filter((s) => s.needsUpdate);
-      const upToDate = statuses.filter((s) => !s.needsUpdate);
-
-      if (needsUpdate.length === 0) {
-        const lines = upToDate
-          .map((s) => `  ${picocolors.green('✓')} ${s.label}: ${s.installedVersion}`)
-          .join('\n');
-        console.log(`\nAll platforms are up to date.\n${lines}\n`);
-        process.exit(0);
-      }
-
-      // Only show platforms that need updating
-      const selected = await groupMultiselect({
-        message: 'Which platforms do you want to update?',
-        options: {
-          'All platforms': needsUpdate.map((s) => ({
-            value: s.id,
-            label: s.label,
-            hint: `${s.installedVersion} → ${s.latestVersion}`,
-          })),
-        },
-        selectableGroups: true,
-        required: true,
-      });
-
-      if (isCancel(selected) || !selected) {
-        cancel('Update cancelled.');
-        process.exit(130);
-      }
-
-      const toUpdate = needsUpdate.filter((s) => (selected as string[]).includes(s.id));
-
-      for (const p of toUpdate) {
-        const platform = getPlatform(p.id)!;
-        const result = await Effect.runPromise(
-          updateOne(platform, isQuiet, args.version as string | undefined),
-        );
-        results.push(result);
-      }
-    }
-
-    if (args.json) {
-      console.log(JSON.stringify(results, null, 2));
-    } else if (isCompact) {
-      console.log(renderCompactResults(results));
-    } else {
-      console.log(renderResults(results));
-    }
-    process.exit(0);
+  meta: {
+    description: 'Update maestria plugins to the latest (or specified) version',
+    name: 'update',
   },
+  run: toCommandRun(handleUpdate),
 });
-
-function updateOne(
-  platform: PlatformHandler,
-  quiet: boolean,
-  version?: string,
-): Effect.Effect<PlatformResult, never> {
-  return Effect.gen(function* () {
-    const prevVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
-    );
-
-    // Determine target version: explicit arg, or fetch latest from npm
-    const targetVersion =
-      version ??
-      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
-
-    // Skip if already on the target version
-    if (isVersionEq(prevVersion, targetVersion)) {
-      return {
-        id: platform.id,
-        label: platform.label,
-        ok: true,
-        message: 'Already up to date',
-        prevVersion,
-        nextVersion: prevVersion,
-      } satisfies PlatformResult;
-    }
-
-    const spinner = createSpinner(quiet);
-    spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
-
-    const errorMessage: string | void = yield* platform
-      .update(version)
-      .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
-
-    if (errorMessage !== undefined) {
-      spinner.stop(`Failed: ${errorMessage}`);
-      return {
-        id: platform.id,
-        label: platform.label,
-        ok: false,
-        message: errorMessage,
-      } satisfies PlatformResult;
-    }
-
-    const nextVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
-    );
-
-    spinner.stop(previewVersionDiff(prevVersion, nextVersion));
-
-    // Invalidate version cache so offline fallback doesn't return the old version
-    if (platform.npmPackage) {
-      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
-    }
-
-    return {
-      id: platform.id,
-      label: platform.label,
-      ok: true,
-      message: 'Updated',
-      prevVersion,
-      nextVersion,
-    } satisfies PlatformResult;
-  });
-}
-
-function previewVersionDiff(before: string, after: string): string {
-  if (before === 'unknown' && after !== 'unknown') return `Installed v${after}`;
-  if (before === after) return `Already up to date (v${before})`;
-  return `Updated: v${before} → v${after}`;
-}

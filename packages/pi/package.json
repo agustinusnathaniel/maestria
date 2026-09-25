@@ -1,6 +1,6 @@
 {
   "name": "@maestria/pi",
-  "version": "0.6.1",
+  "version": "0.7.16",
   "description": "Maestria extension for the Pi coding agent",
   "keywords": [
     "agent-orchestration",
@@ -30,19 +30,18 @@
     "build": "vp pack",
     "test": "vp test",
     "lint": "vp check",
-    "sync": "npx tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@maestria/core": "workspace:*",
     "@maestria/shared-pi": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-coding-agent": "^0.84.1",
     "@gotgenes/pi-subagents": "^18.0.0",
     "typebox": "*"
   },

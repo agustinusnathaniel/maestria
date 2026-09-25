@@ -1,0 +1,74 @@
+---
+title: Installation & Setup
+description: Install and verify @maestria/codex through the Maestria CLI.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+`@maestria/codex` is a Codex skills plugin with a companion native custom-agent pack. The Maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
+
+<Aside type="tip" title="Verified support boundary">
+  Verified against Codex CLI `0.145.0` on 2026-08-26. Codex desktop parity and runtime tool
+  enforcement remain outside this package.
+</Aside>
+
+## Prerequisites
+
+- Codex CLI `0.145.0` or a later version whose plugin and skills behavior you have reverified.
+- Node.js >=22.12.0 and npm on `PATH`. Direct Codex marketplace installation follows Codex's own prerequisites.
+
+## Install through Maestria
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install codex" />
+
+The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, then delegates installation to Codex (`codex plugin marketplace add`, `codex plugin add maestria@maestria`). It also installs the bundled agent roles under `$CODEX_HOME/agents/` and updates the managed global orchestration instructions. The plugin cache and enabled state belong to Codex.
+
+## Verify the installation
+
+<Steps>
+
+1. **Check the host status**
+
+   <AllPackageManagers type="dlx" pkg="maestria@latest" args="check codex" />
+
+2. **List the installed plugin**
+
+   ```bash
+   codex plugin list --json
+   ```
+
+   Look for `maestria@maestria` with `installed: true`.
+
+3. **Start a fresh Codex session**
+
+   Plugin discovery is session-sensitive. Confirm the `$maestria:*` skills are available.
+
+4. **Exercise the integration**
+
+   Ask Codex to handle a meaningful task without a skill prefix and confirm the primary session follows the orchestration guidance. Then invoke `$maestria:orchestrator`, `$maestria:adventurer`, `$maestria:builder`, and `$maestria:reviewer`, and confirm the reviewer reports independently.
+
+5. **Verify native agent installation**
+
+   Confirm `~/.codex/agents/maestria-*.toml` files exist (or the equivalent `$CODEX_HOME/agents/` directory). Ask Codex to delegate with `agent_type: "maestria-builder"` and use `maestria-reviewer` for independent review. Read-only roles use `sandbox_mode = "read-only"`.
+
+</Steps>
+
+## Update and remove
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update codex" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall codex" />
+
+Codex CLI does not expose a separate plugin update command in the supported surface. The Maestria CLI refreshes the staged npm package, removes and re-adds `maestria@maestria`, then refreshes the native agent TOMLs while preserving user model settings. Exact version pinning is not supported through `npx maestria update codex --version ...`. Uninstall removes only the Maestria-managed agent files and marked orchestration block; existing Codex instructions and unrelated agent files remain untouched.
+
+## Direct Codex installation
+
+The repository also exposes a native Codex marketplace entry backed by the published npm package:
+
+```bash
+codex plugin marketplace add agustinusnathaniel/maestria
+codex plugin add maestria@maestria
+```
+
+`codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation installs only the plugin and skills: it does not copy the native agent TOMLs or modify global `AGENTS.md`. Use `npx maestria install codex` for the full native-agent and automatic-orchestration setup.

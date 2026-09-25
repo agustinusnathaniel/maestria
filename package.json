@@ -10,14 +10,13 @@
     "sync:docs": "vp run --filter @maestria/docs sync",
     "prebuild": "vp run check-sync",
     "build": "vp run -r build",
-    "prebuild:ci": "vp run check-sync",
     "build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build",
     "test": "vp run -r test",
     "changeset": "changeset",
-    "version-packages": "changeset version && python scripts/sync-hermes-version.py",
+    "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
-    "check": "vp check && vp run build && vp run test",
-    "check:ci": "vp check && pnpm build:ci && vp run check-python && vp run test",
+    "check": "vp run check-full",
+    "check:ci": "vp run check-ci",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
@@ -26,14 +25,21 @@
     "typecheck": "vp check --no-fmt --no-lint",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
-    "contributors:check": "all-contributors check"
+    "contributors:check": "all-contributors check",
+    "e2e:fail-closed": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json",
+    "e2e:phase-b": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
     "all-contributors-cli": "catalog:",
-    "vite-plus": "catalog:"
+    "jsonc-parser": "catalog:",
+    "tsx": "4.23.13",
+    "ultracite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "^2.9.0"
   },
   "devEngines": {
     "runtime": {
@@ -45,5 +51,5 @@
   "engines": {
     "node": ">=24.16.x"
   },
-  "packageManager": "pnpm@11.8.0"
+  "packageManager": "pnpm@12.4.1"
 }

@@ -1,190 +1,154 @@
+import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Effect } from 'effect';
-import { isCancel, cancel } from '@clack/prompts';
-import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { getPlatform } from '@/lib/platforms.js';
+
+import {
+  assertInteractiveTerminal,
+  detectWithSpinner,
+  resolveBatchQuiet,
+} from '@/lib/batch-command.js';
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
-import { installOne } from '@/lib/install-one.js';
-import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { validatePlatforms, validateOrExit } from '@/lib/validation.js';
-import type { PlatformResult } from '@/types.js';
+import { groupMultiselect } from '@/lib/group-multiselect.js';
+import { installOne } from '@/lib/platform-transaction.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
+import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
+
+export interface InstallArgs {
+  all?: boolean;
+  compact?: boolean;
+  excludeSkills?: string;
+  json?: boolean;
+  platform?: string;
+  quiet?: boolean;
+  skills?: string;
+  yes?: boolean;
+}
+
+const collectInstallTargets = async (
+  platformIds: string[] | undefined,
+  all: boolean,
+  isQuiet: boolean,
+): Promise<{ id: string; label?: string }[] | CommandResult> => {
+  if (platformIds && platformIds.length > 0) {
+    return platformIds.map((id) => ({ id }));
+  }
+  if (all) {
+    const detected = await detectWithSpinner(isQuiet, detectAll());
+    const toInstall = detected
+      .filter((s) => s.available && !s.installed)
+      .map((p) => ({ id: p.id, label: p.label }));
+    if (toInstall.length === 0) {
+      return {
+        exitCode: 0,
+        output: 'All detected platforms already have maestria installed.',
+      };
+    }
+    return toInstall;
+  }
+  assertInteractiveTerminal('install');
+  const allPlatforms = await detectWithSpinner(isQuiet, detectAll());
+  const installable = allPlatforms
+    .filter((s) => s.available && !s.installed)
+    .map((p) => ({ id: p.id, label: p.label }));
+  if (installable.length === 0) {
+    return {
+      exitCode: 0,
+      output: allPlatforms.every((s) => !s.available)
+        ? 'No supported coding agent platforms detected on this machine.'
+        : 'Maestria is already installed for all detected platforms.',
+    };
+  }
+  const selected = await groupMultiselect({
+    message: 'Which platforms do you want to install maestria for?',
+    options: {
+      'All platforms': installable.map((p) => ({ label: p.label, value: p.id })),
+    },
+    required: true,
+    selectableGroups: true,
+  });
+  if (isCancel(selected) || !Array.isArray(selected) || selected.length === 0) {
+    cancel('Install cancelled.');
+    throw new CliError('', 130);
+  }
+  return selected.map((id) => ({ id }));
+};
+
+export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult> => {
+  const args = normalizeSkillArgs(rawArgs);
+  const isQuiet = resolveBatchQuiet(args);
+  let platformIds: string[] | undefined;
+  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
+    platformIds = await validateOrThrow(validatePlatforms(args.platform));
+  }
+  const record = await readSkillsRecord();
+  validateSkillFlags(platformIds ?? [], args, record);
+
+  const targets = await collectInstallTargets(platformIds, args.all === true, isQuiet);
+  if (!Array.isArray(targets)) {
+    return targets;
+  }
+  return await runSkillBatch(targets, record, 'Install', args, isQuiet, installOne);
+};
 
 export const installCommand = defineCommand({
-  meta: {
-    name: 'install',
-    description: 'Install maestria plugins for coding agent platforms',
-  },
   args: {
-    platform: {
-      type: 'positional',
-      description:
-        'Platform(s) to install. Comma-separated for multiple (e.g., opencode,pi). ' +
-        'One of: opencode, pi, kimi-code, hermes, cursor, omp. Pass directly to skip interactive selection.',
-      required: false,
-    },
     all: {
-      type: 'boolean',
-      description: 'Install for all detected platforms that are not yet installed',
       alias: 'a',
       default: false,
-    },
-    json: {
+      description: 'Install for all detected platforms that are not yet installed',
       type: 'boolean',
-      description:
-        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
     },
     compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
+    },
+    'exclude-skills': {
+      description:
+        'Methodology skills to skip (CSV). Never touches independently installed copies.',
+      required: false,
+      type: 'string',
+    },
+    json: {
+      default: false,
+      description:
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
+    platform: {
+      description:
+        `Platform(s) to install. Comma-separated for multiple (e.g., opencode,pi). ` +
+        `One of: ${VALID_PLATFORMS.join(', ')}. ` +
+        'Pass directly to skip interactive selection.',
+      required: false,
+      type: 'positional',
+    },
+    quiet: {
+      default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
+    },
+    skills: {
+      description:
+        "Methodology skills to activate (CSV, or 'none' for no skills). Default: create-pull-request, docs-update. Known: create-pull-request, docs-update. Validated before any change.",
+      required: false,
+      type: 'string',
+    },
+    yes: {
+      alias: 'y',
+      default: false,
+      description:
+        'Confirm skill selection non-interactively (required for non-TTY when it changes).',
+      type: 'boolean',
     },
   },
-  run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
-
-    // Validate CLI args
-    let platformIds: string[] | undefined;
-    if (args.platform) {
-      platformIds = await validateOrExit(validatePlatforms(args.platform as string));
-    }
-
-    const results: PlatformResult[] = [];
-
-    if (platformIds && platformIds.length > 0) {
-      for (const id of platformIds) {
-        const platform = getPlatform(id);
-        if (!platform) {
-          results.push({
-            id,
-            label: id,
-            ok: false,
-            message: 'Platform definition not found. This is a bug.',
-          } satisfies PlatformResult);
-          continue;
-        }
-        const result = await Effect.runPromise(installOne(platform, isQuiet));
-        results.push(result);
-      }
-    } else if (args.all) {
-      // Install for all detected platforms
-      const spinner = createSpinner(isQuiet);
-      spinner.start('Detecting platforms...');
-      const allPlatforms = await Effect.runPromise(detectAll());
-      spinner.stop('Done');
-      const toInstall = allPlatforms.filter((s) => s.available && !s.installed);
-
-      if (toInstall.length === 0) {
-        console.log('All detected platforms already have maestria installed.');
-        process.exit(0);
-      }
-
-      spinner.start('Preparing...');
-      for (const p of toInstall) {
-        const platform = getPlatform(p.id);
-        if (!platform) {
-          results.push({
-            id: p.id,
-            label: p.label,
-            ok: false,
-            message: 'Platform definition not found. This is a bug.',
-          } satisfies PlatformResult);
-          continue;
-        }
-        spinner.message(`Installing ${p.label}...`);
-        const result = await Effect.runPromise(
-          Effect.gen(function* () {
-            yield* platform.install;
-            return { id: platform.id, label: platform.label, ok: true, message: 'Installed' };
-          }).pipe(
-            Effect.catchTag('CommandError', (error) =>
-              Effect.succeed({
-                id: platform.id,
-                label: platform.label,
-                ok: false,
-                message: error.message,
-              } satisfies PlatformResult),
-            ),
-          ),
-        );
-        spinner.message(
-          result.ok ? `✓ ${p.label} installed` : `✗ ${p.label} failed: ${result.message}`,
-        );
-        results.push(result);
-      }
-      spinner.stop('Done');
-    } else {
-      // Non-TTY guard: don't try interactive prompts
-      if (!process.stdout.isTTY || !process.stdin.isTTY) {
-        console.error('No platform specified and not in an interactive terminal.');
-        console.error('Usage: maestria install <platform> or maestria install --all');
-        console.error("Run 'maestria install --help' for details.");
-        process.exit(1);
-      }
-
-      // Interactive: ask which platform
-      const spinner = createSpinner(isQuiet);
-      spinner.start('Detecting platforms...');
-      const allPlatforms = await Effect.runPromise(detectAll());
-      spinner.stop('Done');
-      const installable = allPlatforms.filter((s) => s.available && !s.installed);
-
-      if (installable.length === 0) {
-        if (allPlatforms.every((s) => !s.available)) {
-          console.log('No supported coding agent platforms detected on this machine.');
-        } else {
-          console.log('Maestria is already installed for all detected platforms.');
-        }
-        process.exit(0);
-      }
-
-      const selected = await groupMultiselect({
-        message: 'Which platforms do you want to install maestria for?',
-        options: {
-          'All platforms': installable.map((p) => ({
-            value: p.id,
-            label: p.label,
-          })),
-        },
-        selectableGroups: true,
-        required: true,
-      });
-
-      if (isCancel(selected) || !selected || (Array.isArray(selected) && selected.length === 0)) {
-        cancel('Install cancelled.');
-        process.exit(130);
-      }
-
-      for (const id of selected as string[]) {
-        const platform = getPlatform(id);
-        if (!platform) {
-          results.push({
-            id,
-            label: id,
-            ok: false,
-            message: 'Platform definition not found. This is a bug.',
-          } satisfies PlatformResult);
-          continue;
-        }
-        const result = await Effect.runPromise(installOne(platform, isQuiet));
-        results.push(result);
-      }
-    }
-
-    if (args.json) {
-      console.log(JSON.stringify(results, null, 2));
-    } else if (isCompact) {
-      console.log(renderCompactResults(results));
-    } else {
-      console.log(renderResults(results));
-    }
-    process.exit(0);
+  meta: {
+    description: 'Install maestria plugins for coding agent platforms',
+    name: 'install',
   },
+  run: toCommandRun(handleInstall),
 });

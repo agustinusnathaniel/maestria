@@ -1,391 +1,198 @@
 // packages/opencode/sync.config.ts
 // Sync config: derives opencode agent files from canonical core directives
+//
+// oxlint-disable sort-keys -- Permission maps keep their declared glob order because the sync
+// engine projects object keys verbatim into generated agent frontmatter, and `check-sync`
+// enforces byte identity of that committed output. Sorting keys here would churn every
+// generated permission block without changing behavior.
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
-export default {
-  source: '../core/agent-directives/specialists',
-  output: 'agents',
+type BashPermissionEntry = readonly [string, 'allow' | 'ask' | 'deny'];
 
+// Read-only bash projection, split so the builder's mid-sequence `du*`
+// insertion names its anchor instead of slicing by magic index.
+const BASE_READ_HEAD: readonly BashPermissionEntry[] = [
+  ['ls*', 'allow'],
+  ['cat*', 'allow'],
+  ['echo*', 'allow'],
+  ['head*', 'allow'],
+  ['tail*', 'allow'],
+  ['grep*', 'allow'],
+  ['rg*', 'allow'],
+  ['wc*', 'allow'],
+  ['which*', 'allow'],
+  ['diff*', 'allow'],
+  ['stat*', 'allow'],
+];
+
+const BASE_READ_TAIL: readonly BashPermissionEntry[] = [
+  ['pwd*', 'allow'],
+  ['cd*', 'allow'],
+  ['printf*', 'allow'],
+];
+
+const BASE_READ: readonly BashPermissionEntry[] = [...BASE_READ_HEAD, ...BASE_READ_TAIL];
+
+const bashPermissions = (
+  extraBefore: readonly BashPermissionEntry[] = [],
+  extraAfter: readonly BashPermissionEntry[] = [],
+): Record<string, 'allow' | 'ask' | 'deny'> =>
+  Object.fromEntries([...extraBefore, ...BASE_READ, ...extraAfter]);
+
+const allow = (...patterns: readonly string[]): BashPermissionEntry[] =>
+  patterns.map((pattern): BashPermissionEntry => [pattern, 'allow']);
+
+// Guarded recon prefix: byte-identical to REQUIRED_GIT_GLOBAL_ARGS enforced
+// by bash-policy.ts (packages/shared/pi/src/bash-policy.ts). Only commands
+// starting with this literal prefix auto-allow; bare `git status` and every
+// other unguarded form falls through to `* ask`. Diff-capable diff/log/show
+// additionally require the `--no-ext-diff --no-textconv` patch guards in
+// that order (a bare guarded `diff` could execute repo-configured external
+// drivers), and branch keeps `--list` discipline. These globs are coarse
+// host configuration (ADR-OC-001): token-level guarantees such as custom
+// --format/%G rejection and chaining/substitution denial stay in the shared
+// Pi/OMP parser. `find` is intentionally not restored: the policy denies
+// every find form, and a prefix glob cannot exclude -exec/-delete/-ok.
+const GUARDED_GIT =
+  'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
+
+const guardedReconGit = (): BashPermissionEntry[] =>
+  allow(
+    `${GUARDED_GIT} status*`,
+    `${GUARDED_GIT} diff --no-ext-diff --no-textconv*`,
+    `${GUARDED_GIT} log --no-ext-diff --no-textconv*`,
+    `${GUARDED_GIT} show --no-ext-diff --no-textconv*`,
+    `${GUARDED_GIT} branch --list*`,
+    `${GUARDED_GIT} branch --show-current*`,
+  );
+
+export default {
   files: {
     'adventurer.md': {
       frontmatter: {
-        description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory - traces call chains, maps module relationships,
-generates structured reports for downstream specialists.
-Use for: understanding unfamiliar code, tracing dependencies, gathering
-context before implementation, investigating module structures.
-One role per session: exploration only - never implement or design.`,
+        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [
+              ...allow('git status*', 'git rev-parse*', 'opensrc*', 'agent-browser*', 'rtk*'),
+              ...guardedReconGit(),
+            ],
+          ),
+          edit: 'deny',
           glob: 'allow',
           grep: 'allow',
           lsp: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
+          read: 'allow',
           skill: 'allow',
           todowrite: 'allow',
-          edit: 'deny',
-          bash: {
-            '*': 'ask',
-            // Read-only file operations
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            // Git investigation
-            'git log*': 'allow',
-            'git diff*': 'allow',
-            'git status*': 'allow',
-            'git show*': 'allow',
-            'git branch*': 'allow',
-            'git rev-parse*': 'allow',
-            'git remote*': 'allow',
-            'git stash*': 'allow',
-            'git config*': 'allow',
-            // Package managers
-            'pnpm*': 'allow',
-            'npm*': 'allow',
-            // Exploration tools
-            'opensrc*': 'allow',
-            'agent-browser*': 'allow',
-            'rtk*': 'allow',
-          },
+          webfetch: 'allow',
+          websearch: 'ask',
         },
       },
     },
     'architect.md': {
       frontmatter: {
-        description: `Architecture decisions using decision matrices and ADRs.
-Evaluates options with weighted criteria, clarifies business context first.
-Use for: technology choices, implementation approaches, trade-off analysis.`,
+        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [...allow('git status*', 'opensrc*', 'npm view *'), ...guardedReconGit()],
+          ),
+          edit: 'deny',
           glob: 'allow',
           grep: 'allow',
           lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
           webfetch: 'allow',
           websearch: 'ask',
-          skill: 'allow',
-          edit: 'deny',
-          bash: {
-            '*': 'ask',
-            // Read-only file operations
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            // Git operations
-            'git diff*': 'allow',
-            'git log*': 'allow',
-            'git status*': 'allow',
-            'git show*': 'allow',
-            'git branch*': 'allow',
-            // Package managers
-            'opensrc*': 'allow',
-            'pnpm*': 'allow',
-            'npm*': 'allow',
-            'npm view *': 'allow',
-          },
         },
       },
     },
     'builder.md': {
       frontmatter: {
-        description: `Focused implementation agent for atomic tasks.
-Executes one verifiable unit of work with minimal context.
-Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
+          // du* follows stat* in the established projection.
+          bash: Object.fromEntries([
+            ...BASE_READ_HEAD,
+            ['du*', 'allow'],
+            ...BASE_READ_TAIL,
+            ...allow('test*', 'sort*', 'git*'),
+            ['pnpx*', 'ask'],
+            ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
+            ['*', 'ask'],
+          ]),
+          edit: 'allow',
           glob: 'allow',
           grep: 'allow',
           lsp: 'allow',
-          edit: 'allow',
-          webfetch: 'allow',
-          todowrite: 'allow',
+          read: 'allow',
           skill: 'allow',
-          bash: {
-            // Read-only file operations (Claude Code baseline)
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'du*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            'test*': 'allow',
-            'sort*': 'allow',
-            // Git operations (autonomous commit protocol)
-            'git*': 'allow',
-            // Package manager (project uses pnpm; npm covered too)
-            'pnpm*': 'allow',
-            'npm*': 'allow',
-            // pnpx/npx-like commands can execute arbitrary code; always ask
-            'pnpx*': 'ask',
-            // Build, test, lint tools
-            'tsc*': 'allow',
-            'vitest*': 'allow',
-            'vp*': 'allow',
-            'rtk*': 'allow',
-            'eslint*': 'allow',
-            'prettier*': 'allow',
-            // Catch-all - unusual/dangerous commands still ask
-            '*': 'ask',
-          },
+          todowrite: 'allow',
+          webfetch: 'allow',
         },
       },
+    },
+    'commands/blitz.md': {
+      output: 'commands/blitz.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      output: 'commands/fein.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      output: 'commands/sonar.md',
+      stripFrontmatter: true,
     },
     'diagnose.md': {
       frontmatter: {
-        description: `Systematic 6-step regression tracing.
-From error message to root cause to prevention.
-Use for: cryptic errors, regressions, production bugs.`,
+        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
+          bash: bashPermissions(
+            [],
+            [
+              ...allow('git status*', 'git blame*'),
+              ['env', 'allow'],
+              ['pwd', 'allow'],
+              ['*', 'ask'],
+            ],
+          ),
+          edit: 'allow',
           glob: 'allow',
           grep: 'allow',
           lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          todowrite: 'allow',
           webfetch: 'allow',
           websearch: 'ask',
-          skill: 'allow',
-          todowrite: 'allow',
-          edit: 'allow',
-          bash: {
-            // Read-only file operations
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            // Git investigation (read-only and historical)
-            'git status*': 'allow',
-            'git diff*': 'allow',
-            'git log*': 'allow',
-            'git blame*': 'allow',
-            'git show*': 'allow',
-            // Environment inspection
-            env: 'allow',
-            pwd: 'allow',
-            // Catch-all - unusual/dangerous commands still ask
-            '*': 'ask',
-          },
-        },
-      },
-    },
-    'planner.md': {
-      frontmatter: {
-        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
-Breaks down complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
-        mode: 'subagent',
-        permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          edit: 'ask',
-          bash: {
-            '*': 'ask',
-            // Read-only file operations
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            // Git operations
-            'git status*': 'allow',
-            'git diff*': 'allow',
-            'git log*': 'allow',
-            'git show*': 'allow',
-            'git branch*': 'allow',
-            'git rev-parse*': 'allow',
-            'mkdir*': 'allow',
-            // Package managers
-            'pnpm*': 'allow',
-            'npm*': 'allow',
-          },
-          webfetch: 'allow',
-          todowrite: 'allow',
-          skill: 'allow',
-        },
-      },
-    },
-    'reviewer.md': {
-      frontmatter: {
-        description: `Code review with quality gates.
-Reviews code for correctness, edge cases, security, performance, maintainability,
-and adherence to conventions. Provides specific, actionable feedback.
-Use for: PR review, pre-commit review, architecture document review.`,
-        mode: 'subagent',
-        permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          skill: 'allow',
-          edit: 'deny',
-          bash: {
-            '*': 'ask',
-            // Read-only file operations
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            // Git operations
-            'git status*': 'allow',
-            'git diff*': 'allow',
-            'git log*': 'allow',
-            'git show*': 'allow',
-            'git branch*': 'allow',
-            'git rev-parse*': 'allow',
-            // Package managers
-            'pnpm*': 'allow',
-            'npm*': 'allow',
-            // Build, test, lint tools
-            'vp*': 'allow',
-            'rtk*': 'allow',
-            'node*': 'allow',
-          },
-          webfetch: 'allow',
-        },
-      },
-    },
-    'writer.md': {
-      frontmatter: {
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, systems.
-Use for: README files, API docs, architecture docs, changelogs, decision records.`,
-        mode: 'subagent',
-        permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          edit: 'allow',
-          webfetch: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          bash: {
-            '*': 'ask',
-            // Read-only file operations
-            'ls*': 'allow',
-            'cat*': 'allow',
-            'echo*': 'allow',
-            'head*': 'allow',
-            'tail*': 'allow',
-            'grep*': 'allow',
-            'rg*': 'allow',
-            'wc*': 'allow',
-            'which*': 'allow',
-            'diff*': 'allow',
-            'stat*': 'allow',
-            'pwd*': 'allow',
-            'cd*': 'allow',
-            'find*': 'allow',
-            'printf*': 'allow',
-            // Git operations
-            'git status*': 'allow',
-            'git diff*': 'allow',
-            'git log*': 'allow',
-            'git show*': 'allow',
-            'git branch*': 'allow',
-            'git rev-parse*': 'allow',
-            // Package managers
-            'pnpm*': 'allow',
-            'npm*': 'allow',
-            'npm view *': 'allow',
-            // Build, test, lint tools
-            'vp*': 'allow',
-            'mkdir*': 'allow',
-          },
         },
       },
     },
     'orchestrator.md': {
       frontmatter: {
-        description: `Manager agent for complex multi-step tasks.
-Breaks down work, delegates to specialists, integrates results.
-Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
+        description: `Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
         mode: 'all',
         permission: {
-          read: 'deny',
-          glob: 'deny',
-          grep: 'deny',
-          lsp: 'deny',
-          webfetch: 'deny',
-          edit: 'deny',
           bash: {
             '*': 'deny',
             '* npx --yes skills@latest *': 'allow',
           },
+          edit: 'deny',
+          glob: 'deny',
+          grep: 'deny',
+          lsp: 'deny',
           question: 'allow',
-          todowrite: 'allow',
+          read: 'deny',
+          skill: 'allow',
           task: {
             '*': 'deny',
             adventurer: 'allow',
@@ -396,54 +203,80 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
             reviewer: 'allow',
             writer: 'allow',
           },
-          skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'deny',
         },
       },
-      replace: [
-        {
-          from: 'delegation (assign work to a specialist) and asking the user questions',
-          to: '`task()` (delegate to a specialist) and `question()` (ask the user)',
-        },
-        { from: 'delegation to specialists', to: '`task()` delegation' },
-        {
-          from: 'platform-native built-in agents that bypass the pipeline',
-          to: 'built-in `explore` or `general`',
-        },
-        { from: 'delegate in parallel', to: 'send independent `task()` calls' },
-        {
-          from: `1. **Inspect** - delegate to \`@adventurer\` to check git status and review recent commits.\n   - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change \`feat\` to \`chore\`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.`,
-          to: '1. **Inspect:** `task(adventurer, "show git status + last 10 commits")`. Adhere to learned user patterns.',
-        },
-        {
-          from: 'Asking the user is restricted to three exception categories:',
-          to: '`question()` is strictly limited to 3 exception categories:',
-        },
-      ],
     },
-    'commands/fein.md': {
-      output: 'commands/fein.md',
-      stripFrontmatter: true,
+    'planner.md': {
+      frontmatter: {
+        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
+        mode: 'subagent',
+        permission: {
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [...allow('git status*', 'git rev-parse*', 'mkdir*'), ...guardedReconGit()],
+          ),
+          edit: 'ask',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'allow',
+        },
+      },
     },
-    'commands/sonar.md': {
-      output: 'commands/sonar.md',
-      stripFrontmatter: true,
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz.md',
-      stripFrontmatter: true,
+    'reviewer.md': {
+      frontmatter: {
+        description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
+        mode: 'subagent',
+        permission: {
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [
+              ...allow('git status*', 'git rev-parse*', 'vp*', 'rtk*', 'node*'),
+              ...guardedReconGit(),
+            ],
+          ),
+          edit: 'deny',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          webfetch: 'allow',
+        },
+      },
     },
     'rules.md': {
       output: '../rules/AGENTS.md',
-      replace: [
-        { from: 'repo cloning tool', to: '`opensrc`' },
-        { from: 'URL fetching tool', to: '`webfetch`' },
-        { from: 'URL fetch', to: '`webfetch`' },
-        { from: 'web search', to: '`websearch`' },
-        {
-          from: 'platform-native built-in agents',
-          to: '`explore` or `general`',
+    },
+    'writer.md': {
+      frontmatter: {
+        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
+        mode: 'subagent',
+        permission: {
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [
+              ...allow('git status*', 'git rev-parse*', 'npm view *', 'vp*', 'mkdir*'),
+              ...guardedReconGit(),
+            ],
+          ),
+          edit: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'allow',
         },
-      ],
+      },
     },
   },
+  output: 'agents',
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

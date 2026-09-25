@@ -1,0 +1,46 @@
+---
+title: Quick Start
+description: Use the Maestria specialist and workflow skills in Codex CLI.
+---
+
+Once `npx maestria install codex` completes, start a fresh Codex CLI session so the marketplace state and managed orchestration instructions load. Normal engineering requests then run in the host-owned Codex session, which applies the Maestria orchestrator guidance automatically.
+
+## Route a task
+
+Use the orchestrator skill when a task is unfamiliar, cross-file, or risky:
+
+```text
+$maestria:orchestrator I need to add rate limiting to the API. Plan and implement it.
+```
+
+The orchestrator chooses between direct work and native specialist agents based on task risk and available runtime capabilities. It is methodology guidance, not a replacement for Codex's approvals or sandbox.
+
+## Call a specialist
+
+Use one specialist for one kind of help:
+
+```text
+$maestria:adventurer Trace the authentication flow and report the relevant files.
+```
+
+The specialist skills are `$maestria:adventurer`, `$maestria:architect`, `$maestria:builder`, `$maestria:diagnose`, `$maestria:planner`, `$maestria:reviewer`, and `$maestria:writer` (see the [Agent Reference](/core/agents/) for role details).
+
+When the native companion pack is installed, the same roles are available to Codex delegation as `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer` through the native `agent_type` selector.
+
+## Choose a workflow mode
+
+The modes are Codex skills rather than slash commands: `$maestria:fein` (full pipeline: reconnaissance, design, implementation, review), `$maestria:sonar` (research only; stops before implementation), and `$maestria:blitz` (fast, capability-aware route for small or well-understood work).
+
+```text
+$maestria:fein Add rate limiting to the API.
+```
+
+## Review the result independently
+
+After the builder completes, invoke the reviewer in a separate turn:
+
+```text
+$maestria:reviewer Review the current diff for correctness, security, and missing tests.
+```
+
+The reviewer skill is advisory: Codex may still expose write-capable tools while it is active. Use Codex's sandbox and approval controls for a hard boundary.

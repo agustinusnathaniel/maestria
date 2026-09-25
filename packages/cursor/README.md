@@ -1,61 +1,39 @@
 # @maestria/cursor
 
-A [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`).
+A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`; `cursor-agent` is a compatibility alias) - specialist Task agents, an orchestrator skill, always-on global rules, and workflow commands (7 specialists as of 2026-09-22; see What It Provides below for the current list).
 
-## Features
-
-- **7 specialist agents** — adventurer, architect, builder, diagnose, planner, reviewer, writer (Task subagents)
-- **Orchestrator skill** — dispatcher methodology, handoff contracts, maker/checker guidance
-- **Always-on global rules** — `rules/maestria-global.mdc` with `alwaysApply: true`
-- **Workflow commands** — `/fein`, `/sonar`, `/blitz`
-- **IDE + CLI parity** — one plugin bundle for both surfaces
+> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
-### Recommended: via maestria CLI
-
 ```bash
+# Recommended: via the maestria CLI (installs the plugin to ~/.cursor/plugins/local/maestria)
 pnpx maestria@latest install cursor
 ```
 
-Copies the plugin to `~/.cursor/plugins/local/maestria`. Restart Cursor IDE, or in CLI:
+Restart Cursor IDE (or use **Developer: Reload Window**). Cursor CLI uses `agent` and discovers local plugins from `~/.cursor/plugins/local/maestria`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/INSTALL.md) for the full checklist, manual setup, verification, and uninstall.
 
-```bash
-agent --plugin-dir ~/.cursor/plugins/local/maestria
-```
+## What It Provides
 
-### Alternative: local development
+- **Specialist Task agents** (7 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/agents) for the current list) - adventurer, architect, builder, diagnose, planner, reviewer, writer.
+- **Orchestrator skill** - dispatcher methodology, handoff contracts, maker/checker guidance.
+- **Always-on global rules** - `rules/maestria-global.mdc` with `alwaysApply: true`.
+- **Workflow commands** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
-From a checkout of this monorepo:
+## Support / Platform Notes
 
-```bash
-agent --plugin-dir ./packages/cursor
-```
+- Read-only roles use Cursor's `readonly: true` runtime flag where supported; everything else is advisory prompt guidance, not a sandbox.
 
-See [INSTALL.md](./INSTALL.md) for the full checklist.
+## Documentation and Changelog
 
-## Commands
+- [User-facing documentation](https://maestria.sznm.dev/cursor/) on the docs site
+- [Installation checklist](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/INSTALL.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/CHANGELOG.md)
 
-| Command  | Description                                        |
-| -------- | -------------------------------------------------- |
-| `/fein`  | Full pipeline: recon → design → implement → review |
-| `/sonar` | Research only: recon → design → stop               |
-| `/blitz` | Fast implementation via builder                    |
+## Contributing
 
-## Development
-
-```bash
-# Sync agents/skills/rules from core
-cd packages/cursor && npx tsx ../core/scripts/sync.ts --verbose
-
-# Test
-pnpm --filter @maestria/cursor test
-
-# Format, lint, type-check (repo root)
-vp check
-```
-
-Canonical prompts live in `packages/core/agent-directives/`. Edit those, then sync. Never edit generated files under `agents/`, `skills/`, or `rules/` directly.
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

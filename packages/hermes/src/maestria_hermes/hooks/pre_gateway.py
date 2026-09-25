@@ -1,6 +1,6 @@
 """pre_gateway_dispatch hook -- intercepts maestria slash commands before agent-busy check.
 
-Registered commands: /fein, /sonar, /blitz, /mode, /review, /plan
+Registered commands: /fein, /sonar, /blitz, /mode, /mode-clear, /review, /plan
 These are handled here so they dispatch even when the agent is busy
 processing a turn (the normal plugin command dispatch at gateway/run.py:9007
 runs AFTER the agent-busy gate and never fires during active turns).
@@ -13,53 +13,20 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import pathlib
-import re
 from typing import Any, Optional
 
-from maestria_hermes.modes import ModeManager
+from maestria_hermes.modes import (
+    MAESTRIA_COMMANDS,
+    MODE_PERSISTENCE_FAILURE_MESSAGE,
+    MODE_PIPELINES,
+    ModeManager,
+    ModePersistenceError,
+    render_mode_clear,
+    render_mode_status,
+    render_mode_switch,
+)
 
 logger = logging.getLogger(__name__)
-
-# Commands this hook handles
-_MAESTRIA_COMMANDS = {"fein", "sonar", "blitz", "mode", "review", "plan"}
-
-_FM_DESC_RE = re.compile(r'^description:\s*"(.+)"', re.MULTILINE)
-_COMMANDS_DIR = pathlib.Path(__file__).parent.parent / "skills" / "commands"
-
-
-def _load_pipeline_desc(name: str, fallback: str) -> str:
-    """Load pipeline description from synced command SKILL.md frontmatter."""
-    path = _COMMANDS_DIR / name / "SKILL.md"
-    if path.exists():
-        try:
-            content = path.read_text(encoding="utf-8")
-            if content.startswith("---"):
-                end = content.find("---\n", 3)
-                if end != -1:
-                    fm = content[3:end]
-                    m = _FM_DESC_RE.search(fm)
-                    if m:
-                        return m.group(1)
-        except OSError:
-            pass
-    return fallback
-
-
-_PIPELINE_DESC = {
-    "fein": _load_pipeline_desc(
-        "fein",
-        "Full pipeline mode: reconnaissance, design, implementation, review",
-    ),
-    "sonar": _load_pipeline_desc(
-        "sonar",
-        "Research-only mode: reconnaissance and design only, no implementation",
-    ),
-    "blitz": _load_pipeline_desc(
-        "blitz",
-        "Fast implementation mode: skip gates, go directly to implementation",
-    ),
-}
 
 
 def create_pre_gateway_hook(mode_manager: ModeManager):
@@ -100,33 +67,27 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
             None to let normal dispatch proceed.
         """
         cmd = event.get_command()
-        if not cmd or cmd not in _MAESTRIA_COMMANDS:
+        if not cmd or cmd not in MAESTRIA_COMMANDS:
             return None
 
-        if cmd == "mode":
-            mode = mode_manager.get_mode()
-            response = (
-                f"**Maestria Status**\n\n"
-                f"Mode: **{mode}**\n"
-                f"Read-only: {'Yes' if mode_manager.is_read_only() else 'No'}"
-            )
+        try:
+            if cmd == "mode-clear":
+                mode_manager.clear_mode()
+                response = render_mode_clear()
 
-        elif cmd in ("fein", "sonar", "blitz"):
-            mode_manager.set_mode(cmd)
-            response = (
-                f"Switched to **{cmd}** mode.\n"
-                f"Pipeline: {_PIPELINE_DESC.get(cmd, 'unknown')}"
-            )
+            elif cmd == "mode":
+                mode = mode_manager.get_mode()
+                response = render_mode_status(mode, mode_manager.is_read_only())
 
-        elif cmd in ("review", "plan"):
-            mode_manager.set_mode("fein")
-            response = (
-                f"Switched to **fein** mode.\n"
-                f"Pipeline: {_PIPELINE_DESC['fein']}"
-            )
+            elif cmd in ("fein", "sonar", "blitz"):
+                mode_manager.set_mode(cmd)
+                response = render_mode_switch(cmd, MODE_PIPELINES.get(cmd, "unknown"))
 
-        else:
-            return None  # Shouldn't reach here
+            elif cmd in ("review", "plan"):
+                mode_manager.set_mode("fein")
+                response = render_mode_switch("fein", MODE_PIPELINES["fein"])
+        except ModePersistenceError:
+            response = MODE_PERSISTENCE_FAILURE_MESSAGE
 
         logger.info("pre_gateway: handled /%s (mode=%s)", cmd, mode_manager.get_mode())
 

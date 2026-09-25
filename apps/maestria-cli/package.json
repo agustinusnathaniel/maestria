@@ -1,14 +1,16 @@
 {
   "name": "maestria",
-  "version": "0.8.0",
-  "description": "Maestria CLI - manage maestria plugins across coding agent platforms",
+  "version": "0.13.3",
+  "description": "Maestria CLI - manage runtime integrations and portable Agent Plugins",
   "keywords": [
+    "agent-plugins",
     "ai-agent",
     "cli",
     "kimi-code",
     "maestria",
     "opencode",
-    "pi"
+    "pi",
+    "prime-agent"
   ],
   "homepage": "https://maestria.sznm.dev/cli/",
   "bugs": "https://github.com/agustinusnathaniel/maestria/issues",
@@ -37,13 +39,14 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@clack/core": "^1.4.3"
+    "@clack/core": "^1.5.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@clack/prompts": "^1.7.0",
+    "@clack/prompts": "^1.8.0",
     "@types/node": "catalog:",
     "citty": "^0.2.2",
-    "effect": "4.0.0-beta.100",
+    "effect": "catalog:",
     "jsonc-parser": "catalog:",
     "picocolors": "^1.1.1",
     "typescript": "catalog:",
@@ -54,7 +57,7 @@
   },
   "pnpm": {
     "overrides": {
-      "effect": "4.0.0-beta.100"
+      "effect": "catalog:"
     }
   }
 }

@@ -7,115 +7,76 @@ lastUpdated: false
 
 import { Aside, Code } from '@astrojs/starlight/components';
 
-The `@maestria/opencode` plugin registers 8 agents with no model overrides. Each agent runs on whatever model OpenCode assigns by default. You can change this by setting per-agent models in your OpenCode config.
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
-This page covers how the model hierarchy works and what assignments make sense for each specialist.
+The `@maestria/opencode` plugin registers 8 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agent.<name>.model` path, which works for any agent.
 
-<Aside type="caution" title="Model choice affects every delegated stage">
-  The orchestrator's model is inherited by specialists unless you override them. A capable or
-  expensive model on the orchestrator can therefore be used for reconnaissance, implementation,
-  review, and retries. Read [When to use Maestria](/core/when-to-use/) before assigning the same
-  high-cost model to every agent.
-</Aside>
-
-## Why Set Per-Agent Models
-
-Different specialists benefit from different models. A fast, cheap model works for file-scanning tasks. A more capable model matters where output quality is critical - code generation, review, and architecture.
-
-Matching models to agent roles lets you tune cost and latency:
-
-- **Adventurer** - fast and cheap for read-only searches
-- **Builder** - capable for code generation quality
-- **Reviewer** - capable for critical quality gates
-- **Orchestrator** - balanced for task routing and coordination
-
-## How It Works
-
-The plugin registers agents without a `model` field in their frontmatter. OpenCode's config merge applies your overrides from `opencode.jsonc` on top of the defaults. No conflict, no plugin changes needed.
-
-The model property follows OpenCode's standard agent config path: `agent.<name>.model`. The same path works for any agent, not just the ones from this plugin.
-
-## Syntax
-
-Add agent model overrides to your OpenCode config:
+## Per-Agent Models
 
 ```jsonc
 {
   "agent": {
-    "adventurer": { "model": "anthropic/claude-haiku-4-20250514" },
-    "builder": { "model": "openai/gpt-4o" },
-    "reviewer": { "model": "openai/gpt-4o" },
-    "orchestrator": { "model": "anthropic/claude-sonnet-4-20250514" },
+    "adventurer": { "model": "<model-id>" },
+    "writer": { "model": "<model-id>" },
   },
 }
 ```
 
-You can edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project-level).
+Edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project-level). Unmentioned agents keep their existing assignments.
 
-### Model ID format
+Use `<provider>/<model-id>` with an explicit model ID copied from OpenCode's live model list: model IDs, availability, pricing, and aliases vary.
 
-Use `<provider>/<model-id>`.
-
-| Provider  | Example ID                           |
-| --------- | ------------------------------------ |
-| Anthropic | `anthropic/claude-sonnet-4-20250514` |
-| Anthropic | `anthropic/claude-haiku-4-20250514`  |
-| OpenAI    | `openai/gpt-4o`                      |
-
-## Subagent Model Inheritance
+## Model Inheritance
 
 Model assignment follows a chain. From the OpenCode documentation:
 
 > If you don't specify a model, primary agents use the globally configured model while subagents will use the model of the primary agent that invoked the subagent.
 
-Maestria's 7 specialists are subagents of the orchestrator. This means they inherit the orchestrator's model unless you override a specialist individually. So setting a model on the orchestrator affects all specialists by default.
-
-This matters for your config strategy:
-
-- **Set one model** on the orchestrator. All specialists inherit it. Simple, uniform behavior.
-- **Override selectively** when a specialist needs a different model. For example, use a cheaper model on adventurer and keep the rest on the orchestrator's model.
+The 7 specialists are subagents of the orchestrator, so they inherit the orchestrator's model unless overridden individually. Read [When to use Maestria](/core/when-to-use/) before assigning the same model to every agent.
 
 <Aside type="tip">
-  If you want every specialist on the same model, just set{' '}
-  <Code code="agent.orchestrator.model" lang="jsonc" />. No need to repeat it for all 8 agents. Only
-  add entries for the agents you want to diverge.
+  To put every specialist on the same model, set{' '}
+  <Code code="agent.orchestrator.model" lang="jsonc" />. Add entries only for the agents you want to
+  diverge.
 </Aside>
 
-## Suggested Assignments
+## Selective Assignment
 
-These are starting points, not rules. Your optimal config depends on which models you have access to and what trade-offs you prefer between speed and quality.
+The CLI validates a model ID against OpenCode's live model list and changes only the named agents:
 
-| Agent        | Suggested model strategy                         | Reason                                                    |
-| ------------ | ------------------------------------------------ | --------------------------------------------------------- |
-| Orchestrator | Balanced (Claude Sonnet 4, GPT-4o)               | Needs good judgment across varied routing decisions       |
-| Adventurer   | Fast/cheap (Claude Haiku 4, GPT-4o-mini)         | Read-only searches, high throughput, latency matters      |
-| Architect    | Capable (Claude Sonnet 4, GPT-4o)                | Trade-off analysis and design reasoning                   |
-| Builder      | Capable (Claude Sonnet 4, GPT-4o)                | Code generation quality is the main output                |
-| Diagnose     | Capable (Claude Sonnet 4, GPT-4o)                | Deep reasoning and long-context tracing                   |
-| Planner      | Capable (Claude Sonnet 4, GPT-4o)                | Structured multi-phase output                             |
-| Reviewer     | Most capable available (Claude Sonnet 4, GPT-4o) | Critical quality gate - correctness, edge cases, security |
-| Writer       | Balanced (Claude Sonnet 4, GPT-4o)               | Prose quality with moderate latency                       |
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="configure opencode --global --set adventurer=<model-id>,writer=<model-id>"
+/>
 
-<Aside>
-  The model IDs above are examples. Check OpenCode's documentation for the latest available models
-  and their exact identifiers. Model availability depends on your API provider and plan.
-</Aside>
+See the [configure reference](/cli/commands/#configure) for supported platforms and options.
 
 ## Model Field in Markdown Frontmatter
 
-For custom agents you define locally, you can also set the model directly in the agent's Markdown frontmatter:
+Custom agents defined locally can set the model in the agent's Markdown frontmatter:
 
 ```markdown
 ---
 name: my-custom-agent
-model: openai/gpt-4o
+model: <model-id>
 ---
 ```
 
-This works the same as the `agent.<name>.model` config entry. Frontmatter is useful when the agent file is self-contained, like a project-specific agent checked into your repo.
+This works the same as the `agent.<name>.model` config entry.
 
-## Managing Config Across Projects
+## Project-Level Config
 
-You can keep different model configs for different projects. Project-level config (`.opencode/opencode.jsonc`) merges with global config (`~/.config/opencode/opencode.jsonc`). Project settings take precedence.
+Project config (`.opencode/opencode.jsonc`) merges with global config (`~/.config/opencode/opencode.jsonc`); project settings take precedence.
 
-This lets you use expensive models for your main project and cheaper models for side projects, all from the same global install.
+## Disabling Workflow Modes
+
+`modes.disabledKeywords` accepts a denylist of mode keywords in the plugin options:
+
+```jsonc
+{
+  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
+}
+```
+
+Mode detection and precedence are documented under [Modes](/core/agents/#modes).

@@ -6,26 +6,22 @@ Accepted
 
 ## Context
 
-The `@maestria/opencode` plugin does not bundle skills. Skills are external packages installed via the skills CLI (`skills@latest`). The orchestrator is responsible for ensuring subagents have the skills they need before spawning them.
+The `@maestria/opencode` plugin does not bundle skills; they are external packages installed via the skills CLI (`skills@latest`), and the orchestrator ensures subagents have needed skills before spawning them.
 
-The initial design (commit `b00eb13`) defined a 4-part install flow that delegated installs to `@builder` and hardcoded CLI flag documentation in the prompt. This design had several problems:
+The initial design (commit `b00eb13`) delegated installs to `@builder` and hardcoded CLI flag documentation. Its problems:
 
-1. **Builder delegation was over-engineered.** The orchestrator already mediates intent between user and specialist. Running `npx --yes skills@latest add ...` is a one-line extension of that role - adding a `@builder` hop just to type a command added latency and context overhead.
-2. **Hardcoded flag documentation was brittle.** The initial prompt documented 5 CLI flags (`--skill`, `-g`, `-y`, `-l`, `-p`) inline. Flag names change between versions. The prompt would drift from the actual CLI.
-3. **Global scope assumed nonexistent.** The initial design assumed `-g --global` didn't exist (because `xtarter` doesn't use it), but the skills CLI's help confirmed it is a real flag.
-4. **Package manager assumption.** The initial design used `pnpx` - but pnpm may not be installed on all systems. `npx` ships with Node.js.
-5. **Per-skill questions created too much friction.** Each missing skill triggered a separate user prompt. With 3-5 skills per spawn, this was disruptive.
-6. **Permission-level `webfetch: ask` was tried and reverted.** Builder, adventurer, and diagnose were initially changed to `webfetch: ask`. The user pointed out this added friction with no policy benefit - the opensrc-vs-webfetch rule already encodes the guidance.
-
-The install flow was iterated across 5 commits from `b00eb13` to `d2e0671`, converging on the current design.
+1. **Builder delegation was over-engineered.** Running `npx --yes skills@latest add ...` is a one-line extension of the orchestrator's mediation role; the extra hop added latency and context overhead.
+2. **Hardcoded flag docs were brittle.** Five flags were documented inline; names change between versions, so the prompt would drift from the CLI.
+3. **Global scope was assumed nonexistent.** The design assumed `-g --global` didn't exist because `xtarter` doesn't use it, but the CLI's help confirmed it.
+4. **pnpx assumption.** pnpm may not be installed; `npx` ships with Node.js.
+5. **Per-skill questions created friction.** Each missing skill triggered a separate prompt (3-5 per spawn).
+6. **`webfetch: ask` was tried and reverted.** Builder, adventurer, and diagnose used it; the user noted friction with no policy benefit because the opensrc-vs-webfetch rule already encodes the guidance.
 
 ## Decision
 
 ### 1. Orchestrator Runs Installs Directly
 
-The orchestrator's bash permission allow-lists `npx --yes skills@latest *` - covering `add`, `--help`, and all other subcommands. The orchestrator runs installs directly after user approval via `question`. No `@builder` delegation.
-
-**Rationale:** The orchestrator already mediates intent between user and specialist. Adding `@builder` to type a command is an unnecessary hop - the permission system is already set up for direct execution. The pipetask delegate → build/report pattern was over-engineering for a one-line command.
+The orchestrator's bash permission allow-lists `npx --yes skills@latest *` (covering `add`, `--help`, and other subcommands) and runs installs directly after user approval via `question`, without `@builder` delegation. The orchestrator already mediates intent, so a builder hop to type one command was unnecessary.
 
 ### 2. Bundled Questions
 
@@ -38,9 +34,7 @@ Instead of one prompt per missing skill, the orchestrator prepares a single bund
 >
 > Install as recommended? [Y/n / specify per-skill scope]"
 
-The user can mix scopes in one answer (e.g., "A globally, B locally"). Bundling keeps the flow to one prompt per spawn, even with multiple missing skills.
-
-Judgment criteria for global vs. project:
+The user can mix scopes in one answer (e.g., "A globally, B locally"). Judgment criteria for global vs. project:
 
 - **General-purpose** → recommend global (e.g., `opensrc`, `tdd`, `karpathy-guidelines`)
 - **Project-specific** → recommend local (e.g., skills referencing this project's own tooling/ADRs)
@@ -54,19 +48,19 @@ Before any install, the orchestrator runs:
 npx --yes skills@latest --help
 ```
 
-This is not a suggestion - it is a directive. The prompt does not document the CLI's flag set. Flag names and behavior change between versions; the CLI's help output is always current.
+The prompt documents no flags: names and behavior change between versions, while help output is current. This is a directive, not a suggestion.
 
 ### 4. npx over pnpx
 
-`npx` ships with Node.js and is always available. `pnpm` might not be installed. `--yes` is npx's auto-confirm flag (separate from the skills CLI's own `-y`).
+`npx` ships with Node.js and is always available; `pnpm` might not be installed. `--yes` is npx's auto-confirm flag, separate from the CLI's own `-y`.
 
 ### 5. `-g, --global` IS a Real Flag
 
-The initial design assumed `-g` didn't exist. The `--help` output confirms: `-g, --global` is documented. It installs to user-level scope (visible across all projects). Without `-g`, the install is project-local.
+The initial design assumed `-g` didn't exist. The help output documents `-g, --global`, which installs to user-level scope; installs without it are project-local.
 
 ### 6. webfetch: allow for All Agents
 
-Permissions are permissive by default. The opensrc-vs-webfetch guidance in each agent's `## Rules` section encodes the policy. Permission-level `ask` was tried for builder, adventurer, and diagnose - it was reverted after user feedback because it added friction without changing behavior. (See ADR-OC-001 for the full permission design rationale.)
+Permissions are permissive by default; the opensrc-vs-webfetch guidance in each agent's `## Rules` section encodes the policy. Permission-level `ask` was tried for builder, adventurer, and diagnose and reverted after user feedback: it added friction without changing behavior. See ADR-OC-001 for the permission design rationale.
 
 ### Evolution From Initial Design (commit `b00eb13`)
 
@@ -81,28 +75,22 @@ Permissions are permissive by default. The opensrc-vs-webfetch guidance in each 
 
 ## Consequences
 
-- Positive: Install flow is one hop (orchestrator → user → install) instead of three (orchestrator → builder → user → install → builder reports)
-- Positive: `--help` directive never drifts - flag changes are handled by the CLI, not by prompt updates
-- Positive: Bundled questions reduce user friction - one prompt per spawn regardless of how many skills are missing
-- Positive: `npx` ensures the flow works on any Node.js installation without requiring pnpm
-- Positive: Permissive `webfetch` removes friction; policy is in the rules, not in the permission system
-- Negative: Orchestrator's bash permission must allow-list `npx --yes skills@latest *` - any change to the skills CLI's package name or entry point would break the allow-list
-- Negative: Bundled question format is complex - the orchestrator must group by source, judge global vs. project, and format the prompt in one turn
-- Negative: No auto-install - every install requires a user `question` prompt, even for well-known skills
+- Positive: the install flow is one hop (orchestrator → user → install) instead of three.
+- Positive: `--help` never drifts; flag changes are handled by the CLI, not prompt updates.
+- Positive: bundled questions reduce friction to one prompt per spawn.
+- Positive: `npx` works on any Node.js installation without pnpm.
+- Positive: permissive `webfetch` removes friction; policy lives in the rules, not the permission system.
+- Negative: the bash allow-list names the skills CLI package and entry point; a rename would break it.
+- Negative: bundled questions require the orchestrator to group by source, judge scope, and format the prompt in one turn.
+- Negative: no auto-install; every install requires a user `question`, even for well-known skills.
 
 ## Lessons Learned
 
-1. **Builder delegation for installs was over-engineering.** The initial design assumed the orchestrator should never run commands. But the orchestrator already mediates intent - running `npx ...` is a one-line extension of that role, not an implementation task. The permission allow-list makes it safe.
-
-2. **Hardcoded CLI documentation always drifts.** The first attempt documented 5 flags inline. Even if accurate at write time, it would rot as the CLI evolved. Running `--help` is zero-maintenance and more reliable.
-
-3. **"CLI is the source of truth" was a user-driven optimization.** The user pointed out that documenting flags in the prompt was fragile. This is a generalizable lesson: for any external CLI tool, `--help` is better than hardcoded docs.
-
-4. **Don't assume a tool doesn't exist because one project doesn't use it.** The `-g` flag was assumed nonexistent because `xtarter` doesn't use global installs. The `--help` output would have caught this earlier if we'd run it first.
-
-5. **Permissions should be permissive; rules should encode policy.** The `webfetch: ask` experiment confirmed that permission-level gates don't change behavior - they just add friction. The opensrc-vs-webfetch policy belongs in `## Rules`, not in the frontmatter.
-
-6. **Scope judgment (global vs. local) needs clear criteria.** The first version had none. Adding "general-purpose → global, project-specific → local, uncertain → local" made the decision consistent across spawns.
+1. **Builder delegation for installs was over-engineering.** Running one command extends the orchestrator's mediation role, and the permission allow-list makes it safe.
+2. **Hardcoded CLI docs always drift; `--help` is zero-maintenance** and generalizes to any external CLI.
+3. **Don't infer a tool lacks a feature because one project doesn't use it.** Running `--help` first would have caught the `-g` assumption.
+4. **Permissions permissive, policy in rules.** Permission gates added friction without changing behavior.
+5. **Scope judgment needs explicit criteria** ("general-purpose → global, project-specific → local, uncertain → local") to stay consistent across spawns.
 
 ## Date
 
