@@ -155,9 +155,7 @@ export const apply = (ctx: MaestriaPluginContext, config?: MaestriaPluginConfig)
     }
   }
 
-  // One variable per persona consumed by the Maestria preset's delegation
-  // tools: `persona: '{{maestria_<role>}}'`. Canonical content stays
-  // single-sourced in the generated skills; the preset references it.
+  // Persona variables for the preset's `persona: '{{maestria_<role>}}'` tools.
   const personaNames = ['orchestrator', ...MAESTRIA_SPECIALISTS] as const;
   for (const personaName of personaNames) {
     const body = bodies.get(personaName);

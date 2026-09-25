@@ -1,34 +1,16 @@
-# The `maestria` agent preset: the full coding agent composed around Maestria's
-# specialist pipeline, mounted once per process.
+# The `maestria` agent preset: full coding agent around Maestria's specialist pipeline.
 #
 # Derived from the `standard` agent preset shipped with
 # deepseek-ai/deepseek-harness (BSD-3-Clause; see that repository's LICENSE).
-# Differences from `standard`:
-#   - the persona is Maestria's orchestrator methodology (variable
-#     `maestria_orchestrator`, registered by the @maestria/deepseek plugin),
-#   - the `maestria-methodology` row mounts the @maestria/deepseek plugin,
-#     which contributes the routing/global-rules prompt sections, the
-#     specialist persona variables, and a `ctx.skills` provider for the
-#     generated skill tree,
-#   - the delegation group adds seven `maestria_<role>` subagent tools, one
-#     per specialist persona.
+# Differences: orchestrator persona (`maestria_orchestrator`), the
+# `./plugin/index.js` methodology plugin, and seven `maestria_<role>` delegation tools.
 #
-# This file is an AGENT-PLANE composition. The roster mounts it ONCE under a
-# standing scope; every session naming it joins by scope parentage, so the
-# tools and prompt sections registered here cover each joined agent while a
-# session's own state stays keyed per Session/Agent inside the plugins. The
-# host composition (`base.cordis.yml` + `web.cordis.yml`) keeps everything a
-# preset must not own: the registries themselves, the sandbox and approval
-# stack, persistence, and the model route.
+# AGENT-PLANE composition, mounted once per process under a standing scope.
+# Host owns registries, sandbox, approvals, persistence, and model route.
 #
 # A service row here MUST sit inside a group carrying an `isolate` realm.
-# Without one it publishes into the root realm, where it is process-global —
-# another preset publishing the same name collides, and a host reader would
-# resolve one preset's instance for every session; `dsh-agent-presets` rejects
-# that at mount. `true` means an entry-local realm: this standing mount's own
-# private instance, apart from every other preset's. (A shared label does NOT
-# pool instances — `provide()` throws on the second registration under the
-# same realm symbol; labels join REALMS, and are not what this file needs.)
+# Without one it publishes into the root realm (process-global, collides).
+# `true` means an entry-local realm: this mount's private instance.
 
 # ── identity ────────────────────────────────────────────────────────────────
 

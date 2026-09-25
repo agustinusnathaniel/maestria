@@ -630,15 +630,7 @@ const deepseek: PlatformDefinition = {
     return yield* fileExists(`${deepseekPresetDir()}/agent.cordis.yml`);
   }),
   getInstalledVersion: Effect.suspend(() =>
-    readTextFile(`${deepseekPresetDir()}/plugin/package.json`).pipe(
-      Effect.map((out: string) => {
-        try {
-          const pkg = parseJsonRecord(out);
-          return typeof pkg?.version === 'string' ? pkg.version : 'unknown';
-        } catch {
-          return 'unknown';
-        }
-      }),
+    readPackageJsonVersion(`${deepseekPresetDir()}/plugin/package.json`).pipe(
       Effect.catchCause(() => Effect.succeed('unknown')),
     ),
   ),

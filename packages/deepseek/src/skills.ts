@@ -130,11 +130,7 @@ const loadDefinition = async (
   }
 };
 
-/**
- * Provider whose `list` returns the complete-array shorthand the registry
- * accepts. Narrower than `SkillProvider`, so it is directly assignable where
- * a `SkillProvider` is expected while keeping static call sites exact.
- */
+/** Narrower than `SkillProvider` for exact static call sites. */
 export interface MaestriaSkillProvider extends Omit<SkillProvider, 'list'> {
   readonly list: (options: SkillLookupOptions) => Promise<readonly SkillCandidate[]>;
 }
