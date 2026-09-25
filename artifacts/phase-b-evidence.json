@@ -128,6 +128,356 @@
           "detail": "",
           "name": "diagnose allows edits",
           "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "adventurer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "adventurer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "adventurer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "adventurer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "adventurer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "adventurer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "architect.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "architect.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "architect.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "architect.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "architect.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "architect.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "planner.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "planner.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "planner.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "planner.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "planner.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "planner.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "reviewer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "reviewer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "reviewer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "reviewer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "reviewer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "reviewer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "writer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "writer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "writer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "writer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "writer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*",
+          "pass": true
+        },
+        {
+          "detail": "allow",
+          "name": "writer.md allows git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no git log*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no git diff*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no git show*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no git branch*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no find allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no pnpm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no npm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "adventurer.md has no git blanket",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no git log*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no git diff*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no git show*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no git branch*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no find allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no pnpm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no npm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "architect.md has no git blanket",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no git log*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no git diff*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no git show*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no git branch*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no find allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no pnpm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no npm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "planner.md has no git blanket",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no git log*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no git diff*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no git show*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no git branch*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no find allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no pnpm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no npm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "reviewer.md has no git blanket",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no git log*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no git diff*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no git show*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no git branch*",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no find allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no pnpm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no npm allow",
+          "pass": true
+        },
+        {
+          "detail": "",
+          "name": "writer.md has no git blanket",
+          "pass": true
         }
       ],
       "name": "permission-narrowing"
@@ -330,6 +680,36 @@
           "pass": true
         },
         {
+          "detail": "find . -print",
+          "name": "find output form fails",
+          "pass": true
+        },
+        {
+          "detail": "find . -exec rm {} ;",
+          "name": "find exec form fails",
+          "pass": true
+        },
+        {
+          "detail": "git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch -D topic",
+          "name": "guarded branch delete fails",
+          "pass": true
+        },
+        {
+          "detail": "git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv --format=%H",
+          "name": "guarded log custom format fails",
+          "pass": true
+        },
+        {
+          "detail": "pnpm test",
+          "name": "pnpm test fails",
+          "pass": true
+        },
+        {
+          "detail": "npm run build",
+          "name": "npm run fails",
+          "pass": true
+        },
+        {
           "detail": "git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status --short --branch",
           "name": "guarded status passes",
           "pass": true
@@ -352,6 +732,11 @@
         {
           "detail": "git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list",
           "name": "guarded branch list passes",
+          "pass": true
+        },
+        {
+          "detail": "git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current",
+          "name": "guarded branch show-current passes",
           "pass": true
         },
         {
@@ -494,10 +879,10 @@
     }
   ],
   "summary": {
-    "checks": 94,
+    "checks": 171,
     "failed": 0,
-    "passed": 94,
+    "passed": 171,
     "sections": 4,
-    "sha256": "af07969b41eba7e9bf52c98e13ac4455087c2f01ab5022a07c52ef40832e9020"
+    "sha256": "47d707f594052632f18ca7b10e0590966b6cfd81057548bcc07c996f8c89c542"
   }
 }

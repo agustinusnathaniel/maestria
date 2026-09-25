@@ -4,9 +4,10 @@
 // Usage: pnpm e2e:phase-b (node --experimental-strip-types
 //   scripts/e2e/phase-b-evidence.ts --out artifacts/phase-b-evidence.json)
 //
-// Four sections: permission narrowing, fail-closed modes, safety/state +
-// guarded-git + trust + subprocess dry-run, and sync mechanics. Every
-// section asserts failure modes before positive behavior. Output JSON is
+// Four sections: permission narrowing plus guarded recon restoration,
+// fail-closed modes, safety/state + guarded-git + trust + subprocess
+// dry-run, and sync mechanics. Every section asserts failure modes before
+// positive behavior. Output JSON is
 // deterministic: sorted keys, 2-space indent, LF endings, temp paths
 // normalized to <TMP>, no timestamps. Exit 0 only when every check passes.
 
@@ -91,7 +92,9 @@ const run = (cmd: string, cmdArgs: readonly string[], options: RunOptions = {}):
   };
 };
 
-// ── Section 1: permission narrowing (committed agent frontmatter) ──
+// ── Section 1: permission narrowing + guarded recon restoration ──
+// Recon roles auto-allow only the exact guarded git prefix enforced by
+// bash-policy.ts; bare git forms, find, and test runners stay at ask.
 
 type PermissionFile = Record<'bash' | 'other' | 'task', Record<string, string>>;
 
@@ -152,6 +155,56 @@ const EXPECTED_AGENTS: readonly string[] = [
   'writer.md',
 ];
 
+const RECON_AGENTS: readonly string[] = [
+  'adventurer.md',
+  'architect.md',
+  'planner.md',
+  'reviewer.md',
+  'writer.md',
+];
+
+const E2E_GUARDED_GIT =
+  'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
+
+const RESTORED_GUARDED: readonly string[] = [
+  `${E2E_GUARDED_GIT} status*`,
+  `${E2E_GUARDED_GIT} diff --no-ext-diff --no-textconv*`,
+  `${E2E_GUARDED_GIT} log --no-ext-diff --no-textconv*`,
+  `${E2E_GUARDED_GIT} show --no-ext-diff --no-textconv*`,
+  `${E2E_GUARDED_GIT} branch --list*`,
+  `${E2E_GUARDED_GIT} branch --show-current*`,
+];
+
+const UNGARDED_GIT: readonly string[] = ['git log*', 'git diff*', 'git show*', 'git branch*'];
+
+type BashLookup = (name: string) => Record<string, string>;
+
+const restoredReconChecks = (bash: BashLookup): EvidenceCheck[] =>
+  RECON_AGENTS.flatMap((name) =>
+    RESTORED_GUARDED.map((pattern) =>
+      check(
+        `${name} allows ${pattern}`,
+        bash(name)[pattern] === 'allow',
+        bash(name)[pattern] ?? '',
+      ),
+    ),
+  );
+
+const stillDeniedReconChecks = (bash: BashLookup): EvidenceCheck[] =>
+  RECON_AGENTS.flatMap((name) => [
+    ...UNGARDED_GIT.map((pattern) =>
+      check(
+        `${name} has no ${pattern}`,
+        bash(name)[pattern] === undefined,
+        bash(name)[pattern] ?? '',
+      ),
+    ),
+    check(`${name} has no find allow`, bash(name)['find*'] !== 'allow', bash(name)['find*'] ?? ''),
+    check(`${name} has no pnpm allow`, bash(name)['pnpm*'] !== 'allow', bash(name)['pnpm*'] ?? ''),
+    check(`${name} has no npm allow`, bash(name)['npm*'] !== 'allow', bash(name)['npm*'] ?? ''),
+    check(`${name} has no git blanket`, bash(name)['git*'] !== 'allow', bash(name)['git*'] ?? ''),
+  ]);
+
 const sectionPermissionNarrowing = (): void => {
   const agentsDir = path.join(repoRoot, 'packages/opencode/agents');
   const onDisk = fs.readdirSync(agentsDir).filter((name) => name.endsWith('.md'));
@@ -201,7 +254,10 @@ const sectionPermissionNarrowing = (): void => {
     check('writer allows edits', other('writer.md').edit === 'allow'),
     check('diagnose allows edits', other('diagnose.md').edit === 'allow'),
   ];
-  sections.push({ checks: [...denies, ...allows], name: 'permission-narrowing' });
+  sections.push({
+    checks: [...denies, ...allows, ...restoredReconChecks(bash), ...stillDeniedReconChecks(bash)],
+    name: 'permission-narrowing',
+  });
 };
 
 // ── Python probe driver (sections 2 and 3) ──
@@ -277,6 +333,15 @@ const deniedCommands = (): EvidenceCheck[] => {
     ['destructive root fails', 'rm -rf /'],
     ['grep bundle fails', 'grep -rn foo'],
     ['ls unsafe flag fails', 'ls --bogus'],
+    ['find output form fails', 'find . -print'],
+    ['find exec form fails', 'find . -exec rm {} ;'],
+    ['guarded branch delete fails', `${GUARDED_GIT} branch -D topic`],
+    [
+      'guarded log custom format fails',
+      `${GUARDED_GIT} log --no-ext-diff --no-textconv --format=%H`,
+    ],
+    ['pnpm test fails', 'pnpm test'],
+    ['npm run fails', 'npm run build'],
   ];
   return cases.map(([name, command]) => check(name, !isReadOnlyBashCommand(command), command));
 };
@@ -288,6 +353,7 @@ const allowedCommands = (): EvidenceCheck[] => {
     ['guarded diff passes', `${GUARDED_GIT} diff --no-ext-diff --no-textconv --stat`],
     ['guarded show passes', `${GUARDED_GIT} show --no-ext-diff --no-textconv --stat`],
     ['guarded branch list passes', `${GUARDED_GIT} branch --list`],
+    ['guarded branch show-current passes', `${GUARDED_GIT} branch --show-current`],
     ['plain ls passes', 'ls -la'],
     ['plain grep passes', 'grep -r foo src/'],
     [

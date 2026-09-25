@@ -43,6 +43,30 @@ const bashPermissions = (
 const allow = (...patterns: readonly string[]): BashPermissionEntry[] =>
   patterns.map((pattern): BashPermissionEntry => [pattern, 'allow']);
 
+// Guarded recon prefix: byte-identical to REQUIRED_GIT_GLOBAL_ARGS enforced
+// by bash-policy.ts (packages/shared/pi/src/bash-policy.ts). Only commands
+// starting with this literal prefix auto-allow; bare `git status` and every
+// other unguarded form falls through to `* ask`. Diff-capable diff/log/show
+// additionally require the `--no-ext-diff --no-textconv` patch guards in
+// that order (a bare guarded `diff` could execute repo-configured external
+// drivers), and branch keeps `--list` discipline. These globs are coarse
+// host configuration (ADR-OC-001): token-level guarantees such as custom
+// --format/%G rejection and chaining/substitution denial stay in the shared
+// Pi/OMP parser. `find` is intentionally not restored: the policy denies
+// every find form, and a prefix glob cannot exclude -exec/-delete/-ok.
+const GUARDED_GIT =
+  'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
+
+const guardedReconGit = (): BashPermissionEntry[] =>
+  allow(
+    `${GUARDED_GIT} status*`,
+    `${GUARDED_GIT} diff --no-ext-diff --no-textconv*`,
+    `${GUARDED_GIT} log --no-ext-diff --no-textconv*`,
+    `${GUARDED_GIT} show --no-ext-diff --no-textconv*`,
+    `${GUARDED_GIT} branch --list*`,
+    `${GUARDED_GIT} branch --show-current*`,
+  );
+
 export default {
   files: {
     'adventurer.md': {
@@ -52,7 +76,10 @@ export default {
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
-            allow('git status*', 'git rev-parse*', 'opensrc*', 'agent-browser*', 'rtk*'),
+            [
+              ...allow('git status*', 'git rev-parse*', 'opensrc*', 'agent-browser*', 'rtk*'),
+              ...guardedReconGit(),
+            ],
           ),
           edit: 'deny',
           glob: 'allow',
@@ -71,7 +98,10 @@ export default {
         description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         mode: 'subagent',
         permission: {
-          bash: bashPermissions([['*', 'ask']], allow('git status*', 'opensrc*', 'npm view *')),
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [...allow('git status*', 'opensrc*', 'npm view *'), ...guardedReconGit()],
+          ),
           edit: 'deny',
           glob: 'allow',
           grep: 'allow',
@@ -183,7 +213,10 @@ export default {
         description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
         mode: 'subagent',
         permission: {
-          bash: bashPermissions([['*', 'ask']], allow('git status*', 'git rev-parse*', 'mkdir*')),
+          bash: bashPermissions(
+            [['*', 'ask']],
+            [...allow('git status*', 'git rev-parse*', 'mkdir*'), ...guardedReconGit()],
+          ),
           edit: 'ask',
           glob: 'allow',
           grep: 'allow',
@@ -202,7 +235,10 @@ export default {
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
-            allow('git status*', 'git rev-parse*', 'vp*', 'rtk*', 'node*'),
+            [
+              ...allow('git status*', 'git rev-parse*', 'vp*', 'rtk*', 'node*'),
+              ...guardedReconGit(),
+            ],
           ),
           edit: 'deny',
           glob: 'allow',
@@ -224,7 +260,10 @@ export default {
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
-            allow('git status*', 'git rev-parse*', 'npm view *', 'vp*', 'mkdir*'),
+            [
+              ...allow('git status*', 'git rev-parse*', 'npm view *', 'vp*', 'mkdir*'),
+              ...guardedReconGit(),
+            ],
           ),
           edit: 'allow',
           glob: 'allow',
