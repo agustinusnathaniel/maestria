@@ -13,11 +13,10 @@ import pathlib
 from maestria_hermes.hooks.pre_gateway import create_pre_gateway_hook
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
-from maestria_hermes.hooks.transform import create_transform_tool_result_hook
-from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import (
     COMMAND_DESCRIPTION_FALLBACKS,
     MODE_PERSISTENCE_FAILURE_MESSAGE,
+    MODE_PIPELINES,
     ModeManager,
     ModePersistenceError,
     load_command_description,
@@ -71,14 +70,6 @@ def register(ctx):
     ctx.register_hook("on_session_reset", session_manager.on_session_reset)
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
-    ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
-
-    # -- Phase 3: Middleware ------------------------------------------------
-
-    ctx.register_middleware(
-        "llm_execution",
-        create_llm_output_middleware(mode_manager),
-    )
 
     # -- Phase 2: Tools -----------------------------------------------------
 
@@ -173,15 +164,7 @@ def _cmd_set_mode(mode_manager, mode):
             mode_manager.set_mode(mode)
         except ModePersistenceError:
             return MODE_PERSISTENCE_FAILURE_MESSAGE
-        pipeline = {
-            "fein": "adventurer / architect -> builder -> reviewer",
-            "sonar": "adventurer / architect -> STOP (read-only)",
-            "blitz": (
-                "builder (skip optional recon/design; required review and "
-                "safety floors remain)"
-            ),
-        }
-        return render_mode_switch(mode, pipeline.get(mode, "unknown"))
+        return render_mode_switch(mode, MODE_PIPELINES.get(mode, "unknown"))
 
     return handler
 

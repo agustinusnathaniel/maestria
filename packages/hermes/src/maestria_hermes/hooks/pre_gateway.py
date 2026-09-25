@@ -13,32 +13,20 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import pathlib
 from typing import Any, Optional
 
 from maestria_hermes.modes import (
-    COMMAND_DESCRIPTION_FALLBACKS,
     MAESTRIA_COMMANDS,
     MODE_PERSISTENCE_FAILURE_MESSAGE,
+    MODE_PIPELINES,
     ModeManager,
     ModePersistenceError,
-    load_command_description,
     render_mode_clear,
     render_mode_status,
     render_mode_switch,
 )
 
 logger = logging.getLogger(__name__)
-
-_COMMANDS_DIR = pathlib.Path(__file__).parent.parent / "skills" / "commands"
-
-_PIPELINE_DESC = {
-    name: load_command_description(
-        _COMMANDS_DIR / name / "SKILL.md",
-        fallback,
-    )
-    for name, fallback in COMMAND_DESCRIPTION_FALLBACKS.items()
-}
 
 
 def create_pre_gateway_hook(mode_manager: ModeManager):
@@ -93,11 +81,11 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
 
             elif cmd in ("fein", "sonar", "blitz"):
                 mode_manager.set_mode(cmd)
-                response = render_mode_switch(cmd, _PIPELINE_DESC.get(cmd, "unknown"))
+                response = render_mode_switch(cmd, MODE_PIPELINES.get(cmd, "unknown"))
 
             elif cmd in ("review", "plan"):
                 mode_manager.set_mode("fein")
-                response = render_mode_switch("fein", _PIPELINE_DESC["fein"])
+                response = render_mode_switch("fein", MODE_PIPELINES["fein"])
         except ModePersistenceError:
             response = MODE_PERSISTENCE_FAILURE_MESSAGE
 

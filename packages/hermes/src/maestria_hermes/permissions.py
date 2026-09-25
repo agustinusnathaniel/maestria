@@ -40,9 +40,3 @@ BLITZ_DIRECT_ALLOWED_TOOLS = frozenset(
         "reason",
     }
 )
-
-CHILD_SAFE_ALLOWED_TOOLS = frozenset(
-    {
-        *BLITZ_DIRECT_ALLOWED_TOOLS,
-    }
-)

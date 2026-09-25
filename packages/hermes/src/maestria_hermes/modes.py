@@ -55,8 +55,28 @@ COMMAND_DESCRIPTION_FALLBACKS = {
     ),
 }
 
+# Canonical pipeline text for the mode-switch response. Shared by command
+# registration and pre-gateway dispatch so both paths report the same text.
+MODE_PIPELINES = {
+    "fein": "adventurer / architect -> builder -> reviewer",
+    "sonar": "adventurer / architect -> STOP (read-only)",
+    "blitz": (
+        "builder (skip optional recon/design; required review and "
+        "safety floors remain)"
+    ),
+}
+
 # Matches `description: "..."` in YAML frontmatter
 _FM_DESC_RE = re.compile(r'^description:\s*"(.+)"', re.MULTILINE)
+
+
+def strip_frontmatter(content: str) -> str:
+    """Return a synced SKILL.md body without its YAML frontmatter block."""
+    if content.startswith("---"):
+        parts = content.split("---\n", 2)
+        if len(parts) >= 3:
+            return parts[2]
+    return content
 
 
 def load_command_description(skill_path: Path, fallback: str) -> str:

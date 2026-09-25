@@ -4,7 +4,7 @@ Every tool call is classified from trusted native lifecycle state BEFORE
 any mode allowlist runs:
 
 - A TRUSTED_CHILD session (delegated child with a valid native topology
-  role) gets the fixed role-neutral child policy - CHILD_SAFE_ALLOWED_TOOLS
+  role) gets the fixed role-neutral child policy - BLITZ_DIRECT_ALLOWED_TOOLS
   - in EVERY mode (fein, sonar, and blitz).  A child is never held to a
   narrower mode allowlist: the approved child policy already includes
   complete/think/reason and web-research tools, and no child ever receives
@@ -43,7 +43,6 @@ import logging
 from maestria_hermes.modes import VALID_MODES, ModeManager
 from maestria_hermes.permissions import (
     BLITZ_DIRECT_ALLOWED_TOOLS,
-    CHILD_SAFE_ALLOWED_TOOLS,
     SONAR_ALLOWED_TOOLS,
 )
 from maestria_hermes.session import (
@@ -151,7 +150,7 @@ def create_pre_tool_hook(mode_manager: ModeManager):
     def _child_policy(tool_name: str) -> None | dict:
         """Fixed role-neutral policy for a trusted delegated child.
 
-        CHILD_SAFE_ALLOWED_TOOLS applies in every mode - fein, sonar, and
+        BLITZ_DIRECT_ALLOWED_TOOLS applies in every mode - fein, sonar, and
         blitz alike.  The mode allowlists (SONAR_ALLOWED_TOOLS /
         BLITZ_DIRECT_ALLOWED_TOOLS) bound only trusted top-level sessions;
         a child is never held to a narrower mode set, because the approved
@@ -159,7 +158,7 @@ def create_pre_tool_hook(mode_manager: ModeManager):
         web-research tools.  Write, shell, code execution, delegation, and
         OpenCode access are never available to a child.
         """
-        if tool_name not in CHILD_SAFE_ALLOWED_TOOLS:
+        if tool_name not in BLITZ_DIRECT_ALLOWED_TOOLS:
             logger.info("child-safe policy blocked tool=%s", tool_name)
             return _block(
                 f"Tool '{tool_name}' is not available to delegated children. "

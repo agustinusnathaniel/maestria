@@ -12,7 +12,7 @@ import logging
 import pathlib
 
 from maestria_hermes import project_config
-from maestria_hermes.modes import ModeManager
+from maestria_hermes.modes import ModeManager, strip_frontmatter
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +25,7 @@ def _load_mode_context(name: str) -> str:
     path = _COMMANDS_DIR / name / "SKILL.md"
     if path.exists():
         content = path.read_text(encoding="utf-8")
-        # Strip YAML frontmatter
-        if content.startswith("---"):
-            parts = content.split("---\n", 2)
-            if len(parts) >= 3:
-                content = parts[2]
-        return content.strip()
+        return strip_frontmatter(content).strip()
     return (
         f"[MAESTRIA MODE: {name}]\n"
         f"No specific mode instructions defined."
