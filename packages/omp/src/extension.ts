@@ -1,10 +1,14 @@
 import type { ExtensionAPI, SessionStartEvent } from '@oh-my-pi/pi-coding-agent';
+import {
+  createCommandsHost,
+  installCommands as installCommandsCore,
+} from '@maestria/shared-pi/commands-core';
 import { installCompactionHandlers } from '@maestria/shared-pi/compaction-core';
 import { createInitialState } from '@maestria/shared-pi/state-core';
 
 import { deploySpecialistAgents } from '@/agents.js';
-import { installCommands } from '@/commands.js';
 import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goals.js';
+import { isOmpModel } from '@/model.js';
 import { installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { installNativeSubagentTool } from '@/subagent.js';
@@ -35,7 +39,7 @@ const extension = (pi: ExtensionAPI): void => {
 
   // Install orchestration hooks: subagent tool and commands
   installNativeSubagentTool(pi, state);
-  installCommands(pi, state);
+  installCommandsCore(createCommandsHost(pi, isOmpModel), state);
 
   // Mirror OMP's native goal state (goal_updated event) into Maestria state
   installGoalEventHandlers(pi, state);

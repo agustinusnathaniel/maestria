@@ -32,6 +32,58 @@ export interface CommandsPi {
 }
 
 /**
+ * Bind a platform host to the shared command API.
+ *
+ * `isModel` is the platform's model guard; a model reaches the host only
+ * when the guard accepts it. The closures read host methods at call time
+ * (never via spread), so prototype-resident SDK methods keep working.
+ */
+export const createCommandsHost = <Model>(
+  pi: {
+    appendEntry: (type: string, data: unknown) => void;
+    events?: { emit: (event: string, data: unknown) => void };
+    getActiveTools: () => string[];
+    registerCommand: (
+      name: string,
+      options: {
+        description: string;
+        handler: (args: string, ctx: CommandsCtx) => Promise<void>;
+      },
+    ) => void;
+    sendUserMessage: (text: string, options: { deliverAs: 'steer' | 'followUp' }) => void;
+    setActiveTools: (tools: string[]) => void | Promise<void>;
+    setModel: (model: Model) => Promise<unknown>;
+  },
+  isModel: (value: unknown) => value is Model,
+): CommandsPi => ({
+  appendEntry: (type, data) => {
+    pi.appendEntry(type, data);
+  },
+  events: pi.events,
+  getActiveTools: () => pi.getActiveTools(),
+  registerCommand: (name, options) => {
+    pi.registerCommand(name, {
+      description: options.description,
+      handler: async (args, ctx) => {
+        await options.handler(args, ctx);
+      },
+    });
+  },
+  sendUserMessage: (text, options) => {
+    if (options.deliverAs === 'steer' || options.deliverAs === 'followUp') {
+      pi.sendUserMessage(text, { deliverAs: options.deliverAs });
+    }
+  },
+  setActiveTools: (tools): void | Promise<void> => pi.setActiveTools(tools),
+  setModel: async (model) => {
+    if (isModel(model)) {
+      return await pi.setModel(model);
+    }
+    return null;
+  },
+});
+
+/**
  * Read-only tools that let a reviewer inspect code without making changes.
  *
  * - `read`, `grep`, `find`, `ls`, `glob` - all non-destructive.

@@ -1,12 +1,10 @@
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { installCommands } from '@maestria/shared-pi/commands-core';
+import { createCommandsHost, installCommands } from '@maestria/shared-pi/commands-core';
 import type { CommandsCtx, CommandsPi } from '@maestria/shared-pi/commands-core';
 import { createInitialState } from '@maestria/shared-pi/state-core';
 import type { MaestriaState } from '@maestria/shared-pi/state-core';
-
-import { installCommands as installOmpCommands } from '@/commands.js';
 
 type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;
 
@@ -24,7 +22,7 @@ type MockCommandsPi = Omit<
   registerCommand: ReturnType<typeof vi.fn<CommandsPi['registerCommand']>>;
   sendUserMessage: ReturnType<typeof vi.fn<CommandsPi['sendUserMessage']>>;
   setActiveTools: ReturnType<typeof vi.fn<CommandsPi['setActiveTools']>>;
-  setModel: ReturnType<typeof vi.fn<CommandsPi['setModel']>>;
+  setModel: ReturnType<typeof vi.fn<(model: unknown) => Promise<unknown>>>;
 };
 
 const createMockPi = (): MockCommandsPi => ({
@@ -476,6 +474,9 @@ describe('/handoff command', () => {
   });
 });
 
+const isTestModel = (value: unknown): value is { id: string } =>
+  typeof value === 'object' && value !== null && 'id' in value && typeof value.id === 'string';
+
 describe('installCommands host delegation', () => {
   it('calls host methods that live on the prototype', async () => {
     const emit = vi.fn<(event: string, data: unknown) => void>();
@@ -499,10 +500,11 @@ describe('installCommands host delegation', () => {
       },
     });
 
-    // OMP's ConcreteExtensionAPI keeps these methods on the prototype, so a host
-    // built by spread silently drops them; Reflect.apply bypasses the SDK host
-    // type, which a test stub cannot satisfy structurally.
-    Reflect.apply(installOmpCommands, undefined, [Object.create(prototype), state]);
+    // The shared host closes over SDK methods at call time (never via
+    // spread), so prototype-resident methods keep working; the stub below
+    // satisfies the host structurally, exercising the same delegation path.
+    const host = createCommandsHost(prototype, isTestModel);
+    installCommands(host, state);
 
     const getHostHandler = (name: string): CommandHandler => {
       const match = prototype.registerCommand.mock.calls.find(
