@@ -10,7 +10,9 @@ import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 type BashPermissionEntry = readonly [string, 'allow' | 'ask' | 'deny'];
 
-const READ_ONLY_BASH: readonly BashPermissionEntry[] = [
+// Read-only bash projection, split so the builder's mid-sequence `du*`
+// insertion names its anchor instead of slicing by magic index.
+const BASE_READ_HEAD: readonly BashPermissionEntry[] = [
   ['ls*', 'allow'],
   ['cat*', 'allow'],
   ['echo*', 'allow'],
@@ -22,22 +24,21 @@ const READ_ONLY_BASH: readonly BashPermissionEntry[] = [
   ['which*', 'allow'],
   ['diff*', 'allow'],
   ['stat*', 'allow'],
+];
+
+const BASE_READ_TAIL: readonly BashPermissionEntry[] = [
   ['pwd*', 'allow'],
   ['cd*', 'allow'],
   ['printf*', 'allow'],
 ];
 
+const BASE_READ: readonly BashPermissionEntry[] = [...BASE_READ_HEAD, ...BASE_READ_TAIL];
+
 const bashPermissions = (
-  before: readonly BashPermissionEntry[] = [],
-  after: readonly BashPermissionEntry[] = [],
-  beforeCommonLength = 0,
+  extraBefore: readonly BashPermissionEntry[] = [],
+  extraAfter: readonly BashPermissionEntry[] = [],
 ): Record<string, 'allow' | 'ask' | 'deny'> =>
-  Object.fromEntries([
-    ...READ_ONLY_BASH.slice(0, beforeCommonLength),
-    ...before,
-    ...READ_ONLY_BASH.slice(beforeCommonLength),
-    ...after,
-  ]);
+  Object.fromEntries([...extraBefore, ...BASE_READ, ...extraAfter]);
 
 const allow = (...patterns: readonly string[]): BashPermissionEntry[] =>
   patterns.map((pattern): BashPermissionEntry => [pattern, 'allow']);
@@ -88,16 +89,15 @@ export default {
         mode: 'subagent',
         permission: {
           // du* follows stat* in the established projection.
-          bash: bashPermissions(
-            [['du*', 'allow']],
-            [
-              ...allow('test*', 'sort*', 'git*'),
-              ['pnpx*', 'ask'],
-              ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
-              ['*', 'ask'],
-            ],
-            11,
-          ),
+          bash: Object.fromEntries([
+            ...BASE_READ_HEAD,
+            ['du*', 'allow'],
+            ...BASE_READ_TAIL,
+            ...allow('test*', 'sort*', 'git*'),
+            ['pnpx*', 'ask'],
+            ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
+            ['*', 'ask'],
+          ]),
           edit: 'allow',
           glob: 'allow',
           grep: 'allow',
