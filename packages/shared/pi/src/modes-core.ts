@@ -95,7 +95,7 @@ export const installModeAutoDetect = <Context, Result>(
   commandsDir: string,
   opts: {
     /** Exit review mode. */
-    restoreOriginalState: (ctx: Context) => Promise<void>;
+    restoreOriginalState: (ctx: Context) => Promise<boolean>;
     /** Persist state after mode change. */
     persistState: () => void;
     /** Return value when no keyword is detected. */
@@ -111,8 +111,8 @@ export const installModeAutoDetect = <Context, Result>(
       return opts.noMatch;
     }
 
-    if (state.reviewMode) {
-      await opts.restoreOriginalState(ctx);
+    if (state.reviewMode && !(await opts.restoreOriginalState(ctx))) {
+      return opts.noMatch;
     }
 
     state.mode = result.keyword;
@@ -138,7 +138,7 @@ export const installModeCommands = <Context extends ModeCommandContext>(
   state: MaestriaState,
   opts: {
     /** Exit review mode before switching modes. */
-    restoreOriginalState: (ctx: Context) => Promise<void>;
+    restoreOriginalState: (ctx: Context) => Promise<boolean>;
     /** Persist state after mode change. */
     persistState: () => void;
   },
@@ -146,8 +146,8 @@ export const installModeCommands = <Context extends ModeCommandContext>(
   registerCommand(MODE_CLEAR_COMMAND, {
     description: 'Clear workflow mode and return to neutral routing',
     handler: async (_args: string, ctx: Context) => {
-      if (state.reviewMode) {
-        await opts.restoreOriginalState(ctx);
+      if (state.reviewMode && !(await opts.restoreOriginalState(ctx))) {
+        return;
       }
       state.mode = null;
       opts.persistState();
@@ -159,8 +159,8 @@ export const installModeCommands = <Context extends ModeCommandContext>(
     registerCommand(keyword, {
       description: `Set workflow mode to ${keyword}`,
       handler: async (_args: string, ctx: Context) => {
-        if (state.reviewMode) {
-          await opts.restoreOriginalState(ctx);
+        if (state.reviewMode && !(await opts.restoreOriginalState(ctx))) {
+          return;
         }
 
         state.mode = keyword;

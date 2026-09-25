@@ -5,15 +5,11 @@ import {
   replaceState,
   stateFromSessionEntries,
 } from '@maestria/shared-pi/state-core';
-import type { MaestriaState, SessionEntry } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 export interface GoalApi {
   appendEntry: (type: string, data: unknown) => void;
   on: (event: string, handler: (event: unknown, ctx: unknown) => Promise<void> | void) => void;
-}
-
-interface PersistedStateEntry extends SessionEntry {
-  mode?: string;
 }
 
 type NativeGoalStatus = 'active' | 'paused' | 'budget-limited';
@@ -29,7 +25,7 @@ interface SessionContext {
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const isNativeGoalEvent = (value: unknown): value is NativeGoalEvent => {
   if (!isRecord(value)) {
@@ -55,12 +51,10 @@ const isSessionContext = (value: unknown): value is SessionContext => {
 const isNativeGoalStatus = (value: unknown): value is NativeGoalStatus =>
   value === 'active' || value === 'paused' || value === 'budget-limited';
 
-const nativeGoalFromSessionEntries = (
-  entries: PersistedStateEntry[],
-): MaestriaState['nativeGoal'] => {
+const nativeGoalFromSessionEntries = (entries: readonly unknown[]): MaestriaState['nativeGoal'] => {
   for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
-    if (entry.type !== 'mode_change') {
+    if (!isRecord(entry) || entry.type !== 'mode_change') {
       continue;
     }
     if (entry.mode !== 'goal' && entry.mode !== 'goal_paused') {

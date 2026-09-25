@@ -3,7 +3,23 @@ import type { CommandsPi } from '@maestria/shared-pi/commands-core';
 
 import { isPiModel } from '@/model.js';
 
-export const createCommandsApi = (pi: ExtensionAPI): CommandsPi => ({
+export type PiCommandsHost = Omit<
+  Pick<
+    ExtensionAPI,
+    | 'appendEntry'
+    | 'events'
+    | 'getActiveTools'
+    | 'registerCommand'
+    | 'sendUserMessage'
+    | 'setActiveTools'
+    | 'setModel'
+  >,
+  'events'
+> & {
+  events?: ExtensionAPI['events'];
+};
+
+export const createCommandsApi = (pi: PiCommandsHost): CommandsPi => ({
   appendEntry: (type, data) => {
     pi.appendEntry(type, data);
   },
@@ -27,7 +43,8 @@ export const createCommandsApi = (pi: ExtensionAPI): CommandsPi => ({
   },
   setModel: async (model) => {
     if (isPiModel(model)) {
-      await pi.setModel(model);
+      return await pi.setModel(model);
     }
+    return null;
   },
 });

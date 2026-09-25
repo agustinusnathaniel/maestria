@@ -41,8 +41,9 @@ export const installCommands = (pi: CommandsHost, state: MaestriaState): void =>
     },
     setModel: async (model) => {
       if (isOmpModel(model)) {
-        await pi.setModel(model);
+        return await pi.setModel(model);
       }
+      return null;
     },
   };
 

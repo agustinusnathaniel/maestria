@@ -21,6 +21,4 @@ export const restoreOriginalState = async (
   pi: ReviewApi,
   ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<void> => {
-  await restoreCore(createReviewApi(pi, isPiModel), ctx, state);
-};
+): Promise<boolean> => await restoreCore(createReviewApi(pi, isPiModel), ctx, state);
