@@ -9,7 +9,7 @@ Covers the approved conservative child trust policy (ADR-HM-002):
 - Trust states: top-level (direct), trusted child (role-neutral
   read/research/LLM-only policy), invalid child (deny all), ended (deny
   all), unknown (deny all).
-- A trusted child gets the SAME fixed CHILD_SAFE_ALLOWED_TOOLS policy in
+- A trusted child gets the SAME fixed BLITZ_DIRECT_ALLOWED_TOOLS policy in
   every mode (fein, sonar, blitz); mode allowlists bound only trusted
   top-level sessions.
 - Top-level trust from on_session_start requires an exact recognized
@@ -84,7 +84,6 @@ from maestria_hermes.hooks.pre_tool import _top_level_policy, create_pre_tool_ho
 from maestria_hermes.modes import VALID_MODES, ModeManager
 from maestria_hermes.permissions import (
     BLITZ_DIRECT_ALLOWED_TOOLS,
-    CHILD_SAFE_ALLOWED_TOOLS,
     NATIVE_CHILD_ROLES,
     SONAR_ALLOWED_TOOLS,
 )
@@ -667,7 +666,7 @@ class ChildLifecycleTests(HookTestBase):
     def test_leaf_child_fein_is_read_research_llm_only(self):
         hook = self.make_hook("fein")
         self.start_child("child-leaf", "leaf")
-        for tool_name in CHILD_SAFE_ALLOWED_TOOLS:
+        for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="child-leaf"))
         for tool_name in _CHILD_FORBIDDEN_TOOLS:
@@ -705,12 +704,12 @@ class ChildLifecycleTests(HookTestBase):
                         )
 
     def test_child_sonar_mode_uses_child_safe_policy_not_sonar_allowlist(self):
-        """A child in sonar mode is held to CHILD_SAFE_ALLOWED_TOOLS, not the
+        """A child in sonar mode is held to BLITZ_DIRECT_ALLOWED_TOOLS, not the
         narrower top-level sonar allowlist: LLM reasoning tools remain
         available to the child while write/shell/code/delegation stay blocked."""
         hook = self.make_hook("sonar")
         self.start_child("sonar-child", "leaf")
-        for tool_name in CHILD_SAFE_ALLOWED_TOOLS:
+        for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
         # LLM tools are child-safe even though they are NOT in the top-level
@@ -728,7 +727,7 @@ class ChildLifecycleTests(HookTestBase):
         """A child in blitz mode gets the same fixed child-safe policy."""
         hook = self.make_hook("blitz")
         self.start_child("blitz-child", "leaf")
-        for tool_name in CHILD_SAFE_ALLOWED_TOOLS:
+        for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="blitz-child"))
         for tool_name in _CHILD_FORBIDDEN_TOOLS:
@@ -745,7 +744,7 @@ class ChildLifecycleTests(HookTestBase):
                 hook = self.make_hook(mode)
                 self.start_child(f"matrix-child-{mode}", "leaf")
                 sid = f"matrix-child-{mode}"
-                for tool_name in sorted(CHILD_SAFE_ALLOWED_TOOLS):
+                for tool_name in sorted(BLITZ_DIRECT_ALLOWED_TOOLS):
                     with self.subTest(mode=mode, tool_name=tool_name, expect="allow"):
                         self.assertIsNone(hook(tool_name=tool_name, session_id=sid))
                 for tool_name in sorted(_CHILD_FORBIDDEN_TOOLS):
@@ -901,14 +900,14 @@ class FullPolicyMatrixTests(HookTestBase):
     - TOP_LEVEL: direct policy - unrestricted in fein; the literal sonar
       and blitz allowlists otherwise.
     - TRUSTED_CHILD: the fixed role-neutral child policy
-      (CHILD_SAFE_ALLOWED_TOOLS) in every mode; every other tool blocks.
+      (BLITZ_DIRECT_ALLOWED_TOOLS) in every mode; every other tool blocks.
     - INVALID_CHILD, ENDED, UNKNOWN: deny ALL tools in every mode
       (fail closed), including reads and LLM tools.
     """
 
     def _matrix_case_tools(self, mode: str):
         allowed = {
-            "fein": CHILD_SAFE_ALLOWED_TOOLS
+            "fein": BLITZ_DIRECT_ALLOWED_TOOLS
             | {"write", "bash", "delegate_task", "opencode_route", "code_execution"},
             "sonar": SONAR_ALLOWED_TOOLS,
             "blitz": BLITZ_DIRECT_ALLOWED_TOOLS,
@@ -951,7 +950,7 @@ class FullPolicyMatrixTests(HookTestBase):
             # -- TRUSTED_CHILD ----------------------------------------------
             child_sid = f"matrix-child-{mode}"
             self.start_child(child_sid, "leaf")
-            for tool_name in sorted(CHILD_SAFE_ALLOWED_TOOLS):
+            for tool_name in sorted(BLITZ_DIRECT_ALLOWED_TOOLS):
                 with self.subTest(
                     state="trusted_child", mode=mode, tool_name=tool_name, expect="allow"
                 ):
@@ -1005,7 +1004,7 @@ class FullPolicyMatrixTests(HookTestBase):
         """create is a write-family mutator, so it is forbidden to children
         and never appears in the child-safe set."""
         self.assertIn("create", _CHILD_FORBIDDEN_TOOLS)
-        self.assertNotIn("create", CHILD_SAFE_ALLOWED_TOOLS)
+        self.assertNotIn("create", BLITZ_DIRECT_ALLOWED_TOOLS)
         self.assertNotIn("create", SONAR_ALLOWED_TOOLS)
         self.assertNotIn("create", BLITZ_DIRECT_ALLOWED_TOOLS)
 
@@ -1796,6 +1795,9 @@ class TrustRegistryBoundTests(HookTestBase):
 
 class FailClosedTests(HookTestBase):
     def test_malformed_tool_names_block_without_raising(self):
+        """Malformed tool names - wrong types, empties, over-long, ASCII
+        and Unicode controls/format characters, and padded names - block
+        without raising and without normalizing."""
         hook = self.make_hook("fein")
         session_id = "tool-malformed"
         mark_top_level(session_id)
@@ -1806,20 +1808,6 @@ class FailClosedTests(HookTestBase):
             " write ", "write ", " write", "\twrite", "write\n", "write\t",
             " read ", " bash ", " complete ",
             "wri\x00te", "write\x01", "\x00write",
-        ):
-            with self.subTest(tool_name=repr(tool_name)):
-                result = hook(tool_name=tool_name, session_id=session_id)
-                self.assertIsNotNone(result)
-                self.assertEqual(result["action"], "block")
-
-    def test_unicode_control_tool_names_block_without_raising(self):
-        """Unicode controls/format chars in a tool name block in every
-        trust state and mode, without raising and without normalizing."""
-        hook = self.make_hook("fein")
-        session_id = "tool-unicode"
-        mark_top_level(session_id)
-        self.cleanup_trust(session_id)
-        for tool_name in (
             "write\u200b", "re\u200cad", "\u200bread", "we\u2028bfetch",
             "\u0085write", "read\u200d", "re\u009fad", "glob\u2029",
             "complete\u200c", "bash\u200e",
@@ -1947,7 +1935,7 @@ class FailClosedTests(HookTestBase):
 class AllowlistTests(HookTestBase):
     def test_child_safe_allowlist_is_exact_and_literal(self):
         self.assertEqual(
-            CHILD_SAFE_ALLOWED_TOOLS,
+            BLITZ_DIRECT_ALLOWED_TOOLS,
             frozenset(
                 {
                     "read", "read_file", "glob", "grep", "search_files",
@@ -1962,10 +1950,7 @@ class AllowlistTests(HookTestBase):
             "write", "edit", "create", "bash", "code_execution",
             "delegate_task", "opencode", "opencode_route",
         ):
-            self.assertNotIn(forbidden, CHILD_SAFE_ALLOWED_TOOLS)
-
-    def test_child_safe_is_a_frozenset(self):
-        self.assertIsInstance(CHILD_SAFE_ALLOWED_TOOLS, frozenset)
+            self.assertNotIn(forbidden, BLITZ_DIRECT_ALLOWED_TOOLS)
 
     def test_sonar_and_blitz_sets_stay_exact(self):
         self.assertEqual(
@@ -1974,17 +1959,6 @@ class AllowlistTests(HookTestBase):
                 {
                     "read", "read_file", "glob", "grep", "search_files",
                     "list", "ls", "stat", "file_info",
-                    "webfetch", "web_search", "web_extract",
-                }
-            ),
-        )
-        self.assertEqual(
-            BLITZ_DIRECT_ALLOWED_TOOLS,
-            frozenset(
-                {
-                    "read", "read_file", "glob", "grep", "search_files",
-                    "list", "ls", "stat", "file_info",
-                    "complete", "complete_structured", "think", "reason",
                     "webfetch", "web_search", "web_extract",
                 }
             ),
@@ -2012,8 +1986,7 @@ class AllowlistTests(HookTestBase):
     def test_child_safe_covers_sonar_and_blitz_allowlists(self):
         """The child-safe policy is at least as permissive as every top-level
         read/research allowlist: a child is never held to a narrower mode set."""
-        self.assertTrue(SONAR_ALLOWED_TOOLS <= CHILD_SAFE_ALLOWED_TOOLS)
-        self.assertEqual(BLITZ_DIRECT_ALLOWED_TOOLS, CHILD_SAFE_ALLOWED_TOOLS)
+        self.assertTrue(SONAR_ALLOWED_TOOLS <= BLITZ_DIRECT_ALLOWED_TOOLS)
 
 
 class RoleProvenanceIntegrationTests(HookTestBase):
@@ -2053,10 +2026,10 @@ class RoleProvenanceIntegrationTests(HookTestBase):
 
     def _assert_child_safe_policy(self, session_id: object, mode: str = "fein") -> None:
         """Assert the fixed role-neutral child policy end to end: every
-        CHILD_SAFE_ALLOWED_TOOLS tool allows, every child-forbidden tool
+        BLITZ_DIRECT_ALLOWED_TOOLS tool allows, every child-forbidden tool
         blocks, in the given mode."""
         hook = self.make_hook(mode)
-        for tool_name in sorted(CHILD_SAFE_ALLOWED_TOOLS):
+        for tool_name in sorted(BLITZ_DIRECT_ALLOWED_TOOLS):
             with self.subTest(mode=mode, tool_name=tool_name, expect="allow"):
                 self.assertIsNone(hook(tool_name=tool_name, session_id=session_id))
         for tool_name in sorted(_CHILD_FORBIDDEN_TOOLS):
@@ -2066,41 +2039,24 @@ class RoleProvenanceIntegrationTests(HookTestBase):
                     "block",
                 )
 
-    def test_requested_builder_padded_and_LEAF_arrive_as_effective_leaf(self):
-        """Requested 'builder', padded, and 'LEAF' inputs all arrive as the
-        effective native role 'leaf' (Hermes normalizes before
-        subagent_start) and receive the SAME role-neutral child policy:
-        read/research/LLM only, never a specialist mapping, never writes."""
-        requested_roles = ("builder", " LEAF ", "LEAF")
-        for i, requested_role in enumerate(requested_roles):
-            sid = f"provenance-leaf-{i}"
-            with self.subTest(requested_role=requested_role):
-                effective = self._delegate_child(sid, requested_role)
-                self.assertEqual(effective, "leaf")
-                self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self._assert_child_safe_policy(sid)
-
-    def test_requested_orchestrator_variants_arrive_as_effective_role(self):
-        """Requested 'orchestrator' / padded variants arrive as the
-        effective native role 'orchestrator' and get the SAME role-neutral
-        policy as a leaf child (no orchestrator-specific capability)."""
-        for i, requested_role in enumerate(("orchestrator", " Orchestrator ")):
-            sid = f"provenance-orch-{i}"
-            with self.subTest(requested_role=requested_role):
-                effective = self._delegate_child(sid, requested_role)
-                self.assertEqual(effective, "orchestrator")
-                self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self._assert_child_safe_policy(sid)
-
-    def test_effective_role_never_grants_write_in_any_mode(self):
-        """Every requested-role input - leaf and orchestrator variants -
-        yields a child that can never write, run a shell, delegate, or
-        route to OpenCode in ANY mode: the fixed policy is mode-neutral."""
+    def test_requested_roles_arrive_as_effective_roles_with_child_policy(self):
+        """Requested role strings arrive as Hermes' effective native role
+        (Hermes normalizes before subagent_start) and receive the SAME
+        role-neutral child policy in every mode: read/research/LLM only,
+        never a specialist mapping, never writes."""
+        cases = (
+            ("builder", "leaf"),
+            (" LEAF ", "leaf"),
+            ("LEAF", "leaf"),
+            ("orchestrator", "orchestrator"),
+            (" Orchestrator ", "orchestrator"),
+        )
         for mode in ("fein", "sonar", "blitz"):
-            for i, requested_role in enumerate(("builder", " LEAF ", "LEAF", "orchestrator")):
-                sid = f"prov-mode-{mode}-{i}"
+            for i, (requested_role, effective_role) in enumerate(cases):
+                sid = f"provenance-{mode}-{i}"
                 with self.subTest(mode=mode, requested_role=requested_role):
-                    self._delegate_child(sid, requested_role)
+                    effective = self._delegate_child(sid, requested_role)
+                    self.assertEqual(effective, effective_role)
                     self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
                     self._assert_child_safe_policy(sid, mode=mode)
 
@@ -2172,7 +2128,6 @@ class PluginRegistrationTests(unittest.TestCase):
         "on_session_reset",
         "subagent_start",
         "subagent_stop",
-        "transform_tool_result",
     )
 
     def test_register_exposes_expected_inventory(self):
@@ -2189,7 +2144,7 @@ class PluginRegistrationTests(unittest.TestCase):
             with self.subTest(hook=hook):
                 self.assertIn(hook, ctx.hooks)
         self.assertIn("opencode_route", ctx.tools)
-        self.assertIn("llm_execution", ctx.middleware)
+        self.assertEqual(ctx.middleware, {})
 
     def test_registered_commands_match_shared_command_set(self):
         """register() and pre-gateway dispatch share one command set.
@@ -2245,7 +2200,7 @@ class PluginRegistrationTests(unittest.TestCase):
             if line.startswith("provides_hooks:"):
                 in_hooks = True
                 continue
-            if line.startswith("provides_middleware:"):
+            if in_hooks and line.endswith(":") and not line.startswith("- "):
                 in_hooks = False
                 continue
             if in_hooks and line.startswith("- "):

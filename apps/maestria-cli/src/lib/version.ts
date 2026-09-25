@@ -68,15 +68,6 @@ export const isVersionEq = (a: string, b: string): boolean => {
   return compareVersions(a, b) === 0;
 };
 
-/** Check if a differs from b (for "needs update" detection). Returns false if either is 'unknown' or incomparable (non-semver). */
-export const isVersionDifferent = (a: string, b: string): boolean => {
-  if (a === 'unknown' || b === 'unknown') {
-    return false;
-  }
-  const result = compareVersions(a, b);
-  return result !== null && result !== 0;
-};
-
 /**
  * Check if a is strictly greater than b ('a' is ahead of 'b'). Returns false
  * if either is 'unknown' or incomparable (non-semver).

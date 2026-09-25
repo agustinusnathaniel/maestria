@@ -41,7 +41,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "vp test"
+    "test": "vp pack && vp test"
   },
   "dependencies": {
     "es-toolkit": "^1.52.0",

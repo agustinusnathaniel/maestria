@@ -1,7 +1,10 @@
-import { Data, Effect } from 'effect';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 /** Terminal subagent statuses - agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
+
+export const POLL_TIMEOUT_MS = 180_000;
+export const POLL_INTERVAL_MS = 500;
 
 export interface SubagentRecord {
   status: string;
@@ -12,17 +15,22 @@ export interface SubagentRecord {
 export type SubagentPollFailureReason = 'aborted' | 'timeout' | 'missing';
 
 /**
- * Typed failures from the polling boundary.
- *
- * Keeping these failures in the Effect error channel lets parallel polling
- * interrupt sibling fibers while preserving enough context for the existing
- * tool-level handoff fallback.
+ * Typed failure from the polling boundary, shaped like the previous
+ * error-channel value ({_tag, id, reason}) so callers keep the same
+ * handoff fallback context.
  */
-export class SubagentPollError extends Data.TaggedError('SubagentPollError')<{
+export class SubagentPollError extends Error {
+  readonly _tag = 'SubagentPollError' as const;
   readonly id: string;
   readonly reason: SubagentPollFailureReason;
-  readonly message: string;
-}> {}
+
+  constructor(args: { id: string; message: string; reason: SubagentPollFailureReason }) {
+    super(args.message);
+    this.name = 'SubagentPollError';
+    this.id = args.id;
+    this.reason = args.reason;
+  }
+}
 
 export interface SubagentPollingService {
   getRecord: (id: string) => SubagentRecord | undefined;
@@ -40,99 +48,99 @@ export interface PollSubagentOptions {
   readonly timeoutMs?: number;
 }
 
-const createPollUpdateEffect = (options: PollSubagentOptions, polls: number) =>
-  Effect.sync(() => {
-    options.onUpdate?.({
-      content: [
-        {
-          text: `${options.label} running... (${Math.round((polls * (options.intervalMs ?? 500)) / 1000)}s)`,
-          type: 'text' as const,
-        },
-      ],
-    });
-  });
-
-const pollLoop = (
-  options: PollSubagentOptions,
-): Effect.Effect<SubagentRecord, SubagentPollError> => {
-  const intervalMs = options.intervalMs ?? 500;
-  const timeoutMs = options.timeoutMs ?? 180_000;
+/**
+ * Poll one subagent until it reaches a terminal status, the record goes
+ * missing, the poll budget runs out, or the host aborts the tool call.
+ *
+ * The first record is read immediately; each interval re-reads, emits a
+ * progress update, and counts toward Math.ceil(timeoutMs / intervalMs).
+ * A host abort is observed at the next sleep boundary (within one
+ * interval) rather than by interrupting the sleep itself.
+ */
+export const pollSubagent = async (options: PollSubagentOptions): Promise<SubagentRecord> => {
+  const intervalMs = options.intervalMs ?? POLL_INTERVAL_MS;
+  const timeoutMs = options.timeoutMs ?? POLL_TIMEOUT_MS;
   const maxPolls = Math.ceil(timeoutMs / intervalMs);
-
-  return Effect.gen(function* pollLoopEffect() {
-    let polls = 0;
-    let record = yield* Effect.sync(() => options.service.getRecord(options.id));
-
-    while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
-      yield* Effect.sleep(intervalMs);
-      record = yield* Effect.sync(() => options.service.getRecord(options.id));
-      polls += 1;
-
-      if (options.sendUpdates) {
-        yield* createPollUpdateEffect(options, polls);
-      }
+  const { id, label, sendUpdates, service, signal } = options;
+  const aborted = (): SubagentPollError =>
+    new SubagentPollError({ id, message: 'Maestria subagent call aborted', reason: 'aborted' });
+  const throwIfAborted = (): void => {
+    if (signal?.aborted === true) {
+      throw aborted();
     }
+  };
 
-    if (record && !TERMINAL_STATUSES.has(record.status)) {
-      return yield* Effect.fail(
-        new SubagentPollError({
-          id: options.id,
-          message: `Subagent ${options.id} timed out after ${timeoutMs}ms`,
-          reason: 'timeout',
-        }),
-      );
+  const poll = async (
+    record: SubagentRecord | undefined,
+    polls: number,
+  ): Promise<SubagentRecord> => {
+    if (record === undefined) {
+      throw new SubagentPollError({
+        id,
+        message: `Subagent ${id} was cleaned up before completion`,
+        reason: 'missing',
+      });
     }
-
-    if (!record) {
-      return yield* Effect.fail(
-        new SubagentPollError({
-          id: options.id,
-          message: `Subagent ${options.id} was cleaned up before completion`,
-          reason: 'missing',
-        }),
-      );
+    if (TERMINAL_STATUSES.has(record.status)) {
+      return record;
     }
+    if (polls >= maxPolls) {
+      throw new SubagentPollError({
+        id,
+        message: `Subagent ${id} timed out after ${timeoutMs}ms`,
+        reason: 'timeout',
+      });
+    }
+    throwIfAborted();
+    await sleep(intervalMs);
+    throwIfAborted();
+    const next = service.getRecord(id);
+    const nextPolls = polls + 1;
+    if (sendUpdates) {
+      options.onUpdate?.({
+        content: [
+          {
+            text: `${label} running... (${Math.round((nextPolls * intervalMs) / 1000)}s)`,
+            type: 'text' as const,
+          },
+        ],
+      });
+    }
+    return await poll(next, nextPolls);
+  };
 
-    return record;
-  });
+  return await poll(service.getRecord(id), 0);
 };
 
-const abortEffect = (id: string, signal: AbortSignal): Effect.Effect<never, SubagentPollError> =>
-  Effect.callback<never, SubagentPollError>((resume) => {
-    const onAbort = () => {
-      resume(
-        Effect.fail(
-          new SubagentPollError({
-            id,
-            message: 'Maestria subagent call aborted',
-            reason: 'aborted',
-          }),
-        ),
-      );
-    };
-
-    if (signal.aborted) {
-      onAbort();
-    } else {
-      signal.addEventListener('abort', onAbort, { once: true });
-    }
-
-    return Effect.sync(() => {
-      signal.removeEventListener('abort', onAbort);
-    });
-  });
-
 /**
- * Poll one subagent as a cancellable Effect.
- *
- * The host Pi API is Promise-based, so callers cross the boundary with
- * `Effect.runPromise`. Keeping the polling workflow as an Effect gives the
- * parallel dispatcher structured cancellation: a failed or aborted poll
- * interrupts its sibling poll fibers instead of leaving timers running.
+ * Poll with the shared interval/timeout defaults, aborting the subagent
+ * when the poll fails. Used by the single and chain dispatch paths.
  */
-export const pollSubagentEffect = (
-  options: PollSubagentOptions,
-): Effect.Effect<SubagentRecord, SubagentPollError> => {
-  const poll = pollLoop(options);
-  return options.signal ? Effect.raceFirst(poll, abortEffect(options.id, options.signal)) : poll;
+export const pollWithDefaults = async (
+  service: SubagentPollingService,
+  id: string,
+  label: string,
+  sendUpdates: boolean,
+  signal: AbortSignal | undefined,
+  onUpdate: PollSubagentOptions['onUpdate'],
+): Promise<SubagentRecord> => {
+  try {
+    return await pollSubagent({
+      id,
+      intervalMs: POLL_INTERVAL_MS,
+      label,
+      onUpdate,
+      sendUpdates,
+      service,
+      signal,
+      timeoutMs: POLL_TIMEOUT_MS,
+    });
+  } catch (error) {
+    try {
+      service.abort?.(id);
+    } catch {
+      // Best-effort cleanup
+    }
+    throw error;
+  }
 };

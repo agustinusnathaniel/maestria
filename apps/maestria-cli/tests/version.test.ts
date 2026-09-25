@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import {
-  compareVersions,
-  isValidVersion,
-  isVersionDifferent,
-  isVersionEq,
-  isVersionGt,
-} from '@/lib/version.js';
+import { compareVersions, isValidVersion, isVersionEq, isVersionGt } from '@/lib/version.js';
 
 describe('compareVersions', () => {
   it('handles sentinels, numeric segments, prerelease, and latest', () => {
@@ -15,15 +9,6 @@ describe('compareVersions', () => {
     expect(compareVersions('0.10.0', '0.9.0')).toBe(1);
     expect(compareVersions('1.0.0-alpha', '1.0.0')).toBe(-1);
     expect(compareVersions('latest', '1.0.0')).toBe(1);
-  });
-});
-
-describe('isVersionDifferent', () => {
-  it('flags only comparable different versions', () => {
-    expect(isVersionDifferent('0.1.13', 'see GitHub releases')).toBe(false);
-    expect(isVersionDifferent('0.2.0', '0.2.0')).toBe(false);
-    expect(isVersionDifferent('0.2.0', '0.3.0')).toBe(true);
-    expect(isVersionDifferent('0.2.0', 'unknown')).toBe(false);
   });
 });
 
@@ -60,13 +45,11 @@ describe('semver regression - build metadata ignored for precedence', () => {
   it('ignores build metadata while keeping prerelease ordering', () => {
     expect(compareVersions('1.0.0+build.1', '1.0.0')).toBe(0);
     expect(isVersionEq('1.0.0+build.1', '1.0.0')).toBe(true);
-    expect(isVersionDifferent('1.0.0+build.1', '1.0.0')).toBe(false);
   });
 
   it('treats different build metadata as equal', () => {
     expect(compareVersions('1.0.0+build.1', '1.0.0+build.2')).toBe(0);
     expect(isVersionEq('1.0.0+build.1', '1.0.0+build.2')).toBe(true);
-    expect(isVersionDifferent('1.0.0+build.1', '1.0.0+build.2')).toBe(false);
   });
 
   it('ignores build metadata when prerelease is present', () => {

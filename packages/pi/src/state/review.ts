@@ -8,19 +8,11 @@ import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 import { isPiModel } from '@/model.js';
 
-export type { ReviewModelContext } from '@maestria/shared-pi/review-core';
-
-export interface ReviewModelApi {
-  setActiveTools: ExtensionAPI['setActiveTools'];
-  setModel: ExtensionAPI['setModel'];
-}
-
-export type ReviewApi = ReviewModelApi;
-
 export const restoreOriginalState = async (
-  pi: ReviewApi,
+  pi: Pick<ExtensionAPI, 'setActiveTools' | 'setModel'>,
   ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<void> => {
-  await restoreCore(createReviewApi(pi, isPiModel), ctx, state);
+): Promise<boolean> => {
+  const restored = await restoreCore(createReviewApi(pi, isPiModel), ctx, state);
+  return restored;
 };

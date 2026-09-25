@@ -19,17 +19,8 @@
 // Specialist references (`@adventurer`, ...) become plain skill names so the
 // content reads as "load the skill" rather than "spawn an agent".
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
-
-const AGENT_REF_REPLACES = [
-  { from: '@adventurer', to: 'adventurer' },
-  { from: '@architect', to: 'architect' },
-  { from: '@builder', to: 'builder' },
-  { from: '@diagnose', to: 'diagnose' },
-  { from: '@planner', to: 'planner' },
-  { from: '@reviewer', to: 'reviewer' },
-  { from: '@writer', to: 'writer' },
-] as const;
 
 // Read-only role notes. Prime Agent has no skill-level tool enforcement (the
 // Agent Skills `allowed-tools` field only pre-approves tools and is
@@ -76,7 +67,7 @@ Research-only mode. Load the \`orchestrator\` skill for routing and delegation m
 
 export default {
   default: {
-    replace: [...AGENT_REF_REPLACES],
+    replace: specialistReferenceReplacements(),
   },
   files: {
     'adventurer.md': {

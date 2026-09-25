@@ -17,17 +17,16 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
     git status*: allow
-    git diff*: allow
-    git log*: allow
-    git show*: allow
-    git branch*: allow
     git rev-parse*: allow
     mkdir*: allow
-    pnpm*: allow
-    npm*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*: allow
   edit: ask
   glob: allow
   grep: allow
