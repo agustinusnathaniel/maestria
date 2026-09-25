@@ -34,8 +34,8 @@ export interface Platform {
 }
 
 /**
- * All nine entries in homepage grid order. Nine cells complete the 3-column
- * grid; `/ecosystem/` closes it with shared companion tooling.
+ * All ten entries in homepage grid order. The platform adapters fill the
+ * 3-column grid; `/ecosystem/` closes it with shared companion tooling.
  */
 export const platforms: Platform[] = [
   {
@@ -104,6 +104,15 @@ export const platforms: Platform[] = [
     installArgs: 'install prime-agent',
     mark: 'primeAgent',
     name: '@maestria/prime-agent',
+  },
+  {
+    badge: 'PROVISIONAL',
+    blurb: 'Skills, prompt sections, and per-specialist subagent delegation for DeepSeek Harness.',
+    href: '/deepseek/',
+    id: 'deepseek',
+    installArgs: 'install deepseek',
+    mark: 'deepseek',
+    name: '@maestria/deepseek',
   },
   {
     auxiliary: true,
