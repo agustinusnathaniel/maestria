@@ -2001,7 +2001,6 @@ class AllowlistTests(HookTestBase):
         """The child-safe policy is at least as permissive as every top-level
         read/research allowlist: a child is never held to a narrower mode set."""
         self.assertTrue(SONAR_ALLOWED_TOOLS <= BLITZ_DIRECT_ALLOWED_TOOLS)
-        self.assertEqual(BLITZ_DIRECT_ALLOWED_TOOLS, BLITZ_DIRECT_ALLOWED_TOOLS)
 
 
 class RoleProvenanceIntegrationTests(HookTestBase):
