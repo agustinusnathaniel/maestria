@@ -1,9 +1,17 @@
 import { Effect } from 'effect';
+import type { Scope } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 import path from 'node:path';
 import type { AgentDraft, ReferenceDraft } from '../src/types.js';
 import { registerAgentTransforms } from '../src/transforms/agents.js';
 import { registerReferenceTransforms } from '../src/transforms/references.js';
+
+const runRegister = async (effect: Effect.Effect<void, never, Scope.Scope>): Promise<void> => {
+  await Effect.runPromise(Effect.scoped(effect));
+};
+
+// Shared SDK Transform stub return: a no-op registration handle.
+const registered = Effect.succeed({ dispose: Effect.void });
 
 describe('registerReferenceTransforms', () => {
   it('adds the rules file once as a local reference source', async () => {
@@ -18,20 +26,16 @@ describe('registerReferenceTransforms', () => {
     };
 
     let captured: ((draft: ReferenceDraft) => void) | undefined;
-    await Effect.runPromise(
-      Effect.scoped(
-        registerReferenceTransforms({
-          reference: {
-            // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy Transform<ReferenceDraft>.
-            transform: (callback: (draft: ReferenceDraft) => void) => {
-              captured = callback;
-              return Effect.succeed({
-                dispose: Effect.void,
-              });
-            },
+    await runRegister(
+      registerReferenceTransforms({
+        reference: {
+          // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy Transform<ReferenceDraft>.
+          transform: (callback: (draft: ReferenceDraft) => void) => {
+            captured = callback;
+            return registered;
           },
-        }),
-      ),
+        },
+      }),
     );
 
     expect(captured).toBeTypeOf('function');
@@ -60,20 +64,16 @@ describe('registerAgentTransforms', () => {
     };
 
     let captured: ((registry: AgentDraft) => void) | undefined;
-    await Effect.runPromise(
-      Effect.scoped(
-        registerAgentTransforms({
-          agent: {
-            // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy Transform<AgentDraft>.
-            transform: (callback: (registry: AgentDraft) => void) => {
-              captured = callback;
-              return Effect.succeed({
-                dispose: Effect.void,
-              });
-            },
+    await runRegister(
+      registerAgentTransforms({
+        agent: {
+          // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy Transform<AgentDraft>.
+          transform: (callback: (registry: AgentDraft) => void) => {
+            captured = callback;
+            return registered;
           },
-        }),
-      ),
+        },
+      }),
     );
     expect(captured).toBeTypeOf('function');
     captured?.(registry);

@@ -12,17 +12,13 @@ const SPECIALISTS = [
 ];
 
 describe('agent loaders (real generated agents/ dir)', () => {
-  it('loadAgents excludes the orchestrator', () => {
+  it('loads the 7 specialists with subagent mode, description, and prompt', () => {
     const agents = loadAgents();
     expect(Object.keys(agents).toSorted()).toEqual(SPECIALISTS);
-    expect(agents.orchestrator).toBeUndefined();
-  });
-
-  it('every specialist has mode subagent', () => {
-    const agents = loadAgents();
     for (const name of SPECIALISTS) {
-      expect(agents[name], `specialist "${name}" should exist`).toBeDefined();
-      expect(agents[name].mode).toBe('subagent');
+      expect(agents[name]?.mode, `"${name}".mode`).toBe('subagent');
+      expect(agents[name]?.description.length, `"${name}".description`).toBeGreaterThan(0);
+      expect(agents[name]?.prompt.length, `"${name}".prompt`).toBeGreaterThan(0);
     }
   });
 
@@ -31,13 +27,5 @@ describe('agent loaders (real generated agents/ dir)', () => {
     expect(orchestrator).not.toBeNull();
     expect(orchestrator?.name).toBe('orchestrator');
     expect(orchestrator?.mode).toBe('all');
-  });
-
-  it('parsed agents carry a non-empty description and prompt body', () => {
-    const agents = loadAgents();
-    for (const [name, config] of Object.entries(agents)) {
-      expect(config.description.length, `${name}.description`).toBeGreaterThan(0);
-      expect(config.prompt.length, `${name}.prompt`).toBeGreaterThan(0);
-    }
   });
 });
