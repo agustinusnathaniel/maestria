@@ -19,6 +19,7 @@ assumed for mode state to work correctly.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import tempfile
@@ -27,6 +28,16 @@ from typing import Optional
 
 VALID_MODES = {"fein", "sonar", "blitz"}
 DEFAULT_MODE = "fein"
+MODE_PERSISTENCE_FAILURE_MESSAGE = "Mode could not be saved. Existing mode was preserved."
+
+
+class ModePersistenceError(RuntimeError):
+    """Mode state could not be persisted without changing the active mode."""
+
+    def __init__(self) -> None:
+        super().__init__("Mode persistence failed.")
+
+logger = logging.getLogger(__name__)
 
 # Every slash command the plugin registers and pre-gateway dispatch handles.
 # Single source of truth: the plugin registration tests assert register()
@@ -91,7 +102,8 @@ def render_mode_clear() -> str:
 
 def _get_state_path() -> Path:
     """Return path to the mode state file."""
-    hermes_home = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
+    configured_home = os.environ.get("HERMES_HOME", "").strip()
+    hermes_home = Path(configured_home) if configured_home else Path.home() / ".hermes"
     return hermes_home / "maestria-mode.json"
 
 
@@ -118,19 +130,19 @@ class ModeManager:
         return self._mode
 
     def set_mode(self, mode: str) -> None:
-        """Set a new mode and persist to state file."""
+        """Persist a new mode, then commit it to in-memory state."""
         normalized = mode.strip().lower()
         if normalized not in VALID_MODES:
             raise ValueError(
                 f"Invalid mode '{mode}'. Choose from: {', '.join(sorted(VALID_MODES))}"
             )
+        self._persist_mode(normalized)
         self._mode = normalized
-        self._save()
 
     def clear_mode(self) -> None:
-        """Clear the explicit mode and persist neutral routing."""
+        """Persist neutral routing, then commit it to in-memory state."""
+        self._persist_mode(None)
         self._mode = None
-        self._save()
 
     def is_read_only(self) -> bool:
         """Return True if the current mode restricts write/edit tools."""
@@ -141,33 +153,59 @@ class ModeManager:
     def _load(self) -> None:
         """Load mode from the state file, falling back to default."""
         path = _get_state_path()
-        if path.exists():
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-                mode = data.get("mode", DEFAULT_MODE)
-                if mode is None:
-                    self._mode = None
-                    return
-                if mode in VALID_MODES:
-                    self._mode = mode
-                    return
-            except (json.JSONDecodeError, OSError):
-                pass
+        if not path.exists():
+            self._mode = DEFAULT_MODE
+            return
+
+        try:
+            raw_state = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            logger.warning("Hermes mode state was invalid; using fein.")
+            self._mode = DEFAULT_MODE
+            return
+        except OSError:
+            logger.warning("Hermes mode state could not be read; using fein.")
+            self._mode = DEFAULT_MODE
+            return
+
+        try:
+            data = json.loads(raw_state)
+        except json.JSONDecodeError:
+            logger.warning("Hermes mode state was invalid; using fein.")
+            self._mode = DEFAULT_MODE
+            return
+
+        if not isinstance(data, dict):
+            logger.warning("Hermes mode state was invalid; using fein.")
+            self._mode = DEFAULT_MODE
+            return
+
+        mode = data.get("mode", DEFAULT_MODE)
+        if mode is None:
+            self._mode = None
+            return
+        if isinstance(mode, str) and mode in VALID_MODES:
+            self._mode = mode
+            return
+
+        logger.warning("Hermes mode state was invalid; using fein.")
         self._mode = DEFAULT_MODE
 
-    def _save(self) -> None:
-        """Persist current mode to the state file (atomic write)."""
+    def _persist_mode(self, mode: Optional[str]) -> None:
+        """Atomically persist a candidate mode without mutating active state."""
         path = _get_state_path()
+        tmp: str | None = None
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            # Atomic write: write to temp, then rename
             fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
-            try:
-                with os.fdopen(fd, "w", encoding="utf-8") as f:
-                    json.dump({"mode": self._mode}, f, indent=2)
-                os.replace(tmp, path)
-            except Exception:
-                os.unlink(tmp)
-                raise
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                json.dump({"mode": mode}, handle, indent=2)
+            os.replace(tmp, path)
+            tmp = None
         except OSError:
-            pass  # Best-effort persistence
+            if tmp is not None:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+            raise ModePersistenceError() from None

@@ -17,7 +17,9 @@ from maestria_hermes.hooks.transform import create_transform_tool_result_hook
 from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import (
     COMMAND_DESCRIPTION_FALLBACKS,
+    MODE_PERSISTENCE_FAILURE_MESSAGE,
     ModeManager,
+    ModePersistenceError,
     load_command_description,
     render_mode_clear,
     render_mode_status,
@@ -167,7 +169,10 @@ def register(ctx):
 def _cmd_set_mode(mode_manager, mode):
     """Return a slash command handler that switches modes."""
     def handler(_raw_args: str) -> str:
-        mode_manager.set_mode(mode)
+        try:
+            mode_manager.set_mode(mode)
+        except ModePersistenceError:
+            return MODE_PERSISTENCE_FAILURE_MESSAGE
         pipeline = {
             "fein": "adventurer / architect -> builder -> reviewer",
             "sonar": "adventurer / architect -> STOP (read-only)",
@@ -184,7 +189,10 @@ def _cmd_set_mode(mode_manager, mode):
 def _cmd_clear_mode(mode_manager):
     """Return a slash command handler that clears persisted mode state."""
     def handler(_raw_args: str) -> str:
-        mode_manager.clear_mode()
+        try:
+            mode_manager.clear_mode()
+        except ModePersistenceError:
+            return MODE_PERSISTENCE_FAILURE_MESSAGE
         return render_mode_clear()
     return handler
 

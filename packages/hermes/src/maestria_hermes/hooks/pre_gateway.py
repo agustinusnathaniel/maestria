@@ -19,7 +19,9 @@ from typing import Any, Optional
 from maestria_hermes.modes import (
     COMMAND_DESCRIPTION_FALLBACKS,
     MAESTRIA_COMMANDS,
+    MODE_PERSISTENCE_FAILURE_MESSAGE,
     ModeManager,
+    ModePersistenceError,
     load_command_description,
     render_mode_clear,
     render_mode_status,
@@ -80,21 +82,24 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
         if not cmd or cmd not in MAESTRIA_COMMANDS:
             return None
 
-        if cmd == "mode-clear":
-            mode_manager.clear_mode()
-            response = render_mode_clear()
+        try:
+            if cmd == "mode-clear":
+                mode_manager.clear_mode()
+                response = render_mode_clear()
 
-        elif cmd == "mode":
-            mode = mode_manager.get_mode()
-            response = render_mode_status(mode, mode_manager.is_read_only())
+            elif cmd == "mode":
+                mode = mode_manager.get_mode()
+                response = render_mode_status(mode, mode_manager.is_read_only())
 
-        elif cmd in ("fein", "sonar", "blitz"):
-            mode_manager.set_mode(cmd)
-            response = render_mode_switch(cmd, _PIPELINE_DESC.get(cmd, "unknown"))
+            elif cmd in ("fein", "sonar", "blitz"):
+                mode_manager.set_mode(cmd)
+                response = render_mode_switch(cmd, _PIPELINE_DESC.get(cmd, "unknown"))
 
-        elif cmd in ("review", "plan"):
-            mode_manager.set_mode("fein")
-            response = render_mode_switch("fein", _PIPELINE_DESC["fein"])
+            elif cmd in ("review", "plan"):
+                mode_manager.set_mode("fein")
+                response = render_mode_switch("fein", _PIPELINE_DESC["fein"])
+        except ModePersistenceError:
+            response = MODE_PERSISTENCE_FAILURE_MESSAGE
 
         logger.info("pre_gateway: handled /%s (mode=%s)", cmd, mode_manager.get_mode())
 
