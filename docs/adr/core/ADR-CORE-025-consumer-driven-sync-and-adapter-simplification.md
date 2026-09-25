@@ -37,13 +37,9 @@ The sync tool and shared packages are private to this repository, so internal co
 4. **CLI shared primitives and batch harness.** A CLI primitives module owns shared JSON/record guards, parsers, and path checks; a batch-command module owns the install/update/uninstall skeleton (quiet resolution, result rendering, the concurrency-1 selection runner, and the non-interactive usage guard). Each command keeps its own prompts, filters, and messages.
 5. **Shared review adapter.** `createReviewApi` in `@maestria/shared-pi/review-core` binds a host and its model type guard; Pi and OMP pass host model guards and keep thin state wrappers, so validation stays at the platform seam.
 6. **OpenCode mode reuse.** OpenCode imports mode constants, detection, stripping, and section extraction from `@maestria/shared-mode`; its mode-keyword schema uses the shared constants and the duplicated marker and keyword tables are gone.
-7. **Retained complexity.**
-   - **Prime Agent self-contained modes.** Its mode module stays independent: [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md) isolates its pinned Prime fork types and fail-closed prompt behavior as a verified extension subset.
-   - **Hermes Python implementation.** The plugin, hooks, and permission gating are host-native Python, not portable TypeScript; rewriting them would trade working enforcement for uniformity.
-   - **Per-host adapter seams.** Pi and OMP model guards, host types, lazy prompt loading, and session state differ; merging adapters would couple packages to save a few lines.
-   - **Anchor validation and provenance checks.** `validateAnchors` ([ADR-CORE-024](ADR-CORE-024-anchor-liveness-preflight.md)) and `checkProvenance` stay because dead anchors, shadowed replaces, and unreviewed output edits shipped silently before these gates existed.
+7. **Retained complexity.** The original pass retained Prime Agent's self-contained modes, Hermes's host-native Python, host-specific Pi/OMP seams, and anchor/provenance checks. The updated current list and its rationale are in the 2026-09-11 update below.
 
-> Updated 2026-09-11: a further reduction pass refreshed this list. The entries above are preserved as the original decision record; the current list is in the update section below.
+> Updated 2026-09-11: a further reduction pass removed some of the originally retained wrappers and refreshed the remaining boundaries. The current list is below; this sentence preserves the history of the change without duplicating the old list.
 
 ## Consequences
 

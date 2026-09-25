@@ -19,7 +19,6 @@ Contributors, maintainers, and platform adapter authors. To install or use Maest
 | Check a platform's support boundary | [Runtime support matrix](runtime-support-matrix.md) |
 | Choose verification for a change | [Testing philosophy](testing.md), [completion checklist](checklist.md), and [directive change review](directive-change-review.md) for canonical directive edits |
 | Write or revise documentation | [Documentation conventions](guides/doc-format.md) |
-| Review the completed documentation audit and its open follow-ups | [Documentation audit (2026-09-05)](documentation-audit.md) |
 
 ## Find a Design Decision
 
@@ -34,14 +33,9 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 | Hermes integration and orchestration                      | [Hermes ADRs](adr/hermes/)       |
 | Pi and Oh My Pi ecosystem and lifecycle                   | [Pi ADRs](adr/pi/)               |
 
-## Plans and Research
+## Plans
 
-[Plans](plans/) and [notes](notes/) are archival records of completed implementation work and investigations. They preserve decisions, evidence dates, and lessons rather than current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the current plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
-
-## Dated Evidence
-
-- [verified] 2026-09-05: paths checked against the repository documentation inventory. The public site source is `apps/docs/`; this checkout has no `apps/website/`.
-- [verified] 2026-09-14: historical plans, notes, and the audit were condensed to archival records.
+[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
 
 ## Next Step
 
