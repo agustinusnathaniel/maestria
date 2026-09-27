@@ -7,7 +7,6 @@ import { resolveBatchQuiet } from '@/lib/batch-command.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { collectDoctorReports } from '@/lib/doctor.js';
-import type { DoctorPlatformReport } from '@/lib/doctor.js';
 import { executeSetupActions, KNOWN_ECOSYSTEM_TOOLS } from '@/lib/setup-actions.js';
 import type { SetupActionContext } from '@/lib/setup-actions.js';
 import {
@@ -101,43 +100,34 @@ const defaultEcosystemProbe = async (
 };
 
 const defaultXtarterizePath = async (): Promise<string | null> => {
-  const present = await Effect.runPromise(commandExists('xtarterize'));
-  if (!present) {
-    return null;
-  }
   try {
     const { stdout } = await execFileAsync('which', ['xtarterize'], {
       encoding: 'utf-8',
       timeout: 10_000,
     });
-    const out = stdout.trim();
-    return out === '' ? 'xtarterize' : (out.split('\n')[0] ?? 'xtarterize');
+    return stdout.trim().split('\n')[0] || null;
   } catch {
-    return 'xtarterize';
+    return (await Effect.runPromise(commandExists('xtarterize'))) ? 'xtarterize' : null;
   }
 };
 
-const defaultXtarterize: XtarterizeRunner = async (args, options) =>
-  await Effect.runPromise(
-    Effect.callback<XtarterizeResult>((resume) => {
-      execFile(
-        'xtarterize',
-        [...args],
-        { cwd: options?.cwd, encoding: 'utf-8', timeout: 120_000 },
-        (error, stdout, stderr) => {
-          const code =
-            isRecord(error) && typeof error.code === 'number' && error.code !== 0 ? error.code : 1;
-          resume(
-            Effect.succeed({
-              exitCode: error ? code : 0,
-              stderr,
-              stdout,
-            }),
-          );
-        },
-      );
-    }),
-  );
+const defaultXtarterize: XtarterizeRunner = async (args, options) => {
+  try {
+    const { stderr, stdout } = await execFileAsync('xtarterize', [...args], {
+      cwd: options?.cwd,
+      encoding: 'utf-8',
+      timeout: 120_000,
+    });
+    return { exitCode: 0, stderr, stdout };
+  } catch (error) {
+    const failed = isRecord(error) ? error : {};
+    return {
+      exitCode: typeof failed.code === 'number' && failed.code !== 0 ? failed.code : 1,
+      stderr: typeof failed.stderr === 'string' ? failed.stderr : '',
+      stdout: typeof failed.stdout === 'string' ? failed.stdout : '',
+    };
+  }
+};
 
 const defaultReadGitignore = async (cwd: string): Promise<string | null> => {
   try {
@@ -148,14 +138,6 @@ const defaultReadGitignore = async (cwd: string): Promise<string | null> => {
   }
 };
 
-interface SetupDetection {
-  readonly doctor: DoctorPlatformReport[];
-  readonly platforms: PlatformStatus[];
-  readonly probes: Map<string, { present: boolean; version: string }>;
-  readonly record: SkillsRecord | null;
-  readonly xtarterizeOnPath: string | null;
-}
-
 const collectDetection = async (
   detect: () => Promise<PlatformStatus[]>,
   readRecord: () => Promise<SkillsRecord | null>,
@@ -163,7 +145,7 @@ const collectDetection = async (
   resolveXtarterizePath: () => Promise<string | null>,
   probe: (tool: string) => Promise<{ present: boolean; version: string }>,
   isQuiet: boolean,
-): Promise<SetupDetection> => {
+) => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting setup state...');
   const platforms = await detect();
@@ -179,59 +161,34 @@ const collectDetection = async (
   return { doctor, platforms, probes, record, xtarterizeOnPath };
 };
 
-const toDetectionContext = (
-  detection: SetupDetection,
+const renderResult = (
+  args: { cwd: string; json?: boolean; summary?: string },
+  detection: Awaited<ReturnType<typeof collectDetection>>,
   selection: SetupSelection,
-): {
-  doctor: DoctorPlatformReport[];
-  ecosystem: { present: boolean; tool: string; version: string }[];
-  recordPresent: boolean;
-  xtarterizeOnPath: string | null;
-} => ({
-  doctor: detection.doctor,
-  ecosystem: selection.ecosystem.map((tool) => ({
-    present: detection.probes.get(tool)?.present ?? false,
-    tool,
-    version: detection.probes.get(tool)?.version ?? '',
-  })),
-  recordPresent: detection.record !== null,
-  xtarterizeOnPath: detection.xtarterizeOnPath,
-});
-
-const executeConfirmedPlan = async (
-  args: SetupArgs,
-  cwd: string,
   installed: readonly PlatformStatus[],
-  detection: SetupDetection,
-  selection: SetupSelection,
-  runners: Pick<SetupActionContext, 'readGitignore' | 'skillRunner' | 'xtarterize'>,
-): Promise<CommandResult> => {
-  const ctx: SetupActionContext = {
-    cwd,
-    excludeSkills: args.excludeSkills,
-    installed,
-    maestriaSkills: selection.maestriaSkills,
-    probes: detection.probes,
-    readGitignore: runners.readGitignore,
-    record: detection.record,
-    skillRunner: runners.skillRunner,
-    xtarterize: runners.xtarterize,
-    xtarterizeOnPath: detection.xtarterizeOnPath,
-  };
-  const reports = await executeSetupActions(ctx, selection);
-  const notes = goalNotes(installed);
-  const output = renderSetupOutput(
+  reports: SetupActionReport[],
+): string =>
+  renderSetupOutput(
     { json: args.json },
     {
-      cwd,
-      detection: toDetectionContext(detection, selection),
-      notes,
+      cwd: args.cwd,
+      detection: {
+        doctor: detection.doctor,
+        ecosystem: selection.ecosystem.map((tool) => ({
+          present: detection.probes.get(tool)?.present ?? false,
+          tool,
+          version: detection.probes.get(tool)?.version ?? '',
+        })),
+        recordPresent: detection.record !== null,
+        xtarterizeOnPath: detection.xtarterizeOnPath,
+      },
+      notes: goalNotes(installed),
       reports,
+      summary: args.summary,
     },
   );
-  return { exitCode: reports.some((r) => r.status === 'failed') ? 1 : 0, output };
-};
 
+// oxlint-disable-next-line max-lines-per-function -- keep setup preflight, confirmation, and execution order together.
 export const runSetup = async (
   rawArgs: SetupArgs,
   deps: SetupDeps = {},
@@ -267,29 +224,37 @@ export const runSetup = async (
     detection.probes,
     interactive,
   );
-
   if (selection.maestriaActive && selection.reviewed.length > 0) {
     await preflightCompanionOwnership(skillRunner, detection.record, selection.reviewed);
   }
   if (isNoopSetupPlan(selection, detection.probes)) {
     return {
       exitCode: 0,
-      output: renderSetupOutput(
-        { json: args.json },
-        {
-          cwd,
-          detection: toDetectionContext(detection, selection),
-          notes: goalNotes(installed),
-          reports: [],
-          summary: 'Everything is already set up; nothing to do.',
-        },
+      output: renderResult(
+        { cwd, json: args.json, summary: 'Everything is already set up; nothing to do.' },
+        detection,
+        selection,
+        installed,
+        [],
       ),
     };
   }
   await confirmSetupPlan(cwd, selection, args.yes);
-  return await executeConfirmedPlan(args, cwd, installed, detection, selection, {
+  const ctx: SetupActionContext = {
+    cwd,
+    excludeSkills: args.excludeSkills,
+    installed,
+    maestriaSkills: selection.maestriaSkills,
+    probes: detection.probes,
     readGitignore,
+    record: detection.record,
     skillRunner,
     xtarterize,
-  });
+    xtarterizeOnPath: detection.xtarterizeOnPath,
+  };
+  const reports = await executeSetupActions(ctx, selection);
+  return {
+    exitCode: reports.some((report) => report.status === 'failed') ? 1 : 0,
+    output: renderResult({ cwd, json: args.json }, detection, selection, installed, reports),
+  };
 };

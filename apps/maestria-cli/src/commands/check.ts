@@ -48,79 +48,53 @@ const handleCheckAll = async (args: CheckArgs): Promise<CommandResult> => {
   return { exitCode, output };
 };
 
-const buildUnavailableResult = (
-  platformId: string,
-  label: string,
-  args: CheckArgs,
-): CommandResult => {
-  const result = {
-    available: false,
-    message: `CLI tool for ${label} is not available on this machine`,
-    platform: platformId,
-    pluginInstalled: false,
-  };
-  return {
-    exitCode: 1,
-    output:
-      args.json === true
-        ? JSON.stringify(result)
-        : `${label}: CLI tool is not available on this machine`,
-  };
-};
-
-const buildNotInstalledResult = (
-  platformId: string,
-  label: string,
-  installedVersion: string,
-  args: CheckArgs,
-): CommandResult => {
-  const result = {
-    available: true,
-    installedVersion,
-    message: `@maestria/${platformId} is not installed for ${label}`,
-    platform: platformId,
-    pluginInstalled: false,
-  };
-  return {
-    exitCode: 1,
-    output:
-      args.json === true
-        ? JSON.stringify(result)
-        : `@maestria/${platformId} is not installed for ${label}`,
-  };
-};
-
-const buildInstalledResult = (
+const buildSingleResult = (
   platformId: string,
   label: string,
   status: PlatformStatus,
   args: CheckArgs,
 ): CommandResult => {
-  const freshness = freshnessOf(status.installedVersion, status.latestVersion);
-  const result = {
-    available: true,
-    installedVersion: status.installedVersion,
-    latestVersion: status.latestVersion || undefined,
-    outdated: freshness === 'outdated',
-    platform: platformId,
-    pluginInstalled: true,
+  const freshness = status.installed
+    ? freshnessOf(status.installedVersion, status.latestVersion)
+    : 'unknown';
+  let result: Record<string, unknown>;
+  let text: string;
+  if (!status.available) {
+    result = {
+      available: false,
+      message: `CLI tool for ${label} is not available on this machine`,
+      platform: platformId,
+      pluginInstalled: false,
+    };
+    text = `${label}: CLI tool is not available on this machine`;
+  } else if (status.installed) {
+    result = {
+      available: true,
+      installedVersion: status.installedVersion,
+      latestVersion: status.latestVersion || undefined,
+      outdated: freshness === 'outdated',
+      platform: platformId,
+      pluginInstalled: true,
+    };
+    const version = status.installedVersion ? ` (v${status.installedVersion})` : '';
+    text = `@maestria/${platformId} is installed for ${label}${version}`;
+    if (freshness === 'outdated') {
+      text += `\nupdate available: v${status.installedVersion} -> v${status.latestVersion} (run 'maestria update ${platformId}')`;
+    }
+  } else {
+    text = `@maestria/${platformId} is not installed for ${label}`;
+    result = {
+      available: true,
+      installedVersion: status.installedVersion,
+      message: text,
+      platform: platformId,
+      pluginInstalled: false,
+    };
+  }
+  return {
+    exitCode: status.available ? checkExitCode(freshness, status.installed) : 1,
+    output: args.json === true ? JSON.stringify(result) : text,
   };
-  if (args.json === true) {
-    return { exitCode: checkExitCode(freshness, status.installed), output: JSON.stringify(result) };
-  }
-  const version =
-    status.installedVersion !== undefined &&
-    status.installedVersion !== null &&
-    status.installedVersion !== ''
-      ? ` (v${status.installedVersion})`
-      : '';
-  const lines = [`@maestria/${platformId} is installed for ${label}${version}`];
-  if (freshness === 'outdated') {
-    lines.push(
-      `update available: v${status.installedVersion} -> v${status.latestVersion} (run 'maestria update ${platformId}')`,
-    );
-  }
-  return { exitCode: checkExitCode(freshness, status.installed), output: lines.join('\n') };
 };
 
 const handleCheckSingle = async (platformId: string, args: CheckArgs): Promise<CommandResult> => {
@@ -134,13 +108,7 @@ const handleCheckSingle = async (platformId: string, args: CheckArgs): Promise<C
     );
   }
   const status = await Effect.runPromise(detectSingle(platformId));
-  if (!status.available) {
-    return buildUnavailableResult(platformId, platform.label, args);
-  }
-  if (!status.installed) {
-    return buildNotInstalledResult(platformId, platform.label, status.installedVersion, args);
-  }
-  return buildInstalledResult(platformId, platform.label, status, args);
+  return buildSingleResult(platformId, platform.label, status, args);
 };
 
 export const handleCheck = async (args: CheckArgs): Promise<CommandResult> => {
