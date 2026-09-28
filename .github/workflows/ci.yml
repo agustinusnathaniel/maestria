@@ -31,10 +31,10 @@ jobs:
         with:
           fetch-depth: 1
       - uses: ./.github/actions/setup
-      - uses: oven-sh/setup-bun@v2
-        with:
-          # Pinned to the version previously resolved from latest.
-          bun-version: 1.4.2
+      # CI-only, for the plugin load check below. pnpm installs it into $PNPM_HOME/bin, which the
+      # setup step already put on PATH. Pinned to the version previously resolved from latest.
+      - name: Install Bun
+        run: pnpm runtime set bun 1.4.2 -g
       - name: Generate Astro types
         run: pnpm sync:docs
       - name: Check (format + lint + typecheck + test) and Build
