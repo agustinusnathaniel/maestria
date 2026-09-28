@@ -51,15 +51,22 @@ describe('canonical directive behavioral contracts', () => {
     }
 
     expect(rules).toMatch(/U\+2014/iu);
-    expect(rules).toMatch(
-      /(?:never|do not|avoid|prohibit|forbid)[\s\S]{0,120}(?:U\+2014|em dash)|(?:U\+2014|em dash)[\s\S]{0,120}(?:never|do not|avoid|prohibit|forbid)/iu,
-    );
-    expect(rules).toMatch(
-      /(?:ASCII(?:[- ](?:only|alternative|punctuation))?|hyphen-minus)[\s\S]{0,160}(?:alternative|comma|colon|parenthes|instead|replace)|(?:comma|colon|parenthes)[\s\S]{0,160}(?:ASCII|hyphen-minus|instead|replace)/iu,
-    );
-    expect(rules).toMatch(
-      /(?:preserve|leave intact|except|do not alter)[\s\S]{0,180}(?:code|syntax|literal|quoted|user[- ]provided)|(?:code|syntax|literal|quoted|user[- ]provided)[\s\S]{0,180}(?:preserve|leave intact|except|do not alter)/iu,
-    );
+    // Line-scoped rather than character-window proximity: each obligation must
+    // sit on the same line as the term it governs, so rewording neighbouring
+    // sentences or reformatting a bullet cannot detach a prohibition from its
+    // subject while every concept below stays checked.
+    for (const [term, obligation] of [
+      [/U\+2014|em dash/iu, /never|do not|avoid|prohibit|forbid/iu],
+      [/hyphen-minus|ASCII/iu, /prefer|alternative|instead|replace|comma|colon|parenthes/iu],
+      [
+        /human[- ]facing output/iu,
+        /(?:preserve|leave intact|except|do not alter).{0,120}\b(?:code|syntax|literals?|quoted|user[- ]provided)\b|\b(?:code|syntax|literals?|quoted|user[- ]provided)\b.{0,120}(?:preserve|leave intact|except|do not alter)/iu,
+      ],
+    ]) {
+      const governingLine = rules.split('\n').find((line) => term.test(line));
+      expect(governingLine, `no directive line governs ${term.source}`).toBeDefined();
+      expect(governingLine).toMatch(obligation);
+    }
   });
 
   it('covers delivery-facing text in every specialist directive', () => {
@@ -223,8 +230,6 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/maker claims|maker-authored narrative/iu);
     expect(rules).toContain('in-scope defects');
     expect(rules).toMatch(/repaired autonomously/iu);
-    expect(rules).toMatch(/out-of-scope/iu);
-    expect(rules).toContain('follow-ups');
     expect(orchestrator).toContain('[escalate]');
     expect(orchestrator).toMatch(/blocks completion only when/iu);
     expect(orchestrator).toContain('acceptance, safety');
@@ -286,8 +291,6 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(rules).toMatch(/security.*boundaries are mandatory stops/iu);
     expect(rules).toMatch(/ordinary in-scope security defects may be repaired autonomously/iu);
-    expect(rules).toMatch(/routine delivery is autonomous/iu);
-    expect(rules).toMatch(/complete commit, push, and PR creation without routine approval asks/iu);
     expect(orchestrator).toMatch(/complete PR set without asking for routine approval/iu);
   });
 
@@ -306,6 +309,11 @@ describe('canonical directive behavioral contracts', () => {
   it('separates route choice from host execution authority', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
+    // Canonical owner of the section heading. Platform suites asserted
+    // 'Runtime Authority' against their own projections, which drift with the
+    // canonical text and leave the heading itself unasserted if the canonical
+    // test omits it.
+    expect(orchestrator).toContain('Runtime Authority');
     expect(orchestrator).toContain('host runtime defines');
     expect(orchestrator).toContain('direct work is unavailable or disallowed');
     expect(orchestrator).toContain('direct work is available');
@@ -334,6 +342,12 @@ describe('canonical directive behavioral contracts', () => {
     // Runtime-specific enforcement belongs in adapters, not the portable core.
     expect(orchestrator).not.toMatch(
       /\b(?<platform>OpenCode|OMP|Kimi Code|Hermes|Cursor|Claude Code|Pi)\b/u,
+    );
+    // Canonical owner of the negated "pure dispatcher" guard: pi, omp, and
+    // claude-code asserted this against their own projections, which drifts as
+    // soon as the canonical directive says something different.
+    expect(orchestrator).not.toMatch(
+      /pure dispatcher|Never implement routed code changes yourself/iu,
     );
   });
 

@@ -25,7 +25,12 @@ type JsonObject = Record<string, unknown>;
 const isJsonObject = (value: unknown): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
+const requireString = (value: unknown, field: string): string => {
+  if (typeof value !== 'string') {
+    throw new TypeError(`expected ${field} to be a string, got ${typeof value}`);
+  }
+  return value;
+};
 
 const readJson = async (relativePath: string): Promise<JsonObject> => {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
@@ -95,12 +100,6 @@ const parseFrontmatter = (text: string): { data: Record<string, unknown>; body: 
 };
 
 describe('kimi.plugin.json manifest', () => {
-  it('exists and parses as valid JSON', async () => {
-    const manifest = await readJson('kimi.plugin.json');
-    expect(typeof manifest).toBe('object');
-    expect(manifest).not.toBeNull();
-  });
-
   it('has a "name" matching the Kimi Code PLUGIN_NAME_REGEX', async () => {
     const manifest = await readJson('kimi.plugin.json');
     expect(typeof manifest.name).toBe('string');
@@ -115,24 +114,9 @@ describe('kimi.plugin.json manifest', () => {
     expect(manifest.version).toBe(pkg.version);
   });
 
-  it('has "skills" field that starts with "./"', async () => {
+  it('points "skills" at the packaged skills directory', async () => {
     const manifest = await readJson('kimi.plugin.json');
-    const { skills } = manifest;
-    expect(skills).toBeDefined();
-    if (isUnknownArray(skills)) {
-      expect(skills.length).toBeGreaterThan(0);
-      for (const entry of skills) {
-        expect(typeof entry).toBe('string');
-        if (typeof entry === 'string') {
-          expect(entry.startsWith('./')).toBe(true);
-        }
-      }
-    } else {
-      expect(typeof skills).toBe('string');
-      if (typeof skills === 'string') {
-        expect(skills.startsWith('./')).toBe(true);
-      }
-    }
+    expect(manifest.skills).toBe('./skills/');
   });
 
   it('declares native plugin slash commands', async () => {
@@ -207,13 +191,9 @@ describe('skills directory', () => {
         const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.name).toBe('string');
-        if (typeof data.name === 'string') {
-          expect(data.name.length).toBeGreaterThan(0);
-        }
+        expect(requireString(data.name, 'name').length).toBeGreaterThan(0);
         expect(typeof data.description).toBe('string');
-        if (typeof data.description === 'string') {
-          expect(data.description.length).toBeGreaterThan(0);
-        }
+        expect(requireString(data.description, 'description').length).toBeGreaterThan(0);
         expect(data.name).toBe(skill);
         expect(data.type).toBe('prompt');
       });
@@ -223,9 +203,7 @@ describe('skills directory', () => {
         const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.whenToUse).toBe('string');
-        if (typeof data.whenToUse === 'string') {
-          expect(data.whenToUse.trim().length).toBeGreaterThan(0);
-        }
+        expect(requireString(data.whenToUse, 'whenToUse').trim().length).toBeGreaterThan(0);
       });
     });
   }
@@ -265,7 +243,6 @@ describe('skills directory', () => {
     expect(orchestrator).toContain('builder | `coder`');
     expect(builder).toMatch(/Subagent profile.*`coder`/u);
     expect(builder).toMatch(/Write, Edit/u);
-    expect(orchestrator).toContain('Runtime Authority');
   });
 
   it('reviewer skill has the explicit do-not-edit constraint near the top', async () => {

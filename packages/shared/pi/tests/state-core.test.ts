@@ -198,6 +198,15 @@ describe('createInitialState', () => {
   });
 });
 
+describe('history caps', () => {
+  it('pins the literal cap values the transform tests reference symbolically', () => {
+    // Without literal values, changing either cap keeps every assertion below
+    // green because each one derives its expectation from the constant itself.
+    expect(HANDOFF_HISTORY_CAP).toBe(5);
+    expect(FILE_HISTORY_CAP).toBe(10);
+  });
+});
+
 describe('recordHandoff', () => {
   it('adds an entry with the handoff fields and a timestamp', () => {
     const next = recordHandoff(createInitialState(), 'adventurer', 'builder', 'implement feature');

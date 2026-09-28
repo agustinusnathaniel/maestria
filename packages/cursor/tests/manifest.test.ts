@@ -17,6 +17,11 @@ const EXPECTED_AGENTS = [
 
 const EXPECTED_COMMANDS = ['fein', 'sonar', 'blitz'] as const;
 
+// Cursor blocks write tools at runtime through the `readonly` agent frontmatter
+// flag (ADR-CR-001), so these are the specialists the maker/checker split fences
+// off from editing.
+const READONLY_AGENTS: readonly string[] = ['adventurer', 'planner', 'reviewer'];
+
 type JsonObject = Record<string, unknown>;
 
 const isJsonObject = (value: unknown): value is JsonObject =>
@@ -81,12 +86,6 @@ const parseFrontmatter = (text: string): { data: Record<string, unknown>; body: 
 };
 
 describe('.cursor-plugin/plugin.json', () => {
-  it('exists and parses as valid JSON', async () => {
-    const manifest = await readJson('.cursor-plugin/plugin.json');
-    expect(typeof manifest).toBe('object');
-    expect(manifest).not.toBeNull();
-  });
-
   it('has required name, version, and author', async () => {
     const [manifest, pkg] = await Promise.all([
       readJson('.cursor-plugin/plugin.json'),
@@ -127,17 +126,26 @@ describe('agents directory', () => {
       });
     });
   }
+});
 
-  it('reviewer agent forbids edits near the top', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'reviewer.md'), 'utf-8');
-    const head = text.slice(0, 1500);
-    expect(head).toMatch(/do \*\*not\*\* use Write|do not edit|Checker only/iu);
-  });
+describe('read-only maker/checker boundary', () => {
+  for (const agent of READONLY_AGENTS) {
+    it(`blocks write tools when the readonly flag is set on ${agent}`, async () => {
+      const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
+      const { data } = parseFrontmatter(text);
+      expect(data.readonly).toBe(true);
+    });
+  }
 
-  it('adventurer agent is read-only near the top', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'adventurer.md'), 'utf-8');
-    const head = text.slice(0, 1500);
-    expect(head).toMatch(/Read-only/iu);
+  it('leaves write tools enabled when a write specialist omits the readonly flag', async () => {
+    const writeSpecialists = EXPECTED_AGENTS.filter((agent) => !READONLY_AGENTS.includes(agent));
+    await Promise.all(
+      writeSpecialists.map(async (agent) => {
+        const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
+        const { data } = parseFrontmatter(text);
+        expect(data.readonly).toBeUndefined();
+      }),
+    );
   });
 });
 
@@ -160,18 +168,6 @@ describe('skills/orchestrator', () => {
     for (const specialist of EXPECTED_AGENTS) {
       expect(text).toContain(specialist);
     }
-  });
-
-  it('keeps direct main-session capability distinct from specialist restrictions', async () => {
-    const text = await readFile(
-      path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf-8',
-    );
-
-    expect(text).toContain('Runtime Authority');
-    expect(text).toContain('direct work is available');
-    expect(text).not.toContain('Never implement routed code changes yourself');
-    expect(text).not.toMatch(/pure dispatcher/iu);
   });
 });
 

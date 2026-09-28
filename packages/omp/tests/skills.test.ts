@@ -39,15 +39,4 @@ describe('skills', () => {
       expect(nameMatch.groups.name).toBe(name);
     }
   });
-
-  it('keeps the orchestrator capability-aware while active modes use runtime enforcement', () => {
-    const text = readFileSync(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
-
-    expect(text).toContain('Runtime Authority');
-    expect(text).toContain('direct work is unavailable or disallowed');
-    expect(text).toContain('direct work is available');
-    expect(text).not.toMatch(
-      /\b(?<platform>OpenCode|OMP|Kimi Code|Hermes|Cursor|Claude Code|Pi)\b/u,
-    );
-  });
 });
