@@ -63,7 +63,6 @@ describe('Codex managed native agents', () => {
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
       const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
-      expect(installedInstructions).toContain('maestria:codex-orchestrator:start');
       expect(installedInstructions.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
       expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsFile": "AGENTS.md"',
