@@ -39,7 +39,7 @@ Keeping the ledger in the standing ADR makes its policy harder to read and dupli
 
 ## Supersession
 
-Extends [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) only for the location of the completed pass ledger and the one-time removal stated above. All other decisions in that record remain in force.
+Extends [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) only for the location of the completed pass ledger and the one-time removal stated above. All other decisions in that record remain in force. [ADR-CORE-032](ADR-CORE-032-one-time-condensation-of-review-signals-record.md) authorizes a separate one-time rewrite of ADR-CORE-012; it does not change this ledger decision.
 
 ## Date
 

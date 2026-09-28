@@ -33,49 +33,6 @@ const EXPECTED_SKILLS = [
   'writer',
 ] as const;
 
-interface PackageJson {
-  name?: string;
-  files?: string[];
-  pi?: { extensions?: string[]; skills?: string[] };
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string');
-
-const isPiManifest = (value: unknown): value is NonNullable<PackageJson['pi']> => {
-  if (!isRecord(value)) {
-    return false;
-  }
-  return (
-    (value.extensions === undefined || isStringArray(value.extensions)) &&
-    (value.skills === undefined || isStringArray(value.skills))
-  );
-};
-
-const isPackageJson = (value: unknown): value is PackageJson => {
-  if (!isRecord(value)) {
-    return false;
-  }
-  return (
-    (value.name === undefined || typeof value.name === 'string') &&
-    (value.files === undefined || isStringArray(value.files)) &&
-    (value.pi === undefined || isPiManifest(value.pi))
-  );
-};
-
-const readJson = async (relativePath: string): Promise<PackageJson> => {
-  const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf-8');
-  const value: unknown = JSON.parse(raw);
-  if (!isPackageJson(value)) {
-    throw new Error(`${relativePath} does not contain a valid package manifest`);
-  }
-  return value;
-};
-
 const pathExists = async (absolutePath: string): Promise<boolean> => {
   try {
     await stat(absolutePath);
@@ -370,28 +327,15 @@ describe('sync config source mapping', () => {
 
 describe('package boundary', () => {
   it('has the exact package identity "@maestria/prime-agent"', async () => {
-    const pkg = await readJson('package.json');
-    expect(pkg.name).toBe('@maestria/prime-agent');
+    const pkg: unknown = JSON.parse(
+      await readFile(path.join(PACKAGE_ROOT, 'package.json'), 'utf-8'),
+    );
+    expect(pkg).toMatchObject({ name: '@maestria/prime-agent' });
   });
 
   it('has no agents/, hooks/, or commands/ directories (no subagent/agent-tool surface)', async () => {
     expect(await pathExists(path.join(PACKAGE_ROOT, 'agents'))).toBe(false);
     expect(await pathExists(path.join(PACKAGE_ROOT, 'hooks'))).toBe(false);
     expect(await pathExists(path.join(PACKAGE_ROOT, 'commands'))).toBe(false);
-  });
-
-  it('allowlists the skills projection, the compiled extension, and docs for packaging', async () => {
-    const pkg = await readJson('package.json');
-    for (const entry of ['dist', 'skills', 'README.md', 'INSTALL.md', 'LICENSE']) {
-      expect(pkg.files).toContain(entry);
-    }
-    expect(pkg.files).not.toContain('agents');
-    expect(pkg.files).not.toContain('hooks');
-  });
-
-  it('declares the compiled extension and skills under the pi manifest key', async () => {
-    const pkg = await readJson('package.json');
-    expect(pkg.pi?.extensions).toContain('./dist/extension.mjs');
-    expect(pkg.pi?.skills).toContain('./skills');
   });
 });

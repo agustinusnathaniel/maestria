@@ -88,6 +88,7 @@ The tension is between three considerations. The opening of [docs/guides/doc-for
 - [ADR-CORE-000](ADR-CORE-000-adr-structure.md): extended, not replaced. It keeps its original context, decision, consequences, and date, and continues to own subdirectory layout, prefixes, and file naming. This record adds the lifecycle of a record's content after acceptance.
 - [ADR-CORE-018](ADR-CORE-018-documentation-standard.md): extended, not replaced. It keeps its original context, decision, consequences, and date, and continues to own the documentation standard. This record supersedes two parts of [docs/guides/doc-format.md](../../guides/doc-format.md) that ADR-CORE-018 established: the required ADR field list, and the permission to revise a historical ADR.
 - [ADR-CORE-031](ADR-CORE-031-editorial-pass-evidence-in-git.md): supersedes only clause 6's requirement to keep the completed-pass ledger in this record. The ledger and exact edits remain in the linked immutable commit.
+- [ADR-CORE-032](ADR-CORE-032-one-time-condensation-of-review-signals-record.md): authorizes a separate one-time, content-preserving rewrite of ADR-CORE-012. The acceptance freeze remains in force for other records.
 
 ## Date
 
