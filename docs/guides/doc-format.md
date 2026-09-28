@@ -49,7 +49,7 @@ Every new ADR must cover **Status, Context, Decision, Consequences, Alternatives
 
 Accepted records are frozen. On acceptance, Context, Decision, Consequences, Assumptions, Alternatives Considered, and Date stop changing, and a change of mind becomes a new record that supersedes or extends the original. An accepted record accepts in place a Status transition and either a successor annotation or a dated divergent-claim annotation; ADR-CORE-030 defines both forms. This supersedes the earlier rule that historical ADRs could be revised while preserving their original sections.
 
-Do not retrofit legacy records to match this template. The one bounded editorial pass authorized by [ADR-CORE-030](../adr/core/ADR-CORE-030-adr-immutability-and-supersession.md) has been performed. [ADR-CORE-031](../adr/core/ADR-CORE-031-editorial-pass-evidence-in-git.md) locates its ledger in the immutable delivery commit; it grants no further editorial pass. Follow ADR-CORE-030's lifecycle rules for later changes.
+Do not retrofit legacy records to match this template. The one bounded editorial pass authorized by [ADR-CORE-030](../adr/core/ADR-CORE-030-adr-immutability-and-supersession.md) has been performed. [ADR-CORE-031](../adr/core/ADR-CORE-031-editorial-pass-evidence-in-git.md) locates its ledger in the immutable delivery commit; it grants no further editorial pass. [ADR-CORE-032](../adr/core/ADR-CORE-032-one-time-condensation-of-review-signals-record.md) authorizes and exhausts one separate, content-preserving rewrite of ADR-CORE-012. Follow ADR-CORE-030's lifecycle rules for later changes.
 
 The `Context` heading is retained for compatibility with existing records.
 
