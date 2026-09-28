@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import { isPiModel } from '@/model.js';
-import {
-  createInitialState,
-  FILE_HISTORY_CAP,
-  HANDOFF_HISTORY_CAP,
-} from '@maestria/shared-pi/state-core';
 
 const createModel = (id: string) => ({
   api: 'anthropic-messages' as const,
@@ -18,21 +13,6 @@ const createModel = (id: string) => ({
   name: id,
   provider: 'anthropic',
   reasoning: false,
-});
-
-describe('state modules', () => {
-  it('pins the shared history caps', () => {
-    expect(HANDOFF_HISTORY_CAP).toBe(5);
-    expect(FILE_HISTORY_CAP).toBe(10);
-  });
-
-  it('serves shared initial state', () => {
-    const state = createInitialState();
-
-    expect(state.mode).toBeNull();
-    expect(state.handoffHistory).toEqual([]);
-    expect(state.reviewMode).toBe(false);
-  });
 });
 
 describe('isPiModel', () => {

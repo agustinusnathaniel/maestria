@@ -255,46 +255,28 @@ describe('syncTarget', () => {
     }
   });
 
-  it('leaves a drifted first manifest untouched when a later JSON manifest lacks version', () => {
-    // Write mode computes every rewrite during preflight. A manifest with
-    // valid syntax but no top-level "version" field only fails while
-    // computing its rewrite - before staging, the valid drifted sibling was
-    // written first and the target was left partially updated. Neither file
-    // may change; the valid sibling is reported as skipped ERROR, not DRIFT.
-    const drifted = '{\n  "version": "1.2.2"\n}\n';
-    const noVersion = '{\n  "name": "maestria"\n}\n';
-    const root = tempDir();
-    const { pkg, manifestPaths } = makePackage(root, '1.2.3', {
-      'a.json': drifted,
-      'b.json': noVersion,
-    });
-    const results = syncTarget(pkg, manifestPaths, false);
-    expect(results).toHaveLength(2);
-    expect(results[0]).toMatch(/^ERROR: /u);
-    expect(results[0]).toContain('skipped');
-    expect(results[1]).toContain('no "version" field found');
-    expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
-    expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
-    expect(fs.readFileSync(path.join(pkg, 'b.json'), 'utf-8')).toBe(noVersion);
-  });
-
-  it('leaves a drifted first manifest untouched when a later YAML manifest lacks version', () => {
-    const drifted = '{\n  "version": "1.2.2"\n}\n';
-    const noVersion = 'name: maestria-hermes\nprovides_tools:\n  - opencode_route\n';
-    const root = tempDir();
-    const { pkg, manifestPaths } = makePackage(root, '1.2.3', {
-      'a.json': drifted,
-      'plugin.yaml': noVersion,
-    });
-    const results = syncTarget(pkg, manifestPaths, false);
-    expect(results).toHaveLength(2);
-    expect(results[0]).toMatch(/^ERROR: /u);
-    expect(results[0]).toContain('skipped');
-    expect(results[1]).toContain('no "version" field found');
-    expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
-    expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
-    expect(fs.readFileSync(path.join(pkg, 'plugin.yaml'), 'utf-8')).toBe(noVersion);
-  });
+  it.each([
+    ['JSON', 'b.json', '{\n  "name": "maestria"\n}\n'],
+    ['YAML', 'plugin.yaml', 'name: maestria-hermes\nprovides_tools:\n  - opencode_route\n'],
+  ])(
+    'leaves a drifted first manifest untouched when a later %s manifest lacks version',
+    (_format, name, noVersion) => {
+      const drifted = '{\n  "version": "1.2.2"\n}\n';
+      const root = tempDir();
+      const { pkg, manifestPaths } = makePackage(root, '1.2.3', {
+        'a.json': drifted,
+        [name]: noVersion,
+      });
+      const results = syncTarget(pkg, manifestPaths, false);
+      expect(results).toHaveLength(2);
+      expect(results[0]).toMatch(/^ERROR: /u);
+      expect(results[0]).toContain('skipped');
+      expect(results[1]).toContain('no "version" field found');
+      expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
+      expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
+      expect(fs.readFileSync(path.join(pkg, name), 'utf-8')).toBe(noVersion);
+    },
+  );
 });
 
 /** Run main() against fixture targets. */

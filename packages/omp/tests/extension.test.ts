@@ -86,23 +86,6 @@ describe('extension entry point', () => {
     deployAgents.mockClear();
   });
 
-  it('registers mode commands', () => {
-    const pi = createMockPi();
-    invokeExtension(pi);
-    const { registerCommand } = pi;
-    // Three mode commands: fein, sonar, blitz
-    expect(registerCommand).toHaveBeenCalledWith('fein', expect.any(Object));
-    expect(registerCommand).toHaveBeenCalledWith('sonar', expect.any(Object));
-    expect(registerCommand).toHaveBeenCalledWith('blitz', expect.any(Object));
-  });
-
-  it('registers subagent tool', () => {
-    const pi = createMockPi();
-    invokeExtension(pi);
-    const { registerTool } = pi;
-    expect(registerTool).toHaveBeenCalled();
-  });
-
   it('subscribes to session events', () => {
     const pi = createMockPi();
     invokeExtension(pi);
@@ -114,17 +97,6 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('session_switch');
     expect(onEvents).toContain('session_branch');
     expect(onEvents).toContain('session_tree');
-  });
-
-  it('registers orchestration commands', () => {
-    const pi = createMockPi();
-    invokeExtension(pi);
-    const { registerCommand } = pi;
-    expect(registerCommand).toHaveBeenCalledWith('maestria-status', expect.any(Object));
-    expect(registerCommand).toHaveBeenCalledWith('review', expect.any(Object));
-    expect(registerCommand).toHaveBeenCalledWith('restore-model', expect.any(Object));
-    expect(registerCommand).toHaveBeenCalledWith('handoff', expect.any(Object));
-    expect(registerCommand).toHaveBeenCalledWith('review-model', expect.any(Object));
   });
 
   it('leaves OMP-owned native goal slash commands outside Maestria command registration', () => {

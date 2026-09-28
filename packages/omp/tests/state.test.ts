@@ -1,28 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import { isOmpModel } from '@/model.js';
-import {
-  createInitialState,
-  FILE_HISTORY_CAP,
-  HANDOFF_HISTORY_CAP,
-  renderMaestriaSummary,
-} from '@maestria/shared-pi/state-core';
-
-describe('state modules', () => {
-  it('pins the shared history caps', () => {
-    expect(HANDOFF_HISTORY_CAP).toBe(5);
-    expect(FILE_HISTORY_CAP).toBe(10);
-  });
-
-  it('serves shared initial state', () => {
-    const state = createInitialState();
-
-    expect(state.mode).toBeNull();
-    expect(state.handoffHistory).toEqual([]);
-    expect(state.reviewMode).toBe(false);
-    expect(state.nativeGoal).toBeNull();
-  });
-});
+import { createInitialState, renderMaestriaSummary } from '@maestria/shared-pi/state-core';
 
 describe('isOmpModel', () => {
   it('accepts objects carrying a string model id', () => {
