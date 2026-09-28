@@ -195,7 +195,8 @@ export const runSetup = async (
 ): Promise<CommandResult> => {
   const args = { ...rawArgs };
   const isQuiet = resolveBatchQuiet(args);
-  const detect = deps.detect ?? (async () => await Effect.runPromise(detectAll()));
+  const detect =
+    deps.detect ?? (async () => await Effect.runPromise(detectAll({ includeLatest: false })));
   const readRecord = deps.readRecord ?? readSkillsRecord;
   const skillRunner = deps.skillRunner ?? defaultSkillRunner;
   const xtarterize = deps.xtarterize ?? defaultXtarterize;

@@ -65,7 +65,7 @@ export const detectInstalledOr = async (
   isQuiet: boolean,
   emptyOutput: string,
 ): Promise<BatchSelection[] | CommandResult> => {
-  const installed = await detectWithSpinner(isQuiet, detectInstalled());
+  const installed = await detectWithSpinner(isQuiet, detectInstalled({ includeLatest: false }));
   if (installed.length === 0) {
     return { exitCode: 0, output: emptyOutput };
   }

@@ -92,7 +92,7 @@ const reviewCurrentInstallSkills = async (
   upToDate: CommandResult,
   isQuiet: boolean,
 ): Promise<CommandResult> => {
-  const installed = await Effect.runPromise(detectInstalled());
+  const installed = await Effect.runPromise(detectInstalled({ includeLatest: false }));
   if (installed.length === 0) {
     return upToDate;
   }

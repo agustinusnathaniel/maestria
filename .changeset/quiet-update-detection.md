@@ -2,4 +2,4 @@
 "maestria": patch
 ---
 
-Use the versions already detected when choosing interactive updates, avoiding duplicate version checks and inconsistent update choices.
+Use versions already detected when choosing interactive updates, avoiding duplicate checks and inconsistent choices. Skip latest-version lookups in install, uninstall, doctor, setup, and bulk updates when those commands only need installation state.
