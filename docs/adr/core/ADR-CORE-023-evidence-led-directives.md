@@ -69,6 +69,10 @@ Revert canonical and local-policy changes together, then regenerate projections 
 - [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): canonical sync ownership.
 - [CORE-019](ADR-CORE-019-directive-simplification.md): terminal-artifact delivery, bounded repair, and single-home contracts.
 
+## Supersession
+
+[ADR-CORE-028](ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md) supersedes this record in part. Its evidence-led routing and proportionate verification decisions remain in force; only Decision 4's allowance for a new regression-test file without a preidentified behavior gap is narrowed, by that record's pre-code selection and genuine-gap rules. The rest of this record, including its Date, is unchanged.
+
 ## Date
 
 2026-09-06

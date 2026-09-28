@@ -90,9 +90,7 @@ Rolling back restores the previous resolution behavior (with its clean-CI failur
 
 ## References
 
-- PR #189 (`feat/runtime-support-adapters`): clean CI failure in `vp run check-sync` with per-package `tsx: not found` errors for `omp`, `opencode`, and `pi`.
-- Controlled pnpm experiment (2026-08-12): with `tsx` declared only at the root, `pnpm exec tsx` from a workspace subpackage resolves the root binary in a clean install.
-- Committed lockfile baseline: `tsx` was already resolved for the Claude package; the root importer had no `tsx`.
+- Controlled pnpm experiment (2026-08-12): with `tsx` declared only at the root, `pnpm exec tsx` from a workspace subpackage resolves the root binary in a clean install; the committed lockfile baseline already resolved `tsx` for the Claude package while the root importer had none.
 
 ## Date
 

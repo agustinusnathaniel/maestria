@@ -98,6 +98,10 @@ The original README template remains the historical standardization choice. Futu
 - [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md) - runtime support status and evidence referenced by package READMEs and the Prime Agent docs.
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - the sync pipeline that generates plugin projections; READMEs mention canonical core directives because of this.
 
+## Supersession
+
+Extended by [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md), which adds the lifecycle of a record's content after acceptance. Two parts of [docs/guides/doc-format.md](../../guides/doc-format.md) established here are superseded: the required ADR field list, and the permission to revise a historical ADR while preserving its original sections. The original README section order, the `[verified]`/`[inferred]` evidence tags, and the internal-versus-public distinction are unchanged, and the original context, decision, consequences, and date of this record stand as history.
+
 ## Date
 
 2026-08-13

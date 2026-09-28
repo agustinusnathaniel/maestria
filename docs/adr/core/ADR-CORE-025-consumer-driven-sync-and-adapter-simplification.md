@@ -79,29 +79,22 @@ A second reduction pass applied the consumer-driven rule to the Pi/OMP adapter l
 
 ### What was removed
 
-- **Host adapter layers were deleted, not retained.** Pi and OMP wrappers (`createCompactionApi`, `createModeCommandsApi`, `createToolApi`) that re-wrapped `ExtensionAPI` before calling a shared installer are gone: hosts pass the extension object directly to installers that declare only the surface they use (`Pick<ExtensionAPI, ...>` or the local `ToolApi`). OMP's unused `CommandsApi`/`CommandsContext` and Pi's `installCommands` pass-through were removed, and the shared compaction core declares `CompactionPi.on` with host-style overloads so both hosts fit structurally.
-- **State re-export barrels.** The Pi and OMP barrels that only re-exported `@maestria/shared-pi/state-core` were deleted; consumers import `state-core` directly and `restoreOriginalState` stays in each package's review state module.
-- **Pi/OMP sync config consolidation.** The shared directive mapping moved to a core script helper; the Pi and OMP configs are parameterized wrappers with command prefix and agent-family name as parameters instead of duplicated tables.
-- **Duplicate orchestrator guidance.** Kimi Code, Cursor, Codex, and Claude Code orchestrator appends repeated specialist tables, agent lists, and prose restating canonical directives; duplicates were deleted and projections regenerated.
-- **Hermes duplication.** `_refresh_tombstone_position` was deleted (`revoke_all_trust` now uses `_set_trust_state`), and `create_session_hooks` was replaced by registering bound `SessionManager` methods in `register()`.
-- **Orphaned exports.** Pi's `POLL_TIMEOUT_MS`, `POLL_INTERVAL_MS`, and `MAX_PARALLEL_TASKS` constants and the `PiModel` type became module-private.
+- **Host adapter layers were deleted, not retained.** Pi and OMP wrappers that re-wrapped `ExtensionAPI` before calling a shared installer are gone: hosts pass the extension object directly to installers that declare only the surface they use. OMP's unused `CommandsApi`/`CommandsContext` and Pi's `installCommands` pass-through were removed.
+- **Uncalled exports and re-export barrels.** The Pi and OMP barrels that only re-exported `@maestria/shared-pi/state-core` were deleted, and Pi's uncalled polling constants and `PiModel` type became module-private. Consumers import `state-core` directly.
+- **Pi/OMP sync config consolidation.** The shared directive mapping moved to a core script helper; the Pi and OMP configs are parameterized wrappers instead of duplicated tables.
+- **Duplicated guidance and host internals.** Kimi Code, Cursor, Codex, and Claude Code orchestrator appends that restated canonical directives were deleted and projections regenerated; Hermes's redundant trust-refresh and session-hook helpers were replaced by the paths their callers already use.
 
 ### Retained complexity (current)
 
 - **CLI Effect model.** The `maestria` CLI stays on Effect v4 per [ADR-CORE-007](ADR-CORE-007-cli-package-plugin-management.md) and [ADR-CORE-017](ADR-CORE-017-selective-effect-v4-adoption.md).
-- **Prime Agent self-contained modes.** Independent per [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md); its pinned Prime fork types and fail-closed prompt behavior are a verified extension subset.
-- **Hermes Python implementation.** The plugin, hooks, and permission gating remain host-native Python.
-- **OMP goal `on` seam.** `createGoalApi` stays because the host gives its lifecycle events distinct payload types that a shared string-keyed `on` signature would erase.
-- **Subagent contract differences.** Pi's subagent tool uses Typebox parameters, polling, and update callbacks; OMP validates raw params and hands off to its native task tool. Merging them would couple two different tool contracts.
-- **Host-required wrappers.** Pi's `createCommandsApi` (model guard) and `createSubagentToolApi` (`defineTool` wrapping) and OMP's `installCommands` (model guard and signature narrowing) remain because the host API requires adaptation the shared core cannot express.
-- **Anchor validation and provenance checks.** `validateAnchors` ([ADR-CORE-024](ADR-CORE-024-anchor-liveness-preflight.md)) and `checkProvenance` remain.
+- **Prime Agent self-contained modes.** Its pinned Prime fork types and fail-closed prompt behavior are a verified extension subset, so its modes are not merged into `shared-mode`.
+- **Host boundaries a shared core cannot express.** Hermes stays host-native Python; OMP's `createGoalApi` survives because the host gives its lifecycle events distinct payload types; Pi's `createCommandsApi`/`createSubagentToolApi` and OMP's `installCommands` survive because the host API requires adaptation the shared core cannot express; and Pi's and OMP's subagent tools keep separate tool contracts.
+- **Anchor validation and provenance checks.** `validateAnchors` and `checkProvenance` remain.
 
 ## Related Decisions
 
 - [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): sync config model, CLI flags, and exit codes.
 - [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md): runtime support and adapter policy, Prime Agent isolation.
-- [CORE-020](ADR-CORE-020-hybrid-package-topology.md): shared-mode extraction and shared-pi ownership.
-- [CORE-023](ADR-CORE-023-evidence-led-directives.md): proportionate verification and fail-loud evidence.
 - [CORE-024](ADR-CORE-024-anchor-liveness-preflight.md): anchor liveness and no-write preflight.
 
 ## Date

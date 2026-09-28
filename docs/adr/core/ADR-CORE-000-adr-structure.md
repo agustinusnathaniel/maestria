@@ -45,3 +45,7 @@ Prefixes: CORE (Core, `docs/adr/core/`), CR (Cursor, `docs/adr/cursor/`), HM (He
 - ADR directories (the current list lives in each subdirectory; do not enumerate ADRs here): [core](./), [opencode](../opencode/), [kimi-code](../kimi-code/), [cursor](../cursor/), [hermes](../hermes/), [pi](../pi/).
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - extends this layout with the shared core content package.
 - [ADR-CORE-018](ADR-CORE-018-documentation-standard.md) - documents ADRs as a doc type under the documentation standard.
+
+## Supersession
+
+Extended by [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md), which adds the lifecycle of a record's content after acceptance: accepted sections are frozen, lifecycle relations are recorded two-way, and a record asserts decisions rather than current state. The subdirectory layout, prefixes, and file naming decided here are unchanged.

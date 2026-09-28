@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-09-24)
+Accepted (2026-09-24). Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but the retention list in Decision 6 is ambiguous about one contract, generated provenance `[verified]`. The list names generated provenance as a test contract to retain, alongside sync byte identity, which reads as a per-package assertion. [scripts/check-sync](../../../scripts/check-sync) already enforces it instead, byte-comparatively: the generated comment is written by the sync projection and the check regenerates every output and exits 1 on any difference, so removing the `Auto-generated from @maestria/core` line from a single generated SKILL.md fails that check. The per-package prose assertions over the same comment are therefore redundant rather than load-bearing, and sync remains the enforcing source for that contract. The frozen text is retained.
 
 ## Context
 
@@ -135,10 +135,17 @@ Revert the canonical rules and related hand-authored guidance together, then reg
 ## Related Decisions
 
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): canonical source and generated projections.
-- [ADR-CORE-019](ADR-CORE-019-directive-simplification.md): single-home contracts, bounded repair, and terminal artifacts.
-- [ADR-CORE-023](ADR-CORE-023-evidence-led-directives.md): evidence-led routing and proportionate verification.
 - [ADR-CORE-003](ADR-CORE-003-agent-conventions.md): `!!!` markers and directive conventions.
 - [ADR-CORE-022](ADR-CORE-022-agent-plugins-portable-projection.md): portable global-rules projection.
+
+## Supersession
+
+Two partial relations, declared by Decision 8 above and linked from the other record:
+
+- [ADR-CORE-023](ADR-CORE-023-evidence-led-directives.md): superseded in part. Its evidence-led routing and proportionate verification decisions remain in force; only its allowance for a new regression-test file without a preidentified behavior gap is narrowed, by the pre-code selection and genuine-gap rules.
+- [ADR-CORE-019](ADR-CORE-019-directive-simplification.md): narrowed, not replaced. Its single-home, bounded-repair, terminal-artifact, and independent-review decisions remain in force; only its use of text-pinned contracts as a general preservation strategy is narrowed, by Decision 6.
+
+This record keeps its original context, decision, consequences, assumptions, and date.
 
 ## Date
 

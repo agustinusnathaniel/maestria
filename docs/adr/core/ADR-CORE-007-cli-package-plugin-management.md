@@ -117,41 +117,19 @@ Build the CLI in Rust or Go for instant startup and static binaries. Rejected be
 
 ## Related Decisions
 
-- ADR-CORE-002 (plugin architecture) - the platform plugins that this CLI manages were defined there
-- ADR-CORE-005 (shared agent directives core sync) - established the multi-platform pattern that creates the need for cross-platform management
-- ADR-OC-001 (tool permission design) - install commands for OpenCode use the plugin command; permission model is managed by OpenCode
-- ADR-PI-001 (rules injection) - Pi install/update mechanics that the CLI wraps
-- ADR-KC-001 (kimi-code architecture) - Kimi Code's plugin installation path that the CLI wraps
+- [ADR-CORE-002](ADR-CORE-002-plugin-architecture.md) - the platform plugins that this CLI manages were defined there
+- [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - established the multi-platform pattern that creates the need for cross-platform management
+- [ADR-KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) - Kimi Code's plugin installation path that the CLI wraps
 
 ## Revisions
 
 ### 2026-06-29
 
-Post-acceptance changes:
-
-| Change | Description |
-| --- | --- |
-| Version caching | `npm view` results are cached on disk with a 1-hour TTL, invalidated after a successful update. |
-| Input validation | Platform and version inputs are validated with typed errors for early return on bad input. |
-| `--version`/`-V` flag | The `update` command accepts `--version`/`-V` to pin a specific version. |
-| Shell glob support | A shell helper wraps command execution via `sh -c`, enabling glob patterns, pipes, and redirects. |
-| Spinner UX | All commands show a spinner while working; the wrapper respects `--quiet`. |
-| Pi detection | Pi's installed check uses a local file check instead of an HTTP call - faster and more reliable. |
-| OpenCode config | The installed check reads `opencode.jsonc` first, falling back to `opencode.json`. |
-| Process lifecycle | `SIGINT`/`SIGTERM` handlers and explicit exits ensure clean termination. |
-| Module layout | Shell, validation, and install helpers were split into their own modules; the shared types module now holds interface definitions only, with tagged errors colocated with their defining concerns. |
+Post-acceptance changes, by category: caching and detection (`npm view` results cached on disk with a 1-hour TTL, Pi's installed check by local file rather than HTTP, and the installed check reading `opencode.jsonc` before `opencode.json`); input and process handling (typed platform and version validation, a shell helper wrapping execution so glob patterns, pipes, and redirects work, spinner UX that respects `--quiet`, and `SIGINT`/`SIGTERM` handlers with explicit exits); and surface and layout (a `--version`/`-V` flag pinning a specific version on `update`, plus a split of shell, validation, and install helpers into their own modules, leaving the shared types module for interface definitions with tagged errors colocated with their defining concerns).
 
 ### 2026-08-13
 
-The CLI now recognizes three plugin packages:
-
-| Platform | CLI identifier | Host integration |
-| --- | --- | --- |
-| Claude Code | `claude-code` | Stages `@maestria/claude-code` under `~/.cache/maestria/`, registers a local marketplace with `claude plugin marketplace add`, and installs at user scope with `claude plugin install`. |
-| Codex CLI | `codex` | Stages `@maestria/codex` under `~/.cache/maestria/`, registers a local marketplace with `codex plugin marketplace add`, and installs with `codex plugin add`. |
-| Prime Agent | `prime-agent` | Delegates to Prime's native package install/update/remove commands in the default global scope; every command runs from a freshly created empty temporary directory so project settings are never scanned or modified (Prime resolves project settings from cwd). Registration state comes from `prime-agent package list` (user scope only). |
-
-These adapters use the host runtime as the source of installed state and version reporting, and they do not write host configuration directly. Exact version pinning is rejected for these adapters: Claude Code and Codex CLI updates select the latest staged package, and Prime skips `package update` for version-pinned registrations - the CLI detects a pinned user registration up front (via a per-update registration snapshot, before the "Already up to date" short-circuit) and reports an accurate error instead of claiming a successful update or silently skipping it.
+The CLI now recognizes three more plugin packages as platform handler objects, each staging `@maestria/<package>` under `~/.cache/maestria/`, registering a local marketplace with the host CLI, and installing at user scope: `claude-code` through `claude plugin marketplace add` and `claude plugin install`, `codex` through `codex plugin marketplace add` and `codex plugin add`, and `prime-agent` through Prime's native package commands in the default global scope, run from a freshly created empty temporary directory so project settings are never scanned or modified. The host runtime is the source of installed state and version reporting, and these adapters never write host configuration directly. Exact version pinning is rejected for them: Claude Code and Codex CLI updates select the latest staged package, and Prime skips `package update` for version-pinned registrations, which the CLI detects up front through a per-update registration snapshot taken before the "Already up to date" short-circuit, and reports as an accurate error instead of claiming a successful update or silently skipping it.
 
 ### 2026-09-11
 

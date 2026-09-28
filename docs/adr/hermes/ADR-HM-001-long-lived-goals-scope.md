@@ -29,27 +29,21 @@ The plugin does not:
 
 ## Reasoning
 
-### 1. `/goal` is universally available
+### 1. `/goal` is universal, and plugin commands are single-turn
 
-Every Hermes session, with or without any plugin, has `/goal`, `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear`. Nothing needs to be enabled: a user who wants multi-turn iteration types `/goal Fix every lint error in src/` directly, with no plugin role in the flow.
+Every Hermes session has `/goal`, `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear`, with or without any plugin: nothing needs enabling. The plugin's own slash commands (`/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`) each produce output in one turn, and none needs a multi-turn loop. A user who wants autonomous iteration toward a plan types `/goal <task>` at the Hermes level, with no plugin role in the flow.
 
-### 2. Plugin commands are single-turn by design
+### 2. Wrapping `/goal` would create feature overlap
 
-The plugin's slash commands (`/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`) all produce output in one turn; none needs a multi-turn loop. A user who wants autonomous iteration toward a plan types `/goal Execute the plan from your last message` - a core Hermes command, not a plugin concern.
-
-### 3. Wrapping `/goal` would create feature overlap
-
-- **Duplicate lifecycle management** - Hermes already has persistence, the judge loop, and pause/resume/clear. A plugin would either reimplement all of it (wasteful) or wrap the native API (surface area for no marginal value).
-- **Risk race conditions** - two goal loops (plugin plus core) could conflict: a plugin continuation loop running while `/goal` is active could produce interleaved judge evaluations or ambiguous state.
+- **Duplicate lifecycle management** - Hermes already owns persistence, the judge loop, and pause/resume/clear, so a plugin would either reimplement all of it (wasteful) or wrap the native API (surface area for no marginal value).
+- **Race conditions** - two goal loops (plugin plus core) could conflict: a plugin continuation loop running while `/goal` is active could produce interleaved judge evaluations or ambiguous state.
 - **Confuse users** - `/goal` is documented core behavior; a plugin-level `/maestria-goal` that behaves differently erodes the "feels native" design goal.
 
-### 4. Aligns with existing Design Philosophy
+### 3. Aligns with existing Design Philosophy
 
-This applies **Design Principle #2: Hermes-native first + memory-agnostic** (from `docs/hermes-maestria-plugin.md`): use Hermes' built-in features (`delegate_task`, task orchestration tools, `/goal`, memory providers) instead of reimplementing them. The plugin is memory-engine agnostic: it never reads, writes, or cares which memory provider is configured, because memory is a platform concern and the plugin adds no memory layer.
+This applies **Design Principle #2: Hermes-native first + memory-agnostic** (from `docs/hermes-maestria-plugin.md`): use Hermes' built-in features (`delegate_task`, task orchestration tools, `/goal`, memory providers) instead of reimplementing them. The plugin is memory-engine agnostic: it never reads, writes, or cares which memory provider is configured, because memory is a platform concern and the plugin adds no memory layer. `/goal` and memory are orthogonal here: the goal loop and its judge stay core, while plugin commands set methodology context inside the loop.
 
-`/goal` and memory follow the same logic: both are core Hermes features the plugin does not wrap. `/goal` is a core primitive that iterates autonomously; the plugin surfaces methodology concepts (modes, roles, specialists). They are orthogonal: the goal loop and its judge stay core, while plugin commands set methodology context inside the loop.
-
-### 5. When it _would_ make sense (future signal)
+### 4. When it _would_ make sense (future signal)
 
 If the plugin ever ships a feature that genuinely requires multi-turn autonomous iteration (for example, "scan all files in a directory and categorize every function" and keep going file-by-file), the right answer is still to **type `/goal` at the Hermes level**, not to add goal integration to the plugin. The plugin's role would be to provide the specialist prompt or routing logic that the loop invokes each turn, not to replace the loop.
 

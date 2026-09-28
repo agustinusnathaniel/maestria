@@ -26,12 +26,7 @@ ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Curso
 
 ### Component map
 
-| Canonical source       | Cursor output                                | Role                   |
-| ---------------------- | -------------------------------------------- | ---------------------- |
-| `rules.md`             | `rules/maestria-global.mdc`                  | Always-on global rules |
-| `specialists/*.md` (7) | `agents/<name>.md`                           | Task subagents         |
-| `orchestrator.md`      | `skills/orchestrator/SKILL.md`               | Dispatcher methodology |
-| (platform)             | `commands/{fein,sonar,blitz,orchestrate}.md` | Workflow modes         |
+Each canonical directive projects to one Cursor path: `rules.md` to the always-on global rule, `specialists/*.md` to `agents/<name>.md`, `orchestrator.md` to the orchestrator skill, and the platform workflow modes to `commands/*.md`. The projection itself is owned by the Cursor sync config, `packages/cursor/sync.config.ts`, which regenerates the output paths rather than restating them here.
 
 ### Maker/checker (v1)
 

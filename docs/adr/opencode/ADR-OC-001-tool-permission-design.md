@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amended 2026-09-24 for the shared Pi/OMP read-only Bash boundary and the normalized Git repair contract.
+Accepted. Amended 2026-09-24 for the shared Pi/OMP read-only Bash boundary and the normalized Git repair contract. Those two amendments are now [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md); see Supersession. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the YAML block in Decision 3 does not match the live orchestrator frontmatter `[verified]`. The orchestrator does not use a per-tool bash allow list. It uses a default deny with a single narrow allow pattern, and it has no `pwd` entry; `pwd` appears in the other seven agent files. The authoritative source for that generated frontmatter is the `orchestrator.md` block in [packages/opencode/sync.config.ts](../../../packages/opencode/sync.config.ts), and [packages/opencode/agents/orchestrator.md](../../../packages/opencode/agents/orchestrator.md) is the projection it produces. The block is retained rather than relocated, because the content it shows is not present at that path, so the clause 6 precondition is unmet.
 
 ## Context
 
@@ -23,15 +23,11 @@ The `list` tool was absorbed into `read`, confirmed by inspecting the OpenCode s
 
 LSP operations (goToDefinition, findReferences, hover type info) reduce guesswork. Added to:
 
-| Agent        | Rationale                                                                        |
-| ------------ | -------------------------------------------------------------------------------- |
-| Architect    | Type info; goToDefinition for dependency tracing                                 |
-| Builder      | goToDefinition/findReferences during implementation - primary code-writing agent |
-| Planner      | Structure understanding for plans                                                |
-| Adventurer   | More precise codebase navigation                                                 |
-| Diagnose     | goToDefinition for call chain tracing                                            |
-| Reviewer     | Type info for correctness checks                                                 |
-| Orchestrator | Structural understanding for delegation                                          |
+| Agents | Rationale |
+| --- | --- |
+| builder, architect | goToDefinition, findReferences, and hover type info; the primary code-writing and dependency-tracing agents |
+| adventurer, diagnose, planner | Precise codebase navigation and call-chain tracing |
+| reviewer, orchestrator | Type info for correctness checks, and structural understanding for delegation |
 
 Writer was excluded (prose needs no code intelligence). The permission is conditionally active: LSP requires `OPENCODE_EXPERIMENTAL_LSP=true`, so the line is a no-op otherwise but safe to include.
 
@@ -90,25 +86,9 @@ The permission system enforces coarse gates (web access, file edits, command exe
 4. **LSP permission is harmless when the flag isn't set**, and forward-looking when it is.
 5. **Audit permissions after adding agents, not before.** The batch audit was the right call, though incremental audits catch no-ops earlier.
 
-## Amendment (2026-09-24): Narrowed Pi/OMP Read-Only Bash Boundary
+## Failure-mode inventory: read-only Bash
 
-### Context
-
-The shared Pi/OMP tool interceptor currently recognizes a broad command-prefix list. That list includes `find` and package-manager test forms. `find` can execute or delete through flags, and package-manager test or run forms can execute lifecycle scripts and mutate a workspace. A prefix check also does not by itself establish that every shell segment, substitution, redirect, or lookalike command is safe. `[verified]`
-
-The amendment narrows the shared policy before the implementation owner writes remediation tests. It does not change the historical OpenCode decisions above, and it does not claim that an OpenCode host enforces the same command parser at runtime.
-
-### Decision
-
-The shared Pi/OMP read-only Bash policy uses a small positive allowlist. A command is allowed only when its executable and, for Git, its subcommand are recognized exactly, every option is safe for that command, and every pipeline segment is independently safe.
-
-The allowlist covers exact filesystem, text, location, and executable queries, plus normalized read-only Git commands defined in the repair amendment below. Every command token, option, and pipeline segment must pass the shared parser; a safe prefix cannot hide a later mutation. Standard-stream duplication such as `2>&1` is allowed only as a parsed file-descriptor operation, never as permission to write a file.
-
-The policy blocks `find`, package-manager execution, command or process substitution, file-target redirection, chaining, background work, lookalike command names, Git mutation, and unknown options. Destructive-pattern confirmation is a separate host path and cannot make a command read-only. The maintained option lists and representative allow/deny cases live in [`bash-policy.ts`](../../../packages/shared/pi/src/bash-policy.ts) and its [behavior tests](../../../packages/shared/pi/tests/tools-core.test.ts).
-
-### Failure-mode inventory
-
-These case IDs preserve the original failure-mode inventory. The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) cover representative forms, and `pnpm e2e:fail-closed` samples the integrated boundary; neither produces one artifact per case.
+The case IDs below are the contract the read-only Bash decision is verified against. That decision is [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md). The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) cover representative forms, and `pnpm e2e:fail-closed` samples the integrated boundary; neither produces one artifact per case.
 
 | ID | Input or failure mode | Required result |
 | --- | --- | --- |
@@ -125,50 +105,15 @@ These case IDs preserve the original failure-mode inventory. The [shared parser 
 | BASH-11 | Destructive pattern behind a safe prefix | Do not classify it as read-only. |
 | BASH-12 | Empty, leading-separator, or ambiguous input | Block without invoking a host. |
 
-### Host-enforcement boundary
+## Host-enforcement boundary
 
-The current evidence for this decision is source and configuration inspection plus adapter tests against controlled fakes. It does not prove that a live OpenCode permission evaluator applies the same glob, prefix, or command-token semantics. A live host probe must record the host version, agent, tool name, representative command, returned decision, and process result before documentation calls this policy host-enforced. Until that probe exists, describe it as a configured shared policy or adapter restriction, not as live OpenCode enforcement.
+Retained because it constrains how this record's own permission claims may be described. The current evidence for the read-only Bash and Git policy is source and configuration inspection plus adapter tests against controlled fakes. It does not prove that a live OpenCode permission evaluator applies the same glob, prefix, or command-token semantics. A live host probe must record the host version, agent, tool name, representative command, returned decision, and process result before documentation calls that policy host-enforced. Until that probe exists, describe it as a configured shared policy or adapter restriction, not as live OpenCode enforcement.
 
-### Consequences
+An OpenCode permission glob is coarse, non-token-level host configuration. A permission entry described in this record, or carried in a generated agent projection, is not evidence of the normalized read-only Git policy. A broad `git*` style permission is an implementation-role capability. The normalization itself is decided in [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md).
 
-- The shared Pi/OMP reconnaissance surface is smaller, so agents must use file, text, location, and read-only Git queries instead of `find` or package scripts.
-- Parser and option matrices require maintenance when a host adds a command or flag.
-- A package test can establish the adapter's return value, but it cannot establish a host sandbox or an unrelated host's live decision.
-- The historical principle that permissions are coarse gates and directives carry policy remains in force.
+## Failure inventory: read-only Git
 
-### Assumptions
-
-- `[verified]` The pre-repair shared policy at the documented base commit included `find` and `pnpm test`/`npm test` prefixes, so those cases are behavior gaps for the remediation.
-- `[inferred]` A tokenizer with explicit safe-option tables is safer than a growing prefix regular expression for the required command forms.
-- `[verified]` No live OpenCode host probe is part of this documentation change; the host-enforcement claim remains withheld.
-
-### Verification
-
-Run the shared parser, Pi, and OMP package tests and `pnpm e2e:fail-closed` for sampled integrated behavior. The E2E command writes one evidence file at `artifacts/fail-closed-evidence.json`; it is not proof of every inventory row. A live OpenCode host probe remains necessary before an enforcement claim.
-
-### Related
-
-- [ADR-HM-003](../hermes/ADR-HM-003-credential-safe-subprocess-boundary.md): credential-safe subprocess boundary.
-- [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md): shared Pi/OMP adapter ownership.
-- [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): pre-code inventories and evidence-preserving tests.
-- [Testing Philosophy](../../testing.md): behavior-test selection and evidence requirements.
-
-## Repair Amendment (2026-09-24): Normalized Read-Only Git Boundary
-
-### Context
-
-The earlier amendment narrowed the command family but still described Git commands as coarse examples. A prefix such as `git diff*` cannot establish that the invocation is patch-safe, normalized, free of external helpers, or protected from repository configuration. Bare `git diff`, `git log -p`, and `git show` therefore remain denied unless the normalized form is present.
-
-### Decision
-
-1. Every allowed Git segment starts with the exact prefix `git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium`. Diff-capable `diff`, `log`, and `show` forms then require `--no-ext-diff --no-textconv` in that order before parser-approved options. A bare `git diff`, `git log -p`, or `git show` is denied.
-2. Safe `git status`, `git branch`, and metadata-only `log` forms use the same fixed prefix. Custom `--format` and `--pretty` options are removed; `--oneline` may remain safe. Signature placeholders, `--show-signature`, and branch signature formats are denied. A future process-level probe should seed pager, lock, fsmonitor, hook, alias, external-diff, textconv, and signature behavior in a temporary repository and check that the normalized command avoids them; the current parser and consolidated E2E tests do not perform that probe.
-3. External diff commands, text conversion, helpers, aliases, arbitrary `-c` or `--config-env` values, `--exec-path`, `--git-dir`, `--work-tree`, mutation, shell substitution, redirection, output files, and unknown options are denied. Repository and user configuration must not widen the policy.
-4. OpenCode permission globs remain coarse, non-token-level host configuration. They must not claim the normalized prefix, signature, option, or configuration guarantees of the repair classifier, and cannot be described as live-host-enforced without a recorded host probe. A broad historical `git*` permission remains an implementation-role capability, not evidence of the read-only Git policy.
-
-The case IDs below retain the repair contract. Current executable checks live in the [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and consolidated E2E probe; they sample the inventory rather than proving every case.
-
-### Failure inventory
+The case IDs below are the contract the normalized read-only Git decision is verified against. That decision is [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Current executable checks live in the [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and the consolidated E2E probe; they sample the inventory rather than proving every case.
 
 | ID | Required result |
 | --- | --- |
@@ -183,27 +128,14 @@ The case IDs below retain the repair contract. Current executable checks live in
 | GIT-09 | Prove seeded configuration cannot enable hooks, fsmonitor, pager, or optional locks. |
 | GIT-10 | Keep OpenCode glob claims separate from token-level parser guarantees. |
 
-### Consequences
+## Supersession
 
-- The read-only Git surface becomes explicit and reproducible, but callers must use normalized commands.
-- Fixed configuration controls reduce repository-dependent behavior at the cost of maintaining a narrow safe-option matrix.
-- OpenCode globs remain useful coarse configuration, while token-level safety stays in the shared Pi/OMP parser and is not overstated as host enforcement.
-- A live OpenCode probe is a separate evidence requirement, not an assumption made by this ADR.
+Extended by two records, extracted on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md), because each decides a subject other than this record's:
 
-### Assumptions
+- [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) owns the shared Pi/OMP read-only Bash boundary introduced by the 2026-09-24 amendment.
+- [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md) owns the normalized read-only Git boundary introduced by the 2026-09-24 repair amendment.
 
-- `[verified]` OpenCode permission entries are coarse glob or prefix patterns and do not expose a token-level normalized-command contract.
-- `[verified]` This ADR retains the repair case IDs; the executable parser checks live in `packages/shared/pi/tests/tools-core.test.ts`.
-- `[inferred]` The implementation owner will choose platform-appropriate fixed environment paths for empty Git configuration, fsmonitor, and hooks while preserving the fixed behavior contract.
-
-### Verification
-
-Run the shared Pi/OMP tests and `pnpm e2e:fail-closed` for sampled behavior. A live host probe is required before using the phrase host-enforced.
-
-### Related
-
-- [Testing Philosophy](../../testing.md): test selection and artifact requirements.
-- [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): pre-code selection and evidence requirements.
+This record keeps its original context, decision, consequences, and date, and continues to own the OpenCode agent permission design: the coarse-gate principle, the individual tool permissions, the audit that produced them, and the lessons learned. The two failure inventories and the host-enforcement boundary above are retained because they constrain claims this record still makes about its own permission entries.
 
 ## Date
 

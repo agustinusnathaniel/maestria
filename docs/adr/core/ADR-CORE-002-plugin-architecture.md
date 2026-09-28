@@ -30,10 +30,6 @@ We needed to decide how `@maestria/opencode` delivers its agents, rules, and ski
 | **Skills distribution** | Not bundled; reference by name | Skills install separately via `pnpx skills@latest add`; keeps the plugin focused. |
 | **Postinstall** | None | Pure plugin has no side effects outside the npm package directory. |
 
-### Current implementation note (2026-09-01)
-
-The original decision described two hooks. The current OpenCode package declares three: `config`, `chat.message`, and `experimental.session.compacting`. The extra hook was added after this ADR to support runtime behavior; the package manifest and tests are authoritative for the active hook inventory.
-
 ### What We Avoid (learned from reference implementations)
 
 | Anti-pattern               | Why Not                                                 |
@@ -56,13 +52,9 @@ The original decision described two hooks. The current OpenCode package declares
 - Negative: Agents are not visible as loose files in the user's config directory (they load from the npm package, not `~/.config/opencode/agents/`).
 - Negative: The package must include `agents/` and `rules/` in the npm `files` array so the plugin can read them at runtime.
 
-## Agent Config Shape
+## Agent Format and Plugin API
 
-Agent YAML frontmatter follows the SDK's agent config shape (`prompt`, `description`, `mode`, plus optional `color`, `maxSteps`, and `permission` action rules), parsed at plugin load time.
-
-## Plugin API
-
-The plugin uses the SDK's `config` hook to mutate `input.agent` (register agents and inject rules) and the session compaction hook to push state strings into `output.context`.
+Agent frontmatter follows the OpenCode SDK agent config shape and is parsed at plugin load time, and the plugin uses the SDK's `config` hook to register agents and inject rules. The `packages/opencode/` package is authoritative for the active hook inventory and the accepted frontmatter fields.
 
 ## Date
 

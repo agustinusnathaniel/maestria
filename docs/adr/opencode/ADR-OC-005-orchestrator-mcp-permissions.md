@@ -12,7 +12,7 @@ Should the orchestrator agent's MCP tool access be blocked? The orchestrator is 
 
 ### Current State
 
-The orchestrator's permission block denies the built-in `read`, `glob`, `grep`, `lsp`, `webfetch`, and `edit` tools and allow-lists only `npx --yes skills@latest *` for bash. MCP tools register separately via the `mcp` key in `opencode.jsonc` (currently one `codegraph` server), and unlisted tools default to `"allow"`, so no deny rule applies: the orchestrator implicitly has full `codegraph_explore` access, the same bypass that motivated the OC-001 read-side lockdown.
+MCP tools register separately via the `mcp` key in `opencode.jsonc` (currently one `codegraph` server), and unlisted tools default to `"allow"`, so no deny rule applies: the orchestrator implicitly has full `codegraph_explore` access, the same bypass that motivated the OC-001 read-side lockdown. The orchestrator's own permission block is owned by `packages/opencode/agents/orchestrator.md`.
 
 ### Precedent from ADR OC-001
 
@@ -26,23 +26,11 @@ The same applies to MCP tools: a `codegraph_explore`-capable orchestrator has li
 
 ### OpenCode's MCP Permission Model
 
-OpenCode supports per-agent MCP restrictions through three mechanisms:
-
-| Mechanism | Where | Description |
-| --- | --- | --- |
-| Agent frontmatter permissions | Agent YAML | `codegraph_*: deny` in the orchestrator's permission block |
-| Global config `tools` | `opencode.jsonc` | `"codegraph_*": false`, then per-agent opt-in |
-| Plugin hooks | Plugin package | `permission.ask` hook to intercept MCP tool calls |
+OpenCode supports per-agent MCP restrictions through three mechanisms: agent frontmatter permissions in agent YAML (`codegraph_*: deny` in the orchestrator's permission block), a global `tools` map in `opencode.jsonc` (`"codegraph_*": false`, then per-agent opt-in), and a `permission.ask` plugin hook that can intercept MCP tool calls.
 
 ### Naming Convention
 
-MCP tools use the server name as an underscore-joined prefix, so the `codegraph` server exposes `codegraph_explore` and glob patterns work naturally:
-
-- `codegraph_*: deny` - blocks all tools from the codegraph server
-- `codegraph_explore: ask` - prompts on each use (not recommended for a dispatcher)
-- `codegraph_explore: deny` - blocks one tool
-
-This applies to any MCP server: a server named `my-server` exposes `my-server_tool_name`.
+MCP tools use the server name as an underscore-joined prefix, so the `codegraph` server exposes `codegraph_explore` and glob patterns work naturally: `codegraph_*: deny` blocks all tools from the codegraph server, `codegraph_explore: ask` prompts on each use (not recommended for a dispatcher), and `codegraph_explore: deny` blocks one tool. The convention holds for any MCP server, so a server named `my-server` exposes `my-server_tool_name`.
 
 ### No Generic MCP Deny Key
 
@@ -52,21 +40,7 @@ There is no `mcp: deny` shortcut; each server's tools must be denied explicitly 
 
 **Option A: Per-server explicit blocking (recommended if revisited)**
 
-Add `codegraph_*: deny` to the orchestrator's permission block, structurally preventing `codegraph_explore` from reaching the dispatcher and matching the existing pattern for `read`, `glob`, `grep`, etc.
-
-```yaml
-permission:
-  read: deny
-  glob: deny
-  grep: deny
-  lsp: deny
-  webfetch: deny
-  edit: deny
-  codegraph_*: deny # new
-  bash:
-    '*': deny
-    'npx --yes skills@latest *': allow
-```
+Add `codegraph_*: deny` to the orchestrator's permission block, structurally preventing `codegraph_explore` from reaching the dispatcher and matching the existing pattern for `read`, `glob`, `grep`, etc. The orchestrator's live permission block is owned by `packages/opencode/agents/orchestrator.md`; this record does not restate it.
 
 Pro: structural enforcement, matching OC-001's conclusion. Con: depends on the MCP server name (a rename makes it stale), and future servers need their own entries.
 
@@ -92,8 +66,6 @@ Two reasons support this:
 2. **The OC-001 lesson is scoped differently.** The read/glob/grep bypass was systematic; MCP access is one tool, not a family of general-purpose capabilities. If the orchestrator is observed using `codegraph_explore` instead of delegating to `@adventurer`, revisit with Option A.
 
 If revisited, **Option A (per-server explicit blocking via `codegraph_*: deny`)** is recommended: it matches the existing permission pattern, is straightforward to implement, and is visible in the config diff.
-
-Reviewed 2026-09-10: the orchestrator permission block still has no explicit MCP deny, so the no-structural-change decision remains in effect and the revisit trigger is unchanged.
 
 ## Consequences
 

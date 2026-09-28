@@ -100,8 +100,6 @@ Rejected: runtime code would make the package client-specific and blur the bound
 - [Agent Plugins v1 specification](https://agent-plugins.org/specification)
 - [Agent Skills specification](https://agentskills.io/specification)
 - [ADR-CORE-005: Shared Agent Directives and Core Sync](ADR-CORE-005-shared-agent-directives-core-sync.md)
-- [ADR-CORE-014: Runtime Support and Adapter Policy](ADR-CORE-014-runtime-support-and-adapter-policy.md)
-- [ADR-CORE-020: Hybrid Package Topology](ADR-CORE-020-hybrid-package-topology.md)
 
 ## Date
 

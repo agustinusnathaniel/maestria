@@ -35,6 +35,7 @@ Read relevant ADRs before changing architecture, sync behavior, or agent convent
 | OpenCode permissions or workflow modes | [OC-001](docs/adr/opencode/ADR-OC-001-tool-permission-design.md), [OC-003](docs/adr/opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) |
 | Kimi Code integration | [KC-000](docs/adr/kimi-code/ADR-KC-000-kimi-code-distribution.md), [KC-001](docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) |
 | Pi rules or compaction | [PI-001](docs/adr/pi/ADR-PI-001-rules-injection.md), [PI-002](docs/adr/pi/ADR-PI-002-compaction-state-preservation.md) |
+| Documentation or decision-record lifecycle | [CORE-030](docs/adr/core/ADR-CORE-030-adr-immutability-and-supersession.md) |
 
 - [Testing philosophy](docs/testing.md): choosing coverage, test boundaries, and fixtures.
 - [Contributing](CONTRIBUTING.md): setup, package workflows, changesets, and delivery.

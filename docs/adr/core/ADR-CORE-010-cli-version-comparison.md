@@ -30,16 +30,11 @@ Use `String.prototype.localeCompare` with the `{ numeric: true }` option for ver
 
 ### Special Values
 
-The CLI also works with two non-semver values:
+Two non-semver values are also handled: `'latest'` always compares greater than any semver version, and `'unknown'` (version cannot be determined, for example when the plugin is not installed) makes comparison return `null`, because there is insufficient information.
 
-| Value | Meaning | Comparison behavior |
-| --- | --- | --- |
-| `'latest'` | Install/update to the latest available version | Always greater than any semver version |
-| `'unknown'` | Version cannot be determined (e.g., plugin not installed) | Comparison returns `null` (insufficient information) |
+### Validation
 
-### Validation Regex
-
-Validation uses a regex covering the npm semver subset the CLI encounters: `MAJOR.MINOR.PATCH` with optional prerelease and build metadata identifiers. The special values `'latest'` and `''` (empty string) bypass regex validation.
+Validation uses a regex covering the npm semver subset the CLI encounters, with `'latest'` and the empty string bypassing it. The pattern and the comparison and validation functions that use it are defined in `apps/maestria-cli/src/lib/version.ts`, which is authoritative for the current expression.
 
 ## Consequences
 
@@ -59,12 +54,7 @@ Validation uses a regex covering the npm semver subset the CLI encounters: `MAJO
 
 ### Before/After Comparison
 
-| Metric                              | Before                 | After                           |
-| ----------------------------------- | ---------------------- | ------------------------------- |
-| Runtime dependencies for versioning | None (broken ordering) | None                            |
-| Correct ordering (`0.10.0 > 0.9.0`) | No (string comparison) | Yes                             |
-| Prerelease ordering                 | N/A                    | Correct (`1.0.0-alpha < 1.0.0`) |
-| Bundle size impact                  | 0 kB                   | 0 kB (built-in API)             |
+Runtime dependencies for versioning stayed at none, but string comparison had broken `0.10.0 > 0.9.0` ordering and prerelease ordering was unspecified; afterwards ordering is correct, prereleases sort below their release, and the bundle-size impact stays at 0 kB because the implementation uses a built-in API.
 
 ## Alternatives Considered
 

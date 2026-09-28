@@ -4,12 +4,6 @@
 
 Accepted; historical decision. Its original template has been superseded as described below.
 
-## Current Status
-
-The fixed five-section handoff and hard Max-N template are no longer canonical. Current directives use compact, material handoffs and progress-based repair bounds. See [`handoff.md`](../../../packages/core/agent-directives/skills/handoff.md) and [`rules.md`](../../../packages/core/agent-directives/rules.md).
-
-The four-bucket skill prescription was replaced in 2026-08-22 by compact, per-specialist Skills sections listing verified skills; see [ADR-CORE-019](ADR-CORE-019-directive-simplification.md).
-
 ## Context
 
 The seven agents had grown incrementally and differed in skill triggers, source annotations, output formats, iteration limits, and rules. ADR-CORE-003 established shared markers and a skill pattern, but there was still no common prompt shape. An earlier audit used HTML comments for source repositories; they were invisible in review and could drift from the visible skill name.
@@ -20,7 +14,7 @@ The original template grouped skills by loading condition, placed source reposit
 
 The four skill buckets were **Always load**, **Load on trigger**, **Defer to specialist**, and **Skip if**. The handoff sections were **What was done**, **What was found**, **What was not found or is unclear**, **Verification**, and **Next step**. Iteration limits paired verifiable termination conditions with a hard Max-N cap and an explicit escalation format.
 
-The skill buckets, fixed handoff sections, and hard iteration caps are recorded here as history rather than current requirements. Current wording and homes are maintained in the canonical directives linked above and in ADR-CORE-019.
+The skill buckets, fixed handoff sections, and hard iteration caps are recorded here as history rather than current requirements. The four-bucket skill prescription was replaced in 2026-08-22 by compact, per-specialist Skills sections listing verified skills. Current wording and homes are maintained in the canonical directives ([handoff.md](../../../packages/core/agent-directives/skills/handoff.md), [rules.md](../../../packages/core/agent-directives/rules.md)) and in [ADR-CORE-019](ADR-CORE-019-directive-simplification.md).
 
 ## Consequences
 

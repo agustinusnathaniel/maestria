@@ -34,31 +34,13 @@ Adopt staged evolution rather than claiming a runtime feature that does not exis
 
 The shared directive defines route selection and behavioral principles; the host runtime defines execution authority. OpenCode, OMP, and Kimi may require pure-dispatcher behavior where adapters or session permissions restrict the orchestrator; direct-capable runtimes may execute a direct route when their host permits. Delegated work remains owned by its specialist, and maker/checker requirements stay honest about the enforcement the host actually provides.
 
-### Unit 1 implementation status (2026-09-10)
-
-The three-route contract is implemented in the canonical directives: the orchestrator directive defines the `direct`/`focused`/`full` routing table, and the rules carry the smallest-route rule and mode overrides. Unit 2 remains unimplemented: no `MAESTRIA_TIER` variable and no automatic route selection.
-
 ### Proposed future tier model
 
-| Tier       | Model class (example)          | Budget         | Latency  |
-| ---------- | ------------------------------ | -------------- | -------- |
-| `flash`    | deepseek-v4-flash, free models | < $0.5/M input | fast     |
-| `mid`      | mid-price models               | $0.5-2/M input | moderate |
-| `frontier` | gpt-5.6, kimi-k3 class         | > $2/M input   | slow     |
-
-This table is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is not implemented, and no platform currently provides a universal tier setting or automatic route selection. [verified]
+Three tiers are hypothesized for Unit 2, keyed to input price and spawn latency: `flash` (cheap, fast models such as free-tier or sub-dollar-per-million models), `mid` (mid-price models), and `frontier` (expensive, slow models). The tier model is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is not implemented, and no platform currently provides a universal tier setting or automatic route selection. [verified]
 
 ### Future tier-scaled levers
 
-| Lever | Low-cost baseline hypothesis | `mid` | `frontier` |
-| --- | --- | --- | --- |
-| **Recon** | `@adventurer` on any unfamiliar code | `@adventurer` only when codebase genuinely unknown | skip; orchestrator asks user or uses direct context |
-| **Design stages** | `@architect`/`@planner` on COMPLEX | `@architect`/`@planner` on COMPLEX only | folded into single delegation; no separate stage |
-| **Implementation** | `@builder` (fresh context) | `@builder` | direct execution; `@builder` only for large atomic slices |
-| **Review** | `@reviewer` always after `@builder` | `@reviewer` after `@builder` on non-trivial changes | `@reviewer` only on user request or before commit of substantial work |
-| **Parallel fan-out cap** | 3-5 | 2 | 0-1 |
-| **Review loop max** | 3 cycles | 2 cycles | 1 pass; fail loud after |
-| **Session compaction** | none (orchestrator context grows) | compact when session context exceeds threshold | aggressive compaction; briefings over history |
+The hypothesis scales five levers with the tier: at `flash`, every unfamiliar surface gets `@adventurer`, design stages run on COMPLEX work, `@builder` works in a fresh context, `@reviewer` follows every `@builder`, and fan-out plus the review loop stay at 3-5 and 3 cycles. At `mid`, `@adventurer` is limited to genuinely unknown code, design stages and review narrow to non-trivial changes, and fan-out plus the review loop drop to 2 and 2 cycles. At `frontier`, recon and design stages fold away (the orchestrator asks the user or uses direct context), implementation runs as direct execution except for large atomic slices, review happens only on request or before committing substantial work, and fan-out plus the review loop drop to 0-1 and a single pass that fails loud. Session compaction goes from none through threshold-based to aggressive compaction, with briefings preferred over history.
 
 ### What Does Not Change
 
@@ -121,12 +103,7 @@ The platform passes the resolved model name into orchestrator context and Maestr
 
 ## Measurable hypotheses for Unit 2
 
-These are hypotheses, not acceptance claims:
-
-1. Direct execution will reduce cost and wall-clock time for tiny edits and familiar, low-risk changes compared with the full pipeline.
-2. Focused delegation will retain useful discovery or review quality with less overhead than the full pipeline for ordinary changes.
-3. Full routing will reduce escaped defects or rework for complex and high-risk changes enough to justify its additional model work.
-4. Model price and cache behavior will materially change the preferred route.
+These are hypotheses, not acceptance claims: direct execution will reduce cost and wall-clock time for tiny edits and familiar, low-risk changes; focused delegation will retain useful discovery or review quality with less overhead for ordinary changes; full routing will reduce escaped defects or rework for complex and high-risk changes enough to justify its additional model work; and model price and cache behavior will materially change the preferred route.
 
 Unit 2 should measure route cost, latency, correction rate, and reviewer findings before claiming an improvement target.
 

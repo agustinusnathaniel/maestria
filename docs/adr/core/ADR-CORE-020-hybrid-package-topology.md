@@ -106,21 +106,18 @@ Private canonical core, generated host projections, narrow neutral shared module
 - The core script helper lives under the core scripts directory (avoiding a new package for a build-time script) and is exposed as a private subpath; Prime's validator stays separate.
 - CLI derivation reads handler ids without importing effectful handlers; a pure id module or drift-guard test keeps validation equal to the handler ids.
 
+These notes record file placement and mechanism for the three binding items under Implementation binding for this ADR; current placement is verified in source.
+
 ## Related Decisions
 
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - canonical content core and sync pipeline; extended here with neutral shared modules.
 - [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md) - runtime support and adapter policy; Prime Agent isolation preserved.
 - [ADR-OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) - keyword-triggered workflow modes; unclosed-fence behavior and priority preserved.
-- [ADR-CORE-002](ADR-CORE-002-plugin-architecture.md) - pure plugin architecture; hybrid keeps per-host adapters thin.
-- [ADR-CORE-007](ADR-CORE-007-cli-package-plugin-management.md) - CLI package/plugin management; derivation keeps the registry single-sourced.
 
 ## References
 
 - Duplicated pure mode mechanics in the OpenCode and Pi-family implementations (see Decision).
-- Byte-identical Pi/OMP skill validators.
-- CLI platform-ID drift between validation and the handler registry.
-- Ponytail hybrid distribution pattern.
-- oh-my-openagent one-command per-host install pattern.
+- Ponytail and oh-my-openagent distribution patterns.
 
 ## Date
 

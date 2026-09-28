@@ -44,16 +44,7 @@ Capability statuses describe what a runtime can do: `Supported`, `Available`, `U
 
 ### Decision baseline per runtime
 
-Support level, delivery shape, and disposition per runtime; full evidence is in [runtime-support-matrix.md](../../runtime-support-matrix.md). `Evidence ID` values link to matrix records (runtime/surface, claim, pinned state, source, review date, test status); claims are verified against their record, never inferred from a heading.
-
-| Runtime | Support level | Delivery | Disposition | Rationale | Evidence ID |
-| --- | --- | --- | --- | --- | --- |
-| Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 |
-| Prime Agent | Native candidate | Skills-first + verified extension subset | skills + mode-command extension; native rlm dispatch deferred | Skills-first package plus a small verified extension subset (mode commands, mode prompt injection); native `rlm` dispatch/JSON-RPC deferred until a public JS bridge is verified | E-PRIME-01 |
-| Codex CLI | Native | Plugin + CLI-managed native agents/instructions | shipped native CLI adapter | Plugin, skills, custom-agent, `agent_type`, and global instruction surfaces verified and exercised by the Maestria CLI adapter | E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15 |
-| Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 |
-| JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 |
-| Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 |
+Support level, delivery shape, and disposition per runtime are recorded in the [runtime support matrix](../../runtime-support-matrix.md) (Snapshot), which is authoritative for them. `Evidence ID` values there link to matrix records (runtime/surface, claim, pinned state, source, review date, test status); claims are verified against their record, never inferred from a heading.
 
 ### Principle: canonical source, per-platform output
 
@@ -113,8 +104,7 @@ A runtime moves to a shipped `Native` adapter only when all of the following hol
 | Prime Agent | Verify a stable supported API for the executable extension beyond the verified subset (mode commands, mode prompt injection, session state); skills-first package plus the verified subset via [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) (`scripts/check-sync` passes) | Revert the generated package and/or the extension subset | Replace or remove claims; native `rlm` dispatch and JSON/RPC headless mode stay deferred until verified | Only after re-verification |
 | Codex CLI | Reverify the current Codex CLI release and upstream source, retain the generated projection, native-agent/instruction tests, and `check-sync` | Remove the native-agent and instruction management while leaving unrelated Codex configuration untouched | Downgrade or remove claims after a material host change invalidates the evidence | Only after the version and evidence are re-verified |
 | Codex desktop | Separate from CLI; verify a desktop extension surface exists first | Remove the common-subset projection | Downgrade or remove parity-adjacent claims | Only after the desktop surface is re-verified |
-| JCode | Requires a confirmed first-class package/extension distribution API | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
-| Crush | Requires a confirmed first-class API and verified hooks | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
+| JCode and Crush | Require a confirmed first-class package/extension distribution API (Crush additionally requires verified hooks) | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
 
 Withdrawal downgrades or removes a runtime's claims with no automatic re-promotion: re-promotion requires the promotion gates to be re-verified against current, pinned upstream evidence.
 
@@ -139,9 +129,7 @@ Sources reviewed on 2026-08-11 are cited with URLs, review dates, test status, a
 
 ## Reverification and amendments
 
-On 2026-08-13, Prime Agent evidence E-PRIME-01 through E-PRIME-07 was reverified against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`. Prime Agent remains `Native candidate`: it ships the skills-first package and only the verified extension subset; native `rlm` dispatch and JSON/RPC headless integration remain deferred. The package also makes no sandbox or enforcement claim. The detailed discovery paths, extension surface, and evidence limits are in the [runtime-support matrix](../../runtime-support-matrix.md).
-
-On 2026-08-26, Codex CLI evidence was reverified against the then-current release, official documentation, and upstream source. Codex CLI became `Native` because Maestria ships a skills projection, native custom agents, per-agent model configuration, and an idempotent global orchestration block. Codex desktop remains separately `Deferred`. The matrix holds the detailed surface and evidence records (E-CODEX-CLI-07 through E-CODEX-CLI-15).
+Prime Agent evidence E-PRIME-01 through E-PRIME-07 was reverified on 2026-08-13 against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; it remains `Native candidate`, shipping the skills-first package and only the verified extension subset, with native `rlm` dispatch and JSON/RPC headless integration deferred and no sandbox or enforcement claim. Codex CLI evidence was reverified on 2026-08-26 against the then-current release, official documentation, and upstream source, and Codex CLI became `Native` because Maestria ships a skills projection, native custom agents, per-agent model configuration, and an idempotent global orchestration block; Codex desktop remains separately `Deferred`. The [runtime support matrix](../../runtime-support-matrix.md) holds the detailed surface and evidence records (E-CODEX-CLI-07 through E-CODEX-CLI-15) and the discovery paths and extension surface.
 
 ## Date
 

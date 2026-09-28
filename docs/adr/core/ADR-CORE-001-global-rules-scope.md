@@ -36,10 +36,6 @@ Apply this three-way filter when evaluating any candidate pattern:
 - Negative: Must re-apply the filter when adding new rules; easy to accidentally include overlapping patterns
 - Negative: Subtle cross-cutting patterns may be missed if they don't surface during review
 
-## Filtering History (This Session)
-
-Applying the filter excluded patterns already covered by agent prompts or OpenCode defaults: do-not-delete and ask-before-overwriting (permission model and edit-over-write guidance), validate-before-handoff and diagnostic documentation (diagnose and builder prompts), read-official-docs-first (architect), skill loading (orchestrator), commit-solo (OpenCode default), model tiering (user config), check-test-commit (per-agent), agent anti-patterns (orchestrator), and token-cost/loop-awareness notes (human-facing). The only addition was the cross-cutting clone-repos-to-temp/opensrc technique, which no other layer covered.
-
 ## Date
 
 2026-06-12
