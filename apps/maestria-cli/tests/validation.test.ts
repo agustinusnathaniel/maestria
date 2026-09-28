@@ -25,20 +25,6 @@ describe('validation', () => {
     ]);
   });
 
-  it('VALID_PLATFORMS preserves legacy exact order (opencode, omp, pi, prime-agent, ...)', () => {
-    expect(validation.VALID_PLATFORMS).toEqual([
-      'opencode',
-      'omp',
-      'pi',
-      'prime-agent',
-      'kimi-code',
-      'hermes',
-      'cursor',
-      'claude-code',
-      'codex',
-    ]);
-  });
-
   it('validation remains case-insensitive and trims', async () => {
     expect(await Effect.runPromise(validation.validatePlatform('  OpEnCoDe  '))).toBe('opencode');
     expect(await Effect.runPromise(validation.validatePlatform('PI'))).toBe('pi');

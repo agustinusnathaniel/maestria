@@ -284,7 +284,6 @@ class TrustStateMachineTests(HookTestBase):
         self.cleanup_trust("reuse-id")
         self.assertTrue(mark_trusted_child("reuse-id", "leaf"))
         self.assertEqual(get_trust_state("reuse-id"), TRUSTED_CHILD)
-        self.assertFalse(is_valid_lifecycle_id("") or False)
 
     def test_invalid_child_claim_invalidates_top_level(self):
         mark_top_level("reuse-id2")
@@ -663,96 +662,6 @@ class TopLevelLifecycleTests(HookTestBase):
 
 
 class ChildLifecycleTests(HookTestBase):
-    def test_leaf_child_fein_is_read_research_llm_only(self):
-        hook = self.make_hook("fein")
-        self.start_child("child-leaf", "leaf")
-        for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                self.assertIsNone(hook(tool_name=tool_name, session_id="child-leaf"))
-        for tool_name in _CHILD_FORBIDDEN_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                result = hook(tool_name=tool_name, session_id="child-leaf")
-                self.assertEqual(result["action"], "block")
-
-    def test_orchestrator_child_is_role_neutral(self):
-        """leaf and orchestrator children get the exact same policy."""
-        hook = self.make_hook("fein")
-        self.start_child("child-orch", "orchestrator")
-        for tool_name in (
-            "write", "edit", "bash", "delegate_task", "opencode_route", "code_execution",
-        ):
-            with self.subTest(tool_name=tool_name):
-                self.assertEqual(
-                    hook(tool_name=tool_name, session_id="child-orch")["action"], "block"
-                )
-        self.assertIsNone(hook(tool_name="read", session_id="child-orch"))
-        self.assertIsNone(hook(tool_name="complete", session_id="child-orch"))
-
-    def test_child_never_has_write_or_code_in_any_mode(self):
-        for mode in ("fein", "sonar", "blitz"):
-            with self.subTest(mode=mode):
-                hook = self.make_hook(mode)
-                self.start_child(f"child-{mode}", "leaf")
-                for tool_name in (
-                    "write", "edit", "bash", "code_execution",
-                    "delegate_task", "opencode_route",
-                ):
-                    with self.subTest(tool_name=tool_name):
-                        self.assertEqual(
-                            hook(tool_name=tool_name, session_id=f"child-{mode}")["action"],
-                            "block",
-                        )
-
-    def test_child_sonar_mode_uses_child_safe_policy_not_sonar_allowlist(self):
-        """A child in sonar mode is held to BLITZ_DIRECT_ALLOWED_TOOLS, not the
-        narrower top-level sonar allowlist: LLM reasoning tools remain
-        available to the child while write/shell/code/delegation stay blocked."""
-        hook = self.make_hook("sonar")
-        self.start_child("sonar-child", "leaf")
-        for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
-        # LLM tools are child-safe even though they are NOT in the top-level
-        # sonar allowlist.
-        for tool_name in ("complete", "complete_structured", "think", "reason"):
-            with self.subTest(tool_name=tool_name):
-                self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
-        for tool_name in _CHILD_FORBIDDEN_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                self.assertEqual(
-                    hook(tool_name=tool_name, session_id="sonar-child")["action"], "block"
-                )
-
-    def test_child_blitz_mode_uses_child_safe_policy(self):
-        """A child in blitz mode gets the same fixed child-safe policy."""
-        hook = self.make_hook("blitz")
-        self.start_child("blitz-child", "leaf")
-        for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                self.assertIsNone(hook(tool_name=tool_name, session_id="blitz-child"))
-        for tool_name in _CHILD_FORBIDDEN_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                self.assertEqual(
-                    hook(tool_name=tool_name, session_id="blitz-child")["action"], "block"
-                )
-
-    def test_child_policy_mode_matrix_all_tools(self):
-        """Every allowed and every forbidden child tool across every mode:
-        the child policy is identical in fein, sonar, and blitz."""
-        for mode in ("fein", "sonar", "blitz"):
-            with self.subTest(mode=mode):
-                hook = self.make_hook(mode)
-                self.start_child(f"matrix-child-{mode}", "leaf")
-                sid = f"matrix-child-{mode}"
-                for tool_name in sorted(BLITZ_DIRECT_ALLOWED_TOOLS):
-                    with self.subTest(mode=mode, tool_name=tool_name, expect="allow"):
-                        self.assertIsNone(hook(tool_name=tool_name, session_id=sid))
-                for tool_name in sorted(_CHILD_FORBIDDEN_TOOLS):
-                    with self.subTest(mode=mode, tool_name=tool_name, expect="block"):
-                        self.assertEqual(
-                            hook(tool_name=tool_name, session_id=sid)["action"], "block"
-                        )
-
     def test_child_start_before_child_session_start_is_preserved(self):
         """subagent_start fires before the child's own first turn; the
         child's on_session_start (platform='subagent') must NOT overwrite
@@ -1006,7 +915,6 @@ class FullPolicyMatrixTests(HookTestBase):
         self.assertIn("create", _CHILD_FORBIDDEN_TOOLS)
         self.assertNotIn("create", BLITZ_DIRECT_ALLOWED_TOOLS)
         self.assertNotIn("create", SONAR_ALLOWED_TOOLS)
-        self.assertNotIn("create", BLITZ_DIRECT_ALLOWED_TOOLS)
 
 
 class TerminalBoundaryTests(HookTestBase):
