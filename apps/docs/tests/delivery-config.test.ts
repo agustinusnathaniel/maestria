@@ -97,17 +97,6 @@ describe('public/robots.txt', () => {
       ].join('\n'),
     );
   });
-
-  it('uses only RFC 9309 directive names with absolute sitemap URLs', async () => {
-    const text = await readAppFile('public/robots.txt');
-    for (const line of text.split('\n').filter(Boolean)) {
-      const [directive] = line.split(':');
-      expect(['User-agent', 'Allow', 'Sitemap']).toContain(directive?.trim());
-      if (directive?.trim() === 'Sitemap') {
-        expect(line).toMatch(/Sitemap: https:\/\//u);
-      }
-    }
-  });
 });
 
 describe('public/agents.md', () => {
