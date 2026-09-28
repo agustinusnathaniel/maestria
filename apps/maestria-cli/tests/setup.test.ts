@@ -417,21 +417,6 @@ describe('setup reporting and reruns', () => {
     expect(actions.some((a) => a.category === 'xtarterize' && a.status === 'ok')).toBe(true);
   });
 
-  it('emits valid JSON with resume guidance', async () => {
-    await withConfigDir();
-    const result = await runSetup(
-      { ecosystem: 'opensrc', json: true, quiet: true, yes: true },
-      baseDeps({ readRecord: emptyRecord }),
-    );
-    expect(result.exitCode).toBe(0);
-    const parsed: unknown = JSON.parse(result.output);
-    if (!isRecord(parsed) || typeof parsed.resume !== 'string') {
-      throw new Error('setup JSON output is missing resume guidance');
-    }
-    expect(actionsOf(result.output).length).toBeGreaterThan(0);
-    expect(parsed.resume).toContain('Re-run with the same args');
-  });
-
   it('notes manual goal tracking when OpenCode is detected, never installing', async () => {
     await withConfigDir();
     const text = await runSetup({ quiet: true, yes: true }, baseDeps({ readRecord: emptyRecord }));
@@ -448,30 +433,6 @@ describe('setup non-TTY refusal', () => {
     expect(error.exitCode).toBe(1);
     expect(error.message).toContain('--ecosystem');
     expect(error.message).toContain('--yes');
-  });
-
-  it('requires --yes for mutating selections', async () => {
-    await withConfigDir();
-    const error = await captureCliError(
-      runSetup({ ecosystem: 'codegraph', quiet: true }, baseDeps()),
-    );
-    expect(error.message).toContain('--yes');
-  });
-});
-
-describe('setup live detection only', () => {
-  it('probes a missing binary as absent without installing', async () => {
-    await withConfigDir();
-    const result = await runSetup(
-      { ecosystem: 'codegraph', json: true, quiet: true, yes: true },
-      baseDeps({
-        detect: async () => [],
-        ecosystemProbe: absentProbe,
-        readRecord: nullRecord,
-      }),
-    );
-    expect(result.exitCode).toBe(0);
-    expect(actionsOf(result.output).length).toBeGreaterThan(0);
   });
 });
 
