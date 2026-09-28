@@ -1,6 +1,13 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import extension from '@/extension.js';
+
+// The shared deployer is mocked because the session_start handler invokes the
+// real one, which writes agent files into the developer's home. agents.test.ts
+// owns the destination-path assertion; this file only owns the wiring.
+const deployAgents = vi.hoisted(() => vi.fn<(src: string, dest: string) => number>());
+
+vi.mock('@maestria/shared-pi/agent-deployment', () => ({ deploySpecialistAgents: deployAgents }));
 
 interface MockSchema {
   describe: (description: string) => MockSchema;
@@ -75,6 +82,10 @@ const invokeHandler = async (pi: MockPi, eventName: string, ...args: unknown[]):
 };
 
 describe('extension entry point', () => {
+  beforeEach(() => {
+    deployAgents.mockClear();
+  });
+
   it('registers mode commands', () => {
     const pi = createMockPi();
     invokeExtension(pi);
@@ -121,6 +132,16 @@ describe('extension entry point', () => {
     invokeExtension(pi);
 
     expect(pi.registerCommand).not.toHaveBeenCalledWith('goal', expect.anything());
+  });
+
+  it('deploys specialist agents on session_start', async () => {
+    const pi = createMockPi();
+    const getBranch = vi.fn(() => []);
+    invokeExtension(pi);
+
+    await invokeHandler(pi, 'session_start', {}, { sessionManager: { getBranch } });
+
+    expect(deployAgents).toHaveBeenCalledTimes(1);
   });
 
   it('restores state on session_start from custom entries', async () => {

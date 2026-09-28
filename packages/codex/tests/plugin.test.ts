@@ -57,9 +57,13 @@ const pathExists = async (relativePath: string): Promise<boolean> => {
 
 const parseFrontmatter = (text: string): Record<string, string> => {
   const lines = text.split(/\r?\n/u);
-  expect(lines[0]?.trim()).toBe('---');
+  if (lines[0]?.trim() !== '---') {
+    throw new Error('missing opening frontmatter fence');
+  }
   const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
-  expect(close).toBeGreaterThan(0);
+  if (close === -1) {
+    throw new Error('missing closing frontmatter fence');
+  }
 
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
@@ -83,14 +87,6 @@ describe('.codex-plugin/plugin.json manifest', () => {
     expect(manifest.version).toBe(pkg.version);
     expect(manifest.description).toBeTruthy();
     expect(manifest.skills).toBe('./skills/');
-  });
-
-  it('version aligns with package metadata', async () => {
-    const [manifest, pkg] = await Promise.all([
-      readJson('.codex-plugin/plugin.json'),
-      readJson('package.json'),
-    ]);
-    expect(manifest.version).toBe(pkg.version);
   });
 
   it('does not ship unimplemented integrations or hooks', async () => {

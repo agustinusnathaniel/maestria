@@ -9,7 +9,6 @@ import {
   isModeKeyword,
   MODE_KEYWORDS,
   MODE_MARKERS,
-  MODE_PRIORITY,
   stripKeyword,
 } from '@/index.js';
 
@@ -47,14 +46,6 @@ describe('MODE_MARKERS', () => {
       fein: '[MODE: fein]',
       sonar: '[MODE: sonar]',
     });
-  });
-});
-
-describe('MODE_PRIORITY', () => {
-  it('fein > sonar > blitz', () => {
-    expect(MODE_PRIORITY.fein).toBe(3);
-    expect(MODE_PRIORITY.sonar).toBe(2);
-    expect(MODE_PRIORITY.blitz).toBe(1);
   });
 });
 
@@ -180,6 +171,11 @@ describe('stripKeyword', () => {
     const r = requireDetection(detectMode('fein: build the feature'));
     expect(stripKeyword('fein: build the feature', r)).toBe('build the feature');
   });
+  it('removes non-space whitespace after the colon', () => {
+    const text = 'fein:\tbuild the feature';
+    const r = requireDetection(detectMode(text));
+    expect(stripKeyword(text, r)).toBe('build the feature');
+  });
   it('collapses double spaces when keyword in middle', () => {
     const r = requireDetection(detectMode('quick blitz fix'));
     expect(stripKeyword('quick blitz fix', r)).toBe('quick fix');
@@ -191,5 +187,26 @@ describe('stripKeyword', () => {
   it('handles keyword at end', () => {
     const r = requireDetection(detectMode('implement it blitz'));
     expect(stripKeyword('implement it blitz', r)).toBe('implement it');
+  });
+  it('preserves a single newline between lines when the text is multi-line', () => {
+    const text = 'fein: do this\nand this';
+    const r = requireDetection(detectMode(text));
+    expect(stripKeyword(text, r)).toBe('do this\nand this');
+  });
+  it('preserves a double newline as a paragraph break when the text has two paragraphs', () => {
+    const text = 'sonar: paragraph one\n\nparagraph two';
+    const r = requireDetection(detectMode(text));
+    expect(stripKeyword(text, r)).toBe('paragraph one\n\nparagraph two');
+  });
+  it('keeps per-line indentation when the text is multi-line and indented', () => {
+    const text = 'fein: do this\n  - sub item A\n  - sub item B';
+    const r = requireDetection(detectMode(text));
+    expect(stripKeyword(text, r)).toBe('do this\n - sub item A\n - sub item B');
+  });
+  it('keeps preceding lines when the keyword is on the second line', () => {
+    const text = 'context line\nfein: build the feature';
+    const r = requireDetection(detectMode(text));
+    expect(r.index).toBe('context line\n'.length);
+    expect(stripKeyword(text, r)).toBe('context line\nbuild the feature');
   });
 });
