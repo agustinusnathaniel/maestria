@@ -14,7 +14,6 @@ import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/lib/platform-transaction.js';
 import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
 import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
@@ -38,15 +37,6 @@ export interface UpdateArgs {
   yes?: boolean;
 }
 
-interface UpdateStatus {
-  id: string;
-  label: string;
-  installedVersion: string;
-  latestVersion: string;
-  needsUpdate: boolean;
-}
-
-// oxlint-disable-next-line max-lines-per-function -- interactive update picker keeps version checks, filtering, and selection in one flow.
 const collectInteractiveUpdateTargets = async (): Promise<
   { id: string; label?: string }[] | CommandResult
 > => {
@@ -58,37 +48,10 @@ const collectInteractiveUpdateTargets = async (): Promise<
       output: 'No maestria installations found to update.',
     };
   }
-  const statuses = await Effect.runPromise(
-    Effect.all(
-      installed.flatMap((p) => {
-        const platform = getPlatform(p.id);
-        if (!platform) {
-          return [];
-        }
-        return [
-          Effect.all(
-            [
-              platform.getInstalledVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
-              platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
-            ],
-            { concurrency: 2 },
-          ).pipe(
-            Effect.map(
-              ([pv, lv]) =>
-                ({
-                  id: p.id,
-                  installedVersion: pv,
-                  label: p.label,
-                  latestVersion: lv,
-                  needsUpdate: needsUpdateOf(pv, lv),
-                }) satisfies UpdateStatus,
-            ),
-          ),
-        ];
-      }),
-      { concurrency: 1 },
-    ),
-  );
+  const statuses = installed.map((platform) => ({
+    ...platform,
+    needsUpdate: needsUpdateOf(platform.installedVersion, platform.latestVersion),
+  }));
   const needsUpdate = statuses.filter((s) => s.needsUpdate);
   if (needsUpdate.length === 0) {
     const lines = statuses
@@ -113,10 +76,9 @@ const collectInteractiveUpdateTargets = async (): Promise<
     cancel('Update cancelled.');
     throw new CliError('', 130);
   }
-  const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
-  return toUpdate.flatMap((p) =>
-    getPlatform(p.id) === undefined ? [] : [{ id: p.id, label: p.label }],
-  );
+  return needsUpdate
+    .filter((platform) => selected.includes(platform.id))
+    .map((platform) => ({ id: platform.id, label: platform.label }));
 };
 
 /**
@@ -130,7 +92,7 @@ const reviewCurrentInstallSkills = async (
   upToDate: CommandResult,
   isQuiet: boolean,
 ): Promise<CommandResult> => {
-  const installed = await Effect.runPromise(detectInstalled());
+  const installed = await Effect.runPromise(detectInstalled({ includeLatest: false }));
   if (installed.length === 0) {
     return upToDate;
   }

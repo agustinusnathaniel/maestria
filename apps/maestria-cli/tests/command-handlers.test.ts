@@ -208,6 +208,40 @@ describe('command handlers', () => {
   });
 
   describe('check', () => {
+    it('keeps distinct JSON shapes for unavailable, missing, and installed plugins', async () => {
+      detectMocks.detectSingle.mockReturnValue(
+        Effect.succeed(status({ available: false, installed: false })),
+      );
+      const unavailable = await handleCheck({ json: true, platform: 'opencode' });
+      expect(JSON.parse(unavailable.output)).toEqual({
+        available: false,
+        message: 'CLI tool for OpenCode is not available on this machine',
+        platform: 'opencode',
+        pluginInstalled: false,
+      });
+
+      detectMocks.detectSingle.mockReturnValue(Effect.succeed(status({ installed: false })));
+      const missing = await handleCheck({ json: true, platform: 'opencode' });
+      expect(JSON.parse(missing.output)).toEqual({
+        available: true,
+        installedVersion: '1.0.0',
+        message: '@maestria/opencode is not installed for OpenCode',
+        platform: 'opencode',
+        pluginInstalled: false,
+      });
+
+      detectMocks.detectSingle.mockReturnValue(Effect.succeed(status({})));
+      const installed = await handleCheck({ json: true, platform: 'opencode' });
+      expect(JSON.parse(installed.output)).toEqual({
+        available: true,
+        installedVersion: '1.0.0',
+        latestVersion: '1.0.0',
+        outdated: false,
+        platform: 'opencode',
+        pluginInstalled: true,
+      });
+    });
+
     it('maps current, outdated, and missing installs to exit 0, 3, and 1', async () => {
       const current = await handleCheck({ platform: 'opencode' });
       expect(current.exitCode).toBe(0);
@@ -370,6 +404,20 @@ describe('command handlers', () => {
   });
 
   describe('update', () => {
+    it('uses the detected versions when choosing interactive updates', async () => {
+      setTty(true);
+      detectMocks.detectInstalled.mockReturnValue(
+        Effect.succeed([status({ installedVersion: '1.0.0', latestVersion: '2.0.0' })]),
+      );
+      const { groupMultiselect } = await import('@/lib/group-multiselect.js');
+      vi.mocked(groupMultiselect).mockResolvedValueOnce(['opencode']);
+
+      const result = await handleUpdate({ skills: 'none', yes: true });
+
+      expect(transactionMocks.updateOne).toHaveBeenCalledTimes(1);
+      expect(result.exitCode).toBe(0);
+    });
+
     it('updates a direct platform selection', async () => {
       const result = await handleUpdate({ platform: 'opencode', quiet: true, version: '1.0.0' });
 

@@ -169,7 +169,9 @@ export const handleDoctor = async (
   const recordPath = redactHome(getSkillsRecordPath());
   const record = await readSkillsRecord();
   const statuses =
-    deps.detect === undefined ? await Effect.runPromise(detectAll()) : await deps.detect();
+    deps.detect === undefined
+      ? await Effect.runPromise(detectAll({ includeLatest: false }))
+      : await deps.detect();
   const platforms = await collectDoctorReports(deps.runner ?? defaultSkillRunner, statuses, record);
   const output: DoctorOutput = {
     platforms,

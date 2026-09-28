@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fail-closed consolidated E2E evidence (TypeScript, stdlib only: node builtins).
+// Fail-closed consolidated E2E evidence (TypeScript, Node builtins and yaml).
 //
 // Usage: pnpm e2e:fail-closed (node --experimental-strip-types
 //   scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json)
@@ -16,6 +16,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { parseDocument } from 'yaml';
 
 import { isReadOnlyBashCommand } from '../../packages/shared/pi/src/bash-policy.ts';
 import { stateFromSessionEntries } from '../../packages/shared/pi/src/state-core.ts';
@@ -98,47 +99,36 @@ const run = (cmd: string, cmdArgs: readonly string[], options: RunOptions = {}):
 
 type PermissionFile = Record<'bash' | 'other' | 'task', Record<string, string>>;
 
-const TOP_PATTERN = /^ {2}(?<key>[^:]+):\s*(?<value>.*)$/u;
-const ENTRY_PATTERN = /^ {4}(?<key>"[^"]*"|[^:]+):\s*(?<value>.*)$/u;
-const INDENT_PATTERN = /^ */u;
-const QUOTES_PATTERN = /^"|"$/gu;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 const parseAgentPermissions = (text: string): PermissionFile => {
-  const frontmatter = text.split('---\n')[1] ?? '';
   const perm: PermissionFile = { bash: {}, other: {}, task: {} };
-  let inPermissions = false;
-  let section = '';
-  for (const line of frontmatter.split('\n')) {
-    if (!inPermissions) {
-      if (line === 'permission:') {
-        inPermissions = true;
-      }
-      continue;
+  let parsed: unknown;
+  try {
+    const document = parseDocument(text.split('---\n')[1] ?? '');
+    if (document.errors.length > 0) {
+      return perm;
     }
-    if (line === '') {
-      continue;
-    }
-    const indent = INDENT_PATTERN.exec(line)?.[0].length ?? 0;
-    if (indent === 0) {
-      break;
-    }
-    if (indent === 2) {
-      const top = TOP_PATTERN.exec(line);
-      if (top?.groups !== undefined) {
-        const { key, value } = top.groups;
-        section = key === 'bash' || key === 'task' ? key : '';
-        if (section === '') {
-          perm.other[key] = value;
+    parsed = document.toJS();
+  } catch {
+    // Alias expansion can throw after a document parses without errors.
+    return perm;
+  }
+  if (!isRecord(parsed) || !isRecord(parsed.permission)) {
+    return perm;
+  }
+  for (const [key, value] of Object.entries(parsed.permission)) {
+    if (key === 'bash' || key === 'task') {
+      if (isRecord(value)) {
+        for (const [pattern, level] of Object.entries(value)) {
+          if (typeof level === 'string') {
+            perm[key][pattern] = level;
+          }
         }
       }
-      continue;
-    }
-    if (indent === 4 && (section === 'bash' || section === 'task')) {
-      const entry = ENTRY_PATTERN.exec(line);
-      if (entry?.groups !== undefined) {
-        const { key, value } = entry.groups;
-        perm[section][key.replaceAll(QUOTES_PATTERN, '')] = value;
-      }
+    } else if (typeof value === 'string') {
+      perm.other[key] = value;
     }
   }
   return perm;
@@ -261,9 +251,6 @@ const sectionPermissionNarrowing = (): void => {
 };
 
 // ── Python probe driver (sections 2 and 3) ──
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const toProbeChecks = (value: unknown): ProbeCheck[] => {
   if (!isRecord(value) || !Array.isArray(value.checks)) {
