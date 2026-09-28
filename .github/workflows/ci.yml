@@ -31,8 +31,6 @@ jobs:
         with:
           fetch-depth: 1
       - uses: ./.github/actions/setup
-      # CI-only, for the plugin load check below. pnpm installs it into $PNPM_HOME/bin, which the
-      # setup step already put on PATH. Pinned to the version previously resolved from latest.
       - name: Install Bun
         run: pnpm runtime set bun 1.4.2 -g
       - name: Generate Astro types

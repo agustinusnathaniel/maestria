@@ -22,13 +22,10 @@ runs:
       if: inputs.python == 'true'
       run: pip install ruff==0.16.7
       shell: bash
-    # pnpm/setup installs Node too, resolved from devEngines.runtime, and prepends it to PATH, so
-    # it already shadowed the .node-version copy actions/setup-node put there first.
+    # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
     - uses: pnpm/setup@v3
       with:
         cache: true
-        # Fails the job on a missing lockfile independently of the store cache, which while
-        # cache: true is on fails first with a less specific error of its own.
         require-lockfile: true
     - name: Restore vp task cache
       uses: actions/cache@v6
