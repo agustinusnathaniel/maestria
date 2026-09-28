@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-29); amended (2026-07-10, 2026-08-24)
+Accepted (2026-06-29); amended (2026-07-10, 2026-08-24, 2026-09-28)
 
 ## Context
 
@@ -156,7 +156,7 @@ Pair Changesets v3 with `changesets/action` v2, using its v2 input names and def
 
 - **Added time on every CI run** for `vp check` on top of the build time. This is negligible in absolute terms but proportionally large relative to the build time itself.
 - **Two workflow files plus a shared composite action to maintain** instead of one workflow; a future maintainer must understand three files instead of one.
-- **Cache storage is minimal.** The lockfile-hash key means only one cache entry exists per lockfile change.
+- **Cache storage is minimal.** The lockfile-hash key means only one vp task cache entry exists per lockfile change.
 - **Docs static build is not part of CI.** A broken static docs render can pass `pnpm check:ci`. Mitigation: local `pnpm build` still builds docs, and docs-specific CI can be added when docs deployment becomes a gated workflow.
 
 ### Risks
@@ -166,9 +166,15 @@ Pair Changesets v3 with `changesets/action` v2, using its v2 input names and def
 
 ## Decision 5: Extract shared setup into composite action
 
-Created `.github/actions/setup/action.yml` combining Node.js setup (from `.node-version`), pnpm setup (which handles install automatically), and vp task cache restore. Checkout remains in the calling workflow.
+Created `.github/actions/setup/action.yml` combining Node.js setup (from `.node-version`), pnpm setup (which handles install automatically), and vp task cache restore. Checkout remains in the calling workflow. The Node.js setup step was removed later; see the 2026-09-28 amendment below.
 
 This eliminates the duplicated setup block across `release.yml` and `release-kimi-code.yml`, following the pattern used by chakra-ui, radix-ui, and gitify.
+
+Amended (2026-09-28): `pnpm/setup` moved to v3 and the `actions/setup-node` step was dropped, because the pnpm action installs Node from `devEngines.runtime` and had already been shadowing the `.node-version` copy `[verified]`. Node now resolves in CI and locally from the same floating `devEngines.runtime` range, and nothing in the repository reads `.node-version`; keeping the two in step, or deleting the file, is an open follow-up. v3 was taken for its store cache, where v2 kept one deterministic entry per lockfile and never replaced it while v3 saves per run and restores the newest match, at the cost of an entry per run.
+
+`require-lockfile: true` is explicit hardening rather than a fix: under Actions a missing lockfile already fails the cache key, and pnpm already refuses to update an existing one, so the input only keeps that requirement independent of store caching.
+
+`ci.yml` installs Bun through `pnpm runtime set` instead of `oven-sh/setup-bun`, which keeps it out of the shared setup action because only CI needs it. Declaring Bun in `devEngines.runtime` was rejected because it would make every local install require a CI-only runtime, as was keeping `actions/setup-node` alongside `pnpm/setup`, which leaves two version sources that can disagree.
 
 ## Related Decisions
 
@@ -178,5 +184,7 @@ This eliminates the duplicated setup block across `release.yml` and `release-kim
 ## References
 
 - [actions/cache documentation](https://github.com/actions/cache) - cache action reference
+- [pnpm/setup](https://github.com/pnpm/setup) - combined pnpm, Node, Bun, and Deno setup action
+- [pnpm runtime documentation](https://pnpm.io/cli/runtime) - `pnpm runtime set` behavior
 - [changesets/action documentation](https://github.com/changesets/action) - changesets publishing action
 - [Changesets CLI command options](https://github.com/changesets/changesets/blob/main/docs/command-line-options.md) - `git-tag` and `publish` behavior
