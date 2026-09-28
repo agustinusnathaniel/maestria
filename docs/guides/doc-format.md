@@ -11,7 +11,7 @@ Use these conventions for new documents and substantial rewrites. Internal docum
 - [Plan](#plans): define scoped work and how to verify and roll it back.
 - [Note or guide](#notes-and-guides): record purpose, audience, dated evidence, and next step.
 
-Apply the requirements below to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template. Changelogs keep their chronological format; JSDoc, docstrings, and inline comments are outside this guide. There is no format linter or schema gate. Put deliberately deferred work in **Future Considerations**, not **Non-Goals**.
+Apply the requirements below to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template. Changelogs keep their chronological format; JSDoc, docstrings, and inline comments are outside this guide. There is no format linter or schema gate. An ADR asserts what was decided and why. It does not assert the current inventory of code, workflows, files, scripts, or host versions; verify current state against source, the canonical directives, and the runtime support matrix. Put deliberately deferred work in **Future Considerations**, not **Non-Goals**.
 
 These conventions make scope and rejected alternatives easier to review, and keep internal rationale from reading like a product promise. They add authoring overhead; the goal is recoverable reasoning, not uniform document length.
 
@@ -37,12 +37,19 @@ Published READMEs render outside the repository, so links to repository files mu
 
 ## New ADRs
 
-Every new ADR must cover **Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, and Date**. Use `Proposed`, `Accepted`, or `Deprecated` for status; write the date as `YYYY-MM-DD`.
+Every new ADR must cover **Status, Context, Decision, Consequences, Alternatives Considered, and Date**, plus a one-word **Confidence** on the Status line. Use `Proposed`, `Accepted`, or `Deprecated` for status; write the date as `YYYY-MM-DD`. Goals and Non-Goals are recommended, not required.
 
-- Tag material assumptions `[verified]` or `[inferred]` so readers can distinguish evidence from best-effort conclusions.
-- Record the alternatives deliberately rejected and why; preserve the evidence behind the decision.
+- Write Consequences with positive, negative, and neutral outcomes, and never hide a negative.
+- A decision with no recorded alternative is incomplete: name what was rejected and why.
+- Add a `## Supersession` section when a record supersedes, is superseded by, or is extended by another, and link both ways. Put whole-record lifecycle on the Status line instead of in that section.
+- Add Assumptions when the decision rests on an unverified premise, and tag each `[verified]` or `[inferred]`.
+- Add Security Boundaries when the decision defines one or relies on one.
 - Add `Lessons Learned`, `Rollback`, `Verification`, or `Related Decisions` when they help explain or operate the decision.
-- Do not rewrite historical ADRs just to match this template. Preserve their original context, decision, consequences, and date when revising them.
+- Record only architecturally significant, hard-to-reverse decisions, and keep a record to roughly two pages. Move supporting material to a design document and link it.
+
+Accepted records are frozen. On acceptance, Context, Decision, Consequences, Assumptions, Alternatives Considered, and Date stop changing, and a change of mind becomes a new record that supersedes or extends the original. An accepted record accepts in place a Status transition and either a successor annotation or a dated divergent-claim annotation; ADR-CORE-030 defines both forms. This supersedes the earlier rule that historical ADRs could be revised while preserving their original sections.
+
+Do not retrofit legacy records to match this template. The one exception is the bounded editorial pass authorized by [ADR-CORE-030](../adr/core/ADR-CORE-030-adr-immutability-and-supersession.md), which may relocate verbatim copied source to a linked canonical path, where the copied content is present at the named path, condense the presentation of a frozen section, or remove a dated note, an implementation-notes block, or a present-status block that only restates shipped state and records no decision, provided the pass ledger names each removal. All three leave the decision, rationale, and consequences unchanged, and none may drop a decision statement, rationale, alternative, negative consequence, or security or trust boundary, with every item the original section enumerated surviving in some form. ADR-CORE-030 carries the full content constraint.
 
 The `Context` heading is retained for compatibility with existing records. The original format drew on the [Agent Trace RFC](https://agent-trace.dev/) (Motivation → Goals → Non-Goals → Specification).
 
@@ -79,14 +86,14 @@ Point-in-time claims need dates and sources so readers can judge whether they re
 ## Evidence and detail
 
 - Use `[verified]` for facts confirmed from code, documentation, a live run, or an immutable commit; use `[inferred]` for conclusions not directly confirmed.
-- Name the mechanism or module instead of giving line numbers. Link the source of changing facts rather than copying its inventory.
+- Name the mechanism or module instead of giving line numbers. An ADR names the source of a changing fact; it does not restate the fact. Link the source of changing facts rather than copying its inventory.
 - Do not maintain exhaustive lists of directory or registry contents. If a count helps, label it as a dated snapshot and point to its source.
 - In public docs, describe the capability and link its owning page. Do not require consumers to understand internal paths or ADR numbers.
 - When an internal rationale also defines a product boundary, explain it in both places using audience-appropriate language.
 
 ## Convention history
 
-[ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) records the original fixed section order for published package READMEs. This 2026-09-25 clarification replaces that order and the default requirement for standalone Motivation, Goals, Non-Goals, and Development sections. Use concise, package-specific headings while keeping every required information item findable; Development or Contributing is optional when it helps the reader. The ADR keeps its original decision, evidence, and rationale as historical record.
+[ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) records the original fixed section order for published package READMEs. This 2026-09-25 clarification replaces that order and the default requirement for standalone Motivation, Goals, Non-Goals, and Development sections. Use concise, package-specific headings while keeping every required information item findable; Development or Contributing is optional when it helps the reader. The ADR keeps its original decision, evidence, and rationale as historical record. A 2026-09-28 clarification adds the lifecycle of an ADR, recorded in [ADR-CORE-030](../adr/core/ADR-CORE-030-adr-immutability-and-supersession.md): an accepted record is frozen, and after acceptance it changes only through a Status transition, a status annotation, a linked successor, or the one bounded editorial pass that record authorizes. This guide keeps ADR-CORE-018's original documentation-standard rationale as history.
 
 ## Next step
 
@@ -94,4 +101,4 @@ Choose the template that matches the reader's task. Check required content, evid
 
 ## Future Considerations
 
-A proposed retrofit of ADR-CORE-001 through ADR-CORE-004 and ADR-OC-000 through ADR-OC-002 remains separate work. If undertaken, extract implicit boundaries into Goals and Non-Goals while preserving the original decision, context, consequences, and date.
+Migrating the remaining accreted in-place amendment blocks remains separate work: extract genuine decision material into a successor record with its own rationale, alternatives, and negative consequences; replace state inventory with a pointer to its authoritative source; and remove session-scoped notes that only restate shipped state, which the bounded editorial pass in [ADR-CORE-030](../adr/core/ADR-CORE-030-adr-immutability-and-supersession.md) already authorizes, subject to its content constraint. Do not retrofit a record to the current template while migrating it.

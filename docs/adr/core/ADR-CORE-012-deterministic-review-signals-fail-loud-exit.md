@@ -20,8 +20,6 @@ An external review of Maestria's methodology surfaced a structural weakness:
 
 The critique identifies two distinct gaps.
 
----
-
 ### Correction: This ADR's Initial Interpretation Was a Misread
 
 `[corrected]` The initial version of this ADR (Proposed, 2026-07-28) read the critique as demanding a deterministic mechanical signal: a test contract written before code, giving the reviewer an objective fact ("this test fails") they could not talk past. That interpretation was wrong. The critique's actual claim is:
@@ -29,8 +27,6 @@ The critique identifies two distinct gaps.
 > "Maker/checker only pays off if the checker has a signal the maker didn't author."
 
 The checker should review the code against the original requirements/spec, not against the builder's narrative about what they did. The signal the maker did not author is the diff plus the spec. What biases the reviewer is being fed the builder's implementation notes, commit messages, or handoff output. The correct fix is not a new pipeline stage (pre-committed test contracts) but access list hygiene: control what the reviewer sees. This correction is documented because the misread propagated into the original ADR's decision section and alternatives; the present revision replaces those sections.
-
----
 
 ### Gap 1: Reviewer Receives Biasing Signals from the Builder
 
@@ -58,13 +54,9 @@ The default path after max cycles is implicit shipping of the last attempt: the 
 
 These gaps are latent and compound each other: without access list discipline the reviewer is more likely to miss issues, and without a fail-loud exit those missed issues ship silently. An LLM reviewer catches many issues regardless of hygiene; the question is the tail of subtle bugs, architecture blind spots, and edge cases a narratively biased reviewer misses.
 
----
-
 ## Decision
 
 Two related design decisions, one per gap, implemented together in the canonical agent directives.
-
----
 
 ### Decision 1: Hardened Access List Rules and Blind Review Practice
 
@@ -95,6 +87,8 @@ Two changes to the orchestrator's delegation pattern.
 
 > **Blind review for verifiers.** The reviewer reviews against the acceptance criteria (completions promise) and the diff, not against the builder's explanation of what was done. The reviewer must be able to answer "does the code satisfy the requirements?" without having read the builder's claim that it does. If the reviewer cannot determine this from the requirements plus diff alone, the requirements are insufficient - that is a finding, not an excuse to read the builder's narrative. The reviewer still documents assumptions and flags `[inferred]` items, but the inference runs from code to requirements, not from builder narrative to code.
 
+Both block-quoted specifications above are the only copies of this wording `[verified]`: the canonical directives carry the maker/checker split and the triage contract, and a case-insensitive recursive grep of `packages/core/agent-directives/` returns zero occurrences of `access list`, `access-list`, or `rule of thumb`, and zero case-sensitive occurrences of `REQUIRED` or `FORBIDDEN`. The blind-review rule is not absent from the directives, which state it in substance as the maker/checker independence rule; what survives only here is the block-quoted wording. See the note under Assumptions for the verification and the current state.
+
 #### How This Changes the Delegation Flow
 
 - **Before:** the orchestrator delegated to the reviewer with the diff, the builder's handoff output, and the requirements; the reviewer reviewed the code against the builder's narrative.
@@ -111,8 +105,6 @@ The completions promise (PATTERNS.md) defines acceptance criteria before work be
 - **Reuses existing infrastructure.** The completions promise, the diff, and the access list field already exist; only their contents change.
 - **Scales naturally.** Applies uniformly to SIMPLE, COMPLEX, and EXPERIMENT classifications, with no classification-dependent gating.
 - **Consistent with "exhaust data, document assumptions, proceed".** The reviewer keeps full discretion, just not access to the builder's self-assessment, preserving the maker/checker split without constraining judgment.
-
----
 
 ### Decision 2: Fail-Loud Iteration Exit
 
@@ -133,6 +125,8 @@ Replace the underspecified "escalate with cause" with a structured fail-loud exi
    Need: user override to ship as-is, or architect redesign.
    ```
 
+   The canonical rules carry only the three-field compact form of this format (`Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`). The five-field shape above, including the `Unresolved` and `Diff` fields and the `iteration-limit-reached` value, is recorded here and has no canonical home `[verified]`. See the note under Assumptions.
+
 3. **User override is the only release valve.** The user must explicitly acknowledge the delta to proceed. This is a boundary checkpoint (per ADR-CORE-011's mid-phase vs boundary distinction); it fires only when the pipeline fails, not during normal execution.
 4. **The delta and verdict are captured in the session summary**, even when the user overrides, for traceability.
 
@@ -147,8 +141,6 @@ The fail-loud exit is the existing escalation format with its fields filled in: 
 #### Why "Fail Loud" and Not Silent Escalation
 
 Silent escalation (flag to the user but proceed) was rejected because the user sees a completed pipeline and has no reason to inspect the escalation; "good enough for now" should be an explicit user decision, not an implicit default; and the iteration limit exists because further iteration is not productive, so shipping the last attempt as if it passed defeats the limit's purpose. The user override keeps the "good enough for now" path, but deliberately rather than accidentally.
-
----
 
 ## Consequences
 
@@ -175,11 +167,9 @@ Silent escalation (flag to the user but proceed) was rejected because the user s
 - **The reviewer prompt needs no changes.** Its checklist already evaluates code against requirements; only the context it receives changes, and no new specialist or role is needed.
 - **Schema gates remain a supplementary option.** Deterministic structural checks are a valid future enhancement to the reviewer's toolkit, but not the primary fix for biasing signals.
 
----
-
 ## Assumptions
 
-Note (2026-09-22): the `[verified]` items below record what was checked when this revision landed; they are history, not a re-verification procedure. The current canonical directives carry the same substance in `packages/core/agent-directives/rules.md` (Acceptance and Blind Review; Bounded Repair and Fail-Loud Behavior) and `specialists/orchestrator.md` (Review and Triage) rather than a verbatim REQUIRED/FORBIDDEN block. Read the block-quoted rule text in Decision 1 as the historical specification and the directives as its current home.
+Note (2026-09-22): the `[verified]` items below record what was checked when this revision landed, not a re-verification procedure. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the canonical directives do not carry the specifications this record block-quotes, so that text is retained here rather than relocated `[verified]`. A case-insensitive recursive grep of `packages/core/agent-directives/` returns zero occurrences of `access list`, `access-list`, or `rule of thumb`, and zero case-sensitive occurrences of `REQUIRED` or `FORBIDDEN`. The `## Acceptance and Blind Review` section in `packages/core/agent-directives/rules.md` and the `## Review and Triage` section in `specialists/orchestrator.md` both exist by title, and neither carries the block-quoted wording. The blind-review rule itself is not absent from the directives, which state it in substance as the maker/checker independence rule, where the checker independently inspects the requirements, acceptance criteria, relevant diff, and available validation or behavior evidence and maker claims and maker-authored narrative are not approval, and where an in-scope `[fix]` finding routes to `@builder` for bounded repair. The phrase `blind review` appears only in that section title `[verified]`. The `## Bounded Repair and Fail-Loud Behavior` section carries only the three-field compact escalation form; the `Unresolved` and `Diff` field names and the `iteration-limit-reached` value have zero occurrences anywhere under `packages/core/agent-directives/`. A case-sensitive grep returns zero for `Unresolved` and `Diff`, and a case-insensitive grep returns 11 occurrences of `unresolved` and 11 of `diff`, every one of them the ordinary word rather than a field name `[verified]`. The block-quoted wording in Decision 1 and the five-field escalation block in Decision 2 are therefore the only copies. The Context pointer stating that the full contract lives in the canonical directives and is not restated here predates that verification, and it overstates where the contract lives rather than breaking a reference: all four paths it names exist, and both named sections exist by title, but neither carries the block-quoted access-list, blind-review, or five-field escalation wording, so the block quotes in Decisions 1 and 2 are the only copies of that wording. What the canonical directives do carry is the maker/checker split, the `[fix]`/`[dismiss]`/`[escalate]` triage contract, the three-pass repair bound, and the three-field compact escalation form, all named in References below.
 
 - `[verified]` The access list rule lives in the orchestrator directive's delegation-pattern access-list section, with the REQUIRED/FORBIDDEN specification in place.
 - `[verified]` The builder produces a handoff output that includes self-assessment, per the orchestrator's Work Results format requirement and the builder's "validate before handoff" rule.
@@ -191,8 +181,6 @@ Note (2026-09-22): the `[verified]` items below record what was checked when thi
 - `[inferred]` The orchestrator's filtering behavior will stick after the prompt update. The strengthened rule makes forbidden content explicit, but prompt-level rules without mechanical enforcement have failure modes.
 - `[inferred]` The completions promise is specific enough to serve as the reviewer's primary reference. Vague acceptance criteria ("make it work") give insufficient signal regardless of access list hygiene, so this depends on upstream specialists.
 - `[inferred]` The critique identifies a latent weakness rather than an active failure. No user-reported issues are attributed to these gaps, but the structural analysis is sound.
-
----
 
 ## Alternatives Considered
 
@@ -240,8 +228,6 @@ A human (or a different, more capable model) writes tests before implementation 
 
 **Rejected.** Inconsistent with the project's core design principle that agents operate autonomously with documented assumptions.
 
----
-
 ### Gap 2 Alternatives
 
 #### Option A: Fail-Loud with Structured Delta (Selected)
@@ -268,20 +254,14 @@ At max cycles with unresolved `[fix]` items, the pipeline is permanently blocked
 
 **Rejected.** Too rigid. The user override path preserves accountability without treating the agent as infallible; the limit can be reached because the problem needs more context, not because the implementation is wrong.
 
----
-
 ## References
 
 - `packages/core/agent-directives/rules.md` - maker/checker split, triage contract, escalation format, repair bounds
 - `packages/core/agent-directives/specialists/orchestrator.md` - review and triage, delegation briefs
 - `packages/core/agent-directives/specialists/reviewer.md` - review checklist, triage contract, read-only checker
-- `packages/core/agent-directives/specialists/builder.md` - test-writing responsibility, verification step, handoff output
 - `packages/core/agent-directives/skills/iteration-limits.md` - repair bounds and fail-loud report format
-- `packages/core/agent-directives/skills/handoff.md` - concise handoff contents (the orchestrator consumes the builder handoff; the reviewer must not receive it)
 - `PATTERNS.md` - maker/checker split (commitment bias, context blindness, toolset overlap), completions promise
-- `docs/testing.md` - testing philosophy (test from contracts, avoid mocks)
-- ADR-CORE-011 - boundary checkpoints vs mid-phase questions, autonomy philosophy
-- ADR-CORE-000 - ADR structure conventions
+- [ADR-CORE-011](ADR-CORE-011-eliminate-questions-autonomy.md) - boundary checkpoints vs mid-phase questions, autonomy philosophy
 
 ## Related Decisions
 

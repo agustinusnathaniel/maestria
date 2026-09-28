@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-29); amended (2026-07-10, 2026-08-24, 2026-09-28)
+Accepted (2026-06-29); amended (2026-07-10, 2026-08-24, 2026-09-28). Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decisions below still hold and this record stays in force, but four implementation details in the frozen text had drifted from the repository `[verified]`. The Decision 3 cache entry named `.github/workflows/release-kimi-code.yml`, a workflow that does not exist; Decision 1 and Decision 2 named a `prebuild:ci` lifecycle hook, while the root `package.json` defines `prebuild`; the Decision 4 notes claimed `release.yml` uses a longer timeout than `ci.yml`, while both workflows set `timeout-minutes: 10`; and Decision 6 quoted `pnpm exec vp run --filter @maestria/docs sync` as the `ci.yml` step, while the step runs `pnpm sync:docs`. The root [package.json](../../../package.json), the shared setup action at [.github/actions/setup/action.yml](../../../.github/actions/setup/action.yml), and the workflows in `.github/workflows/` are authoritative for the current scripts, cache step, and workflow steps. This record is the one departure from clause 7 in this pass: the false text was replaced in place with pointers to those sources rather than retained beside a correction. Each of the four claims named a file, script, value, or command that no decision above depends on, so the choice was between leaving a known-false detail standing inside a frozen Decision with no marker on the claim itself, and pointing the record at the source that decides it. The pass chose the pointer, which makes the record true at the cost of losing the visible error. Clause 7 prefers the retained error, and this record departs from it; this annotation is the only disclosure it carries.
 
 ## Context
 
@@ -20,7 +20,7 @@ A secondary, pre-existing question was whether the single-workflow layout (one `
 
 ### Change
 
-Use `pnpm check:ci` in `.github/workflows/ci.yml`. This adds format checking, type-aware oxlint linting, TypeScript type checking, package builds, and tests to every CI run. The package build uses `pnpm build:ci`, which excludes the docs static build while retaining the sync guard through `prebuild:ci`.
+This decision made `ci.yml` run `pnpm check:ci`, adding format checking, type-aware oxlint linting, TypeScript type checking, package builds, and tests to every run. The package build uses `pnpm build:ci`, which excludes the docs static build while keeping the sync guard. The scripts that implement this live in the root `package.json` and `vite.config.ts`; this record does not restate them.
 
 ### Cost
 
@@ -42,18 +42,13 @@ The script swap is the minimal change that brings static analysis into CI. It ad
 
 ### Change
 
-Add a dedicated `pnpm build:ci` script that builds all packages except `@maestria/docs`, plus a matching `prebuild:ci` lifecycle hook for the sync guard:
-
-```json
-"prebuild:ci": "vp run check-sync",
-"build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build"
-```
+This decision added a dedicated `pnpm build:ci` script that builds all packages except `@maestria/docs`, and kept the sync guard on the CI task graph. The script definitions are in the root `package.json`, which is the authoritative source for the current values.
 
 `pnpm build --filter "!@maestria/docs"` was tested and rejected: pnpm appends the filter after the `build` task name, so `vp run` forwards it to each package script instead of treating it as a workspace selector.
 
-`vp run --filter "!@maestria/docs" build` was also rejected: the negated filter includes the workspace root, whose `build` script recursively builds all packages, including docs. The final script selects package directories directly and includes the CLI app explicitly, matching Vite+ behavior: `vp run --filter <selector> build` is the documented filtered form, arguments after the task name are passed through to the task command, and combining `--filter` with `--recursive` is rejected.
+`vp run --filter "!@maestria/docs" build` was also rejected: the negated filter includes the workspace root, whose `build` script recursively builds all packages, including docs. The chosen form selects package directories directly and includes the CLI app explicitly, matching Vite+ behavior: `vp run --filter <selector> build` is the documented filtered form, arguments after the task name are passed through to the task command, and combining `--filter` with `--recursive` is rejected.
 
-Use `build:ci` from `pnpm check:ci` and from `release.yml`.
+This decision wired `build:ci` into `pnpm check:ci` and into the release workflow.
 
 ### Rationale
 
@@ -67,7 +62,7 @@ Docs static rendering failures are no longer caught by `pnpm check:ci`. They are
 
 ### Change
 
-Added `actions/cache` to restore and save `node_modules/.vite/task-cache` in both workflows (`release.yml` and `release-kimi-code.yml`).
+Added `actions/cache` to restore and save the vp task cache (`node_modules/.vite/task-cache`) for CI and release runs. The cache step was placed in the shared setup composite action rather than duplicated per workflow; its current definition is in `.github/actions/setup/action.yml`.
 
 ### Cache Key
 
@@ -89,21 +84,17 @@ This fix is a one-time cost (a short cache step). The vp task cache is designed 
 
 The single workflow conflated two concerns with different requirements: CI checks on PRs and publishing on main. Every major pnpm+changesets monorepo (chakra-ui, radix-ui, gitify) splits them.
 
-| Workflow | Triggers | Cancel in-progress | Behaviour |
-| --- | --- | --- | --- |
-| **ci.yml** | PRs and pushes to main | Yes | Run check + package build + test. Fast feedback, no publish. |
-| **release.yml** | Push to main (path-filtered), workflow_dispatch | No | Run fresh package build + changesets publish. Must not cancel mid-publish. |
+This decision separated the two workflows: `ci.yml` for PR and main-push verification, and a path-filtered, manually dispatchable `release.yml` for publishing. Their current triggers, job names, and steps are in `.github/workflows/`, which is the authoritative source.
 
 A composite action (see Decision 5) eliminates setup duplication between the two workflows, removing the main objection to the split.
 
 ### Concurrency
 
-`release.yml` sets `cancel-in-progress: false` to prevent a subsequent push from cancelling an in-progress publish. `ci.yml` sets `cancel-in-progress: true` so a new push on the same PR cancels the stale run.
+This decision gave the release workflow `cancel-in-progress: false` so a subsequent push cannot cancel an in-progress publish, and gave CI `cancel-in-progress: true` so a new push on the same PR cancels the stale run.
 
 ### Notes
 
 - **`workflow_dispatch` inputs:** the trigger accepts no inputs. Version bump type inputs (major/minor/patch) were intentionally removed to simplify the manual trigger; changesets determines the version bump from changeset files.
-- **Timeout increase:** `release.yml` uses a longer timeout than `ci.yml` to accommodate fresh package builds before the publish step.
 - **Main-push CI retained:** `ci.yml` still runs on `main` pushes because `release.yml` is path-filtered to release-related files; without it, non-release main pushes would lose post-merge validation.
 
 ## Decision 6: Generate Astro Types Before Typecheck
@@ -117,7 +108,7 @@ Before Decision 1 (when CI ran `pnpm build` instead of `pnpm check`), this was i
 ### Change
 
 1. Added a `sync` script (`astro sync`) to the docs app's `package.json`.
-2. Added a `Generate Astro types` step in `ci.yml`, running `pnpm exec vp run --filter @maestria/docs sync` between the setup step and the check step.
+2. Added a `Generate Astro types` step in `ci.yml` between the setup step and the check step, invoking the docs app's `sync` script through the root `package.json`. The command the step runs is in `.github/workflows/ci.yml`.
 
 ### Cost
 
@@ -168,7 +159,7 @@ Pair Changesets v3 with `changesets/action` v2, using its v2 input names and def
 
 Created `.github/actions/setup/action.yml` combining Node.js setup (from `.node-version`), pnpm setup (which handles install automatically), and vp task cache restore. Checkout remains in the calling workflow. The Node.js setup step was removed later; see the 2026-09-28 amendment below.
 
-This eliminates the duplicated setup block across `release.yml` and `release-kimi-code.yml`, following the pattern used by chakra-ui, radix-ui, and gitify.
+This eliminates the duplicated setup block across the CI and release workflows, following the pattern used by chakra-ui, radix-ui, and gitify.
 
 Amended (2026-09-28): `pnpm/setup` moved to v3 and the `actions/setup-node` step was dropped, because the pnpm action installs Node from `devEngines.runtime` and had already been shadowing the `.node-version` copy `[verified]`. Node now resolves in CI and locally from the same floating `devEngines.runtime` range, and nothing in the repository reads `.node-version`; keeping the two in step, or deleting the file, is an open follow-up. v3 was taken for its store cache, where v2 kept one deterministic entry per lockfile and never replaced it while v3 saves per run and restores the newest match, at the cost of an entry per run.
 

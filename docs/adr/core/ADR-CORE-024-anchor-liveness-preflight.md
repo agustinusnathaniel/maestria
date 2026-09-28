@@ -90,8 +90,6 @@ Revert `anchors.ts`, the preflight call in `runSync`, the `ConfigError` handling
 ## Related Decisions
 
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): sync config model and exit codes 0/1/2.
-- [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md): root-resolved `pnpm exec tsx` runner.
-- [ADR-CORE-019](ADR-CORE-019-directive-simplification.md): recorded this validation as a follow-up and removed the first generation of dead anchors.
 - [ADR-CORE-023](ADR-CORE-023-evidence-led-directives.md): proportionate verification, fail-loud evidence, no warnings in place of enforcement.
 
 ## Date

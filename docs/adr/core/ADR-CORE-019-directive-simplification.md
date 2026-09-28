@@ -95,9 +95,11 @@ Rejected: test-pinned contracts encode load-bearing semantics. Incremental conso
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - the sync pipeline whose dead anchors this decision cleans up.
 - [ADR-CORE-011](ADR-CORE-011-eliminate-questions-autonomy.md) - eliminate-questions autonomy; delivery mechanics extended here.
 - [ADR-CORE-012](ADR-CORE-012-deterministic-review-signals-fail-loud-exit.md) - deterministic review signals and fail-loud exit; source of the blocker format.
-- [ADR-OC-001](../opencode/ADR-OC-001-tool-permission-design.md) - tool permission design; unchanged by this decision.
-- [ADR-OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) - keyword-triggered workflow modes; mode semantics preserved.
 - Implementation: [PR #226](https://github.com/agustinusnathaniel/maestria/pull/226).
+
+## Supersession
+
+[ADR-CORE-028](ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md) narrows this record: text-pinned contracts are no longer accepted as a general preservation strategy. Its single-home, bounded-repair, terminal-artifact, and independent-review decisions remain in force. This record keeps its original context, decision, consequences, assumptions, and date.
 
 ## Date
 

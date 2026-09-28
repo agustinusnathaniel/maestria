@@ -87,18 +87,8 @@ Why AI rules, skills, and hooks were left out; Section 4 defines the policy, and
 
 ## References
 
-- [Ultracite setup](https://www.ultracite.ai/docs/setup)
-- [Ultracite configuration](https://www.ultracite.ai/docs/configuration)
 - [Ultracite Oxlint provider](https://www.ultracite.ai/docs/provider/oxlint)
-- [Ultracite monorepos](https://www.ultracite.ai/docs/monorepos)
-- [Ultracite agent rules](https://www.ultracite.ai/docs/ai/rules)
-- [Ultracite agent skills](https://www.ultracite.ai/docs/ai/skills)
-- [Ultracite agent hooks](https://www.ultracite.ai/docs/ai/hooks)
-- [Ultracite Git hooks](https://www.ultracite.ai/docs/git-hooks)
-- [Vite+ lint guide](https://viteplus.dev/guide/lint)
-- [Vite+ format guide](https://viteplus.dev/guide/fmt)
-- [Vite+ check guide](https://viteplus.dev/guide/check)
-- [Vite+ commit hooks guide](https://viteplus.dev/guide/commit-hooks)
+- [Ultracite configuration](https://www.ultracite.ai/docs/configuration)
 - [Vite+ monorepo guide](https://viteplus.dev/guide/monorepo)
 - [Vite+ release notes](https://github.com/voidzero-dev/vite-plus/releases/tag/v0.3.0)
 

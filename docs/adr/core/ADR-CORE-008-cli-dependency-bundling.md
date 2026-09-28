@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but two claims in the frozen text have drifted from the repository `[verified]`. The Decision names four runtime packages and the Consequences describe an empty `dependencies` field. [apps/maestria-cli/package.json](../../../apps/maestria-cli/package.json) now carries a non-empty `dependencies` block, and the `deps.alwaysBundle` list in [apps/maestria-cli/vite.config.ts](../../../apps/maestria-cli/vite.config.ts) holds more entries than the four packages named below. Both files are authoritative for the current state. The original text is retained.
 
 ## Context
 
@@ -39,17 +39,9 @@ The [xtarter project](https://github.com/agustinusnathaniel/xtarter) (same autho
 
 Move the 4 runtime packages (`@clack/prompts`, `citty`, `effect`, `picocolors`) from `dependencies` to `devDependencies` in the CLI's `package.json`, and configure `deps.alwaysBundle` in its `vite.config.ts` to tell the bundler to inline them.
 
-### Package.json Changes
+### Package and Bundler Configuration
 
-The `dependencies` field is removed entirely - the CLI has no runtime dependencies beyond Node.js 22 built-ins (`node:child_process`, `node:path`, etc.) - and the same 4 packages move into `devDependencies`.
-
-### Vite Config Changes
-
-`deps.alwaysBundle` lists the same 4 packages. The rest of the vite-plus config (entry, `node22` target, minification) is unchanged.
-
-### How `alwaysBundle` Works
-
-The `deps.alwaysBundle` array tells vite-plus/tsdown to inline the listed packages into the final bundle: it resolves each package's entry point from `node_modules`, tree-shakes unused exports (only the Effect patterns used by the CLI are included, not the entire Effect ecosystem), and emits a single JS file with no bare `import ... from "effect"` at runtime. End users download only the bundled artifact, not the Effect package and its transitive dependencies.
+`apps/maestria-cli/package.json` and its `vite.config.ts` are authoritative for the result of this decision: the runtime packages were moved out of `dependencies` and into `devDependencies`, and `deps.alwaysBundle` inlines them so the published artifact carries no bare runtime imports beyond Node.js 22 built-ins. The bundler resolves each listed package's entry from `node_modules` and tree-shakes unused exports, so only the Effect patterns the CLI uses are emitted; the rest of the config (entry, `node22` target, minification) is unchanged.
 
 ## Consequences
 
@@ -101,4 +93,4 @@ Replace vite-plus with a raw esbuild script that produces a single self-containe
 
 ## Revision
 
-On 2026-09-08, the CLI stopped publishing generated JavaScript sourcemaps. The maps were substantially larger than the bundled runtime and were not consumed by an error-reporting pipeline. The build continues to use vite-plus/tsdown; its default `sourcemap: false` keeps the published CLI artifact lean.
+On 2026-09-08 the CLI stopped publishing generated JavaScript sourcemaps, because the maps were substantially larger than the bundled runtime and no error-reporting pipeline consumed them; the build still uses vite-plus/tsdown with its default `sourcemap: false`.

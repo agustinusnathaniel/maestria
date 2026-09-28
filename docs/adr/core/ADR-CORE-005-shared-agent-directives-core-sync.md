@@ -46,17 +46,7 @@ Content rules:
 
 A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)), backed by library modules for config loading and merging, resolution planning, the transform pipeline, anchor liveness validation (ADR-CORE-024), skill validation, diffing, and file I/O (atomic writes, stale-output cleanup). It is not published to npm; it only runs inside this monorepo, avoiding a publish-and-consume cycle.
 
-**CLI flags** (not subcommands):
-
-| Flag | Behavior |
-| --- | --- |
-| _(no flags)_ | Sync (write output) |
-| `--check` | CI mode: exit 1 if any output would differ |
-| `--diff` | Show unified diff of changes during write, check, or dry-run; the canonical source is the old path, the output is the new path |
-| `--dry-run` | Print what would happen without writing |
-| `--verbose` | Print every file operation |
-| `--config` | Specify config path (default: `./sync.config.ts`, fallback `./sync.config.js`) |
-| `--help` | Print CLI help |
+**CLI flags** (not subcommands) are defined by the tool's own `--help` output: sync by default, plus `--check`, `--diff`, `--dry-run`, `--verbose`, `--config`, and `--help`. The `sync.ts` source is authoritative for the current flag set and behavior.
 
 Exit codes: 0 (ok), 1 (check failed), 2 (configuration error).
 
@@ -70,11 +60,9 @@ Every generated file starts with an auto-generated comment noting it is generate
 
 Each plugin declares a TypeScript config file at its package root, typed via `satisfies SyncConfig` for compile-time validation. Config shape (key differences from the design phase):
 
-- **`replace` is string-based, not regex** - uses `content.split(from).join(to)` instead of regex. Simpler to write and review; regex wasn't needed in practice.
-- **Per-file config** - each source file gets its own block for `output`, `frontmatter`, `prepend`, `append`, `replace`, and `stripFrontmatter`; a `default` block provides shared values.
-- **`output` overrides** - can redirect output to a different path or filename (e.g. `rules.md` → `rules/AGENTS.md`, `adventurer.md` → `adventurer/SKILL.md`).
-- **YAML quoting** - uses the `yaml` library's default (quotes only when structurally necessary), not explicit double-quoting.
-- **`frontmatter` is a static object or string** - no function-based dynamic frontmatter generation; each plugin defines frontmatter inline per file.
+- **String-based `replace`** - `content.split(from).join(to)`, not regex: simpler to write and review, and regex was never needed in practice.
+- **Per-file config with a `default` block** for shared values; each file sets its own `output`, `frontmatter`, `prepend`, `append`, `replace`, and `stripFrontmatter`, and may override the output path or filename.
+- **Static frontmatter and library YAML defaults** - no function-based dynamic frontmatter, and the `yaml` library's default quoting rather than explicit `QUOTE_DOUBLE`.
 
 The sync tool has zero knowledge of plugins: it reads the config, applies transforms, and writes output; plugins own their derivation.
 
@@ -126,58 +114,18 @@ Each plugin's `agents/` directory symlinks to core. Rejected because: symlinks d
 
 ## Post-Implementation Evolution
 
-Several details diverged from the original design during implementation.
+Several details diverged from the original design during implementation. Each entry keeps only the rationale the sections above do not already carry.
 
-### Package Structure: Script, Not Package
-
-**Designed:** a separate npm-publishable CLI tool (`core-sync`). **Built:** a TypeScript script inside `@maestria/core` run via the root-pinned `tsx` runner (ADR-CORE-016). **Why:** the tool only runs in this monorepo; publishing it standalone added a publish-consume cycle for zero benefit, and extraction later stays easy because the library modules have clean interfaces.
-
-### Orchestrator Moved to Core
-
-**Designed:** orchestrator files remain per-plugin (excluded from sync) as platform integration points. **Built:** `orchestrator.md` syncs from core alongside the specialists. **Why:** the prompt was ~90% shared methodology (commit protocol, delegation patterns, role-based pipeline, human-in-the-loop rules) and only ~10% platform-specific, and the shared part was already duplicated across 3 plugins. The `preserve` config option still exists for truly plugin-local content.
-
-### Rules Consolidated to a Single File
-
-**Designed:** a `rules/` subdirectory with separate topic files. **Built:** one `rules.md` at the root of `agent-directives/`. **Why:** the rules are short and rarely edited independently; splitting them added file-management overhead with no practical benefit.
-
-### Config Format: Static, per-File, String-Based
-
-**Designed:** `transforms` arrays using regex `find`/`replace` objects and a function-based `extension` parameter. **Built:** per-file config with static `frontmatter`, string-based `replace` (from/to), `prepend`, `append`, and `output` overrides. **Why:** all real substitutions were exact strings (`split/join` avoids escaping issues); plugin frontmatter is known at config-write time; `prepend`/`append` express edge injections more clearly than regex; and a per-file `output` string is clearer than a function computing paths.
-
-### Auto-Generated Notice Added
-
-**Not in design.** Every generated file starts with an auto-generated provenance comment so developers landing on one know where to make edits.
-
-> Updated 2026-09-11: a later `autoGenComment` config override let a config replace this notice. It was removed after an audit found zero sync configs used it, and the notice is now unconditional. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
-
-### YAML Serialization Uses Library Defaults
-
-**Designed:** `QUOTE_DOUBLE` output. **Built:** the `yaml` library's default (quotes only when structurally necessary). **Why:** `QUOTE_DOUBLE` produced unnecessarily noisy YAML; changing back is trivial if a platform requires double-quoted YAML.
-
-### CLI Uses Flags, Not Subcommands
-
-**Designed:** positional `write`/`check`/`diff` subcommands. **Built:** write by default, with `--check`, `--diff`, `--dry-run`, and `--verbose` flags. **Why:** there are only 3 mutually exclusive modes; flags are simpler to parse, combine (e.g., `--check --diff`), and document, and the bash scripts can pass them through.
-
-### Plugin Discovery: Bash Glob, Not Tool-Based
-
-**Designed:** the tool discovers plugins by glob. **Built:** a bash script iterates over glob results and runs `pnpm exec tsx sync.ts` from each package root (the runner is pinned at the workspace root and resolves from any subdirectory; ADR-CORE-016). **Why:** the tool is a `.ts` file, not a published binary, so invoking it from outside `packages/core/` breaks relative module resolution.
-
-### Config Files Use .ts with satisfies
-
-**Designed:** `sync.config.js` with no type information. **Built:** `sync.config.ts` with `import type { SyncConfig }` and `satisfies SyncConfig`. **Why:** TypeScript catches config errors during development, and the project already uses TypeScript; `satisfies` preserves inference on the literal while enforcing conformance.
-
-### Format/Sync Cycle Resolution
-
-**Not in design.** Generated directories are excluded from `vp fmt` via `fmt.ignorePatterns`, breaking the circular dependency where formatting the canonical source then syncing could differ from syncing first.
+- **Orchestrator synced from core.** It was originally excluded as a per-plugin integration point, but roughly 90% of the prompt was shared methodology already duplicated across three plugins and only about 10% was platform-specific; the `preserve` config option still covers plugin-local content.
+- **Auto-generated notice.** The provenance comment is unconditional: a later `autoGenComment` override let a config replace it, and was removed after an audit found no config using it ([ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md)).
+- **YAML serialization.** `QUOTE_DOUBLE` produced unnecessarily noisy output, and switching back is trivial if a platform ever requires double-quoted YAML.
+- **Plugin discovery.** A bash script iterates the glob because the tool is a `.ts` file rather than a published binary, so invoking it from outside `packages/core/` breaks relative module resolution.
 
 ## Related Decisions
 
-- ADR-CORE-000 (ADR structure) - established the prefix-scoped subdirectory layout; this ADR extends core scope with a shared content package
-- ADR-CORE-001 (global rules scope) - the `rules/` content is scoped per the three-way filter defined there
-- ADR-CORE-002 (plugin architecture) - established Markdown as source of truth; this ADR extends that principle to multi-plugin content sharing
-- ADR-CORE-003 (agent conventions) - the `!!!` markers, cross-references, skill pattern, and rules bullets are preserved in core content
-- ADR-CORE-004 (agent prompt template) - Updated 2026-08-22: core content carries compact verified-skill sections, compact material handoffs, and progress-based repair bounds rather than the 4-bucket skills and fixed five-section handoff described there (see ADR-CORE-019)
-- ADR-KC-001 (kimi-code architecture) - the "Future Considerations: Platform-Agnostic Core (After 3+ Platforms)" section set the trigger condition that this ADR satisfies
+- [ADR-CORE-000](ADR-CORE-000-adr-structure.md) - established the prefix-scoped subdirectory layout; this ADR extends core scope with a shared content package
+- [ADR-CORE-002](ADR-CORE-002-plugin-architecture.md) - established Markdown as source of truth; this ADR extends that principle to multi-plugin content sharing
+- [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md) - the root-pinned runner the sync tool executes through
 
 ## Date
 

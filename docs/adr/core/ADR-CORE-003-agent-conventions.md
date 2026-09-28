@@ -74,13 +74,15 @@ This makes review output structured, grepable, and consistent across sessions.
 
 #### Triage Suggestion Labels
 
-In addition to Conventional Comments, each review issue carries a triage suggestion in brackets appended to the label:
+In addition to Conventional Comments, each review issue carries a triage suggestion in brackets appended to the label. The three labels and what qualifies for each are defined in the canonical directives: [rules.md](../../../packages/core/agent-directives/rules.md) (Acceptance and Blind Review) and [reviewer.md](../../../packages/core/agent-directives/specialists/reviewer.md) (Triage contract). What each label triggers is decided here:
 
 | Triage Label | Meaning | Next Action |
 | --- | --- | --- |
 | `[fix]` | Concrete blocker tied to acceptance, safety, correctness, or material in-scope design | Dispatched to Builder for implementation |
 | `[dismiss]` | Non-blocking, speculative, low-confidence, or preference observation | Resolved with a comment |
 | `[escalate]` | Ambiguous, high-risk, or cross-cutting | Surfaced to the user via question |
+
+The current routing of the three labels is owned by [orchestrator.md](../../../packages/core/agent-directives/specialists/orchestrator.md) (Review and Triage), which sends an in-scope `[fix]` finding to `@builder` for bounded repair, records a `[dismiss]` rationale, and surfaces an `[escalate]` decision to its owner `[verified]`.
 
 Example: `issue: [fix] Password reset token is not hashed before storage - use bcrypt hash.`
 

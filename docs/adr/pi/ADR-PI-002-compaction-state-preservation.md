@@ -47,33 +47,11 @@ The orchestrator prompt template has a "Post-Compaction Recovery" section instru
 - Pi `CompactionEntry` structure documentation
 - OpenCode equivalent - its compaction hook for session state management
 
-## Implementation Notes (Post-Implementation)
+## State Relocation and Deferred Persistence
 
-> Moved 2026-09-11: the module-scope state and its renderer now live in `@maestria/shared-pi/state-core` (shared by Pi and OMP), and the `packages/pi/src/state.ts` re-export barrel was deleted. Consumers import `state-core` directly and the renderer is `renderMaestriaSummary`. The behavior described below is unchanged; see [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
+Moved 2026-09-11: the module-scope state and its renderer live in `@maestria/shared-pi/state-core` (shared by Pi and OMP), so consumers import `state-core` directly; see [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
 
-### `MaestriaState` Module-Scope Object Implemented
-
-Tracks all 7 fields (activeTask, completionPromise, blockers, filesRead, filesModified, handoffHistory, reviewMode); importable across the extension.
-
-### State Renderer Produces Markdown Summary
-
-`renderMaestriaSummary` produces a markdown summary with all 7 fields; each renders as a level-2 heading with lists for blockers, file references, and handoffs.
-
-### Rendered Summary Returned as `compaction.summary`
-
-On `session_before_compact`, the rendered markdown replaces the default Pi summary entirely.
-
-### `details` Field Populated with Structured State
-
-The raw `MaestriaState` object is serialized into `compaction.details` for future-proofing, enabling structured recovery if Pi's compaction API evolves.
-
-### Orchestrator Prompt Includes "Post-Compaction Recovery" Section
-
-The orchestrator prompt template instructs the LLM to read the summary block, restore the active task, acknowledge the completion promise, re-establish blockers and file references, and resume the last handoff context.
-
-### `pi.appendEntry`-Based Persistence Deferred to v1.1
-
-Full session persistence surviving `/reload` and `/new` requires `pi.appendEntry`; deferred to v1.1 (see ADR-PI-000 for v1.1 scope).
+Full session persistence surviving `/reload` and `/new` still requires `pi.appendEntry`; deferred to v1.1 (see ADR-PI-000 for v1.1 scope).
 
 ## Date
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but the field count named in the frozen text has drifted from the canonical directives `[verified]`. Decision item 3 and the Date line record a 7-field pre-check and its 2026-09-11 correction, and the implementation notes since removed asserted that the 7-field contract remains the methodology contract in the handoff skill. That claim is false: the handoff skill now specifies five fields, Outcome, Context and constraints, Acceptance and evidence, Assumptions or blockers, and Next step. [packages/core/agent-directives/skills/handoff.md](../../../packages/core/agent-directives/skills/handoff.md) is the authoritative source, and the count moved from seven to five in commit `b1c67edd` ("refactor(directives): simplify routing and restore agent autonomy (#194)"), not in the later `52159b0a`, which only added the optional spec-contract pointer to the already-reduced file. The dispatch half of the 2026-09-11 correction is unaffected and belongs to `@maestria/shared-pi` and the pi adapter, as the Dispatch Integration Constraints section below states. The original text is retained.
 
 ## Terminology
 
@@ -118,35 +118,15 @@ Smaller ecosystem, less active maintenance, and `@gotgenes/pi-subagents` already
 ## References
 
 - Pi ecosystem survey - `pi.dev/packages` search results (June 2026)
-- `@gotgenes/pi-subagents` - `pi install npm:@gotgenes/pi-subagents`
-- `pi-crew` - `pi install npm:@gotgenes/pi-crew` (deferred to v1.1)
-- `@quintinshaw/pi-dynamic-workflows` (deferred to v1.1)
+- `@gotgenes/pi-subagents` - the selected dispatch package
 - `@maestria/pi` package design - Package design plan §4.5 - adapter design for @gotgenes/pi-subagents
 - Risks documented in the plan's risk register - R-16 (pre-1.0 vendor dependency), R-17 (Pi API instability), O-12 (build vs adopt)
 
-## Implementation Notes (Post-Implementation)
+## Dispatch Integration Constraints
 
-### @gotgenes/pi-subagents Confirmed Working
+`@gotgenes/pi-subagents` registers its own `subagent` tool and the last registration wins, so maestria's dispatch tool is named `maestria_subagent`. Dispatch asserts the specialist name and a non-empty task; the handoff contract itself stays methodology, owned by the handoff skill, and is no longer machine-validated at dispatch time.
 
-The `SubagentsService` API (`getSubagentsService()`, `spawn()`) works as documented; the package is pinned to `^18.0.0`.
-
-### Tool Name Collision Discovered and Resolved
-
-The package registers its own `subagent` tool; two registrations would silently conflict (last registration wins). **Resolution:** the maestria tool was renamed to `maestria_subagent`, and all prompts, commands, and tests reference it.
-
-### Handoff Validation Pre-Check Implemented
-
-Handoff inputs are checked before dispatch: `assertValidAgent()` rejects specialist names outside `ALLOWED_AGENTS`, and `assertNonEmptyTask()` rejects empty or whitespace-only tasks. Both live in `@maestria/shared-pi/subagent-utils`.
-
-> Corrected 2026-09-11: the original implementation used `validateHandoff()` from the same module to parse all 7 handoff fields (Goal, Context, Requirements, Known Problems, Assumptions Documented, Success Criteria, Next Step) and reject a missing or empty field. That function, its `HANDOFF_FIELDS` constant, and its result type were removed in the consumer-driven simplification pass after an audit found no production callers. The 7-field contract remains the methodology contract in the handoff skill; it is no longer machine-validated at dispatch time.
-
-### Recursion Guard Respected
-
-The package's recursion guard prevents nested subagents; maestria orchestration sits above the subagent layer (orchestrator → subagent → specialist), matching the ADR's design constraint.
-
-### Graceful Fallback
-
-The subagent module catches errors from `@gotgenes/pi-subagents` and returns structured handoff text instead of crashing, so the package works with degraded functionality when the subagent SDK is unavailable.
+Dispatch validation, the recursion guard, and graceful degradation when the subagent service is unavailable live in `@maestria/shared-pi` and the pi adapter; verify current behavior there.
 
 ## Date
 
