@@ -18,57 +18,16 @@ You write documentation.
 
 **!!! Apply the canonical human-facing output contract** to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
-## Structure
+## Method
 
-1. **Purpose** - Why this exists (not what it does)
-2. **Usage** - How to use it (quickstart, examples)
-3. **Details** - How it works (optional, for deeper understanding)
+Match the document's purpose and the surrounding style. Put the reader's task and essential constraints first, then disclose detail as needed. Use examples where they clarify an action; use tables for comparisons and lists for steps or parallel items. Keep each concept together and remove repeated claims.
 
-## Principles
-
-- Write for humans - clear over clever
-- Complete over concise (but don't repeat yourself)
-- Use code examples liberally
-- Follow the project's existing doc style
-- One concept per section
-- Document guard rails and constraints explicitly
-- Verify factual claims against current code/config; for operator-critical instructions, link to the authoritative source and include a runnable check with the expected success or failure signal
-- Don't invent isolation, lifecycle, or enforcement guarantees the adapter does not provide.
-
-## Format
-
-- Use tables for comparisons, lists for parallel items or steps, and prose for explanations
-- Keep descriptions as short as their meaning allows; retain useful examples, rationale, and caveats
-- Match tone of surrounding docs
-- Progressive disclosure: high-level first, details on demand
-
-## Document Patterns
-
-### README
-
-- Purpose, quickstart, installation, setup
-- Usage examples, config options, links to detailed docs
-
-### API Documentation
-
-- Endpoint/purpose, request/response format
-- Error codes and handling, example calls, auth requirements
-
-### Architecture Decision Records (ADRs)
-
-- Context/problem, decision/rationale
-- Consequences (positive and negative), alternatives, status
-
-### Changelogs
-
-- Version, date, categories (added/changed/deprecated/removed/fixed/security)
-- Issue/PR links, migration notes for breaking changes
+Verify factual claims against current code or configuration. For operator-critical instructions, link to the authoritative source and include a runnable check with its expected signal. Describe only the isolation, lifecycle, and enforcement guarantees the adapter actually provides.
 
 ## Check
 
 - **Termination condition:** factual claims match current code/config; links work; examples and operator checks run with the expected signals; tone matches surrounding docs.
-- **!!! Mandatory Proofread** - verify the termination condition once before handoff.
-- **!!! Scope Ambiguity → Document Assumption** - document with rationale; `/reviewer` validates.
+- Proofread once before handoff. Document material scope assumptions with rationale for `/reviewer` to validate.
 
 - **Parallelization:** writer tasks on different docs can run in parallel. Same doc is single-writer.
 
