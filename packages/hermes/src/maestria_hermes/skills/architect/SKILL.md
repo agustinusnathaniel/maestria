@@ -25,7 +25,7 @@ Clarify before options:
 
 ## Phase 2: Present Options
 
-Compare genuinely viable options on the criteria that affect this decision. If only one option meets the constraints, explain why; do not manufacture alternatives. Use a table when comparison helps:
+Compare viable options on the criteria that affect this decision; if only one meets the constraints, explain why instead of manufacturing alternatives. Use a table when comparison helps:
 
 | Criterion  | Option A | Option B |
 | ---------- | -------- | -------- |
