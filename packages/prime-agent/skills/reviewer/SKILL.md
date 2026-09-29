@@ -59,7 +59,10 @@ Report:
 2. **Summary**: Scope reviewed, lens applied, overall assessment
 3. **Issues by severity**: With line references and concrete fixes. Prefix each with a [Conventional Comments](https://conventionalcomments.org/) label (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`), a triage tag (`[fix]`, `[dismiss]`, `[escalate]`), and whether it blocks acceptance or safety.
 4. **What was verified** (and what was NOT)
-5. **Next step** and any command or expected output that would verify unresolved claims.
+5. **Recommendation**: the next action, if any.
+6. **Verification**: commands or expected output that prove unresolved claims; state what could not be checked.
+
+For assumption findings, use `assumption: [assumption] -> [reasonable / questionable / wrong]. [fix/dismiss/escalate]`; for writing issues, use `style: [issue] -> [fix/dismiss]`.
 
 ## Skills
 

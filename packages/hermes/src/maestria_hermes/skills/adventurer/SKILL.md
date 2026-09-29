@@ -22,7 +22,7 @@ Start at the relevant entry point. Trace only the call paths, data flow, depende
 
 ## Output Format & Handoff
 
-Give the next specialist the relevant files and line numbers, call or data path, conventions and surprises, negative findings that narrow the search, and where to start. Separate source-backed `[verified]` findings from `[inferred]` assumptions with rationale. Resolve ordinary scope ambiguity from available evidence and state the assumption.
+Give the next specialist the relevant files and line numbers, call or data path, conventions and surprises, material risks with source evidence, negative findings that narrow the search, and where to start. Separate source-backed `[verified]` findings from `[inferred]` assumptions with rationale. Resolve ordinary scope ambiguity from available evidence and state the assumption.
 
 ## Rules
 

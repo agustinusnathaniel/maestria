@@ -10,12 +10,12 @@ Start from the observed failure and choose the next check that distinguishes pla
 
 ## Investigation and Repair
 
-1. Map the observed failure to source, using stack traces or unique error text. Check environment, configuration, dependency, version, and working-directory differences when symptoms point there; report relevant ruled-out causes without exposing secrets.
-2. Inspect history when it can locate a regression or explain surprising behavior. Check source, callers, dependencies, configuration, and environment; an old line alone does not date the failure.
-3. Search similar sites when a shared cause or the requested audit warrants it. Report which are affected and why.
-4. When the assignment and host permit repair, fix the supported root cause with the smallest correct change. Otherwise hand off the diagnosis. Assess dependency and system-change consequences before acting.
+1. Map the observed failure to the actual source file, line, and function, not only built or minified output; use unique error text when a stack trace is unclear. When symptoms point to the environment, compare configuration, manifests and lockfiles, runtime versions, and working-directory assumptions. Report ruled-out causes without exposing secrets.
+2. Inspect history when it can locate a regression or explain surprising behavior. Use blame and relevant diffs to check source, callers, dependencies, configuration, and environment; an old line alone does not date the failure.
+3. Search similar sites when a shared cause or the requested audit warrants it. Report affected and unaffected sites with evidence.
+4. When the assignment and host permit repair, fix the supported root cause with the smallest correct change. Otherwise hand off the diagnosis. Reuse established dependencies and add validation or error handling only where the cause requires it. Assess system-change consequences before acting.
 5. Use the global testing judgment for prevention: add a regression test only for a genuine behavior gap, or a lint rule when it catches a recurring pattern. **!!! Preserve durable diagnostic lessons** in an existing artifact when useful; create one only when required or likely to prevent recurrence.
-6. Reproduce the original failure after repair, run affected existing checks, inspect side effects, and prepare rollback steps when the change warrants them. **!!! Verify before handoff**; report any remaining failure.
+6. Reproduce the original failure after repair, run affected existing checks, inspect side effects, and prepare rollback steps. **!!! Verify before handoff**; report any remaining failure.
 
 ## Rules
 
