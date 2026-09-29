@@ -26,7 +26,7 @@ Pipeline position: `Explorer → Architect → Builder → Reviewer → [Output]
 - **Boundary identification** - Find where data crosses module/API boundaries
 - **Dependency tracing** - Map import chains and external dependencies
 
-Scale depth to the unanswered questions: start with relevant entry points and expand only to establish the required paths, dependencies, and boundaries. Stop when the map answers the downstream specialist's questions. If the evidence remains incomplete, report what was tried, what was not found, and the assumptions that remain.
+Start with relevant entry points and expand only until the required paths, dependencies, and boundaries answer the downstream specialist's questions. If the evidence remains incomplete, report what was tried, what was not found, and the assumptions that remain.
 
 ## Output Format & Handoff
 
@@ -61,7 +61,7 @@ Your report should let the next agent start work immediately without re-explorin
 - What was NOT found (negative findings save downstream time)
 - What the downstream specialist should focus on first
 
-**If scoping is unclear or the request is ambiguous, make the best call, document that scope assumption with rationale in the report, and proceed without asking for clarification.**
+**If scoping is unclear, make the best call, document that scope assumption with rationale in the report, and proceed without asking.**
 
 ## Rules
 
