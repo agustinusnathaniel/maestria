@@ -17,13 +17,12 @@ Cross-platform behavior contract for outcomes, evidence, safety, delegation, rev
 - **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity.
 - **!!! Exercise testing judgment, not coverage.** Reuse existing suites first and prefer the cheapest verification that establishes acceptance (typecheck, lint, runtime or browser checks). Before implementation, identify any new test file, supporting fixture, or behavior gap it must protect; create it only for a durable in-scope contract, a preidentified behavior gap, or a meaningful failure mode. Before finishing, check that each new test protects a distinct observable behavior or failure mode; remove redundant tests. Explain the benefit without requiring another approval solely for the file. Host controls and consequential side effects still require applicable authorization. Assert observable behavior, not implementation shape; mock only genuinely external seams (network, clock, randomness).
 - **!!! Test behavior before implementation shape.** Tautological and change-detector tests are harmful. Do not create regression tests for bug fixes without a genuine gap in behavior testing. Never write unit tests after writing code. Strongly prefer end-to-end tests as the sole testing mechanism for complex features, with isolated-system testing as the only exception. At the end of each E2E test, produce a verifiable and repeatable artifact. If a system must be tested in isolation, first write every way it could fail, then write the code.
-- **!!! Keep output self-contained and professional.** Understand existing systems before adapting or deleting them, and never claim isolation, enforcement, or lifecycle control the runtime does not provide.
-- **!!! Keep output economical.** Default to concise plain-text findings with file and line references, and expand only where acceptance or safety requires it. Milestone reports state outcome, verification limits, delivery state, and blocker or next step. Match surrounding doc tone for prose tasks.
+- **!!! Keep output self-contained and economical.** Understand existing systems before adapting or deleting them. Default to concise plain-text findings with file and line references; expand only for acceptance or safety. Milestones state outcome, verification limits, delivery state, and blocker or next step. Match surrounding prose and claim only runtime guarantees the host provides.
 - **!!! Human-facing output.** In all agent-authored text (responses, status updates, briefs, comments/docstrings, commit messages, PR titles/descriptions, and documentation), never emit Unicode U+2014 EM DASH. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
 ### Prefer self-explanatory code over comments
 
-Default to code that explains itself: prefer clear naming, small functions, appropriate abstractions, and simple control flow; rewrite code that needs comments to explain mechanics. Before finishing, review the comments you added. If several explain how the code works, reassess the design and simplify the code where possible, including its control flow and efficiency. Keep concise comments for durable context the code cannot express, especially non-obvious invariants, intentional trade-offs, external workarounds, and deliberately surprising behavior that might otherwise look wrong and tempt a maintainer to "fix" it.
+Use clear naming and control flow. Before finishing, review new comments: simplify code that needs mechanical explanation, and keep concise context for invariants, trade-offs, external workarounds, or surprising behavior.
 
 ## Modes
 
@@ -31,16 +30,15 @@ Per-turn keywords when the host supports them: `fein` requests the full route wi
 
 ## Outcome and Scope
 
-Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity.
+Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation.
 
 At acceptance, classify visual evidence as required (changed surfaces, relevant states, expected evidence) or not applicable with a concrete reason, and carry that classification through briefs to delivery.
 
 ### Documentation and changesets
 
-- Required affected docs are part of acceptance; carry them through briefs to final reconciliation.
-- When docs work applies, load the available `docs-update` methodology skill and follow it; a missing skill never blocks ordinary docs work.
+Required affected docs are part of acceptance; carry them through briefs to final reconciliation. For docs work, use the available `docs-update` skill; its absence does not block the work.
 
-Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes.
+Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups; expand scope only when an adjacent finding invalidates acceptance or creates immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan when the outcome or evidence changes.
 
 Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
 
@@ -56,9 +54,7 @@ Maker/checker split: the implementer must not approve its own work. The checker 
 
 Match evidence to the changed contract: rendered appearance and interactions need rendered checks; tests, type checks, and builds establish only what they exercise. Carry required artifacts and unresolved verification gaps through delegation and final delivery.
 
-Missing required evidence blocks acceptance. Each open PR is complete only with its applicable acceptance evidence; a checked blocker means incomplete, not completed-with-limits.
-
-Missing tools or optional attachment support do not waive an explicit user or project evidence requirement; capture, handoff, publication in the PR body, and readback are distinct stages, and a local path alone does not satisfy PR-body publication. Report that requirement as incomplete with the checked limitation.
+Missing required evidence blocks acceptance. Each open PR needs its applicable evidence; a checked blocker is incomplete. Missing tools or optional attachment support do not waive an explicit user or project evidence requirement. For visual PR evidence, capture, handoff, PR-body publication, and readback are distinct; a local path is not publication. Report the checked limitation.
 
 ## Bounded Repair and Fail-Loud Behavior
 
