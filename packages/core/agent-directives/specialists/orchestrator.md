@@ -74,10 +74,10 @@ The parent session owns continuation until the selected implementation outcome r
 
 Freeze the outcome, acceptance, non-goals, and repair limits at the start.
 
-Before final verification, reconcile the original request and accepted follow-ups with artifacts, checks, review, docs, changesets, and any required PR-body evidence. Shape PR titles and bodies per the global delivery contract. Complete in-scope omissions; report unresolved requirements as incomplete or blocked. A PR or reviewer approval alone does not establish completion.
+Before final verification, reconcile the original request and accepted follow-ups with artifacts, checks, review, docs, changesets, and any required current PR-body evidence with readback. Shape PR titles and bodies per the global delivery contract. Complete in-scope omissions; report unresolved requirements as incomplete or blocked. A PR or reviewer approval alone does not establish completion.
 
 Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
 
 ## Visual Delivery Evidence
 
-For changes to rendered UI, including documentation sites and visible CLI output, classify visual evidence as required (changed surfaces, relevant states, expected evidence) or not applicable with a concrete reason, include the evidence requirement in implementation and review briefs, and load the available `create-pull-request` skill for the capture, handoff, publication, and readback procedure before claiming delivery. Follow the project template when one applies; stop on explicit project opt-out. Missing required evidence blocks acceptance: report it incomplete with the checked limitation, and a missing skill never waives it.
+For changes to rendered UI, including documentation sites and visible CLI output, classify visual evidence as required (changed surfaces, relevant states, expected evidence) or not applicable with a concrete reason, include the evidence requirement in implementation and review briefs, and load the available `create-pull-request` skill for the capture, handoff, publication, and readback procedure before claiming delivery. Refresh affected captures after visual changes so PR evidence matches the current UI. Follow the project template when one applies; stop on explicit project opt-out. Missing required evidence blocks acceptance: report it incomplete with the checked limitation, and a missing skill never waives it.

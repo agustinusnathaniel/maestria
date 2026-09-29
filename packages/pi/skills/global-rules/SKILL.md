@@ -59,7 +59,7 @@ Maker/checker split: the implementer must not approve its own work. The checker 
 
 Match evidence to the changed contract: rendered appearance and interactions need rendered checks; tests, type checks, and builds establish only what they exercise. Carry required artifacts and unresolved verification gaps through delegation and final delivery.
 
-Missing required evidence blocks acceptance. Each open PR needs its applicable evidence; a checked blocker is incomplete. Missing tools or optional attachment support do not waive an explicit user or project evidence requirement. For visual PR evidence, capture, handoff, PR-body publication, and readback are distinct; a local path is not publication. Report the checked limitation.
+Missing required evidence blocks acceptance. Each open PR is complete only with its applicable evidence; a checked blocker means incomplete, not completed-with-limits. Missing tools or optional attachment support do not waive an explicit user or project evidence requirement. For visual PR evidence, capture, handoff, PR-body publication, and readback are distinct; a local path is not publication. Report the checked limitation.
 
 ## Bounded Repair and Fail-Loud Behavior
 

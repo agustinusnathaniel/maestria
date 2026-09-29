@@ -4,7 +4,7 @@ Validate each implementation slice before committing it. Before delivery, the de
 
 - [ ] `pnpm check` passes (build, formatting, lint/type analysis, workspace tests, sync and manifest checks); `vp check` passes before delivery. Reuse those results rather than rerunning constituent commands unchanged.
 - [ ] If editing canonical agent directives: run `scripts/sync-all`, then confirm `scripts/check-sync` passes
-- [ ] If editing canonical agent directives: confirm before-after obligation dispositions (preserved/moved/consolidated/intentionally retired) with evidence and context reachability, per [directive change review](directive-change-review.md)
+- [ ] If editing canonical agent directives: confirm before-after obligation dispositions (preserved/moved/consolidated/intentionally retired) with evidence and context reachability, per [directive change review](directive-change-review.md). For substantial reductions, record baseline/candidate behavior on the changed roles and prior regression contracts before marking the PR ready.
 - [ ] If changing packaged or exported files: `package.json` files array and export map are up to date
 - [ ] If changing agent prompts: README in `core/agent-directives/` is still accurate
 - [ ] If introducing a new design decision: has a corresponding ADR been written?

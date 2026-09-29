@@ -11,4 +11,4 @@
 "@maestria/prime-agent": patch
 ---
 
-Make shared agent rules and orchestration guidance easier to scan without changing safety, review, or delivery boundaries.
+Make shared agent rules easier to scan while retaining delivery and evidence boundaries, and require behavior comparisons for substantial directive reductions.

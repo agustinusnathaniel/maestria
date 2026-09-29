@@ -37,8 +37,10 @@ Deterministic tests may guard machine-readable, sync, provenance, and safety con
 
 - Compare baseline and candidate under controlled conditions: same model tier, host, and settings; change only the directive text under test.
 - Repeat each scenario and report numerator over denominator failures per stage (brief, capture, handoff, review, publication, readback), plus any user reminders needed at each stage. Report real runs only; never fabricate results.
+- For substantial reductions, select cases for every changed role and for contracts previously restored after a regression. Record which obligations each case exercises. Static obligation mapping and prompt-only proxy runs are useful, but do not establish behavior in a shipped host.
 - Run the set when a change touches delivery or evidence contracts, proportionate to risk per the testing philosophy. It is not a mandatory gate for every typo fix, and it never authorizes external PR writes for evaluation purposes; use local branches and discard evaluation artifacts.
 - Machine-readable contract results and scenario outcomes are reported separately: machine-readable checks guard their contracts, scenarios sample behavior, and neither proves the other.
+- Keep a substantial reduction PR in draft until its applicable baseline/candidate host runs are recorded. If the host or model cannot be exercised, report the exact gap and leave the PR in draft for review rather than claiming preserved behavior.
 
 ## Dated evidence
 
