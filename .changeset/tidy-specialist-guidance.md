@@ -11,4 +11,4 @@
 "@maestria/prime-agent": patch
 ---
 
-Simplify specialist guidance while preserving role boundaries, evidence requirements, and review criteria.
+Consolidate Architect and Writer guidance while preserving their decision and documentation requirements.

@@ -117,6 +117,17 @@ export default {
         name: 'maestria-diagnose',
       },
       output: 'diagnose/SKILL.md',
+      replace: [
+        { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
+        {
+          from: "Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools",
+          to: 'Check for recent changes in configuration or dependencies',
+        },
+        {
+          from: 'Rule out environmental causes by gathering data directly',
+          to: 'Rule out environmental causes before deeper investigation',
+        },
+      ],
     },
 
     // -- Orchestrator: the methodology dispatcher --
@@ -157,6 +168,11 @@ export default {
         name: 'maestria-reviewer',
       },
       output: 'reviewer/SKILL.md',
+      replace: [
+        { from: "Google's Code Review Guidelines", to: 'Peer review best practices' },
+        { from: 'The Standard of Code Review', to: 'Standard review practices' },
+        { from: 'What to Look For in a Code Review', to: 'What to look for in a review' },
+      ],
     },
 
     // -- Rules: cross-cutting methodology rules --
