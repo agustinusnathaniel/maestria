@@ -1,5 +1,17 @@
 # @maestria/agent-plugin
 
+## 0.1.10
+
+### Patch Changes
+
+- [#361](https://github.com/agustinusnathaniel/maestria/pull/361) [`b7fa663`](https://github.com/agustinusnathaniel/maestria/commit/b7fa663bd790e42da120712f85d1f1eadc40bde4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prompt implementers and reviewers to reassess explanatory comments and redundant tests before accepting a change.
+
+- [#370](https://github.com/agustinusnathaniel/maestria/pull/370) [`aeb0713`](https://github.com/agustinusnathaniel/maestria/commit/aeb0713fa0ea59e1bddfc14c9e2d3ade04a91795) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Consolidate duplicated agent directive text without changing behavior.
+  
+  - The human-facing output contract now lives once in the shared global rules; specialist prompts point at it instead of restating it, keeping per-specialist scope and trigger wording.
+  - Dense rules prose is split into scannable paragraphs with identical wording, and restated adventurer/architect wording is collapsed.
+  - No obligation was moved without a pointer, retired, or weakened; all directive contract tests pass unmodified.
+
 ## 0.1.9
 
 ### Patch Changes
