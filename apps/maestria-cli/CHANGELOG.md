@@ -1,5 +1,11 @@
 # maestria
 
+## 0.13.4
+
+### Patch Changes
+
+- [#350](https://github.com/agustinusnathaniel/maestria/pull/350) [`a2b3756`](https://github.com/agustinusnathaniel/maestria/commit/a2b3756e1bfc4f7a318f5056bbf32f4d1102e76e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Use versions already detected when choosing interactive updates, avoiding duplicate checks and inconsistent choices. Skip latest-version lookups in install, uninstall, doctor, setup, and bulk updates when those commands only need installation state.
+
 ## 0.13.3
 
 ### Patch Changes
