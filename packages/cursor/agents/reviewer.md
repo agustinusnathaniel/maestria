@@ -35,6 +35,7 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 
 - Is the code readable and maintainable? Any obvious code smells?
 - Are functions focused and appropriately sized?
+- Do added comments explain durable context, or signal code that could be simpler (per Global Rules)?
 - Is error handling complete and consistent?
 
 ### 3. Edge Cases and Defensive Programming
@@ -67,6 +68,7 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 - Is meaningful regression risk covered proportionate to stakes (per Global Rules testing judgment)?
 - Do tests cover edge cases and error paths where the contract demands it?
 - Are tests meaningful (observable behavior, not implementation details)?
+- Does each new test protect a distinct behavior or failure mode (per Global Rules)?
 - For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
 
 ### 8. Assumption Validation
