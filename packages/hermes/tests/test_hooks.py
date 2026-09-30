@@ -2242,6 +2242,39 @@ class PluginRegistrationTests(unittest.TestCase):
 
         self.assertEqual(manifest_commands, set(MAESTRIA_COMMANDS))
 
+    def test_commands_do_not_collide_with_core(self):
+        """No registered command may shadow a built-in Hermes command.
+
+        The loader REJECTS a colliding plugin command
+        (``PluginManager.register_command`` checks
+        ``hermes_cli.commands.resolve_command`` and skips it with a warning).
+        Worse, ``pre_gateway_dispatch`` runs BEFORE command resolution and
+        returns ``{"action": "skip"}`` for anything in ``MAESTRIA_COMMANDS``:
+        a colliding name silently drops the user's message and never reaches
+        core's command.  The existing manifest/registration equality tests
+        cannot catch this because all three sides read the same constant, so
+        this test resolves each name against the real registry instead.
+
+        Skipped (not failed) when Hermes is not importable - the plugin is
+        developed and published outside a Hermes checkout, and the repo must
+        stay testable there.
+        """
+        try:
+            from hermes_cli.commands import resolve_command
+        except Exception:
+            self.skipTest("hermes_cli.commands unavailable (outside a Hermes install)")
+
+        from maestria_hermes.modes import MAESTRIA_COMMANDS
+
+        collisions = sorted(
+            cmd for cmd in MAESTRIA_COMMANDS if resolve_command(cmd) is not None
+        )
+        self.assertEqual(
+            collisions, [],
+            f"commands collide with built-in Hermes commands and would be "
+            f"silently dropped by pre_gateway_dispatch: {collisions}",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

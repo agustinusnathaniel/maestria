@@ -1,6 +1,6 @@
 """pre_gateway_dispatch hook -- intercepts maestria slash commands before agent-busy check.
 
-Registered commands: /fein, /sonar, /blitz, /mode, /mode-clear, /review, /plan
+Registered commands: /fein, /sonar, /blitz, /mode, /mode-clear
 These are handled here so they dispatch even when the agent is busy
 processing a turn (the normal plugin command dispatch at gateway/run.py:9007
 runs AFTER the agent-busy gate and never fires during active turns).
@@ -82,10 +82,6 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
             elif cmd in ("fein", "sonar", "blitz"):
                 mode_manager.set_mode(cmd)
                 response = render_mode_switch(cmd, MODE_PIPELINES.get(cmd, "unknown"))
-
-            elif cmd in ("review", "plan"):
-                mode_manager.set_mode("fein")
-                response = render_mode_switch("fein", MODE_PIPELINES["fein"])
         except ModePersistenceError:
             response = MODE_PERSISTENCE_FAILURE_MESSAGE
 

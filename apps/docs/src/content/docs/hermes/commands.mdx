@@ -1,9 +1,9 @@
 ---
 title: Commands
-description: Reference for @maestria/hermes mode, review, planning, and session commands.
+description: Reference for @maestria/hermes mode and session commands.
 ---
 
-The plugin registers 7 slash commands in every Hermes session.
+The plugin registers 5 slash commands in every Hermes session.
 
 ## Mode Commands
 
@@ -58,29 +58,7 @@ Show the current mode and read-only status.
 
 ## Workflow Commands
 
-### `/review`
-
-Set the methodology pipeline to **fein** mode, enabling the full pipeline with review gate.
-
-```
-/review
-→ Switched to **fein** mode.
-  Pipeline: adventurer / architect -> builder -> reviewer
-```
-
-`/review` activates fein mode rather than a dedicated review pass; a dedicated review trigger is planned for a future release.
-
-### `/plan`
-
-Set the methodology pipeline to **fein** mode, enabling the full pipeline with planning phase.
-
-```
-/plan
-→ Switched to **fein** mode.
-  Pipeline: adventurer / architect -> builder -> reviewer
-```
-
-`/plan` activates fein mode, and planning runs as part of the full pipeline; a dedicated planning trigger is planned for a future release.
+The plugin does not register a dedicated review or plan command. Both names belong to Hermes core, and a plugin command that collides with a built-in is rejected by the loader - worse, the plugin's `pre_gateway_dispatch` hook runs before command resolution, so a colliding name would drop the message without running core's command. Use `/fein` to run the full pipeline (its reviewer and planner specialists run as pipeline stages), or the core commands below.
 
 ## Hermes Core Commands
 
@@ -92,6 +70,8 @@ These are available in every Hermes session regardless of plugin:
 | `/goal pause`  | Pause auto-continuation without clearing the goal   |
 | `/goal resume` | Resume the goal loop                                |
 | `/goal clear`  | Drop the goal entirely                              |
+| `/review`      | Spawn an independent subagent to review the work    |
+| `/plan`        | Write a markdown implementation plan, no execution  |
 | `/stop`        | Interrupt the current turn                          |
 | `/resume`      | Resume a compacted session                          |
 
