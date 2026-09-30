@@ -7,9 +7,10 @@ any mode allowlist runs:
   role) gets the fixed role-neutral child policy - BLITZ_DIRECT_ALLOWED_TOOLS
   - in EVERY mode (fein, sonar, and blitz).  A child is never held to a
   narrower mode allowlist: the approved child policy already includes
-  complete/think/reason and web-research tools, and no child ever receives
-  write, shell, code-execution, delegation, or OpenCode access.  Mode
-  allowlists bound only trusted TOP-LEVEL sessions.
+  read-only local inspection (skill_view, skills_list, session_search) and
+  the web-research tools, and no child ever receives write, shell,
+  code-execution, delegation, or OpenCode access.  Mode allowlists bound only
+  trusted TOP-LEVEL sessions.
 - A trusted top-level session keeps direct policy: unrestricted in fein,
   the literal allowlists in sonar/blitz.  An unknown mode value fails
   closed before any allowlist is consulted.
@@ -154,17 +155,18 @@ def create_pre_tool_hook(mode_manager: ModeManager):
         blitz alike.  The mode allowlists (SONAR_ALLOWED_TOOLS /
         BLITZ_DIRECT_ALLOWED_TOOLS) bound only trusted top-level sessions;
         a child is never held to a narrower mode set, because the approved
-        child policy already includes the complete/think/reason and
-        web-research tools.  Write, shell, code execution, delegation, and
-        OpenCode access are never available to a child.
+        child policy already includes read-only local inspection
+        (skill_view, skills_list, session_search) and the web-research tools.
+        Write, shell, code execution, delegation, and OpenCode access are
+        never available to a child.
         """
         if tool_name not in BLITZ_DIRECT_ALLOWED_TOOLS:
             logger.info("child-safe policy blocked tool=%s", tool_name)
             return _block(
                 f"Tool '{tool_name}' is not available to delegated children. "
-                "Delegated children are limited to read, research, and LLM "
-                "reasoning tools; they cannot write, run a shell, execute "
-                "code, delegate, or route to OpenCode."
+                "Delegated children are limited to read, research, and "
+                "read-only inspection tools; they cannot write, run a shell, "
+                "execute code, delegate, or route to OpenCode."
             )
         return None
 

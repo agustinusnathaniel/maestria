@@ -31,11 +31,11 @@ Set the plugin to **sonar** (research) mode. Only read-only adventurer/planner r
   Pipeline: adventurer / architect -> STOP (read-only)
 ```
 
-For a trusted top-level session, the `pre_tool_call` hook blocks `edit`, `write`, and `bash` in sonar mode. Unknown or delegated child sessions use separate fail-closed/role-neutral policies.
+For a trusted top-level session, the `pre_tool_call` hook allows only file reading (`read_file`, `search_files`) and web research (`web_search`, `web_extract`) in sonar mode; everything else is blocked, including `write_file`, `patch`, and `terminal`. Unknown or delegated child sessions use separate fail-closed/role-neutral policies.
 
 ### `/blitz`
 
-Set the plugin to **blitz** (fast execution) mode. Direct blitz is limited to a literal read/research/LLM allowlist: no code changes are made directly, and no adventurer exploration or reviewer validation runs for the direct path. Delegated builder writes remain unavailable until Hermes provides an authenticated capability channel.
+Set the plugin to **blitz** (fast execution) mode. Direct blitz is limited to a literal read-only allowlist - file reading, web research, skill inspection, and transcript recall: no code changes are made directly, and no adventurer exploration or reviewer validation runs for the direct path. Delegated builder writes remain unavailable until Hermes provides an authenticated capability channel.
 
 ```
 /blitz

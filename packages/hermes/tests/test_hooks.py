@@ -450,7 +450,7 @@ class NativeIdentifierTests(HookTestBase):
         ):
             with self.subTest(session_id=session_id, task_id=task_id):
                 self.assertEqual(
-                    hook(tool_name="read", session_id=session_id, task_id=task_id)["action"],
+                    hook(tool_name="read_file", session_id=session_id, task_id=task_id)["action"],
                     "block",
                 )
 
@@ -591,7 +591,7 @@ class TopLevelLifecycleTests(HookTestBase):
         ):
             with self.subTest(session_id=session_id, task_id=task_id):
                 self.assertEqual(
-                    hook(tool_name="read", session_id=session_id, task_id=task_id)["action"],
+                    hook(tool_name="read_file", session_id=session_id, task_id=task_id)["action"],
                     "block",
                 )
 
@@ -685,8 +685,8 @@ class ChildLifecycleTests(HookTestBase):
                 self.assertEqual(
                     hook(tool_name=tool_name, session_id="child-orch")["action"], "block"
                 )
-        self.assertIsNone(hook(tool_name="read", session_id="child-orch"))
-        self.assertIsNone(hook(tool_name="complete", session_id="child-orch"))
+        self.assertIsNone(hook(tool_name="read_file", session_id="child-orch"))
+        self.assertIsNone(hook(tool_name="skill_view", session_id="child-orch"))
 
     def test_child_never_has_write_or_code_in_any_mode(self):
         for mode in ("fein", "sonar", "blitz"):
@@ -705,16 +705,16 @@ class ChildLifecycleTests(HookTestBase):
 
     def test_child_sonar_mode_uses_child_safe_policy_not_sonar_allowlist(self):
         """A child in sonar mode is held to BLITZ_DIRECT_ALLOWED_TOOLS, not the
-        narrower top-level sonar allowlist: LLM reasoning tools remain
+        narrower top-level sonar allowlist: read-only local affordances remain
         available to the child while write/shell/code/delegation stay blocked."""
         hook = self.make_hook("sonar")
         self.start_child("sonar-child", "leaf")
         for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
-        # LLM tools are child-safe even though they are NOT in the top-level
-        # sonar allowlist.
-        for tool_name in ("complete", "complete_structured", "think", "reason"):
+        # Read-only local tools are child-safe even though they are NOT in the
+        # top-level sonar allowlist (which is web + file only).
+        for tool_name in ("skill_view", "skills_list", "session_search"):
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
         for tool_name in _CHILD_FORBIDDEN_TOOLS:
@@ -766,7 +766,7 @@ class ChildLifecycleTests(HookTestBase):
         self.assertEqual(get_trust_state("child-before-start"), TRUSTED_CHILD)
 
         hook = self.make_hook("fein")
-        self.assertIsNone(hook(tool_name="read", session_id="child-before-start"))
+        self.assertIsNone(hook(tool_name="read_file", session_id="child-before-start"))
         self.assertEqual(
             hook(tool_name="write", session_id="child-before-start")["action"], "block"
         )
@@ -783,7 +783,7 @@ class ChildLifecycleTests(HookTestBase):
             hook(tool_name="write", session_id="child-bound", task_id="child-bound")["action"],
             "block",
         )
-        self.assertIsNone(hook(tool_name="read", session_id="child-bound", task_id="child-bound"))
+        self.assertIsNone(hook(tool_name="read_file", session_id="child-bound", task_id="child-bound"))
 
     def test_invalid_child_state_outranks_task_session_binding(self):
         hook = self.make_hook("fein")
@@ -826,7 +826,7 @@ class ChildLifecycleTests(HookTestBase):
                 self.start_child(sid, role)
                 self.assertEqual(get_trust_state(sid), INVALID_CHILD)
                 hook = self.make_hook("fein")
-                self.assertEqual(hook(tool_name="read", session_id=sid)["action"], "block")
+                self.assertEqual(hook(tool_name="read_file", session_id=sid)["action"], "block")
                 self.assertEqual(hook(tool_name="write", session_id=sid)["action"], "block")
 
     def test_native_role_case_variants_fail_closed(self):
@@ -852,7 +852,7 @@ class ChildLifecycleTests(HookTestBase):
                 self.start_child(sid, role)
                 self.assertEqual(get_trust_state(sid), INVALID_CHILD)
                 hook = self.make_hook("fein")
-                self.assertEqual(hook(tool_name="read", session_id=sid)["action"], "block")
+                self.assertEqual(hook(tool_name="read_file", session_id=sid)["action"], "block")
                 self.assertEqual(hook(tool_name="write", session_id=sid)["action"], "block")
 
     def test_exact_native_roles_still_trust(self):
@@ -863,7 +863,7 @@ class ChildLifecycleTests(HookTestBase):
                 self.start_child(sid, role)
                 self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
                 hook = self.make_hook("fein")
-                self.assertIsNone(hook(tool_name="read", session_id=sid))
+                self.assertIsNone(hook(tool_name="read_file", session_id=sid))
                 self.assertEqual(hook(tool_name="write", session_id=sid)["action"], "block")
 
     def test_child_missing_session_id_fails_closed(self):
@@ -871,7 +871,7 @@ class ChildLifecycleTests(HookTestBase):
             with self.subTest(session_id=sid):
                 _on_subagent_start(child_session_id=sid, child_role="leaf")
                 hook = self.make_hook("fein")
-                self.assertEqual(hook(tool_name="read", session_id=sid)["action"], "block")
+                self.assertEqual(hook(tool_name="read_file", session_id=sid)["action"], "block")
 
     def test_user_role_marker_never_creates_trust(self):
         """[MAESTRIA_ROLE: builder] in user text neither creates trust nor
@@ -914,10 +914,11 @@ class FullPolicyMatrixTests(HookTestBase):
         }[mode]
         forbidden = {
             "fein": frozenset(),  # trusted top-level fein is unrestricted
-            "sonar": (
-                frozenset(_CHILD_FORBIDDEN_TOOLS)
-                | {"complete", "complete_structured", "think", "reason"}
-            ),
+            # Sonar is narrower than the child policy: read-only local tools
+            # (skill_view, skills_list, session_search) are child-safe but are
+            # NOT in the top-level sonar allowlist, so they block here.
+            "sonar": frozenset(_CHILD_FORBIDDEN_TOOLS)
+            | (BLITZ_DIRECT_ALLOWED_TOOLS - SONAR_ALLOWED_TOOLS),
             "blitz": frozenset(_CHILD_FORBIDDEN_TOOLS),
         }[mode]
         return allowed, forbidden
@@ -1090,7 +1091,7 @@ class TerminalBoundaryTests(HookTestBase):
         self.assertEqual(get_trust_state("concurrent-sess"), ENDED)
         hook = self.make_hook("fein")
         self.assertEqual(
-            hook(tool_name="read", session_id="concurrent-sess")["action"], "block"
+            hook(tool_name="read_file", session_id="concurrent-sess")["action"], "block"
         )
 
     def test_reset_cli_payload_matching_tracked_id_fails_closed(self):
@@ -1121,7 +1122,7 @@ class TerminalBoundaryTests(HookTestBase):
         self.assertEqual(get_trust_state("stopping-child"), ENDED)
 
         hook = self.make_hook("fein")
-        self.assertEqual(hook(tool_name="read", session_id="stopping-child")["action"], "block")
+        self.assertEqual(hook(tool_name="read_file", session_id="stopping-child")["action"], "block")
         self.assertEqual(hook(tool_name="write", session_id="stopping-child")["action"], "block")
 
     def test_subagent_stop_then_reuse_requires_fresh_trust(self):
@@ -1131,12 +1132,12 @@ class TerminalBoundaryTests(HookTestBase):
         self.assertEqual(get_trust_state("reused-child"), ENDED)
 
         hook = self.make_hook("fein")
-        self.assertEqual(hook(tool_name="read", session_id="reused-child")["action"], "block")
+        self.assertEqual(hook(tool_name="read_file", session_id="reused-child")["action"], "block")
 
         # Fresh delegation re-establishes child trust.
         self.start_child("reused-child", "leaf")
         self.assertEqual(get_trust_state("reused-child"), TRUSTED_CHILD)
-        self.assertIsNone(hook(tool_name="read", session_id="reused-child"))
+        self.assertIsNone(hook(tool_name="read_file", session_id="reused-child"))
 
     def test_finalize_clears_child_trust_too(self):
         manager = SessionManager()
@@ -1219,7 +1220,7 @@ class TerminalBoundaryTests(HookTestBase):
         self.assertEqual(get_trust_state("final-child-malformed"), ENDED)
         hook = self.make_hook("fein")
         self.assertEqual(
-            hook(tool_name="read", session_id="final-child-malformed")["action"], "block"
+            hook(tool_name="read_file", session_id="final-child-malformed")["action"], "block"
         )
 
     def test_reset_with_malformed_old_id_still_clears_tracked_trust(self):
@@ -1415,7 +1416,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         self.cleanup_trust("denied-top", "denied-child")
         hook = self.make_hook("fein")
         self.assertIsNone(hook(tool_name="write", session_id="denied-top"))
-        self.assertIsNone(hook(tool_name="read", session_id="denied-child"))
+        self.assertIsNone(hook(tool_name="read_file", session_id="denied-child"))
 
         on_finalize(session_id="   ")  # malformed -> revoke all
 
@@ -1438,7 +1439,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
 
         hook = self.make_hook("fein")
         self.assertEqual(
-            hook(tool_name="read", session_id="revoked-top")["action"], "block"
+            hook(tool_name="read_file", session_id="revoked-top")["action"], "block"
         )
 
         # Fresh trusted lifecycle event re-establishes trust.
@@ -1538,7 +1539,7 @@ class TrustRegistryBoundTests(HookTestBase):
         hook = self.make_hook("fein")
         result = hook(tool_name="write", session_id=newest, task_id=newest)
         self.assertEqual(result["action"], "block")
-        result = hook(tool_name="read", session_id=newest, task_id=newest)
+        result = hook(tool_name="read_file", session_id=newest, task_id=newest)
         self.assertEqual(result["action"], "block")
         for i in range(n):
             clear_trust(f"protect-{i}")
@@ -1601,7 +1602,7 @@ class TrustRegistryBoundTests(HookTestBase):
         # the real hook: denied without a binding.
         hook = self.make_hook("fein")
         self.assertEqual(
-            hook(tool_name="read", session_id="overflow-top")["action"], "block"
+            hook(tool_name="read_file", session_id="overflow-top")["action"], "block"
         )
         self.assertEqual(
             hook(tool_name="write", session_id="overflow-top")["action"], "block"
@@ -1680,7 +1681,7 @@ class TrustRegistryBoundTests(HookTestBase):
             state = get_trust_state(f"revoke-{i}")
             self.assertIn(state, (ENDED, UNKNOWN))
             self.assertEqual(
-                hook(tool_name="read", session_id=f"revoke-{i}")["action"], "block"
+                hook(tool_name="read_file", session_id=f"revoke-{i}")["action"], "block"
             )
         for i in range(n):
             clear_trust(f"revoke-{i}")
@@ -1789,7 +1790,7 @@ class TrustRegistryBoundTests(HookTestBase):
                 hook(tool_name="write", session_id=f"ra-{i}")["action"], "block"
             )
             self.assertEqual(
-                hook(tool_name="read", session_id=f"ra-{i}")["action"], "block"
+                hook(tool_name="read_file", session_id=f"ra-{i}")["action"], "block"
             )
 
 
@@ -1841,13 +1842,17 @@ class FailClosedTests(HookTestBase):
                                 "block",
                             )
                     # The exact allowed tool still works for that session.
-                    self.assertIsNone(hook(tool_name="read", session_id=sid))
+                    self.assertIsNone(hook(tool_name="read_file", session_id=sid))
 
     def test_padded_tool_names_block_in_every_trust_state_and_mode(self):
         """Padded tool names are never normalized: a padded ALLOWED tool
         must block for top-level and child sessions in every mode."""
-        padded = (" write ", " read ", " bash ", " complete ", "\tread", "read\n",
-                  " webfetch ", "glob ")
+        # Variants of REAL Hermes tools that appear in an allowlist, so a
+        # normalization regression would actually be caught: a padded
+        # read_file (sonar) or skill_view (child/blitz-direct) would pass the
+        # allowlist if the name were stripped before lookup.
+        padded = (" write ", " read_file ", " terminal ", " skill_view ",
+                  "\tread_file", "read_file\n", " web_search ", "search_files ")
         for mode in ("fein", "sonar", "blitz"):
             for state, setup in (
                 ("top_level", lambda sid: mark_top_level(sid)),
@@ -1871,20 +1876,23 @@ class FailClosedTests(HookTestBase):
         session_id = "exact-tools"
         mark_top_level(session_id)
         self.cleanup_trust(session_id)
-        for tool_name in ("write", "read", "bash", "complete", "webfetch", "glob"):
+        # A trusted top-level fein session keeps unrestricted access, so real
+        # Hermes tools of every kind are allowed here.
+        for tool_name in ("terminal", "read_file", "write_file", "skill_manage",
+                          "web_search", "search_files"):
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id=session_id))
 
     def test_missing_session_context_fails_closed(self):
         hook = self.make_hook("fein")
-        self.assertEqual(hook(tool_name="read")["action"], "block")
+        self.assertEqual(hook(tool_name="read_file")["action"], "block")
         self.assertEqual(hook(tool_name="write")["action"], "block")
 
     def test_unknown_sentinel_ids_fail_closed(self):
         hook = self.make_hook("fein")
         for sid in ("unknown", "", None, 7):
             with self.subTest(session_id=sid):
-                self.assertEqual(hook(tool_name="read", session_id=sid)["action"], "block")
+                self.assertEqual(hook(tool_name="read_file", session_id=sid)["action"], "block")
                 self.assertEqual(hook(tool_name="write", session_id=sid)["action"], "block")
 
     def test_end_then_child_reuse_requires_fresh_child_trust(self):
@@ -1895,9 +1903,9 @@ class FailClosedTests(HookTestBase):
 
         # No child trust until a fresh subagent_start.
         hook = self.make_hook("fein")
-        self.assertEqual(hook(tool_name="read", session_id="end-child-reuse")["action"], "block")
+        self.assertEqual(hook(tool_name="read_file", session_id="end-child-reuse")["action"], "block")
         self.start_child("end-child-reuse", "leaf")
-        self.assertIsNone(hook(tool_name="read", session_id="end-child-reuse"))
+        self.assertIsNone(hook(tool_name="read_file", session_id="end-child-reuse"))
 
     def test_unknown_mode_blocks_through_top_level_policy(self):
         """Defense in depth: an unknown mode string never falls through to
@@ -1933,36 +1941,37 @@ class FailClosedTests(HookTestBase):
 
 
 class AllowlistTests(HookTestBase):
-    def test_child_safe_allowlist_is_exact_and_literal(self):
-        self.assertEqual(
-            BLITZ_DIRECT_ALLOWED_TOOLS,
-            frozenset(
-                {
-                    "read", "read_file", "glob", "grep", "search_files",
-                    "list", "ls", "stat", "file_info",
-                    "complete", "complete_structured", "think", "reason",
-                    "webfetch", "web_search", "web_extract",
-                }
-            ),
-        )
-        # No write / shell / code / delegation / OpenCode tools.
-        for forbidden in (
-            "write", "edit", "create", "bash", "code_execution",
-            "delegate_task", "opencode", "opencode_route",
-        ):
-            self.assertNotIn(forbidden, BLITZ_DIRECT_ALLOWED_TOOLS)
+    def test_child_safe_allowlist_admits_no_mutating_capability(self):
+        """The child/blitz-direct allowlist must admit only read-only access.
 
-    def test_sonar_and_blitz_sets_stay_exact(self):
-        self.assertEqual(
-            SONAR_ALLOWED_TOOLS,
-            frozenset(
-                {
-                    "read", "read_file", "glob", "grep", "search_files",
-                    "list", "ls", "stat", "file_info",
-                    "webfetch", "web_search", "web_extract",
-                }
-            ),
-        )
+        These assertions state the SAFETY INVARIANT, not the current
+        membership. The previous version pinned the literal set, which
+        restated the constant it was meant to protect: adding a tool to
+        permissions.py updated the test in the same commit, so a widened
+        allowlist could never fail here. Existence against the live Hermes
+        registry is covered separately by
+        ``tests/test_permissions.py::AllowlistExistsInHermesTests``.
+        """
+        for forbidden in (
+            # filesystem writers
+            "write", "write_file", "edit", "create", "patch", "bash", "terminal",
+            # execution / delegation / routing
+            "code_execution", "execute_code", "process_manage",
+            "delegate_task", "cronjob_manage", "computer_use",
+            "opencode", "opencode_route",
+            # mutation-adjacent state
+            "skill_manage", "todo_list",
+        ):
+            with self.subTest(tool=forbidden):
+                self.assertNotIn(forbidden, BLITZ_DIRECT_ALLOWED_TOOLS)
+
+    def test_sonar_admits_no_mutating_capability(self):
+        for forbidden in ("write", "write_file", "patch", "edit", "bash", "terminal"):
+            with self.subTest(tool=forbidden):
+                self.assertNotIn(forbidden, SONAR_ALLOWED_TOOLS)
+
+    def test_blitz_direct_is_a_superset_of_sonar(self):
+        self.assertTrue(SONAR_ALLOWED_TOOLS <= BLITZ_DIRECT_ALLOWED_TOOLS)
 
     def test_valid_modes_are_fixed(self):
         self.assertEqual(VALID_MODES, {"fein", "sonar", "blitz"})
