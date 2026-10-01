@@ -4,6 +4,8 @@
 
 Accepted
 
+[ADR-CORE-033](ADR-CORE-033-cli-effect-resource-boundaries.md) extends this decision (2026-10-01) with scoped archive staging, typed failure recovery, and subprocess cancellation.
+
 ## Context
 
 Maestria ships the same AI engineering methodology to multiple coding agent platforms, each with different installation and update mechanics:

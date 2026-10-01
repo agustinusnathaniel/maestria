@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-07-03)
+Superseded by [ADR-CORE-034](ADR-CORE-034-cli-semver-library.md) (2026-10-01). Originally accepted 2026-07-03; the historical decision remains below.
 
 ## Context
 

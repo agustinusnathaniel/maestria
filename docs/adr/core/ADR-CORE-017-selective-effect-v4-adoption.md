@@ -4,6 +4,8 @@
 
 Accepted
 
+Superseded in part by [ADR-CORE-033](ADR-CORE-033-cli-effect-resource-boundaries.md) (2026-10-01): Pi polling uses ordinary Promise-based polling with tested sibling cleanup. The current dependency catalog and polling sources are authoritative for implementation and version details; the historical RC statements below remain unchanged.
+
 ## Context
 
 The CLI already uses Effect. The TypeScript plugin packages mix asynchronous orchestration with simple synchronous helpers and generated Markdown projections; a blanket migration would add a large abstraction surface to code that does not benefit, while Pi's subagent polling has real cancellation and structured-concurrency concerns.

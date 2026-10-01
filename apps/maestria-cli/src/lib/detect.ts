@@ -23,13 +23,11 @@ const detectOne = (
       installed = yield* platform.isInstalled;
       if (installed) {
         installedVersion = yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
+          Effect.catchEager(() => Effect.succeed('unknown')),
         );
       }
       if (options.includeLatest !== false) {
-        latestVersion = yield* platform.getLatestVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('')),
-        );
+        latestVersion = yield* platform.getLatestVersion;
       }
     }
 

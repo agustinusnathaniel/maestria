@@ -5,6 +5,15 @@ description: Release history for the maestria CLI.
 
 ## Unreleased
 
+### Safer package staging
+
+- Stage npm archives in an isolated temporary directory and clean it up after success or failure. Failed downloads preserve the existing plugin files.
+- Stop child commands when their Effect is interrupted, and surface unexpected version-probe defects instead of attempting an update.
+
+### Correct version precedence
+
+- Compare prerelease identifiers in SemVer order, including case-sensitive text. Reject numeric identifiers with leading zeroes while preserving build metadata support.
+
 ### Reliable setup and skill recovery
 
 - Keep recorded skill ownership when an add or removal fails alongside a successful skill operation, so a retry can recover safely.

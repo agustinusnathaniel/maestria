@@ -18,27 +18,17 @@ const runLifecycleTransaction = (
     const spinner = createSpinner(quiet);
     spinner.start(`${gerund} ${platform.label}...`);
 
-    const errorMessage: string | null = yield* operation.pipe(
-      Effect.as(null),
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+    const result = yield* operation.pipe(
+      Effect.match({
+        onFailure: (error) => ({ message: error.message, ok: false }),
+        onSuccess: () => ({ message: completed, ok: true }),
+      }),
     );
-
-    if (errorMessage === null) {
-      spinner.stop(completed);
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: completed,
-        ok: true,
-      } satisfies PlatformResult;
-    }
-
-    spinner.stop(`Failed: ${errorMessage}`);
+    spinner.stop(result.ok ? completed : `Failed: ${result.message}`);
     return {
       id: platform.id,
       label: platform.label,
-      message: errorMessage,
-      ok: false,
+      ...result,
     } satisfies PlatformResult;
   });
 
@@ -110,11 +100,9 @@ export const updateOne = (
     const prevVersion = snapshot
       ? snapshot.installedVersion
       : yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
+          Effect.catchEager(() => Effect.succeed('unknown')),
         );
-    const targetVersion =
-      version ??
-      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
+    const targetVersion = version ?? (yield* platform.getLatestVersion);
     if (platform.preflightUpdate) {
       const preflightError: string | null = yield* platform
         .preflightUpdate(snapshot ?? undefined)
@@ -169,11 +157,11 @@ export const updateOne = (
       } satisfies PlatformResult;
     }
     const nextVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
+      Effect.catchEager(() => Effect.succeed('unknown')),
     );
     spinner.stop(previewVersionDiff(packageRef, prevVersion, nextVersion));
     if (isSpecified(platform.npmPackage)) {
-      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
+      yield* invalidateVersionCache(platform.npmPackage);
     }
     return {
       id: platform.id,

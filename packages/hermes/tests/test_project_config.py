@@ -167,7 +167,7 @@ class LoaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             os.chdir(root)
             try:
-                self.assertEqual(get_project_root(), root)
+                self.assertEqual(get_project_root(), os.path.realpath(root))
             finally:
                 os.chdir(previous)
         self.assertEqual(get_project_root(), previous)
