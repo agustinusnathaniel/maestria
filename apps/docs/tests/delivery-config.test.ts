@@ -102,7 +102,7 @@ describe('public/robots.txt', () => {
 describe('public/agents.md', () => {
   it('is a static, self-contained entrypoint for coding agents', async () => {
     const text = await readAppFile('public/agents.md');
-    expect(text.startsWith('# Maestria agent instructions\n')).toBe(true);
+    expect(text.startsWith('# maestria agent instructions\n')).toBe(true);
     expect(text).toContain('npx maestria install <platform>');
     expect(text).toContain('https://maestria.sznm.dev/llms-full.txt');
     expect(text).toContain('https://maestria.sznm.dev/core/when-to-use.md');

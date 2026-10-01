@@ -1,8 +1,8 @@
 # @maestria/hermes
 
-Maestria's agent methodology - structured specialist delegation, maker/checker review, and mode-based workflows - for [Hermes Agent](https://hermes-agent.nousresearch.com), delivered as a Python plugin.
+maestria's agent methodology - structured specialist delegation, maker/checker review, and mode-based workflows - for [Hermes Agent](https://hermes-agent.nousresearch.com), delivered as a Python plugin.
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 

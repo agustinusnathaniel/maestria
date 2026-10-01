@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: >-
-  Maestria agent orchestration dispatcher. Delegates work to 7 specialist
+  maestria agent orchestration dispatcher. Delegates work to 7 specialist
   subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)
   using spec-driven handoffs. Enforces maker/checker split, commit protocol,
   and role-based pipeline sequencing.

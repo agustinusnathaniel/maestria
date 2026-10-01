@@ -1,5 +1,5 @@
 ---
-description: Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.
+description: maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.
 mode: all
 permission:
   bash:

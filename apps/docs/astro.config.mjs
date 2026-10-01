@@ -20,7 +20,7 @@ export default defineConfig({
         {
           attrs: {
             content:
-              'Maestria, Maestria AI engineering workflows, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
+              'maestria, maestria AI engineering workflows, maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
             name: 'keywords',
           },
           tag: 'meta',
@@ -54,59 +54,59 @@ export default defineConfig({
             '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
             '@maestria/pi (full agent orchestration for Pi Coding Agent), ' +
             '@maestria/hermes (methodology layer for Hermes Agent), ' +
-            '@maestria/prime-agent (Maestria methodology for Prime Agent as Agent Skills ' +
+            '@maestria/prime-agent (maestria methodology for Prime Agent as Agent Skills ' +
             'plus a verified Prime/Pi extension for workflow modes), and ' +
             '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX), ' +
             '@maestria/agent-plugin (the portable Agent Plugins v1 skills-only package).',
           details:
-            'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [Maestria agent instructions](https://maestria.sznm.dev/agents.md).',
+            'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [maestria agent instructions](https://maestria.sznm.dev/agents.md).',
           optionalLinks: [
             {
-              label: 'Maestria documentation home',
+              label: 'maestria documentation home',
               url: 'https://maestria.sznm.dev/',
             },
             {
-              label: 'Maestria When to Use guide',
+              label: 'maestria When to Use guide',
               url: 'https://maestria.sznm.dev/core/when-to-use/',
             },
             {
               description: 'Installable Agent Plugins v1 package with the standard skills layout.',
-              label: 'Maestria portable Agent Plugin',
+              label: 'maestria portable Agent Plugin',
               url: 'https://maestria.sznm.dev/agent-plugin/',
             },
             {
               description: 'Live smoke results and manual activation checks by client.',
-              label: 'Maestria Agent Plugin compatibility',
+              label: 'maestria Agent Plugin compatibility',
               url: 'https://maestria.sznm.dev/agent-plugin/compatibility/',
             },
             {
               description: 'Install with `npx maestria install <platform>`.',
-              label: 'Maestria CLI getting started',
+              label: 'maestria CLI getting started',
               url: 'https://maestria.sznm.dev/cli/getting-started/',
             },
             {
               description: 'Every documentation page has a `.md` twin.',
-              label: 'Maestria page Markdown example',
+              label: 'maestria page Markdown example',
               url: 'https://maestria.sznm.dev/core/when-to-use.md',
             },
             {
-              label: 'Maestria sitemap',
+              label: 'maestria sitemap',
               url: 'https://maestria.sznm.dev/sitemap-index.xml',
             },
             {
-              label: 'Maestria robots.txt',
+              label: 'maestria robots.txt',
               url: 'https://maestria.sznm.dev/robots.txt',
             },
             {
-              label: 'Maestria on npm',
+              label: 'maestria on npm',
               url: 'https://www.npmjs.com/package/maestria',
             },
             {
-              label: 'Maestria source repository',
+              label: 'maestria source repository',
               url: 'https://github.com/agustinusnathaniel/maestria',
             },
             {
-              label: 'Maestria issue tracker',
+              label: 'maestria issue tracker',
               url: 'https://github.com/agustinusnathaniel/maestria/issues',
             },
           ],
@@ -114,7 +114,7 @@ export default defineConfig({
         }),
         starlightPageActions({
           prompt:
-            'You are an expert on the Maestria plugin ecosystem. ' +
+            'You are an expert on the maestria plugin ecosystem. ' +
             'Read {url} and help me understand how to use these tools ' +
             'effectively.',
           share: true,
@@ -123,7 +123,7 @@ export default defineConfig({
       sidebar: [
         {
           items: [
-            { label: 'When to Use Maestria', link: '/core/when-to-use/' },
+            { label: 'When to Use maestria', link: '/core/when-to-use/' },
             { label: 'Specialist Reference', link: '/core/agents/' },
             { label: 'Pipeline & Roles', link: '/core/pipeline/' },
             { label: 'How It Works', link: '/core/how-it-works/' },
@@ -284,7 +284,7 @@ export default defineConfig({
           label: 'GitHub',
         },
       ],
-      title: 'Maestria',
+      title: 'maestria',
     }),
   ],
   site: 'https://maestria.sznm.dev',

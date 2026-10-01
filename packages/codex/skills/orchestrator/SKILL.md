@@ -1,5 +1,5 @@
 ---
-description: "Maestria workflow dispatcher for Codex CLI: route work, use specialist skills, preserve handoffs, and keep independent review explicit."
+description: "maestria workflow dispatcher for Codex CLI: route work, use specialist skills, preserve handoffs, and keep independent review explicit."
 name: orchestrator
 ---
 
@@ -116,7 +116,7 @@ Codex supports subagent workflows. The namespaced skills provide the methodology
 
 ### Native custom agents
 
-The Maestria CLI installs the bundled native agent TOMLs into `$CODEX_HOME/agents/` using collision-resistant names: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist, for example `agent_type: "maestria-builder"`. `maestria configure codex` updates their model settings without changing the role instructions. If the native pack is not installed, use the namespaced skills with Codex's built-in agents or explicit delegation prompts.
+The maestria CLI installs the bundled native agent TOMLs into `$CODEX_HOME/agents/` using collision-resistant names: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist, for example `agent_type: "maestria-builder"`. `maestria configure codex` updates their model settings without changing the role instructions. If the native pack is not installed, use the namespaced skills with Codex's built-in agents or explicit delegation prompts.
 
 ### Workflow-mode skills
 
@@ -124,4 +124,4 @@ Use `$maestria:fein` for the full route, `$maestria:sonar` for research-only wor
 
 ### Platform boundary
 
-The Codex plugin manifest declares skills only; the companion Maestria CLI installs the package's native custom-agent TOML files, manages their model settings, and adds a marked global orchestration block to Codex's active AGENTS.md instructions. The package contains no hooks or MCP server. Skills and instruction guidance are advisory capabilities, not security enforcement; native custom-agent sandbox settings are the host's boundary. Do not claim that this integration overrides Codex's primary agent or enforces the Maestria methodology.
+The Codex plugin manifest declares skills only; the companion maestria CLI installs the package's native custom-agent TOML files, manages their model settings, and adds a marked global orchestration block to Codex's active AGENTS.md instructions. The package contains no hooks or MCP server. Skills and instruction guidance are advisory capabilities, not security enforcement; native custom-agent sandbox settings are the host's boundary. Do not claim that this integration overrides Codex's primary agent or enforces the maestria methodology.

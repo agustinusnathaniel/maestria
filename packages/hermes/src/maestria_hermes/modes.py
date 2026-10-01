@@ -115,7 +115,7 @@ def render_mode_status(mode: Optional[str], read_only: bool) -> str:
     """
     label = mode or "neutral"
     return (
-        f"**Maestria Status**\n\n"
+        f"**maestria Status**\n\n"
         f"Mode: **{label}**\n"
         f"Read-only: {'Yes' if read_only else 'No'}"
     )
@@ -128,7 +128,7 @@ def render_mode_switch(mode: str, pipeline: str) -> str:
 
 def render_mode_clear() -> str:
     """Render the shared /mode-clear response."""
-    return "Cleared Maestria mode. Neutral routing is active."
+    return "Cleared maestria mode. Neutral routing is active."
 
 
 def _get_state_path() -> Path:

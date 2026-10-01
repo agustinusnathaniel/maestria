@@ -54,7 +54,7 @@ Option A is the only candidate with a typed programmatic API, synchronous spawn 
 
 **Option A: @gotgenes/pi-subagents is the best choice for maestria.**
 
-The decisive factor is the typed programmatic API. Maestria's dispatch model needs synchronous `spawn()` returning an ID, synchronous `getRecord(id)` polling in `pollSubagent`, synchronous `abort(id)`, a typed `SubagentRecord` (`status`, `result`, `error`), and `SUBAGENT_EVENTS` lifecycle subscription.
+The decisive factor is the typed programmatic API. maestria's dispatch model needs synchronous `spawn()` returning an ID, synchronous `getRecord(id)` polling in `pollSubagent`, synchronous `abort(id)`, a typed `SubagentRecord` (`status`, `result`, `error`), and `SUBAGENT_EVENTS` lifecycle subscription.
 
 Options B and D wrap async event-bus RPC (spawn ID on a reply channel, status as events, no synchronous `getRecord(id)`), which conflicts with maestria's spawn-then-poll loop.
 

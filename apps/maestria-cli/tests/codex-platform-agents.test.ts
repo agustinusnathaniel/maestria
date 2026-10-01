@@ -33,7 +33,7 @@ describe('Codex managed native agents', () => {
         join(sourceRoot, 'instructions', 'AGENTS.md'),
         [
           '<!-- maestria:codex-orchestrator:start -->',
-          '## Maestria orchestration',
+          '## maestria orchestration',
           'Use $maestria:orchestrator and delegate with agent_type.',
           '<!-- maestria:codex-orchestrator:end -->',
           '',

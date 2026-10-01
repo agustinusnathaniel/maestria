@@ -7,7 +7,6 @@
 - [#361](https://github.com/agustinusnathaniel/maestria/pull/361) [`b7fa663`](https://github.com/agustinusnathaniel/maestria/commit/b7fa663bd790e42da120712f85d1f1eadc40bde4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prompt implementers and reviewers to reassess explanatory comments and redundant tests before accepting a change.
 
 - [#370](https://github.com/agustinusnathaniel/maestria/pull/370) [`aeb0713`](https://github.com/agustinusnathaniel/maestria/commit/aeb0713fa0ea59e1bddfc14c9e2d3ade04a91795) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Consolidate duplicated agent directive text without changing behavior.
-  
   - The human-facing output contract now lives once in the shared global rules; specialist prompts point at it instead of restating it, keeping per-specialist scope and trigger wording.
   - Dense rules prose is split into scannable paragraphs with identical wording, and restated adventurer/architect wording is collapsed.
   - No obligation was moved without a pointer, retired, or weakened; all directive contract tests pass unmodified.
@@ -16,7 +15,7 @@
 
 ### Patch Changes
 
-- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated Maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
 
 - [#346](https://github.com/agustinusnathaniel/maestria/pull/346) [`b3aa378`](https://github.com/agustinusnathaniel/maestria/commit/b3aa378700cf327ea702376e5fd475d99213bb4a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Guide agents to commit verified implementation slices, plan reviewable PR boundaries early, and present architect or planner designs to users before dependent implementation.
 
@@ -35,11 +34,10 @@
 ### Patch Changes
 
 - [#316](https://github.com/agustinusnathaniel/maestria/pull/316) [`7a9334b`](https://github.com/agustinusnathaniel/maestria/commit/7a9334b3c020d8cbd91441e1ced33495a75b6f7a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Restore a consistent PR delivery contract.
-  
   - Titles use explicit Conventional Commits; bodies use literal ## headings in order (Summary, Changes, Verification, plus Visual evidence and Breaking changes when applicable), respecting explicit project templates.
   - Changes carries the Work Results table (File, What changed, Why); Verification carries checks, results, and unresolved gaps.
   - Pushes that change the cumulative diff or verification evidence update the PR title and body with a published-body readback. Acceptance classifies visual evidence as required or not applicable with reason, carries it through briefs, checks rendered coverage in review, reads back the published body at delivery, and treats an open PR as complete only with its applicable evidence.
-  
+
   Also restores proportional documentation assessment: internal docs, user-facing docs, changelog/release notes, and required changesets are assessed separately, only affected categories are updated, plausible unaffected categories note a reason, and required docs carry through briefs to reconciliation.
 
 ## 0.4.7
@@ -74,7 +72,7 @@
 
 - [#281](https://github.com/agustinusnathaniel/maestria/pull/281) [`5c5729b`](https://github.com/agustinusnathaniel/maestria/commit/5c5729b0f70d54f4181b2a5a2f1aad87fe0a92af) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix stale skill references so prescribed skills resolve at load time: planner skill guidance no longer names the removed `to-issues` and `to-prd` skills, and the duplicated Kimi orchestrator skill prescription (which restated canonical skill governance and drifted stale) is removed so `sync.config.ts` only adapts toward the plugin runtime. Clarify in the orchestrator's Role-Based Pipeline that `@diagnose` analyzes the bug, applies the minimal fix, and verifies the repair instead of grouping it with analyze-only thinkers. Correct the canonical agent-directives README index to count 8 pipeline agents (orchestrator + 7 specialists) and list `orchestrator.md`.
 
-- [#280](https://github.com/agustinusnathaniel/maestria/pull/280) [`7c038cd`](https://github.com/agustinusnathaniel/maestria/commit/7c038cd28448149f4154510ee0866f0a3ef523f8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make agent investigation, verification, skill loading, and output structure proportional to the task. Preserve complete assignment ownership and delivery, allow necessary in-scope regression coverage, and keep downstream instructions independent of Maestria repository paths.
+- [#280](https://github.com/agustinusnathaniel/maestria/pull/280) [`7c038cd`](https://github.com/agustinusnathaniel/maestria/commit/7c038cd28448149f4154510ee0866f0a3ef523f8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make agent investigation, verification, skill loading, and output structure proportional to the task. Preserve complete assignment ownership and delivery, allow necessary in-scope regression coverage, and keep downstream instructions independent of maestria repository paths.
 
 ## 0.4.2
 
@@ -98,8 +96,8 @@
 
 ## Unreleased
 
-- Add seven native `maestria-*` custom-agent TOML templates. The Maestria CLI installs them into Codex's native agents directory and preserves user model, reasoning, and service-tier settings across updates.
-- Add an idempotent, marker-managed global Codex instruction block so the host-owned primary session activates the Maestria orchestrator and delegates through native roles automatically.
+- Add seven native `maestria-*` custom-agent TOML templates. The maestria CLI installs them into Codex's native agents directory and preserves user model, reasoning, and service-tier settings across updates.
+- Add an idempotent, marker-managed global Codex instruction block so the host-owned primary session activates the maestria orchestrator and delegates through native roles automatically.
 - Align the orchestrator guidance with Codex's native `agent_type` role selection.
 
 ## 0.3.2
@@ -136,7 +134,7 @@
 
 ### Patch Changes
 
-- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add Maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
+- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
   both hosts, stages the published npm package into a local marketplace, and delegates install,
   update, status, check, and uninstall operations to the host plugin manager.
 
@@ -144,11 +142,11 @@
 
 ### Minor Changes
 
-- [#200](https://github.com/agustinusnathaniel/maestria/pull/200) [`05dab91`](https://github.com/agustinusnathaniel/maestria/commit/05dab914689811e86d978b9b3378be91665e7da6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add a provisional Codex CLI projection package that generates Maestria's
+- [#200](https://github.com/agustinusnathaniel/maestria/pull/200) [`05dab91`](https://github.com/agustinusnathaniel/maestria/commit/05dab914689811e86d978b9b3378be91665e7da6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add a provisional Codex CLI projection package that generates maestria's
   canonical specialist and workflow directives as Codex plugin skills.
 
 ## 0.1.0
 
-Initial provisional Codex CLI projection. It packages the canonical Maestria
+Initial provisional Codex CLI projection. It packages the canonical maestria
 specialist, orchestration, rules, handoff, iteration-limit, and workflow-mode
 directives as Codex skills through `.codex-plugin/plugin.json`.

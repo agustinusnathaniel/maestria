@@ -1,8 +1,8 @@
-# Maestria Design Patterns
+# maestria Design Patterns
 
-This document catalogs the two design patterns that Maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
+This document catalogs the two design patterns that maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
 
-If you're porting Maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to the target runtime's native agents, skills, commands, hooks, or extension APIs.
+If you're porting maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to the target runtime's native agents, skills, commands, hooks, or extension APIs.
 
 ---
 
@@ -12,7 +12,7 @@ If you're porting Maestria to a new platform, this is your implementation guide.
 
 A sequential flow where work passes through specialized stages, each adding value and producing a structured handoff for the next. No stage does the work of another - the adventurer maps code but doesn't edit it, the builder implements but doesn't review, the reviewer validates but doesn't redesign.
 
-The pipeline is the backbone of a full Maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Select the full pipeline when those stages add enough information or risk reduction to justify their model and latency cost. Direct execution or one specialist is valid for smaller or better-understood work.
+The pipeline is the backbone of a full maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Select the full pipeline when those stages add enough information or risk reduction to justify their model and latency cost. Direct execution or one specialist is valid for smaller or better-understood work.
 
 **The maestria pipeline:**
 
@@ -89,7 +89,7 @@ How each platform implements this pattern:
 | **Claude Code** | Declarative agents, skills, and commands | Specialists ship as generated `agents/*.md`; the orchestrator and global rules ship as generated skills; workflow modes ship as generated commands. `disallowedTools` protects the read-only roles. This package ships no hooks. |
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
 | **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
-| **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the Maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
+| **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
 | **Hermes** | Python plugin with skills, commands, and tool-layer gating | Methodology ships as skills and slash commands through the Hermes plugin manager. Mode and per-role tool access is gated at the tool layer; pipeline sequencing is advisory prompt guidance. |
 | **Prime Agent** | Agent Skills + verified extension subset | The 7 specialists, orchestrator, rules, and modes ship as Agent Skills; a small extension adds mode commands and prompt injection. Native `rlm` subagent dispatch has no public JS bridge, so delegation is skill loading plus methodology, not runtime dispatch. |
 | **Agent Plugins v1 (portable)** | Skills-only package | `@maestria/agent-plugin` ships the methodology as standard skills with no runtime adapter, agents, commands, or hooks. The consuming client owns dispatch, context, and permissions. |

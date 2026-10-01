@@ -12,7 +12,7 @@ The pipeline forces discipline through delegation: a simple task spawns recon, i
 
 ### Session Data: The Multiplier's Cost Scales With Model Price
 
-Usage data from the opencode session database (620 Maestria sessions) shows the same pipeline under two pricing regimes:
+Usage data from the opencode session database (620 maestria sessions) shows the same pipeline under two pricing regimes:
 
 |                         | deepseek-v4-flash (547 sessions) | kimi-k3 (11 sessions, Jul 20-21) |
 | ----------------------- | -------------------------------- | -------------------------------- |
@@ -24,7 +24,7 @@ Kimi adventurer runs averaged about $0.68 and 452 seconds versus $0.011 and 81 s
 
 ### The Gap
 
-The orchestrator has no awareness of its own model's price or latency. It applies the same pipeline depth, fan-out caps (3-5 parallel), and review loops regardless of token price or spawn latency. The workflow modes (`fein`/`sonar`/`blitz`) are platform-dependent, user-initiated mechanisms; they do not express persistent model economics, and no universal tier variable or automatic adaptive route exists today. [verified] Maestria is therefore implicitly optimized for cheap, fast models and becomes a net negative on frontier models, where the quality premium of narrow-focus delegation shrinks while cost and latency multipliers stay constant.
+The orchestrator has no awareness of its own model's price or latency. It applies the same pipeline depth, fan-out caps (3-5 parallel), and review loops regardless of token price or spawn latency. The workflow modes (`fein`/`sonar`/`blitz`) are platform-dependent, user-initiated mechanisms; they do not express persistent model economics, and no universal tier variable or automatic adaptive route exists today. [verified] maestria is therefore implicitly optimized for cheap, fast models and becomes a net negative on frontier models, where the quality premium of narrow-focus delegation shrinks while cost and latency multipliers stay constant.
 
 ## Decision
 
@@ -66,7 +66,7 @@ The hypothesis scales five levers with the tier: at `flash`, every unfamiliar su
 
 ### Option A: Keep the Pipeline Universal, Document the Constraint
 
-Document "Maestria is designed for cheap fast models" and leave the pipeline untouched. Rejected for the public contract: it hides a measurable cost and contradicts observed model and platform differences. [verified]
+Document "maestria is designed for cheap fast models" and leave the pipeline untouched. Rejected for the public contract: it hides a measurable cost and contradicts observed model and platform differences. [verified]
 
 ### Option B: Collapse the Pipeline Only Via User-Initiated `blitz` Mode
 
@@ -78,7 +78,7 @@ The orchestrator reads its own token/cost telemetry and adjusts fan-out dynamica
 
 ### Option D: Model Detection at Session Start
 
-The platform passes the resolved model name into orchestrator context and Maestria maps model IDs to tiers. Deferred for the same reason as Option C: the mapping is platform-specific and brittle across aliases and providers. Automatic capability classification is a non-goal for Unit 1. [inferred]
+The platform passes the resolved model name into orchestrator context and maestria maps model IDs to tiers. Deferred for the same reason as Option C: the mapping is platform-specific and brittle across aliases and providers. Automatic capability classification is a non-goal for Unit 1. [inferred]
 
 ## Related Decisions
 

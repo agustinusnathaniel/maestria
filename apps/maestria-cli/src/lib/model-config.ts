@@ -196,14 +196,14 @@ export const parseCodexAgentModel = (content: string): string | undefined =>
 export const setCodexAgentModel = (content: string, model: string): string =>
   setCodexTopLevelString(content, 'model', model || undefined);
 
-/** Create the smallest native Codex custom-agent file for a Maestria role. */
+/** Create the smallest native Codex custom-agent file for a maestria role. */
 export const createCodexAgentConfig = (
   agent: AgentName,
   model: string,
   nativeName = codexManagedAgentName(agent),
 ): string => {
   const readOnly = new Set<AgentName>(['adventurer', 'architect', 'planner', 'reviewer']);
-  const description = `Maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
+  const description = `maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
   const instructions = [
     `Load the $maestria:${agent} skill before acting.`,
     `Stay within the ${agent} specialist role and return a concise handoff to the parent agent.`,

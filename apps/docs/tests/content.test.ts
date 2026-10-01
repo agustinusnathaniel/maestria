@@ -75,7 +75,7 @@ describe('404 page', () => {
       'https://maestria.sznm.dev/sitemap-index.xml',
     ]);
     expect(RECOVERY_LINKS).toContainEqual([
-      'When to Use Maestria',
+      'When to Use maestria',
       'https://maestria.sznm.dev/core/when-to-use/',
     ]);
   });

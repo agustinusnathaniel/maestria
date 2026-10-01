@@ -6,9 +6,9 @@ Accepted (2026-09-01)
 
 ## Context
 
-Maestria already has a private canonical directive source and explicit native projections per runtime. Agent Plugins v1 offers a vendor-neutral directory format with a root `plugin.json`, fixed `skills/` and `mcp.json` locations, and client-owned installation, permissions, lifecycle, and extension behavior.
+maestria already has a private canonical directive source and explicit native projections per runtime. Agent Plugins v1 offers a vendor-neutral directory format with a root `plugin.json`, fixed `skills/` and `mcp.json` locations, and client-owned installation, permissions, lifecycle, and extension behavior.
 
-The standard covers skills and MCP configuration only: it does not standardize executable agents, commands, hooks, delegation, permissions, sandboxing, trust, provenance, or session state. It is a useful distribution boundary, not a sufficiently expressive runtime model or internal representation for Maestria.
+The standard covers skills and MCP configuration only: it does not standardize executable agents, commands, hooks, delegation, permissions, sandboxing, trust, provenance, or session state. It is a useful distribution boundary, not a sufficiently expressive runtime model or internal representation for maestria.
 
 ## Decision
 
@@ -20,19 +20,19 @@ Add `@maestria/agent-plugin` as a first-class public package:
 - It contains no `mcp.json`, executable agent registration, commands, hooks, or client-specific extension data.
 - `packages/core/agent-directives/` stays the content source; the package's `sync.config.ts` is the projection adapter and `scripts/sync-all` the generation entrypoint.
 - Package and portable manifest versions are synchronized by `scripts/sync-plugin-versions.ts` and released through Changesets.
-- The Maestria CLI exposes `plugin validate` and `plugin install`: it validates local or npm sources and stages a package in the Maestria cache or an explicit directory without registering it as a runtime platform.
+- The maestria CLI exposes `plugin validate` and `plugin install`: it validates local or npm sources and stages a package in the maestria cache or an explicit directory without registering it as a runtime platform.
 
 Native packages remain independently published; the portable package is additive and does not replace them or the Hermes distribution.
 
 ## Goals
 
-- Give compatible clients one portable package for Maestria's shared methodology.
+- Give compatible clients one portable package for maestria's shared methodology.
 - Generate that projection from canonical directives, not a second hand-authored skill tree.
 - State the portable-versus-runtime boundary clearly enough to choose the right package.
 
 ## Mapping
 
-| Maestria source | Portable projection | Notes |
+| maestria source | Portable projection | Notes |
 | --- | --- | --- |
 | `specialists/*.md` | `skills/<role>/SKILL.md` | Role methodology with plain skill references |
 | `commands/{fein,sonar,blitz}.md` | `skills/{fein,sonar,blitz}/SKILL.md` | No command component in v1, so modes become skills |
@@ -41,7 +41,7 @@ Native packages remain independently published; the portable package is additive
 
 ## Non-Goals
 
-- Do not use Agent Plugins v1 as Maestria's canonical internal representation; native adapters need richer fields.
+- Do not use Agent Plugins v1 as maestria's canonical internal representation; native adapters need richer fields.
 - Do not build a universal runtime or merge Node, Python, and host SDK dependencies.
 - Do not make the CLI activate packages or own client permissions, trust, sandboxing, or lifecycle; it validates and stages only.
 - Do not add portable MCP configuration without a concrete, host-neutral capability and credential story.
@@ -56,7 +56,7 @@ Native packages remain independently published; the portable package is additive
 
 ### Positive
 
-- Compatible clients can consume Maestria's core methodology from one standard package.
+- Compatible clients can consume maestria's core methodology from one standard package.
 - Methodology changes flow from the canonical source with no second maintained tree.
 - Native runtime behavior stays isolated, preserving permissions, hooks, subagent registration, and host UX.
 - Users can validate and stage an artifact before handing it to a client's installer or directory loader.

@@ -1,5 +1,5 @@
 ---
-description: Maestria workflow dispatcher for Cursor routing, handoffs, and independent review.
+description: maestria workflow dispatcher for Cursor routing, handoffs, and independent review.
 name: orchestrator
 ---
 

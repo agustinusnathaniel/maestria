@@ -1,8 +1,8 @@
 # @maestria/pi
 
-A [Pi coding agent](https://pi.software/) extension that brings Maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
+A [Pi coding agent](https://pi.software/) extension that brings maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 

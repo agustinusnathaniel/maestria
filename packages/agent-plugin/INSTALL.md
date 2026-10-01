@@ -2,7 +2,7 @@
 
 This package is a standard Agent Plugins v1 directory package. Use a client that supports the Agent Plugins format, then provide the package root containing `plugin.json`.
 
-## Maestria CLI
+## maestria CLI
 
 To fetch, validate, and stage a published npm release:
 
@@ -27,7 +27,7 @@ For a released version, install or download `@maestria/agent-plugin` through the
 
 ## Local checkout
 
-From the Maestria repository:
+From the maestria repository:
 
 ```bash
 scripts/sync-all
@@ -43,7 +43,7 @@ The directory contains the portable manifest and generated skills. Keep the pack
 
 ## Support boundary
 
-The portable package declares skills only. It does not provide native subagent registration, slash commands, lifecycle hooks, MCP servers, tool permissions, sandboxing, or session-state management. Those capabilities remain in the corresponding native Maestria packages and in the consuming client.
+The portable package declares skills only. It does not provide native subagent registration, slash commands, lifecycle hooks, MCP servers, tool permissions, sandboxing, or session-state management. Those capabilities remain in the corresponding native maestria packages and in the consuming client.
 
 ## Updating a checkout
 

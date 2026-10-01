@@ -6,7 +6,7 @@ Accepted (2026-08-31) - Strict preset enforced via the vite.config.ts hybrid.
 
 ## Context
 
-Maestria is a pnpm monorepo whose root `vite.config.ts` is the authority for formatting, linting, type-aware checks, staged-file checks, and task execution, using Vite+ as its unified command runner with bundled Oxlint and Oxfmt versions. Ultracite offers maintained Oxlint and Oxfmt presets plus optional agent rules, skills, and hooks: its Oxlint setup uses `ultracite/oxlint/core` in an `extends` array and its Oxfmt setup spreads `ultracite/oxfmt`. The preset's Oxlint peer range exceeded the bundled Oxlint version, so adoption required aligning the toolchain first.
+maestria is a pnpm monorepo whose root `vite.config.ts` is the authority for formatting, linting, type-aware checks, staged-file checks, and task execution, using Vite+ as its unified command runner with bundled Oxlint and Oxfmt versions. Ultracite offers maintained Oxlint and Oxfmt presets plus optional agent rules, skills, and hooks: its Oxlint setup uses `ultracite/oxlint/core` in an `extends` array and its Oxfmt setup spreads `ultracite/oxfmt`. The preset's Oxlint peer range exceeded the bundled Oxlint version, so adoption required aligning the toolchain first.
 
 Vite+ documents the root `vite.config.ts` as the configuration location for `vp lint`, `vp fmt`, and `vp check`, and does not recommend standalone `oxlint.config.ts` or `.oxfmtrc.json` files. It also supports configuration composition through normal JavaScript imports.
 

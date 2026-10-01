@@ -19,7 +19,7 @@ export const getCacheDir = (): string => {
   return path.join(homedir(), '.cache');
 };
 
-/** Maestria cache directory (e.g. ~/.cache/maestria). */
+/** maestria cache directory (e.g. ~/.cache/maestria). */
 export const getMaestriaCacheDir = (): string => path.join(getCacheDir(), 'maestria');
 
 /** User-preference directory (survives cache clears, unlike the cache directory). */

@@ -6,7 +6,7 @@ Accepted (2026-09-25)
 
 ## Context
 
-Maestria already asks builders for small reviewable increments and planners for verifiable phases, but its delivery sequence places every commit after final verification and describes a single PR. That can turn a multi-slice outcome into one large commit and PR. Architect and planner outputs also lack an explicit step that shows their proposed design to the user before dependent implementation.
+maestria already asks builders for small reviewable increments and planners for verifiable phases, but its delivery sequence places every commit after final verification and describes a single PR. That can turn a multi-slice outcome into one large commit and PR. Architect and planner outputs also lack an explicit step that shows their proposed design to the user before dependent implementation.
 
 ## Goals
 

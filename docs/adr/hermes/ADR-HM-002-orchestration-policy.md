@@ -14,7 +14,7 @@ The orchestrator directive was ported from `@maestria/opencode`, where it is a *
 
 ## Decision (original, 2026-07-17 - historical record)
 
-The Hermes orchestrator defaulted to **single-thread execution**, delegating only for complex tasks: 4+ files with coordinated changes, multi-domain work, risky changes needing a maker/checker split, or an explicit "Maestria mode" request. The orchestrator mandate changed from "Only tools are `delegate_task()` and `question()`. Never implement yourself." to "Default to direct implementation. Only delegate for complex tasks.", via sync replace rules adapting the canonical "pure dispatcher" language. Specialist roles and the mode system were unchanged. (Consequences: fewer turns and no context fragmentation for simple tasks, against sync-replace maintenance and the risk of under-delegation. Both narrowed by the Revision.)
+The Hermes orchestrator defaulted to **single-thread execution**, delegating only for complex tasks: 4+ files with coordinated changes, multi-domain work, risky changes needing a maker/checker split, or an explicit "maestria mode" request. The orchestrator mandate changed from "Only tools are `delegate_task()` and `question()`. Never implement yourself." to "Default to direct implementation. Only delegate for complex tasks.", via sync replace rules adapting the canonical "pure dispatcher" language. Specialist roles and the mode system were unchanged. (Consequences: fewer turns and no context fragmentation for simple tasks, against sync-replace maintenance and the risk of under-delegation. Both narrowed by the Revision.)
 
 ---
 

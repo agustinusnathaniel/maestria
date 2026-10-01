@@ -29,7 +29,7 @@ const writeManifest = async (root: string, manifest: Record<string, unknown>): P
 };
 
 describe('Agent Plugin validation', () => {
-  it("accepts Maestria's generated portable package", async () => {
+  it("accepts maestria's generated portable package", async () => {
     const report = await validateAgentPlugin(PORTABLE_PACKAGE);
 
     expect(report.valid).toBe(true);

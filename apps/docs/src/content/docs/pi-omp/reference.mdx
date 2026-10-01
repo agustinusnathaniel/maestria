@@ -75,9 +75,9 @@ The mode persists across turns in the same process. Use `/mode-clear` to return 
 
 ### OMP goal state
 
-Maestria observes OMP's public `goal_updated` event and mirrors active, paused, and budget-limited goals into session state. Non-null complete and dropped terminal events clear the current-goal mirror after the transition is persisted. Session start, switch, fork, branch, handoff, and tree-navigation transitions restore the target-session state using a valid public native goal mode entry when available; without readable target goal state, the mirror resets to unknown (`null`) until the next public goal event.
+maestria observes OMP's public `goal_updated` event and mirrors active, paused, and budget-limited goals into session state. Non-null complete and dropped terminal events clear the current-goal mirror after the transition is persisted. Session start, switch, fork, branch, handoff, and tree-navigation transitions restore the target-session state using a valid public native goal mode entry when available; without readable target goal state, the mirror resets to unknown (`null`) until the next public goal event.
 
-OMP's public extension API exposes tool names but not call provenance, so Maestria makes no name-only exception for `goal`: another extension could register a colliding tool. Native goal state remains observable, including paused goals, but resume, complete, and drop remain OMP-owned and available through user-issued `/goal` commands, which Maestria never invokes. Model `goal` calls stay blocked during enforcement because their provenance cannot be established.
+OMP's public extension API exposes tool names but not call provenance, so maestria makes no name-only exception for `goal`: another extension could register a colliding tool. Native goal state remains observable, including paused goals, but resume, complete, and drop remain OMP-owned and available through user-issued `/goal` commands, which maestria never invokes. Model `goal` calls stay blocked during enforcement because their provenance cannot be established.
 
 ## Subagent dispatch
 
@@ -130,7 +130,7 @@ The 7 specialist agents (adventurer, architect, builder, diagnose, planner, revi
 
 <Steps>
 
-1. **Sync pipeline** generates `agents/*.md` files from canonical Maestria directives with platform-specific YAML frontmatter, including role-specific tool allowlists and `prompt_mode: append` / `inherit_context: true`
+1. **Sync pipeline** generates `agents/*.md` files from canonical maestria directives with platform-specific YAML frontmatter, including role-specific tool allowlists and `prompt_mode: append` / `inherit_context: true`
 2. **Extension startup** (`session_start` handler) deploys the agent files to the platform's agent discovery directory
 3. **Subagent dispatch** discovers the files and registers each as an agent type
 4. **Pi's `maestria_subagent(...)` and OMP's native `task(agent: "adventurer", ...)`** look up the registered type, merge the role prompt over the inherited parent context, and spawn the subagent with the platform's tools and instructions.
@@ -183,7 +183,7 @@ This enforces the maker/checker split at the subagent tool level: builder and wr
 
 ### Persistence
 
-Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP), so user-customized agents with the same name stay put. To reset to Maestria defaults, remove the files from the discovery directory and restart your session.
+Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP), so user-customized agents with the same name stay put. To reset to maestria defaults, remove the files from the discovery directory and restart your session.
 
 ## Project Loading
 

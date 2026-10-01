@@ -37,7 +37,7 @@ pnpx maestria@latest update kimi-code --version 0.5.2
 1. Start a new Kimi Code session (`/new`)
 2. Ask: "List your available specialists"
 3. The orchestrator should respond listing builder, adventurer, architect, planner, reviewer, writer, and diagnose.
-4. Confirm the plugin is enabled in `/plugins` and that Maestria's system-prompt rules appear in the active context.
+4. Confirm the plugin is enabled in `/plugins` and that maestria's system-prompt rules appear in the active context.
 5. Optional workflow commands are namespaced as `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz`.
 
 ## Uninstall

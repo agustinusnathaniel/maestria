@@ -39,7 +39,7 @@ A plugin may register `mcpServers`, `skills`, one `sessionStart.skill` (single t
 
 ### Specialist → Subagent Profile Mapping
 
-| Maestria Agent | Kimi Subagent | Rationale |
+| maestria Agent | Kimi Subagent | Rationale |
 | --- | --- | --- |
 | **Orchestrator** | Main agent (auto-loaded) | `sessionStart.skill`; teaches methodology, delegation, and swarm usage; must route heavy work to specialists |
 | **Builder** | `coder` | Write, Edit, Bash |

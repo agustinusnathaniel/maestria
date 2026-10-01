@@ -6,7 +6,7 @@ Accepted (2026-09-24). Divergent-claim annotation (2026-09-28, recorded under [A
 
 ## Context
 
-Maestria's existing testing guidance protects observable behavior, intentional regression coverage, real boundaries, and host authorization. It also leaves several loopholes:
+maestria's existing testing guidance protects observable behavior, intentional regression coverage, real boundaries, and host authorization. It also leaves several loopholes:
 
 - The global testing rule allows a new test file when it materially protects a contract, but does not require test selection before implementation.
 - `docs/testing.md` recommends the cheapest meaningful verification and rejects a blanket end-to-end requirement, which leaves complex features open to parallel post-code unit suites.

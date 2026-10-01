@@ -6,7 +6,7 @@
 
 ## Context
 
-At the time of this decision, Kimi Code looked for `kimi.plugin.json` at the root of an extracted archive, while Maestria kept the plugin under `packages/kimi-code/` in a multi-package repository. Moving the manifest to the monorepo root would misrepresent the repository and break relative skill paths.
+At the time of this decision, Kimi Code looked for `kimi.plugin.json` at the root of an extracted archive, while maestria kept the plugin under `packages/kimi-code/` in a multi-package repository. Moving the manifest to the monorepo root would misrepresent the repository and break relative skill paths.
 
 ## Decision (historical)
 
@@ -16,7 +16,7 @@ The alternatives were a root manifest (rejected because it would misidentify the
 
 ## Supersession
 
-On 2026-07-21, distribution moved to npm. The Maestria CLI now installs `@maestria/kimi-code` from the registry, so the subtree-split release workflow, branch, tags, and GitHub URL forms described in the original procedure are retired. See the [current package README](../../../packages/kimi-code/README.md) for installation and [ADR-KC-001](ADR-KC-001-kimi-code-architecture.md) for plugin architecture.
+On 2026-07-21, distribution moved to npm. The maestria CLI now installs `@maestria/kimi-code` from the registry, so the subtree-split release workflow, branch, tags, and GitHub URL forms described in the original procedure are retired. See the [current package README](../../../packages/kimi-code/README.md) for installation and [ADR-KC-001](ADR-KC-001-kimi-code-architecture.md) for plugin architecture.
 
 ## Consequences
 

@@ -1,8 +1,8 @@
 # @maestria/cursor
 
-A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`; `cursor-agent` is a compatibility alias) - specialist Task agents, an orchestrator skill, always-on global rules, and workflow commands (7 specialists as of 2026-09-22; see What It Provides below for the current list).
+A declarative [Cursor](https://cursor.com/) plugin that brings maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`; `cursor-agent` is a compatibility alias) - specialist Task agents, an orchestrator skill, always-on global rules, and workflow commands (7 specialists as of 2026-09-22; see What It Provides below for the current list).
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 

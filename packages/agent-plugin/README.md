@@ -1,10 +1,10 @@
 # @maestria/agent-plugin
 
-Maestria's portable [Agent Plugins v1](https://agent-plugins.org/) package. It delivers the methodology as standard [Agent Skills](https://agentskills.io/specification) for compatible agent clients.
+maestria's portable [Agent Plugins v1](https://agent-plugins.org/) package. It delivers the methodology as standard [Agent Skills](https://agentskills.io/specification) for compatible agent clients.
 
 ## Status / Support Boundary
 
-This package contains a standard `plugin.json` manifest and generated skills (14 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugin/skills) for the current list). Use a native Maestria integration if you need executable agents, commands, hooks, MCP servers, or client-specific extensions.
+This package contains a standard `plugin.json` manifest and generated skills (14 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugin/skills) for the current list). Use a native maestria integration if you need executable agents, commands, hooks, MCP servers, or client-specific extensions.
 
 Skills describe workflow behavior. The consuming client remains responsible for discovery, invocation, delegation, permissions, session state, installation, and trust decisions. Read-only roles are advisory in this package and do not enforce tool restrictions.
 

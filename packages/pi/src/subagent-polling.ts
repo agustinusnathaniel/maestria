@@ -63,7 +63,7 @@ export const pollSubagent = async (options: PollSubagentOptions): Promise<Subage
   const maxPolls = Math.ceil(timeoutMs / intervalMs);
   const { id, label, sendUpdates, service, signal } = options;
   const aborted = (): SubagentPollError =>
-    new SubagentPollError({ id, message: 'Maestria subagent call aborted', reason: 'aborted' });
+    new SubagentPollError({ id, message: 'maestria subagent call aborted', reason: 'aborted' });
   const throwIfAborted = (): void => {
     if (signal?.aborted === true) {
       throw aborted();

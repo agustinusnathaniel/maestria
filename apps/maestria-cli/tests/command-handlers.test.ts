@@ -189,7 +189,7 @@ describe('command handlers', () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
       const plain = await handleStatus({ quiet: true });
       expect(plain.exitCode).toBe(0);
-      expect(plain.output).toContain('Maestria Status');
+      expect(plain.output).toContain('maestria Status');
       expect(plain.output).toContain('OpenCode');
 
       const platformsStatus = [status({})];

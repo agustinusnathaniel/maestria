@@ -1,8 +1,8 @@
 # @maestria/prime-agent
 
-Maestria's engineering methodology for [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent), delivered as standard [Agent Skills](https://agentskills.io/specification) plus a small, verified Prime/Pi extension for workflow-mode commands.
+maestria's engineering methodology for [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent), delivered as standard [Agent Skills](https://agentskills.io/specification) plus a small, verified Prime/Pi extension for workflow-mode commands.
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Status / Support Boundary
 

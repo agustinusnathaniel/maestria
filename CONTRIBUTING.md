@@ -1,4 +1,4 @@
-# Contributing to Maestria
+# Contributing to maestria
 
 ## Start Here
 
@@ -8,7 +8,7 @@ vp install
 vp check
 ```
 
-Maestria uses [Vite+](https://viteplus.dev) for formatting, linting, type-checking, tests, and builds. Use the package-specific commands below when you need to narrow a check.
+maestria uses [Vite+](https://viteplus.dev) for formatting, linting, type-checking, tests, and builds. Use the package-specific commands below when you need to narrow a check.
 
 ## Repository Map
 

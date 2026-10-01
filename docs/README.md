@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Find the current instructions, design rationale, and historical context needed to work on Maestria.
+Find the current instructions, design rationale, and historical context needed to work on maestria.
 
 ## Audience
 
-Contributors, maintainers, and platform adapter authors. To install or use Maestria, start with the [public documentation](https://maestria.sznm.dev) or a [package README](../README.md#packages).
+Contributors, maintainers, and platform adapter authors. To install or use maestria, start with the [public documentation](https://maestria.sznm.dev) or a [package README](../README.md#packages).
 
 ## Start with Your Task
 

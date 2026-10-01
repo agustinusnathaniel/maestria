@@ -7,7 +7,6 @@
 - [#361](https://github.com/agustinusnathaniel/maestria/pull/361) [`b7fa663`](https://github.com/agustinusnathaniel/maestria/commit/b7fa663bd790e42da120712f85d1f1eadc40bde4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prompt implementers and reviewers to reassess explanatory comments and redundant tests before accepting a change.
 
 - [#370](https://github.com/agustinusnathaniel/maestria/pull/370) [`aeb0713`](https://github.com/agustinusnathaniel/maestria/commit/aeb0713fa0ea59e1bddfc14c9e2d3ade04a91795) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Consolidate duplicated agent directive text without changing behavior.
-  
   - The human-facing output contract now lives once in the shared global rules; specialist prompts point at it instead of restating it, keeping per-specialist scope and trigger wording.
   - Dense rules prose is split into scannable paragraphs with identical wording, and restated adventurer/architect wording is collapsed.
   - No obligation was moved without a pointer, retired, or weakened; all directive contract tests pass unmodified.
@@ -16,7 +15,7 @@
 
 ### Patch Changes
 
-- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated Maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
 
 - [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Harden production subprocess, persisted-state, review-mode, Bash-policy, deployment-test, and OpenCode permission boundaries for P1 test safety.
 
@@ -43,11 +42,10 @@
 ### Patch Changes
 
 - [#316](https://github.com/agustinusnathaniel/maestria/pull/316) [`7a9334b`](https://github.com/agustinusnathaniel/maestria/commit/7a9334b3c020d8cbd91441e1ced33495a75b6f7a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Restore a consistent PR delivery contract.
-  
   - Titles use explicit Conventional Commits; bodies use literal ## headings in order (Summary, Changes, Verification, plus Visual evidence and Breaking changes when applicable), respecting explicit project templates.
   - Changes carries the Work Results table (File, What changed, Why); Verification carries checks, results, and unresolved gaps.
   - Pushes that change the cumulative diff or verification evidence update the PR title and body with a published-body readback. Acceptance classifies visual evidence as required or not applicable with reason, carries it through briefs, checks rendered coverage in review, reads back the published body at delivery, and treats an open PR as complete only with its applicable evidence.
-  
+
   Also restores proportional documentation assessment: internal docs, user-facing docs, changelog/release notes, and required changesets are assessed separately, only affected categories are updated, plausible unaffected categories note a reason, and required docs carry through briefs to reconciliation.
 
 ## 0.7.11
@@ -88,7 +86,7 @@
 
 - [#281](https://github.com/agustinusnathaniel/maestria/pull/281) [`5c5729b`](https://github.com/agustinusnathaniel/maestria/commit/5c5729b0f70d54f4181b2a5a2f1aad87fe0a92af) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix stale skill references so prescribed skills resolve at load time: planner skill guidance no longer names the removed `to-issues` and `to-prd` skills, and the duplicated Kimi orchestrator skill prescription (which restated canonical skill governance and drifted stale) is removed so `sync.config.ts` only adapts toward the plugin runtime. Clarify in the orchestrator's Role-Based Pipeline that `@diagnose` analyzes the bug, applies the minimal fix, and verifies the repair instead of grouping it with analyze-only thinkers. Correct the canonical agent-directives README index to count 8 pipeline agents (orchestrator + 7 specialists) and list `orchestrator.md`.
 
-- [#280](https://github.com/agustinusnathaniel/maestria/pull/280) [`7c038cd`](https://github.com/agustinusnathaniel/maestria/commit/7c038cd28448149f4154510ee0866f0a3ef523f8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make agent investigation, verification, skill loading, and output structure proportional to the task. Preserve complete assignment ownership and delivery, allow necessary in-scope regression coverage, and keep downstream instructions independent of Maestria repository paths.
+- [#280](https://github.com/agustinusnathaniel/maestria/pull/280) [`7c038cd`](https://github.com/agustinusnathaniel/maestria/commit/7c038cd28448149f4154510ee0866f0a3ef523f8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make agent investigation, verification, skill loading, and output structure proportional to the task. Preserve complete assignment ownership and delivery, allow necessary in-scope regression coverage, and keep downstream instructions independent of maestria repository paths.
 
 ## 0.7.5
 
@@ -157,7 +155,6 @@
   dispatch timed out or the model omitted the agent name, the orchestrator
   had zero fallback and aborted - the reported "lacks autonomy, behaves
   weirdly" symptom.
-
   - Orchestrator regains read-only tools (read, glob, grep, lsp, webfetch,
     read-only bash, tests) for routing and verification; mutations remain
     denied and delegated.
@@ -195,7 +192,7 @@
 
 - [#157](https://github.com/agustinusnathaniel/maestria/pull/157) [`906f836`](https://github.com/agustinusnathaniel/maestria/commit/906f836a96a2f53e838c29d3a9e82d5c2336ba49) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Selective routing contract in the canonical orchestrator directives.
 
-  **Three routes** - `direct` (host executes, no Maestria specialist spawn),
+  **Three routes** - `direct` (host executes, no maestria specialist spawn),
   `focused` (one targeted specialist, one reviewer for non-trivial
   work), and `full` (bounded recon, design, implementation, and review). The
   full pipeline is an explicit option for complex or high-risk work and for
@@ -218,7 +215,7 @@
   `@reviewer`; where the host cannot enforce separate sessions (e.g. Kimi, Pi,
   OMP, Hermes), the split is advisory and stated as such.
 
-  **How this affects you:** Maestria no longer routes every turn through the
+  **How this affects you:** maestria no longer routes every turn through the
   full pipeline. Small explanations and tiny edits run directly or through one
   specialist; the full pipeline stays available for complex, high-risk, or
   explicitly `fein` work. No action required on your end - your agents apply
@@ -292,7 +289,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -312,7 +308,6 @@
   or the runtime lacked the required API (e.g., findPackageJSON in Bun).
 
   Changes:
-
   - opencode: lazy-load mode prompts via Proxy with error fallback
   - pi/omp: lazy-load mode prompts via getModePrompt() cache
   - pi/omp: defer homedir() from module scope to function body
@@ -424,7 +419,6 @@
 - [#59](https://github.com/agustinusnathaniel/maestria/pull/59) [`9c0746e`](https://github.com/agustinusnathaniel/maestria/commit/9c0746e611afb6e79b071a14629fbd5b925338e9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add multi-lens review swarm, observation-first principle, and triage pipeline
 
   Three review methodology patterns adopted from PostHog's code review research:
-
   - **Multi-lens review swarm** - orchestrator can dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes, with exclusive lenses and cross-referenced etiquette rules
   - **Observation over reasoning** - reviewer principle shifted from "verify without running" to "what command produces visible proof?", prioritizing observable behavior over logical argument
   - **Review triage pipeline** - issues categorized [fix]/[dismiss]/[escalate] by reviewer, then validated by orchestrator with conflict resolution (conservative wins); iteration terminates when no actionable threads remain
@@ -457,7 +451,6 @@
 
   **Work result summary** - orchestrator presents completed work as
   structured file/signature table, not verbatim handoff dump.
-
   - !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
     Session Flow, Commit Completeness Check, and Automatic Review Loop added.
 
@@ -504,7 +497,6 @@
 ### Patch Changes
 
 - [`456ae22`](https://github.com/agustinusnathaniel/maestria/commit/456ae22da14f336784ec944755fb11092fbbeee0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add two new principles to agent directives
-
   - **Start from first principles** - added as a new `## Principles` section in `rules.md` and as a Phase 0 preamble in `diagnose.md`
   - **Prefer existing solutions** - added to `rules.md`, as a first-check blockquote in `architect.md` Phase 2, and as Round 0 in `builder.md`'s Constraint Escalation pattern
 
@@ -614,7 +606,6 @@
 ### Minor Changes
 
 - [#20](https://github.com/agustinusnathaniel/maestria/pull/20) [`c3a5015`](https://github.com/agustinusnathaniel/maestria/commit/c3a501572835ae880eb56202b115c9771f999910) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce three keyword-triggered workflow modes that override the orchestrator's default delegation pipeline:
-
   - `fein` - full pipeline (mandatory recon → design → build → review)
   - `sonar` - research only (recon + design, stop before implementation)
   - `blitz` - fast implementation (builder direct, skip gates)

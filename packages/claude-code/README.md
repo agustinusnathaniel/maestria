@@ -1,8 +1,8 @@
 # @maestria/claude-code
 
-A declarative Claude Code plugin that encodes the Maestria engineering methodology - specialist agents, an orchestrator skill, a preloaded global-rules skill, and workflow commands (7 specialists, 2 skills, and 3 commands as of 2026-09-22; see What It Provides below for the current list).
+A declarative Claude Code plugin that encodes the maestria engineering methodology - specialist agents, an orchestrator skill, a preloaded global-rules skill, and workflow commands (7 specialists, 2 skills, and 3 commands as of 2026-09-22; see What It Provides below for the current list).
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Status / Support Boundary
 

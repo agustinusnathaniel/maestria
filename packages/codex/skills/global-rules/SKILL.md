@@ -1,5 +1,5 @@
 ---
-description: Universal Maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.
+description: Universal maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.
 name: global-rules
 ---
 

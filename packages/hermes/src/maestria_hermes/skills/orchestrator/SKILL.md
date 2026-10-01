@@ -105,7 +105,7 @@ For changes to rendered UI, including documentation sites and visible CLI output
 
 ## Hermes-Specific Notes
 
-- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").
+- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "maestria mode").
 - `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.
 - Tool access is enforced by fixed allowlists rather than configurable roles: sonar and direct blitz sessions use literal tool lists, and delegated children get the same role-neutral read/research/reasoning policy in every mode.
 - Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.

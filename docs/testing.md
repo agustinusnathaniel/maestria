@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This guide defines how Maestria selects tests before implementation and verifies observable behavior without turning tests into implementation-shape checks. The canonical always-loaded contract lives in `packages/core/agent-directives/rules.md`; this guide supplies the definitions, workflow, and examples behind that contract.
+This guide defines how maestria selects tests before implementation and verifies observable behavior without turning tests into implementation-shape checks. The canonical always-loaded contract lives in `packages/core/agent-directives/rules.md`; this guide supplies the definitions, workflow, and examples behind that contract.
 
 ## Audience
 

@@ -8,13 +8,13 @@ Accepted (2026-08-10), Confidence: High
 
 This decision was taken inside [ADR-HM-002](ADR-HM-002-orchestration-policy.md) and extracted into its own record on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md), because it decides a different subject from that record: the child-trust boundary, not the orchestrator's delegation default. The 2026-08-10 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
 
-The Revision in ADR-HM-002 matched the native subagent-start child-role value to the seven Maestria specialist names and gave each match that specialist's tool set. Hermes' native delegated-child roles are `leaf` and `orchestrator` topology roles only, not specialist identities, and no authenticated channel binds a child to a specialist with write capability, so the grant was unsupported. This record supersedes the role-based child-permission elements of that Revision.
+The Revision in ADR-HM-002 matched the native subagent-start child-role value to the seven maestria specialist names and gave each match that specialist's tool set. Hermes' native delegated-child roles are `leaf` and `orchestrator` topology roles only, not specialist identities, and no authenticated channel binds a child to a specialist with write capability, so the grant was unsupported. This record supersedes the role-based child-permission elements of that Revision.
 
 The runtime is the authority for whether this policy is currently enforced. Verify the enforcement surface against the `@maestria/hermes` package and its sync configuration rather than against any text here, including this record.
 
 ## Decision
 
-1. **Native Hermes child roles are topology roles, not Maestria specialists.** A delegated child's native role is `leaf` (default) or `orchestrator` only; the Maestria specialist names are orchestrator routing identities, not tool-granting child identities.
+1. **Native Hermes child roles are topology roles, not maestria specialists.** A delegated child's native role is `leaf` (default) or `orchestrator` only; the maestria specialist names are orchestrator routing identities, not tool-granting child identities.
 2. **User/delegation text cannot grant capabilities.** Capabilities come only from trusted native lifecycle state; `[MAESTRIA_ROLE: ...]`-style markers neither create a role mapping nor relax any allowlist.
 3. **Delegated children receive a fixed read/research/LLM-only policy.** A child may use read/research tools and LLM reasoning only: no write, execution, shell, further delegation, or OpenCode, regardless of the routed specialist name.
 4. **Top-level direct sessions retain normal direct behavior only with trusted native binding.** Trust comes only from recognized native lifecycle state (session start on a non-child platform, or a validated turn-to-session binding); ambiguous, invalid, or ended child state fails closed and never inherits direct or write access.
