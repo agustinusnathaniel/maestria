@@ -120,16 +120,6 @@ def register(ctx):
         _cmd_clear_mode(mode_manager),
         description="Clear maestria mode and return to neutral routing",
     )
-    ctx.register_command(
-        "review",
-        _cmd_set_mode(mode_manager, "fein"),
-        description="Activate full methodology pipeline (fein mode) with review gate",
-    )
-    ctx.register_command(
-        "plan",
-        _cmd_set_mode(mode_manager, "fein"),
-        description="Activate full methodology pipeline (fein mode) with planning phase",
-    )
 
     # -- Phase 2: Skills ----------------------------------------------------
 
