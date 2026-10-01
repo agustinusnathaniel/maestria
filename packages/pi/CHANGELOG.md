@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.18
+
+### Patch Changes
+
+- [#378](https://github.com/agustinusnathaniel/maestria/pull/378) [`0b3dda6`](https://github.com/agustinusnathaniel/maestria/commit/0b3dda64021f8a622e822672f06f3a994c832ac1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Simplify subagent polling and parallel result handling while preserving timeout, abort, and sibling cleanup behavior.
+
 ## 0.7.17
 
 ### Patch Changes
