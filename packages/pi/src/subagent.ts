@@ -476,7 +476,7 @@ const createSubagentTool = (
       : undefined;
     return await executeSubagent(pi, state, params, signal, updateHandler);
   },
-  label: 'Maestria Subagent',
+  label: 'maestria Subagent',
   name: 'maestria_subagent',
   parameters: SUBAGENT_PARAMETERS,
   promptGuidelines: [

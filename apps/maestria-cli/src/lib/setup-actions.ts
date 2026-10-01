@@ -225,7 +225,7 @@ export const runSkillSourceActions = async (
   return reports;
 };
 /**
- * Reconcile Maestria methodology skills for installed platforms without
+ * Reconcile maestria methodology skills for installed platforms without
  * touching plugin installs. Persists only confirmed state through the
  * existing selection record.
  */

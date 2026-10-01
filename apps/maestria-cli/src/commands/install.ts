@@ -58,7 +58,7 @@ const collectInstallTargets = async (
       exitCode: 0,
       output: allPlatforms.every((s) => !s.available)
         ? 'No supported coding agent platforms detected on this machine.'
-        : 'Maestria is already installed for all detected platforms.',
+        : 'maestria is already installed for all detected platforms.',
     };
   }
   const selected = await groupMultiselect({

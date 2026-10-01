@@ -277,7 +277,7 @@ describe('setup pre-effect validation', () => {
     expect(calls.length).toBe(0);
   });
 
-  it('rejects unknown Maestria skills before any effect', async () => {
+  it('rejects unknown maestria skills before any effect', async () => {
     await withConfigDir();
     const calls: string[][] = [];
     await expect(
@@ -547,7 +547,7 @@ describe('isNoopSetupPlan', () => {
     },
     {
       expected: false,
-      name: 'Maestria defaults kept on a fresh install',
+      name: 'maestria defaults kept on a fresh install',
       plan: noopPlan({
         maestriaActive: true,
         reviewed: [
@@ -557,7 +557,7 @@ describe('isNoopSetupPlan', () => {
     },
     {
       expected: false,
-      name: 'any Maestria selection changed',
+      name: 'any maestria selection changed',
       plan: noopPlan({
         reviewed: [
           { id: 'opencode', selection: { changed: false, skills: [] } },
@@ -634,7 +634,7 @@ describe('setup no-op confirm skipping', () => {
     expect(result.output).not.toContain('already set up');
   });
 
-  it('does not short-circuit a fresh install when Maestria defaults are kept', async () => {
+  it('does not short-circuit a fresh install when maestria defaults are kept', async () => {
     await withConfigDir();
     const missingYes = await captureCliError(
       runSetup(

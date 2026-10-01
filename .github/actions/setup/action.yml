@@ -1,4 +1,4 @@
-name: 'Maestria Setup'
+name: 'maestria Setup'
 description: 'Install dependencies with pnpm (which brings Node too), optionally setup Python + ruff, restore vp task cache'
 inputs:
   python:

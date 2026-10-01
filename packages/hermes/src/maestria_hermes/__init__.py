@@ -1,4 +1,4 @@
-"""@maestria/hermes - Maestria methodology adapter for Hermes Agent.
+"""@maestria/hermes - maestria methodology adapter for Hermes Agent.
 
 Registers mode system (fein/sonar/blitz), 9 specialist skill files,
 role-neutral tool policy, pipeline lifecycle hooks, and OpenCode CLI routing tool.
@@ -182,7 +182,7 @@ def _on_subagent_start(**kwargs) -> None:
     """Record a delegated child's native topology role as trust state.
 
     Hermes passes only its effective native topology role (``leaf`` or
-    ``orchestrator``) here. The role is not a Maestria specialist identity
+    ``orchestrator``) here. The role is not a maestria specialist identity
     and grants only the fixed role-neutral child policy.
 
     Kwargs (from delegate_tool.py):

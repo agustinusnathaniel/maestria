@@ -243,7 +243,7 @@ const claudeMarketplace: NpmMarketplace = {
     },
     plugins: [
       {
-        displayName: 'Maestria',
+        displayName: 'maestria',
         name: MAESTRIA_PLUGIN,
         source: './plugins/maestria',
       },
@@ -257,7 +257,7 @@ const codexMarketplace: NpmMarketplace = {
   dir: CODEX_MARKETPLACE_DIR,
   file: '.agents/plugins/marketplace.json',
   manifest: {
-    interface: { displayName: 'Maestria' },
+    interface: { displayName: 'maestria' },
     name: MAESTRIA_MARKETPLACE,
     plugins: [
       {
@@ -563,7 +563,7 @@ interface PiStylePlatformDefinition {
   readonly referencePrefix: string;
   /** Plugin command group (`['plugin']` for omp; empty for Pi). */
   readonly commandPrefix: readonly string[];
-  /** package.json whose `version` reports the installed Maestria package. */
+  /** package.json whose `version` reports the installed maestria package. */
   readonly installedPackageJsonPath: string;
   /** Peer dependency installed before every install/update; failures are ignored. */
   readonly prerequisite?: Effect.Effect<void>;

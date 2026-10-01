@@ -6,7 +6,7 @@ Revised (2026-07-28) - supersedes the initial proposed version from 2026-07-28.
 
 ## Context
 
-Maestria separates maker and checker to address commitment bias, context blindness, and toolset overlap (see `PATTERNS.md`). The implementer cannot approve its work; a read-only checker reviews code against acceptance criteria, with one repair/re-review pass by default and at most three per outcome. The canonical directives named in References carry this split, triage, and repair bound. They do not carry the block-quoted access-list, blind-review, or five-field escalation wording below; see the dated divergent-claim annotation in Assumptions.
+maestria separates maker and checker to address commitment bias, context blindness, and toolset overlap (see `PATTERNS.md`). The implementer cannot approve its work; a read-only checker reviews code against acceptance criteria, with one repair/re-review pass by default and at most three per outcome. The canonical directives named in References carry this split, triage, and repair bound. They do not carry the block-quoted access-list, blind-review, or five-field escalation wording below; see the dated divergent-claim annotation in Assumptions.
 
 An external methodology review identified two gaps:
 
@@ -110,7 +110,7 @@ Note (2026-09-22): the `[verified]` items below record what was checked when thi
 - `[verified]` The "ambiguous -> document and proceed" path was removed as part of this ADR's Decision 2 implementation, replaced by the fail-loud iteration exit.
 - `[verified]` Dynamic sequencing supports Thinker -> Verifier -> Worker ordering in the orchestrator's role-based pipeline.
 - `[corrected]` The initial interpretation of the critique as requiring deterministic test contracts was a misread; the reviewer needs a signal the maker did not author, meaning the requirements/spec rather than the maker's own narrative.
-- `[inferred]` Access list filtering will meaningfully reduce the false-negative rate of LLM code review. The thesis (same-model LLMs converge toward agreement when sharing a narrative) is consistent with research on LLM self-evaluation limitations and anchoring bias but is not empirically measured within Maestria.
+- `[inferred]` Access list filtering will meaningfully reduce the false-negative rate of LLM code review. The thesis (same-model LLMs converge toward agreement when sharing a narrative) is consistent with research on LLM self-evaluation limitations and anchoring bias but is not empirically measured within maestria.
 - `[inferred]` The orchestrator's filtering behavior will stick after the prompt update. The strengthened rule makes forbidden content explicit, but prompt-level rules without mechanical enforcement have failure modes.
 - `[inferred]` The completions promise is specific enough to serve as the reviewer's primary reference. Vague acceptance criteria ("make it work") give insufficient signal regardless of access list hygiene, so this depends on upstream specialists.
 - `[inferred]` The critique identifies a latent weakness rather than an active failure. No user-reported issues are attributed to these gaps, but the structural analysis is sound.

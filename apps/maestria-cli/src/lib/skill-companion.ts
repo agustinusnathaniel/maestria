@@ -28,7 +28,7 @@ export const DOCS_UPDATE_SKILL = 'docs-update';
 export const MANAGED_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_SKILL];
 
 /**
- * Maestria platform ID to native skills-CLI agent ID. `null` means no
+ * maestria platform ID to native skills-CLI agent ID. `null` means no
  * companion target exists. omp and prime-agent alias to `universal`: their
  * hosts natively discover `~/.agents/skills/` SKILL.md directories.
  */

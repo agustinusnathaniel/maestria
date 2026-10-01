@@ -23,7 +23,7 @@ export const createSpinner = (quiet: boolean) => {
 
 export const renderStatusTable = (platforms: PlatformStatus[]): string => {
   const lines: string[] = [
-    picocolors.bold('\n  Maestria Status'),
+    picocolors.bold('\n  maestria Status'),
     picocolors.dim('  ─────────────────────────────────────'),
   ];
 

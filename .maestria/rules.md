@@ -1,4 +1,4 @@
-# Maestria Project Rules
+# maestria Project Rules
 
 Project-specific non-negotiable rules. These supplement the core agent rules and are propagated to all subagents via delegation prompt "Known problems" sections.
 

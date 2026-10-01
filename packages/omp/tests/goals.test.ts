@@ -234,7 +234,7 @@ describe('installGoalEventHandlers', () => {
     });
   });
 
-  it('does not touch Maestria-only state while mirroring a native goal', async () => {
+  it('does not touch maestria-only state while mirroring a native goal', async () => {
     const pi = createMockPi();
     const state = maestriaOnlyState();
     const before = structuredClone(state);

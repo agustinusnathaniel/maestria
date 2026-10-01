@@ -3,7 +3,7 @@
 Covers the approved conservative child trust policy (ADR-HM-002):
 
 - Native Hermes child roles are ``leaf``/``orchestrator`` topology signals
-  only; they never map to Maestria specialist identities and never grant a
+  only; they never map to maestria specialist identities and never grant a
   delegated child write/shell/code/delegation/OpenCode capability.  Roles
   match exactly - case variants and malformed role strings fail closed.
 - Trust states: top-level (direct), trusted child (role-neutral
@@ -53,11 +53,11 @@ Covers the approved conservative child trust policy (ADR-HM-002):
   same way).
 - Role provenance: Hermes normalizes the caller's requested role
   (strip + lowercase, unknown values coerce to "leaf") BEFORE invoking
-  subagent_start, so Maestria sees only the effective native topology
+  subagent_start, so maestria sees only the effective native topology
   role and validates it exactly.  Requested "builder"/padded/"LEAF"
   inputs arrive as effective "leaf" (and orchestrator variants as
   "orchestrator") and receive the SAME fixed role-neutral child policy;
-  Maestria does not reject the original requested strings - they never
+  maestria does not reject the original requested strings - they never
   reach it raw.  The normalization contract is exercised against Hermes'
   real delegate_tool._normalize_role when the install tree is
   importable, with a verified replica otherwise.
@@ -184,7 +184,7 @@ def _replica_hermes_normalize_role(requested_role):
     Verified against the install tree (~/.hermes/hermes-agent): strip +
     lowercase, unknown/empty/None values coerce to "leaf".  Hermes runs
     this on the caller's requested role BEFORE invoking subagent_start, so
-    the effective role is the only value Maestria ever sees.
+    the effective role is the only value maestria ever sees.
     """
     if requested_role is None or not requested_role:
         return "leaf"
@@ -252,7 +252,7 @@ class HookTestBase(unittest.TestCase):
 class TrustStateMachineTests(HookTestBase):
     def test_native_child_roles_are_leaf_and_orchestrator_only(self):
         self.assertEqual(NATIVE_CHILD_ROLES, frozenset({"leaf", "orchestrator"}))
-        # Maestria specialist names are NOT native child roles.
+        # maestria specialist names are NOT native child roles.
         for specialist in ("builder", "adventurer", "reviewer"):
             self.assertNotIn(specialist, NATIVE_CHILD_ROLES)
 
@@ -800,12 +800,12 @@ class ChildLifecycleTests(HookTestBase):
 
         These raw values (specialist names, padded or empty roles,
         non-strings) exercise the API's exact-match validation in
-        isolation: Maestria never normalizes a role and never lets a
+        isolation: maestria never normalizes a role and never lets a
         non-exact value grant child trust.  This is NOT a claim about the
         real Hermes path - Hermes normalizes the caller's requested role
         to "leaf"/"orchestrator" BEFORE subagent_start (see
         RoleProvenanceIntegrationTests), so these strings never reach
-        Maestria raw in production.  They stand for any malformed or
+        maestria raw in production.  They stand for any malformed or
         hostile direct call to the handler.
         """
         for i, role in enumerate((
@@ -1967,14 +1967,14 @@ class AllowlistTests(HookTestBase):
 
 
 class RoleProvenanceIntegrationTests(HookTestBase):
-    """Requested roles arrive at Maestria as Hermes' EFFECTIVE native role.
+    """Requested roles arrive at maestria as Hermes' EFFECTIVE native role.
 
     Hermes normalizes the caller's requested role BEFORE invoking
     subagent_start (tools/delegate_tool.py _normalize_role: strip +
     lowercase, unknown/empty values coerce to "leaf"; the effective role
-    is then threaded to the hook's child_role kwarg).  Maestria therefore
+    is then threaded to the hook's child_role kwarg).  maestria therefore
     never sees the original requested string and validates only the exact
-    effective native topology role - it is NOT claimed that Maestria
+    effective native topology role - it is NOT claimed that maestria
     rejects the original strings, because in the real path they arrive
     normalized.
 
@@ -1994,7 +1994,7 @@ class RoleProvenanceIntegrationTests(HookTestBase):
 
         Normalizes the requested role to its effective native role exactly
         as delegate_task does, then invokes _on_subagent_start with the
-        effective role.  Returns the effective role that reached Maestria.
+        effective role.  Returns the effective role that reached maestria.
         """
         effective = _effective_native_role(requested_role)
         _on_subagent_start(child_session_id=session_id, child_role=effective)

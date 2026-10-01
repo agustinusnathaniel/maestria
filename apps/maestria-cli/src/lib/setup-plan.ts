@@ -114,7 +114,7 @@ const assertFullArgs = (
     throw new CliError(
       'Not in an interactive terminal and selection flags are missing. ' +
         'Provide --ecosystem <csv>, --skill-source <owner/repo:scope> (repeatable or CSV), ' +
-        '--xtarterize-skills as needed, --skills/--exclude-skills for Maestria skills, ' +
+        '--xtarterize-skills as needed, --skills/--exclude-skills for maestria skills, ' +
         'and --yes to confirm non-interactively. Nothing was changed.',
       1,
     );
@@ -344,7 +344,7 @@ const renderSetupText = (
   summary?: string,
 ): string => {
   const lines = [
-    picocolors.bold('\n  Maestria Setup'),
+    picocolors.bold('\n  maestria Setup'),
     picocolors.dim('  ─────────────────────────────────────'),
   ];
   if (summary !== undefined && summary !== '') {

@@ -1,5 +1,5 @@
 /**
- * Shared agent deployment logic for Maestria platform packages.
+ * Shared agent deployment logic for maestria platform packages.
  *
  * Both @maestria/omp and @maestria/pi deploy specialist agent .md files
  * to their respective platform agent directories. This module eliminates

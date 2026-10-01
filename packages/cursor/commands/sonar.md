@@ -1,6 +1,6 @@
 ---
 name: sonar
-description: Research-only Maestria mode (recon -> design, no implementation)
+description: Research-only maestria mode (recon -> design, no implementation)
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

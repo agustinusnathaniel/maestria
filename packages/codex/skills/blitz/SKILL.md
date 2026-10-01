@@ -1,5 +1,5 @@
 ---
-description: Fast capability-aware Maestria route that skips optional ceremony without waiving safety or review.
+description: Fast capability-aware maestria route that skips optional ceremony without waiving safety or review.
 name: blitz
 ---
 

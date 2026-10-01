@@ -173,7 +173,7 @@ export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): voi
     handler: async (_args: string, ctx: ExtensionCommandContext) => {
       const mode = state.mode ?? 'none';
       const summary = [
-        '# Maestria status (prime-agent)',
+        '# maestria status (prime-agent)',
         '',
         `Workflow mode: ${mode}`,
         '',

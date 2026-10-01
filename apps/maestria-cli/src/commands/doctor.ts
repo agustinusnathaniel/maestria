@@ -137,7 +137,7 @@ const renderPlatformSection = (
 
 const renderDoctorTable = (output: DoctorOutput): string => {
   const lines: string[] = [
-    picocolors.bold('\n  Maestria Doctor'),
+    picocolors.bold('\n  maestria Doctor'),
     picocolors.dim('  ─────────────────────────────────────'),
     `  Record: ${output.recordPresent ? output.recordPath : `${output.recordPath} (absent)`}`,
   ];

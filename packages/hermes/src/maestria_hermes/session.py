@@ -1,6 +1,6 @@
 """Session trust-state registry for the maestria Hermes plugin.
 
-Replaces the legacy session_id -> Maestria specialist-role mapping with an
+Replaces the legacy session_id -> maestria specialist-role mapping with an
 explicit trust-state machine.  A session's trust is established and torn
 down ONLY by trusted native lifecycle events:
 
@@ -57,7 +57,7 @@ Trust states:
   tools.
 
 Native child roles are TOPOLOGY signals only (which node in the delegation
-tree a child is); they are never mapped to Maestria specialist identities
+tree a child is); they are never mapped to maestria specialist identities
 and never grant specialist capability.
 """
 

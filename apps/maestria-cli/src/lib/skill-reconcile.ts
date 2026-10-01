@@ -136,7 +136,7 @@ export const preflightCompanionOwnership = async (
       }
       throw new CliError(
         `Existing unmanaged skill '${skill}' for agent '${agent}' at ${observed} ` +
-          `with no Maestria selection record. Re-run with --exclude-skills ${skill} ` +
+          `with no maestria selection record. Re-run with --exclude-skills ${skill} ` +
           `to leave it alone, or remove it manually first. No changes were made.`,
         1,
       );
@@ -569,7 +569,7 @@ const reconcileOneUninstall = async (
       result: {
         ...result,
         message:
-          `${result.message} No Maestria skill record for '${result.id}'; ` +
+          `${result.message} No maestria skill record for '${result.id}'; ` +
           `companion left in place. Remove it manually if ours: ${manualRemoveCommand(agent, COMPANION_SKILL)}.`,
         skills: [],
       },

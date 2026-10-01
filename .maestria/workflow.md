@@ -1,6 +1,6 @@
-# Maestria Project Workflow
+# maestria Project Workflow
 
-Project-specific routing for the Maestria monorepo. Use the smallest safe route: direct execution for familiar, low-risk work; reconnaissance or design when the code or approach is uncertain; full orchestration when independent stages materially reduce risk.
+Project-specific routing for the maestria monorepo. Use the smallest safe route: direct execution for familiar, low-risk work; reconnaissance or design when the code or approach is uncertain; full orchestration when independent stages materially reduce risk.
 
 ## Before Changing Files
 

@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Pi's compaction summarization is lossy by default: older messages are summarized and recent messages kept. Maestria state must survive compaction: active task, completion promise, blockers, file references (read / modified), recent handoffs, and review state. Without preservation, the post-compaction turn has no memory and the methodology breaks.
+Pi's compaction summarization is lossy by default: older messages are summarized and recent messages kept. maestria state must survive compaction: active task, completion promise, blockers, file references (read / modified), recent handoffs, and review state. Without preservation, the post-compaction turn has no memory and the methodology breaks.
 
 The choices:
 

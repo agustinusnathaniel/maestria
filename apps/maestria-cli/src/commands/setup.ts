@@ -27,7 +27,7 @@ export const setupCommand = defineCommand({
     },
     'exclude-skills': {
       description:
-        'Maestria methodology skills to skip (CSV). Never touches independently installed copies.',
+        'maestria methodology skills to skip (CSV). Never touches independently installed copies.',
       required: false,
       type: 'string',
     },
@@ -39,7 +39,7 @@ export const setupCommand = defineCommand({
     },
     'maestria-skills': {
       description:
-        "Alias for --skills for the Maestria methodology selection (CSV, or 'none'). --skills wins when both are set.",
+        "Alias for --skills for the maestria methodology selection (CSV, or 'none'). --skills wins when both are set.",
       required: false,
       type: 'string',
     },
@@ -57,7 +57,7 @@ export const setupCommand = defineCommand({
     },
     skills: {
       description:
-        "Maestria methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request, docs-update. Validated before any change.",
+        "maestria methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request, docs-update. Validated before any change.",
       required: false,
       type: 'string',
     },

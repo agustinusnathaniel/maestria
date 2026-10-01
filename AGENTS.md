@@ -1,9 +1,9 @@
-<!-- Instructions for agents working on Maestria itself. Downstream behavior lives
+<!-- Instructions for agents working on maestria itself. Downstream behavior lives
      in packages/core/agent-directives/. -->
 
 ## Project and Ownership
 
-Maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform agent, skill, command, and rule projections are generated; package manifests and READMEs are hand-authored. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
+maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform agent, skill, command, and rule projections are generated; package manifests and READMEs are hand-authored. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
 ## Engineering Boundaries
 

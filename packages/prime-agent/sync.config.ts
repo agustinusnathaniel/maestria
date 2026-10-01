@@ -132,7 +132,7 @@ export default {
     'orchestrator.md': {
       append: ORCHESTRATOR_APPEND,
       frontmatter: {
-        description: `Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
+        description: `maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
         name: 'orchestrator',
       },
       output: 'orchestrator/SKILL.md',

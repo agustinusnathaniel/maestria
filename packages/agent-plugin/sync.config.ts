@@ -70,7 +70,7 @@ export default {
     ),
     'orchestrator.md': skill(
       'orchestrator',
-      'Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.',
+      'maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.',
       { append: PORTABLE_BOUNDARY_NOTE },
     ),
     'planner.md': skill(
