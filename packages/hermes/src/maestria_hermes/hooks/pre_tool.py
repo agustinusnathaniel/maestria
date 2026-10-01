@@ -6,9 +6,7 @@ any mode allowlist runs:
 - A TRUSTED_CHILD session (delegated child with a valid native topology
   role) gets the fixed role-neutral child policy - BLITZ_DIRECT_ALLOWED_TOOLS
   - in EVERY mode (fein, sonar, and blitz).  A child is never held to a
-  narrower mode allowlist: the approved child policy already includes
-  read-only local inspection (skill_view, skills_list, session_search) and
-  the web-research tools, and no child ever receives write, shell,
+  narrower mode allowlist, and no child ever receives write, shell,
   code-execution, delegation, or OpenCode access.  Mode allowlists bound only
   trusted TOP-LEVEL sessions.
 - A trusted top-level session keeps direct policy: unrestricted in fein,
@@ -151,14 +149,8 @@ def create_pre_tool_hook(mode_manager: ModeManager):
     def _child_policy(tool_name: str) -> None | dict:
         """Fixed role-neutral policy for a trusted delegated child.
 
-        BLITZ_DIRECT_ALLOWED_TOOLS applies in every mode - fein, sonar, and
-        blitz alike.  The mode allowlists (SONAR_ALLOWED_TOOLS /
-        BLITZ_DIRECT_ALLOWED_TOOLS) bound only trusted top-level sessions;
-        a child is never held to a narrower mode set, because the approved
-        child policy already includes read-only local inspection
-        (skill_view, skills_list, session_search) and the web-research tools.
-        Write, shell, code execution, delegation, and OpenCode access are
-        never available to a child.
+        BLITZ_DIRECT_ALLOWED_TOOLS applies in every mode; the mode allowlists
+        bound only trusted top-level sessions.
         """
         if tool_name not in BLITZ_DIRECT_ALLOWED_TOOLS:
             logger.info("child-safe policy blocked tool=%s", tool_name)

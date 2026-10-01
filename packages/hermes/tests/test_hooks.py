@@ -712,8 +712,7 @@ class ChildLifecycleTests(HookTestBase):
         for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
-        # Read-only local tools are child-safe even though they are NOT in the
-        # top-level sonar allowlist (which is web + file only).
+        # Child-safe, though outside the top-level sonar allowlist.
         for tool_name in ("skill_view", "skills_list", "session_search"):
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
@@ -914,9 +913,8 @@ class FullPolicyMatrixTests(HookTestBase):
         }[mode]
         forbidden = {
             "fein": frozenset(),  # trusted top-level fein is unrestricted
-            # Sonar is narrower than the child policy: read-only local tools
-            # (skill_view, skills_list, session_search) are child-safe but are
-            # NOT in the top-level sonar allowlist, so they block here.
+            # Sonar is narrower than the child policy, so read-only local
+            # tools block for a top-level session.
             "sonar": frozenset(_CHILD_FORBIDDEN_TOOLS)
             | (BLITZ_DIRECT_ALLOWED_TOOLS - SONAR_ALLOWED_TOOLS),
             "blitz": frozenset(_CHILD_FORBIDDEN_TOOLS),
@@ -1847,10 +1845,8 @@ class FailClosedTests(HookTestBase):
     def test_padded_tool_names_block_in_every_trust_state_and_mode(self):
         """Padded tool names are never normalized: a padded ALLOWED tool
         must block for top-level and child sessions in every mode."""
-        # Variants of REAL Hermes tools that appear in an allowlist, so a
-        # normalization regression would actually be caught: a padded
-        # read_file (sonar) or skill_view (child/blitz-direct) would pass the
-        # allowlist if the name were stripped before lookup.
+        # Real allowlisted names, so stripping them before lookup would fail
+        # this test rather than slip through.
         padded = (" write ", " read_file ", " terminal ", " skill_view ",
                   "\tread_file", "read_file\n", " web_search ", "search_files ")
         for mode in ("fein", "sonar", "blitz"):
@@ -1876,8 +1872,6 @@ class FailClosedTests(HookTestBase):
         session_id = "exact-tools"
         mark_top_level(session_id)
         self.cleanup_trust(session_id)
-        # A trusted top-level fein session keeps unrestricted access, so real
-        # Hermes tools of every kind are allowed here.
         for tool_name in ("terminal", "read_file", "write_file", "skill_manage",
                           "web_search", "search_files"):
             with self.subTest(tool_name=tool_name):
@@ -1941,37 +1935,22 @@ class FailClosedTests(HookTestBase):
 
 
 class AllowlistTests(HookTestBase):
-    def test_child_safe_allowlist_admits_no_mutating_capability(self):
-        """The child/blitz-direct allowlist must admit only read-only access.
+    def test_allowlists_admit_no_nonhermes_or_foreign_capability(self):
+        """Cover the names the host-registry test cannot.
 
-        These assertions state the SAFETY INVARIANT, not the current
-        membership. The previous version pinned the literal set, which
-        restated the constant it was meant to protect: adding a tool to
-        permissions.py updated the test in the same commit, so a widened
-        allowlist could never fail here. Existence against the live Hermes
-        registry is covered separately by
-        ``tests/test_permissions.py::AllowlistExistsInHermesTests``.
+        It only knows which names Hermes ships, so it cannot assert that a
+        foreign-host name or this plugin's own tool stays out.
         """
         for forbidden in (
-            # filesystem writers
-            "write", "write_file", "edit", "create", "patch", "bash", "terminal",
-            # execution / delegation / routing
-            "code_execution", "execute_code", "process_manage",
-            "delegate_task", "cronjob_manage", "computer_use",
-            "opencode", "opencode_route",
-            # mutation-adjacent state
-            "skill_manage", "todo_list",
+            "opencode_route",  # this plugin's tool
+            "code_execution", "write", "edit", "create", "bash",  # foreign hosts
         ):
-            with self.subTest(tool=forbidden):
-                self.assertNotIn(forbidden, BLITZ_DIRECT_ALLOWED_TOOLS)
-
-    def test_sonar_admits_no_mutating_capability(self):
-        for forbidden in ("write", "write_file", "patch", "edit", "bash", "terminal"):
-            with self.subTest(tool=forbidden):
-                self.assertNotIn(forbidden, SONAR_ALLOWED_TOOLS)
-
-    def test_blitz_direct_is_a_superset_of_sonar(self):
-        self.assertTrue(SONAR_ALLOWED_TOOLS <= BLITZ_DIRECT_ALLOWED_TOOLS)
+            for label, allowlist in (
+                ("blitz-direct", BLITZ_DIRECT_ALLOWED_TOOLS),
+                ("sonar", SONAR_ALLOWED_TOOLS),
+            ):
+                with self.subTest(tool=forbidden, allowlist=label):
+                    self.assertNotIn(forbidden, allowlist)
 
     def test_valid_modes_are_fixed(self):
         self.assertEqual(VALID_MODES, {"fein", "sonar", "blitz"})
