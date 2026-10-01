@@ -1,5 +1,13 @@
 # maestria
 
+## 0.13.5
+
+### Patch Changes
+
+- [#375](https://github.com/agustinusnathaniel/maestria/pull/375) [`38e894b`](https://github.com/agustinusnathaniel/maestria/commit/38e894b7a8af67101ba31114d137c396bb764e51) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Isolate temporary npm archives, preserve installed files when downloads fail, and propagate command cancellation and unexpected probe failures.
+  
+  Correct SemVer prerelease precedence and reject malformed numeric identifiers.
+
 ## 0.13.4
 
 ### Patch Changes
