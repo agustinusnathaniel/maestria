@@ -1,11 +1,8 @@
 """Allowlist integrity against the live Hermes tool registry.
 
-These lists gate a DENY, so a name Hermes does not ship is inert: it can
-never widen access. The risk is the opposite of a hole - the policy silently
-narrows to whichever names happen to exist, while the source still reads as
-broad coverage. Resolve every entry against the host instead of trusting it.
-
-Skips outside a Hermes checkout, since the plugin is also built standalone.
+An allowlist entry Hermes does not ship is inert, so stale names narrow the
+policy silently while the source still reads as broad coverage. Skips outside
+a Hermes checkout, since the plugin is also built standalone.
 """
 
 import unittest
@@ -65,11 +62,9 @@ class AllowlistExistsInHermesTests(unittest.TestCase):
         self.assertTrue(SONAR_ALLOWED_TOOLS <= BLITZ_DIRECT_ALLOWED_TOOLS)
 
     def test_no_allowlist_admits_a_known_mutating_tool(self):
-        """The lists must never grant a capability that changes state.
-
-        Covers the direction the existence test cannot: every name here is a
-        real Hermes tool, so only an explicit assertion keeps one out.
-        """
+        # The existence test cannot catch this direction: every name in
+        # `mutating` is a real Hermes tool, so only an explicit assertion
+        # keeps one out.
         mutating = {
             "write_file",
             "patch",

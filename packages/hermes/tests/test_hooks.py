@@ -704,11 +704,8 @@ class ChildLifecycleTests(HookTestBase):
                         )
 
     def test_child_sonar_mode_uses_child_safe_policy_not_sonar_allowlist(self):
-        """A child in sonar mode is held to BLITZ_DIRECT_ALLOWED_TOOLS.
-
-        Distinct from the top-level sonar policy only by the constant it is
-        checked against, not by any tool it could reach.
-        """
+        # The two allowlists are currently equal, so this asserts the
+        # constant chosen rather than any difference in reachable tools.
         hook = self.make_hook("sonar")
         self.start_child("sonar-child", "leaf")
         for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
@@ -1931,11 +1928,8 @@ class FailClosedTests(HookTestBase):
 
 class AllowlistTests(HookTestBase):
     def test_allowlists_admit_no_nonhermes_or_foreign_capability(self):
-        """Cover the names the host-registry test cannot.
-
-        It only knows which names Hermes ships, so it cannot assert that a
-        foreign-host name or this plugin's own tool stays out.
-        """
+        # Names the host-registry test cannot see, so it cannot assert they
+        # stay out of the allowlists.
         for forbidden in (
             "opencode_route",  # this plugin's tool
             "code_execution", "write", "edit", "create", "bash",  # foreign hosts
