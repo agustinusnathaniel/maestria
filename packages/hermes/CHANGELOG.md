@@ -1,5 +1,49 @@
 # @maestria/hermes
 
+## 0.1.23
+
+### Patch Changes
+
+- [#371](https://github.com/agustinusnathaniel/maestria/pull/371) [`e44296c`](https://github.com/agustinusnathaniel/maestria/commit/e44296c7d6eb51ad23a3dcfb0c46c3e41622265e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - `/review` and `/plan` now run Hermes' built-in commands instead of being swallowed.
+  
+  Both names belong to Hermes core, so the plugin could not claim them. Because
+  the plugin intercepts its own slash commands before Hermes resolves them,
+  typing `/review` silently discarded your message, switched the plugin into
+  fein mode, and never reached the real command - Hermes' `/review`, which
+  spawns an independent review subagent.
+  
+  The plugin now registers five commands: `/fein`, `/sonar`, `/blitz`,
+  `/mode`, and `/mode-clear`. Nothing is lost by dropping its own `/review`
+  and `/plan` - both only switched to fein mode, and its reviewer and planner
+  specialists already run as pipeline stages under `/fein`.
+  
+  A regression test now checks every registered command against Hermes' live
+  command registry, so a future command that collides with a core one fails a
+  test instead of quietly swallowing your message again.
+
+- [#372](https://github.com/agustinusnathaniel/maestria/pull/372) [`5113c98`](https://github.com/agustinusnathaniel/maestria/commit/5113c98ca8c510ee2d8efff2cdd51731b8f6130d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Sonar can now read skills and past sessions, matching what delegated children
+  already had.
+  
+  Sonar's tool allowlist was narrower than the child policy for no stated
+  reason, so a research session could not look up a skill or recall earlier work
+  while a delegated child in the same mode could. Both now allow the same
+  inspection tools:
+  
+  - `skill_view` and `skills_list` - read installed skills
+  - `session_search` - recall earlier transcripts
+  
+  `skill_manage` remains blocked everywhere: reading a skill is inspection,
+  authoring one is a change. No tool that writes files, runs a shell, executes
+  code, or delegates was added to any mode.
+  
+  Separately, both allowlists named tools Hermes does not ship - eight copied
+  from other agent hosts (`read`, `glob`, `grep`, `list`, `ls`, `stat`,
+  `file_info`, `webfetch`) and four that never existed (`complete`,
+  `complete_structured`, `think`, `reason`). Those entries granted nothing; they
+  only made the policy read as far broader than it was. A test now resolves every
+  allowlist entry against Hermes' live toolset registry, so a renamed or removed
+  tool fails the suite instead of quietly narrowing access.
+
 ## 0.1.22
 
 ### Patch Changes
