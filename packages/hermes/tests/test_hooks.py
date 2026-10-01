@@ -704,16 +704,14 @@ class ChildLifecycleTests(HookTestBase):
                         )
 
     def test_child_sonar_mode_uses_child_safe_policy_not_sonar_allowlist(self):
-        """A child in sonar mode is held to BLITZ_DIRECT_ALLOWED_TOOLS, not the
-        narrower top-level sonar allowlist: read-only local affordances remain
-        available to the child while write/shell/code/delegation stay blocked."""
+        """A child in sonar mode is held to BLITZ_DIRECT_ALLOWED_TOOLS.
+
+        Distinct from the top-level sonar policy only by the constant it is
+        checked against, not by any tool it could reach.
+        """
         hook = self.make_hook("sonar")
         self.start_child("sonar-child", "leaf")
         for tool_name in BLITZ_DIRECT_ALLOWED_TOOLS:
-            with self.subTest(tool_name=tool_name):
-                self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
-        # Child-safe, though outside the top-level sonar allowlist.
-        for tool_name in ("skill_view", "skills_list", "session_search"):
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id="sonar-child"))
         for tool_name in _CHILD_FORBIDDEN_TOOLS:
@@ -897,7 +895,7 @@ class FullPolicyMatrixTests(HookTestBase):
     allowlists and fixed forbidden samples:
 
     - TOP_LEVEL: direct policy - unrestricted in fein; the literal sonar
-      and blitz allowlists otherwise.
+      and blitz allowlists otherwise, which are currently the same set.
     - TRUSTED_CHILD: the fixed role-neutral child policy
       (BLITZ_DIRECT_ALLOWED_TOOLS) in every mode; every other tool blocks.
     - INVALID_CHILD, ENDED, UNKNOWN: deny ALL tools in every mode
@@ -913,10 +911,7 @@ class FullPolicyMatrixTests(HookTestBase):
         }[mode]
         forbidden = {
             "fein": frozenset(),  # trusted top-level fein is unrestricted
-            # Sonar is narrower than the child policy, so read-only local
-            # tools block for a top-level session.
-            "sonar": frozenset(_CHILD_FORBIDDEN_TOOLS)
-            | (BLITZ_DIRECT_ALLOWED_TOOLS - SONAR_ALLOWED_TOOLS),
+            "sonar": frozenset(_CHILD_FORBIDDEN_TOOLS),
             "blitz": frozenset(_CHILD_FORBIDDEN_TOOLS),
         }[mode]
         return allowed, forbidden
@@ -992,7 +987,7 @@ class FullPolicyMatrixTests(HookTestBase):
                 self.cleanup_trust(sid)
                 end_trust(sid)
                 # task_id == session_id must NOT revive an ended session.
-                for tool_name in ("read", "write", "bash", "complete"):
+                for tool_name in ("read_file", "write_file", "terminal", "skill_view"):
                     with self.subTest(tool_name=tool_name):
                         self.assertEqual(
                             hook(tool_name=tool_name, session_id=sid, task_id=sid)["action"],

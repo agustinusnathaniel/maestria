@@ -8,6 +8,11 @@ Membership is a human safety decision and stays hand-written: Hermes exposes
 no read-only/mutating metadata on tool registration, so it cannot be derived.
 Existence is a fact Hermes owns, so ``tests/test_permissions.py`` resolves
 every name here against the live toolset registry.
+
+The line drawn is mutation of agent-authored content and the user's
+workspace, not toolset boundaries. A tool that writes Hermes' own
+telemetry - skill_view bumps usage counters, read_file marks a file read -
+is still inspection. skill_manage is excluded because it authors skills.
 """
 
 from __future__ import annotations
@@ -26,17 +31,15 @@ SONAR_ALLOWED_TOOLS = frozenset(
         # Hermes' `web` toolset.
         "web_search",
         "web_extract",
-    }
-)
-
-# Read-only-looking but deliberately absent from blitz: todo_list mutates
-# task state, vision_analyze uploads image data off-box, browser_* is
-# stateful, and clarify blocks on a human reply.
-BLITZ_DIRECT_ALLOWED_TOOLS = frozenset(
-    {
-        *SONAR_ALLOWED_TOOLS,
+        # Reading a skill does not author one. skill_manage does, and stays
+        # denied in every mode.
         "skill_view",
         "skills_list",
         "session_search",
     }
 )
+
+# Deliberately absent everywhere: todo_list mutates task state, vision_analyze
+# uploads image data off-box, browser_* is stateful, and clarify blocks on a
+# human reply.
+BLITZ_DIRECT_ALLOWED_TOOLS = SONAR_ALLOWED_TOOLS
