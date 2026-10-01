@@ -11,6 +11,7 @@ Maestria packages a shared agent methodology as platform-specific integrations. 
 - Platform adapters belong in their own `packages/<platform>/`. Shared code belongs in the appropriate neutral package, not in another platform's package.
 - OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The portable `agent-plugin` package declares skills only, with no runtime adapter, commands, hooks, or MCP component.
 - Pi is a runtime extension and may use Node.js APIs. Keep host-neutral shared utilities separate from its runtime adapter.
+- DeepSeek Harness projection lives in `packages/deepseek/` (generated skills plus hand-authored Cordis runtime plugin and agent preset).
 - Prefer small, reviewable changes. Preserve canonical ownership, package boundaries, and sync correctness when choosing between approaches.
 
 ## Work and Verification

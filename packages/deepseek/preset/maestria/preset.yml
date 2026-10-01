@@ -1,0 +1,4 @@
+name: Maestria
+description: >-
+  Full coding agent composed around Maestria's specialist pipeline: orchestrator persona, seven maestria_<role> subagent delegation tools, global rules and routing prompt sections, and the generated Maestria skill tree.
+order: 2

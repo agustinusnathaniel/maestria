@@ -1,0 +1,52 @@
+---
+title: Quick Start
+description: Route work through the Maestria pipeline in DeepSeek Harness.
+---
+
+After `npx maestria install deepseek` and joining a session on the `Maestria` preset, the session persona is the Maestria orchestrator: normal engineering requests are routed through the direct/focused/full pipeline without any special prefix. The workflow is methodology guidance, not a replacement for DeepSeek Harness's sandbox, approvals, or permission presets.
+
+## Delegate to a specialist
+
+When the orchestrator routing calls for a single stage, it delegates through the matching `maestria_<role>` tool. You can also ask directly:
+
+```text
+Use maestria_adventurer to trace the authentication flow and report the relevant files.
+```
+
+Available delegation tools:
+
+| Tool                  | Use it for                                      |
+| --------------------- | ----------------------------------------------- |
+| `maestria_adventurer` | Reconnaissance and codebase mapping             |
+| `maestria_architect`  | Architecture trade-offs and ADR decisions       |
+| `maestria_builder`    | Focused implementation and verification         |
+| `maestria_diagnose`   | Root-cause analysis and regression tracing      |
+| `maestria_planner`    | Phased plans, dependencies, and rollback points |
+| `maestria_reviewer`   | Independent review after implementation         |
+| `maestria_writer`     | Documentation and structured prose              |
+
+Each child runs one-shot with the canonical specialist persona from the generated skills, and the generic `subagent` tools remain available for unstructured delegation.
+
+## Work directly with skills
+
+The generated skill tree is available through the `skill` tool. Load `orchestrator` for the full routing table, `global-rules` for the universal contract (already part of the system prompt when the preset's plugin has `injectGlobalRules: true`), `handoff` between stages, and `iteration-limits` to bound repair loops.
+
+## Choose a workflow mode
+
+The workflow modes are skills rather than slash commands:
+
+| Skill   | Route                                                             |
+| ------- | ----------------------------------------------------------------- |
+| `fein`  | Full pipeline: reconnaissance, design, implementation, and review |
+| `sonar` | Research-only route that stops before implementation              |
+| `blitz` | Fast capability-aware route for small or well-understood work     |
+
+For example:
+
+```text
+Load the sonar mode, then use maestria_diagnose to find why checkout fails on empty carts.
+```
+
+## Keep review independent
+
+For multi-stage work, the pipeline keeps the maker/checker boundary explicit: implementation and review run in separate delegations, and the reviewer reports findings instead of fixing them. Read-only role boundaries are advisory at the persona level; add a `toolFilter` to the read-only rows in the staged `agent.cordis.yml` when your deployment should enforce them.
