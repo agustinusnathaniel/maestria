@@ -134,6 +134,22 @@ describe('uninstallOne', () => {
 });
 
 describe('updateOne', () => {
+  it('propagates a latest-version probe defect instead of attempting an update', async () => {
+    const update = vi.fn(() => Effect.void);
+    await expect(
+      Effect.runPromise(
+        updateOne(
+          makePlatform({
+            getLatestVersion: Effect.die(new Error('probe defect')),
+            update,
+          }),
+          true,
+        ),
+      ),
+    ).rejects.toThrow('probe defect');
+    expect(update).not.toHaveBeenCalled();
+  });
+
   beforeEach(() => {
     spinnerCalls.start.length = 0;
     spinnerCalls.stop.length = 0;

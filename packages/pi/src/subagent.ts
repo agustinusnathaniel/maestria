@@ -185,8 +185,8 @@ const pollParallelSubagents = async (
   service: SubagentSpawnService,
   signal: AbortSignal | undefined,
   onUpdate: ToolUpdateHandler,
-): Promise<ParallelOutcome[]> => {
-  const settled = await Promise.allSettled(
+): Promise<ParallelOutcome[]> =>
+  await Promise.all(
     spawnedIds.map(async (id, index): Promise<ParallelOutcome> => {
       const task = taskList[index];
       try {
@@ -205,14 +205,6 @@ const pollParallelSubagents = async (
       }
     }),
   );
-  return settled.map((outcome): ParallelOutcome => {
-    if (outcome.status === 'fulfilled') {
-      return outcome.value;
-    }
-    const reason: unknown = outcome.reason;
-    return { error: reason };
-  });
-};
 
 const renderParallelResults = (
   taskList: SubagentTask[],

@@ -104,6 +104,14 @@ const readCodexManagedAgentManifest = (): Effect.Effect<CodexManagedAgentManifes
     },
   });
 
+const writeAtomicCodexFile = async (filePath: string, content: string): Promise<void> => {
+  const { mkdir, rename, writeFile } = await import('node:fs/promises');
+  await mkdir(codexHome(), { recursive: true });
+  const tempPath = `${filePath}.tmp`;
+  await writeFile(tempPath, content, 'utf-8');
+  await rename(tempPath, filePath);
+};
+
 const writeCodexManagedAgentManifest = (
   manifest: CodexManagedAgentManifest,
 ): Effect.Effect<void, CommandError> =>
@@ -114,12 +122,10 @@ const writeCodexManagedAgentManifest = (
         message: String(error),
       }),
     try: async () => {
-      const { mkdir, rename, writeFile } = await import('node:fs/promises');
-      await mkdir(codexHome(), { recursive: true });
-      const manifestPath = codexManagedAgentManifestPath();
-      const tempPath = `${manifestPath}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf-8');
-      await rename(tempPath, manifestPath);
+      await writeAtomicCodexFile(
+        codexManagedAgentManifestPath(),
+        `${JSON.stringify(manifest, null, 2)}\n`,
+      );
     },
   });
 
@@ -178,14 +184,6 @@ const isOwnedEmpty = (
   manifest: CodexManagedAgentManifest,
 ): boolean =>
   next.length === 0 && manifest.instructionsCreated === true && manifest.instructionsFile === file;
-
-const writeAtomicCodexFile = async (filePath: string, content: string): Promise<void> => {
-  const { mkdir, rename, writeFile } = await import('node:fs/promises');
-  await mkdir(codexHome(), { recursive: true });
-  const tempPath = `${filePath}.tmp`;
-  await writeFile(tempPath, content, 'utf-8');
-  await rename(tempPath, filePath);
-};
 
 const removeCodexFiles = async (files: readonly string[], directory: string): Promise<void> => {
   const { rm } = await import('node:fs/promises');
