@@ -127,7 +127,7 @@ describe('extension entry point', () => {
     expect(registerCommand).toHaveBeenCalledWith('review-model', expect.any(Object));
   });
 
-  it('leaves OMP-owned native goal slash commands outside Maestria command registration', () => {
+  it('leaves OMP-owned native goal slash commands outside maestria command registration', () => {
     const pi = createMockPi();
     invokeExtension(pi);
 

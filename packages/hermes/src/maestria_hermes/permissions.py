@@ -11,7 +11,7 @@ workspace. Writing Hermes' own telemetry is still inspection.
 
 from __future__ import annotations
 
-# Native child roles are topology signals from Hermes, not Maestria
+# Native child roles are topology signals from Hermes, not maestria
 # specialist identities. Keep these immutable so no configuration can
 # widen child safety policy.
 NATIVE_CHILD_ROLES = frozenset({"leaf", "orchestrator"})

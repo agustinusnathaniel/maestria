@@ -75,18 +75,18 @@ const nativeGoalFromSessionEntries = (entries: readonly unknown[]): MaestriaStat
 /**
  * Replace the mutable extension state with the target session's state.
  *
- * The native goal mirror is host-derived rather than Maestria-owned. It is
+ * The native goal mirror is host-derived rather than maestria-owned. It is
  * restored from the target branch's public `mode_change` representation when
  * that representation is valid. Otherwise it is reset to unknown (`null`) and
  * remains so until the target session publishes a public `goal_updated` event.
- * All other persisted Maestria fields are restored from the current branch.
+ * All other persisted maestria fields are restored from the current branch.
  */
 export const restoreMaestriaStateForSession = (state: MaestriaState, ctx: SessionContext): void => {
   const entries = readSessionBranch(ctx);
   const next = stateFromSessionEntries(entries);
 
   // Do not trust a copied/persisted host mirror. Fork and handoff can copy the
-  // Maestria entry before OMP reconciles its native goal, so only OMP's public
+  // maestria entry before OMP reconciles its native goal, so only OMP's public
   // mode entry or a later goal_updated event may establish this mirror.
   next.nativeGoal = entries ? nativeGoalFromSessionEntries(entries) : null;
 
@@ -94,7 +94,7 @@ export const restoreMaestriaStateForSession = (state: MaestriaState, ctx: Sessio
 };
 
 /**
- * Mirror OMP's native goal state into Maestria state.
+ * Mirror OMP's native goal state into maestria state.
  *
  * OMP exposes goal mode through the public `goal_updated` extension event,
  * which carries the current `goal` (or `null` when the goal was cleared)
@@ -103,7 +103,7 @@ export const restoreMaestriaStateForSession = (state: MaestriaState, ctx: Sessio
  * activate native goal mode programmatically: goal mode remains
  * user/model-driven and we only observe its published events.
  *
- * The mirror writes only `state.nativeGoal` and never touches Maestria-only
+ * The mirror writes only `state.nativeGoal` and never touches maestria-only
  * state (`handoffHistory`, `filesModified`, `blockers`, specialist status,
  * mode, review state, etc.). It is persisted through the existing
  * `maestria_state` mechanism so session restoration keeps working.
@@ -139,7 +139,7 @@ export const installGoalEventHandlers = (pi: GoalApi, state: MaestriaState): voi
   });
 
   // Every transition is a new target-session boundary. Rehydrate all
-  // Maestria fields from that target, including only public native goal state.
+  // maestria fields from that target, including only public native goal state.
   pi.on('session_switch', (_event, ctx) => {
     if (isSessionContext(ctx)) {
       restoreMaestriaStateForSession(state, ctx);

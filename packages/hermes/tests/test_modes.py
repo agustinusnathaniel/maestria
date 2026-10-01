@@ -43,17 +43,17 @@ class SharedCommandTextTests(unittest.TestCase):
     def test_render_mode_status_preserves_exact_text(self):
         self.assertEqual(
             render_mode_status("sonar", True),
-            "**Maestria Status**\n\nMode: **sonar**\nRead-only: Yes",
+            "**maestria Status**\n\nMode: **sonar**\nRead-only: Yes",
         )
         self.assertEqual(
             render_mode_status("neutral", False),
-            "**Maestria Status**\n\nMode: **neutral**\nRead-only: No",
+            "**maestria Status**\n\nMode: **neutral**\nRead-only: No",
         )
 
     def test_render_mode_status_normalizes_none_to_neutral(self):
         self.assertEqual(
             render_mode_status(None, False),
-            "**Maestria Status**\n\nMode: **neutral**\nRead-only: No",
+            "**maestria Status**\n\nMode: **neutral**\nRead-only: No",
         )
 
     def test_render_mode_switch_preserves_exact_text(self):

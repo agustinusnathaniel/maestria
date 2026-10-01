@@ -16,7 +16,7 @@ describe('organizationSchema', () => {
   it('is an Organization entity with the required identity fields', () => {
     expect(schema['@context']).toBe('https://schema.org');
     expect(schema['@type']).toBe('Organization');
-    expect(schema.name).toBe('Maestria');
+    expect(schema.name).toBe('maestria');
     expect(schema.url).toBe(SITE_URL);
     expect(schema.description).toBe(SITE_DESCRIPTION);
     expect(schema.logo).toBe(`${SITE_URL}/favicon.svg`);
@@ -60,7 +60,7 @@ describe('softwareApplicationSchema', () => {
   it('is a SoftwareApplication entity with the required fields', () => {
     expect(schema['@context']).toBe('https://schema.org');
     expect(schema['@type']).toBe('SoftwareApplication');
-    expect(schema.name).toBe('Maestria');
+    expect(schema.name).toBe('maestria');
     expect(schema.applicationCategory).toBe('DeveloperApplication');
     expect(schema.operatingSystem).toBe('Node.js 22+');
     expect(schema.url).toBe(SITE_URL);
@@ -93,8 +93,8 @@ describe('websiteSchema', () => {
   it('is a WebSite entity with the core site fields', () => {
     expect(schema['@context']).toBe('https://schema.org');
     expect(schema['@type']).toBe('WebSite');
-    expect(schema.name).toBe('Maestria');
-    expect(schema.alternateName).toBe('Maestria AI Praxis');
+    expect(schema.name).toBe('maestria');
+    expect(schema.alternateName).toBe('maestria AI Praxis');
     expect(schema.inLanguage).toBe('en');
     expect(schema.url).toBe(SITE_URL);
     expect(schema.description).toBe(SITE_DESCRIPTION);

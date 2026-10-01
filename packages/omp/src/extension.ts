@@ -41,7 +41,7 @@ const extension = (pi: ExtensionAPI): void => {
   installNativeSubagentTool(pi, state);
   installCommandsCore(createCommandsHost(pi, isOmpModel), state);
 
-  // Mirror OMP's native goal state (goal_updated event) into Maestria state
+  // Mirror OMP's native goal state (goal_updated event) into maestria state
   installGoalEventHandlers(pi, state);
 
   // Install tool call interceptors for review mode and dangerous patterns

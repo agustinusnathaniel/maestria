@@ -104,7 +104,7 @@ export const agentDirectiveSync = ({
         '---\n' +
         'name: orchestrator\n' +
         'description: >-\n' +
-        '  Maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
+        '  maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
         '  subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)\n' +
         '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
         '  and role-based pipeline sequencing.\n' +

@@ -1,6 +1,6 @@
 ---
 title: 'maestria'
-description: Manage native Maestria integrations across coding agent platforms, or validate and stage portable Agent Plugins for compatible clients.
+description: Manage native maestria integrations across coding agent platforms, or validate and stage portable Agent Plugins for compatible clients.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -20,11 +20,11 @@ hero:
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`maestria` ships Maestria's AI engineering methodology to multiple coding agent platforms, wrapping their native integrations behind one CLI. It also validates and stages portable Agent Plugins for compatible clients.
+`maestria` ships maestria's AI engineering methodology to multiple coding agent platforms, wrapping their native integrations behind one CLI. It also validates and stages portable Agent Plugins for compatible clients.
 
 ## Install Native Integrations
 
-Install Maestria for all detected platforms:
+Install maestria for all detected platforms:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
@@ -37,11 +37,11 @@ Portable packages are artifacts, not runtime platforms: they do not appear in `m
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate ./my-plugin" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install @maestria/agent-plugin" />
 
-The CLI validates the package, stages it in the Maestria cache, and prints the directory for the compatible client's own installer or local-plugin setting. See the [portable Agent Plugin guide](/agent-plugin/) for the handoff and package boundary.
+The CLI validates the package, stages it in the maestria cache, and prints the directory for the compatible client's own installer or local-plugin setting. See the [portable Agent Plugin guide](/agent-plugin/) for the handoff and package boundary.
 
 ## Manage Your Installation
 
-Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> to see which supported platforms are on your `PATH`, whether Maestria is installed, and which versions are available.
+Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> to see which supported platforms are on your `PATH`, whether maestria is installed, and which versions are available.
 
 Then use `install`, `update`, or `configure` to manage an integration; portable packages use `plugin validate` and `plugin install`. All commands support `--json`; runtime platform commands also support `--quiet` to suppress spinner animations for CI.
 

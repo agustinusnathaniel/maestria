@@ -6,7 +6,7 @@ Accepted (2026-07-21)
 
 ## Context
 
-Maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
+maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
 
 ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Cursor has since added first-class plugins that bundle those primitives into one installable package, used from Customize in the IDE and `agent --plugin-dir` / local plugins in the CLI. Unlike OpenCode, no TypeScript hooks apply: Cursor plugins are declarative (same class as Kimi Code) with custom agents (Task subagents), skills, rules, and slash commands.
 

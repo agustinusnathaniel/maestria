@@ -12,7 +12,7 @@ JCode and Crush were evaluated and are not shipped (as of 2026-09-10), and both 
 
 ## Context
 
-Maestria is a behavior layer for AI coding agents. The canonical methodology lives in `packages/core/agent-directives/` and is projected to platform plugins by the core sync pipeline (ADR-CORE-005); adapters already ship for OpenCode, Kimi Code, Cursor, Oh My Pi, Pi, and Hermes.
+maestria is a behavior layer for AI coding agents. The canonical methodology lives in `packages/core/agent-directives/` and is projected to platform plugins by the core sync pipeline (ADR-CORE-005); adapters already ship for OpenCode, Kimi Code, Cursor, Oh My Pi, Pi, and Hermes.
 
 A feasibility review examined five additional runtimes: Claude Code, Prime Agent, Codex (CLI and desktop), JCode, and Crush. Before committing effort, we needed to know which expose a first-class package or extension API we can target, which only support projections or experiments, and what the security and trust boundaries are. Later reverifications and amendments record what has since been built or promoted; they do not turn unverified claims into support promises.
 
@@ -54,7 +54,7 @@ All canonical methodology remains in `packages/core/agent-directives/`. Adapters
 
 The review surfaced mandatory gaps so implementers do not rely on mechanisms the runtime ignores or does not enforce.
 
-| Runtime | Mechanism | Capability | Control | Implication for Maestria | Evidence ID |
+| Runtime | Mechanism | Capability | Control | Implication for maestria | Evidence ID |
 | --- | --- | --- | --- | --- | --- |
 | Claude Code | Plugin-subagent `hooks`, `mcpServers`, `permissionMode` frontmatter | `Unavailable` | `Ignored` | Do not rely on this frontmatter for enforcement; use project/user agent files or permission rules if required | E-CLAUDE-07 |
 | Claude Code | Matching `PreToolUse` hook returning `hookSpecificOutput.permissionDecision: "deny"` | `Supported` | `Enforced` | Blocks the matched call, conditionally on event, matcher, handler, decision format, and installation scope; best-effort `if` filters can fail open | E-CLAUDE-04 |
@@ -89,7 +89,7 @@ Clear evidence-backed boundary against scope creep across five runtimes: control
 
 A runtime moves to a shipped `Native` adapter only when all of the following hold:
 
-1. The runtime exposes a first-class package or extension API Maestria can target, confirmed against current official docs rather than an earlier review.
+1. The runtime exposes a first-class package or extension API maestria can target, confirmed against current official docs rather than an earlier review.
 2. The security and trust model is verified: enforcement boundaries are known, and no ignored fields are relied on.
 3. The upstream evidence for every material claim is reverified against a pinned release/version, an immutable commit, or a fixed docs revision.
 4. A generated projection exists via the core sync pipeline (see [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md)), and `scripts/check-sync` passes.
@@ -129,7 +129,7 @@ Sources reviewed on 2026-08-11 are cited with URLs, review dates, test status, a
 
 ## Reverification and amendments
 
-Prime Agent evidence E-PRIME-01 through E-PRIME-07 was reverified on 2026-08-13 against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; it remains `Native candidate`, shipping the skills-first package and only the verified extension subset, with native `rlm` dispatch and JSON/RPC headless integration deferred and no sandbox or enforcement claim. Codex CLI evidence was reverified on 2026-08-26 against the then-current release, official documentation, and upstream source, and Codex CLI became `Native` because Maestria ships a skills projection, native custom agents, per-agent model configuration, and an idempotent global orchestration block; Codex desktop remains separately `Deferred`. The [runtime support matrix](../../runtime-support-matrix.md) holds the detailed surface and evidence records (E-CODEX-CLI-07 through E-CODEX-CLI-15) and the discovery paths and extension surface.
+Prime Agent evidence E-PRIME-01 through E-PRIME-07 was reverified on 2026-08-13 against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; it remains `Native candidate`, shipping the skills-first package and only the verified extension subset, with native `rlm` dispatch and JSON/RPC headless integration deferred and no sandbox or enforcement claim. Codex CLI evidence was reverified on 2026-08-26 against the then-current release, official documentation, and upstream source, and Codex CLI became `Native` because maestria ships a skills projection, native custom agents, per-agent model configuration, and an idempotent global orchestration block; Codex desktop remains separately `Deferred`. The [runtime support matrix](../../runtime-support-matrix.md) holds the detailed surface and evidence records (E-CODEX-CLI-07 through E-CODEX-CLI-15) and the discovery paths and extension surface.
 
 ## Date
 

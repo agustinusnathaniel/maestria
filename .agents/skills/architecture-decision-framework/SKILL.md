@@ -1,6 +1,6 @@
 ---
 name: architecture-decision-framework
-description: Make architecture decisions using decision matrices and iterative refinement. Use when comparing implementation approaches, evaluating trade-offs, selecting technology, or facing multiple viable paths. Prioritizes business context over technical purity — clarifies the problem before deciding, presents options with trade-offs, documents decisions as lightweight ADRs.
+description: Make architecture decisions using decision matrices and iterative refinement. Use when comparing implementation approaches, evaluating trade-offs, selecting technology, or facing multiple viable paths. Prioritizes business context over technical purity - clarifies the problem before deciding, presents options with trade-offs, documents decisions as lightweight ADRs.
 ---
 
 # Architecture Decision Framework
@@ -80,7 +80,7 @@ Ask 3-5 questions max, then make a preliminary recommendation:
 
 **When you've hit the cap:**
 
-> "I've asked enough questions. Based on what you've told me — [assumptions] — I recommend Option B. My reasoning: [rationale]. Tell me if I've misunderstood."
+> "I've asked enough questions. Based on what you've told me - [assumptions] - I recommend Option B. My reasoning: [rationale]. Tell me if I've misunderstood."
 
 ### Phase 4: Make Recommendation with Rationale
 
@@ -123,8 +123,8 @@ Recommendation made → User feedback → Refine → Confirm → Document
 
 ## Common Pitfalls
 
-1. **Jumping to solutions** — presenting options before understanding the problem
-2. **Analysis paralysis** — too many options (keep to 2-4)
-3. **Ignoring reversibility** — not considering cost of changing later
-4. **Over-asking** — more than 5 questions before recommending
-5. **Skipping ADR** — not documenting why you chose a path
+1. **Jumping to solutions** - presenting options before understanding the problem
+2. **Analysis paralysis** - too many options (keep to 2-4)
+3. **Ignoring reversibility** - not considering cost of changing later
+4. **Over-asking** - more than 5 questions before recommending
+5. **Skipping ADR** - not documenting why you chose a path

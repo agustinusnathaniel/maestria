@@ -28,7 +28,7 @@ type PiEvents = NonNullable<SubagentEventHost['events']>;
 interface SubagentEventSpec {
   /** Host event to subscribe. */
   readonly source: string;
-  /** Maestria event re-emitted after persist, or undefined for silent updates. */
+  /** maestria event re-emitted after persist, or undefined for silent updates. */
   readonly target?: string;
   /** Fold the event into state; returns the specialist type for the emit payload. */
   readonly apply: (state: MaestriaState, id: string, data: unknown) => string | undefined;

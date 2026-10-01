@@ -2,7 +2,7 @@
 
 ## Purpose and audience
 
-Use these conventions for new documents and substantial rewrites. Internal documentation preserves scope, rationale, and evidence; public documentation helps consumers install and use Maestria without repository context.
+Use these conventions for new documents and substantial rewrites. Internal documentation preserves scope, rationale, and evidence; public documentation helps consumers install and use maestria without repository context.
 
 ## Choose a template
 

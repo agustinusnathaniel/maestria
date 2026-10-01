@@ -6,7 +6,7 @@ Accepted (2026-07-16)
 
 ## Context
 
-`@maestria/hermes` delivers the Maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes Agent platform, which supports two extension mechanisms:
+`@maestria/hermes` delivers the maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes Agent platform, which supports two extension mechanisms:
 
 1. **Skills** - Markdown loaded into context: guidance, rules, and prompts. Passive advice the agent can follow or ignore.
 2. **Plugins** - Python packages with hooks, middleware, tools, and commands registered via `hermes_agent.plugins` entry points: active enforcement in the agent lifecycle.

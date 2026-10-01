@@ -1,5 +1,5 @@
 /**
- * Shared review-mode orchestration for Maestria platform packages.
+ * Shared review-mode orchestration for maestria platform packages.
  *
  * Pure TypeScript - no platform-specific dependencies.
  * Consumed by both @maestria/omp and @maestria/pi to eliminate duplication

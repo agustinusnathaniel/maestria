@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "interface": {
-    "displayName": "Maestria"
+    "displayName": "maestria"
   },
   "plugins": [
     {

@@ -8,7 +8,7 @@ Superseded
 
 This ADR added a user-question checkpoint before every commit after observing OpenCode sessions that committed without a proposed message and occasionally repeated a commit/push cycle after a follow-up work request. The checkpoint was intended to make the platform's commit defaults visible to the model.
 
-It was too broad. Maestria's autonomy contract treats routine commits on a recognized feature branch as an agent-owned workflow step after validation and independent review. Requiring a fresh user request in the current turn, asking for a full commit plan through `question()`, and resetting authorization after every commit turned ordinary delivery into a manual approval loop. It also contradicted ADR-CORE-011's autonomous commit boundary and the project's maker/checker workflow.
+It was too broad. maestria's autonomy contract treats routine commits on a recognized feature branch as an agent-owned workflow step after validation and independent review. Requiring a fresh user request in the current turn, asking for a full commit plan through `question()`, and resetting authorization after every commit turned ordinary delivery into a manual approval loop. It also contradicted ADR-CORE-011's autonomous commit boundary and the project's maker/checker workflow.
 
 ## Decision
 

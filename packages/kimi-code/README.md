@@ -2,7 +2,7 @@
 
 A Kimi Code plugin that ships a native system-prompt contract, an orchestrator, and specialist skills for engineering workflows with swarm-aware orchestration (7 specialists as of 2026-09-22; see What It Provides below for the current list).
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 

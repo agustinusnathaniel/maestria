@@ -5,7 +5,7 @@ import { COMPANION_SKILL, DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
 import path from 'node:path';
 
 /**
- * Methodology skill selection for Maestria-managed installations.
+ * Methodology skill selection for maestria-managed installations.
  *
  * Selections are stored per platform at `$XDG_CONFIG_HOME/maestria/skills.json`,
  * owned by the CLI and enforced through the external skills CLI. Fresh installs

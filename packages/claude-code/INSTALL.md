@@ -5,10 +5,10 @@
 ## Prerequisites
 
 - **Claude Code** with the `claude` CLI on `PATH` (required for validation and local loading).
-- Node.js and npm (required by the Maestria CLI's npm-backed marketplace staging).
+- Node.js and npm (required by the maestria CLI's npm-backed marketplace staging).
 - Node.js and pnpm only for contributors regenerating canonical directives.
 
-## Persistent installation through Maestria
+## Persistent installation through maestria
 
 From any project, install the published package at Claude Code's user scope:
 
@@ -16,7 +16,7 @@ From any project, install the published package at Claude Code's user scope:
 npx maestria install claude-code
 ```
 
-The CLI downloads `@maestria/claude-code` from npm, writes a small local marketplace under `~/.cache/maestria/`, and invokes Claude Code's native `plugin marketplace add` and `plugin install` commands. The host, not Maestria, owns the installed plugin state.
+The CLI downloads `@maestria/claude-code` from npm, writes a small local marketplace under `~/.cache/maestria/`, and invokes Claude Code's native `plugin marketplace add` and `plugin install` commands. The host, not maestria, owns the installed plugin state.
 
 Update or remove it with:
 
@@ -25,7 +25,7 @@ npx maestria update claude-code
 npx maestria uninstall claude-code
 ```
 
-The Maestria CLI uses the marketplace's latest package for Claude Code; exact version pinning is not available through `maestria update claude-code --version`.
+The maestria CLI uses the marketplace's latest package for Claude Code; exact version pinning is not available through `maestria update claude-code --version`.
 
 ## Direct installation through Claude Code
 
@@ -86,7 +86,7 @@ scripts/check-sync        # verify everything is in sync
 
 ## Uninstall / removal
 
-For a persistent installation managed by Maestria:
+For a persistent installation managed by maestria:
 
 ```bash
 npx maestria uninstall claude-code

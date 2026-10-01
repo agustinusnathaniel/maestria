@@ -12,7 +12,7 @@
 
 - [#343](https://github.com/agustinusnathaniel/maestria/pull/343) [`ec3c94d`](https://github.com/agustinusnathaniel/maestria/commit/ec3c94d47663d3fb339ee249869071ea7795ac17) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Keep recorded skill ownership after a failed add or removal when another skill succeeds, so retries can recover safely. Verify project-scoped setup sources in the requested directory and recognize xtarterize JSON status responses containing nested data.
 
-- [#341](https://github.com/agustinusnathaniel/maestria/pull/341) [`19c70ae`](https://github.com/agustinusnathaniel/maestria/commit/19c70aeaab15638a151466089c8c0c0a34d3f661) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify global scope and cancel semantics in `maestria setup`. Maestria skill prompts, review lines, summary output, and action reports now carry global scope labels, and the final confirm states the target directory role plus full cancel semantics. Display strings only, no behavior change.
+- [#341](https://github.com/agustinusnathaniel/maestria/pull/341) [`19c70ae`](https://github.com/agustinusnathaniel/maestria/commit/19c70aeaab15638a151466089c8c0c0a34d3f661) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify global scope and cancel semantics in `maestria setup`. maestria skill prompts, review lines, summary output, and action reports now carry global scope labels, and the final confirm states the target directory role plus full cancel semantics. Display strings only, no behavior change.
 
 ## 0.13.2
 
@@ -36,7 +36,7 @@
 
 - [#323](https://github.com/agustinusnathaniel/maestria/pull/323) [`5fc031e`](https://github.com/agustinusnathaniel/maestria/commit/5fc031e21b261a2335f9670051b176e735c6e84d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add read-only `maestria doctor` diagnostics for skill setup. Per platform it reports plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`, with unmanaged copy warnings, shared canonical path notes, and actionable next commands. Supports `--json` and `--quiet`; home directories in paths render as `~`. A corrupt record fails loud before any observation; unknown platforms or agents degrade honestly with a note. No installs, updates, removals, or record writes.
 
-- [#328](https://github.com/agustinusnathaniel/maestria/pull/328) [`f4376e8`](https://github.com/agustinusnathaniel/maestria/commit/f4376e8f62c1229e807851bd44abdbdc62edae92) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add optional `maestria setup` coordinator across ecosystem tools and skills. Detection stays read-only (platforms, record, doctor snapshot, binary `--version` probes, xtarterize PATH lookup); mutations run only after the review screen plus final confirm. Ecosystem tools report detected or manual steps and are never auto-installed; xtarterize runs `add agent/skills-install --json --cwd <dir>` gated on the JSON status field with `.gitignore` changes reported; skill sources install per-source project/global scope via the skills CLI transport; Maestria skills reuse the existing selection record and `--skills`/`--exclude-skills` semantics with no other state writes. Non-TTY requires full flags plus `--yes`; reports are per action with resume guidance and idempotent reruns.
+- [#328](https://github.com/agustinusnathaniel/maestria/pull/328) [`f4376e8`](https://github.com/agustinusnathaniel/maestria/commit/f4376e8f62c1229e807851bd44abdbdc62edae92) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add optional `maestria setup` coordinator across ecosystem tools and skills. Detection stays read-only (platforms, record, doctor snapshot, binary `--version` probes, xtarterize PATH lookup); mutations run only after the review screen plus final confirm. Ecosystem tools report detected or manual steps and are never auto-installed; xtarterize runs `add agent/skills-install --json --cwd <dir>` gated on the JSON status field with `.gitignore` changes reported; skill sources install per-source project/global scope via the skills CLI transport; maestria skills reuse the existing selection record and `--skills`/`--exclude-skills` semantics with no other state writes. Non-TTY requires full flags plus `--yes`; reports are per action with resume guidance and idempotent reruns.
 
 - [#320](https://github.com/agustinusnathaniel/maestria/pull/320) [`6430ee9`](https://github.com/agustinusnathaniel/maestria/commit/6430ee95ed03908e535e2e069e0672fda4e5eaef) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Install, update, and reconcile the `create-pull-request` methodology skill through the official `skills` CLI instead of bundling skill bodies into plugins. `install` and `update` accept `--skills` (CSV, or `none`), `--exclude-skills` (CSV), and `--yes`; per-platform selections persist only after actual success, independently installed copies are never adopted or deleted, and shared native skill directories are preserved while another owned platform still uses them. The visual-evidence procedure lives once in the root skill, with the core and integration routers pointing at it.
 
@@ -76,7 +76,7 @@
 
 ### Minor Changes
 
-- [#265](https://github.com/agustinusnathaniel/maestria/pull/265) [`4dcbf04`](https://github.com/agustinusnathaniel/maestria/commit/4dcbf0430e8d9f2143762a44e1d56729e238107d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add a first-class Agent Plugins v1 package that exposes Maestria's methodology as a portable, skills-only plugin, plus CLI commands to validate and stage portable packages.
+- [#265](https://github.com/agustinusnathaniel/maestria/pull/265) [`4dcbf04`](https://github.com/agustinusnathaniel/maestria/commit/4dcbf0430e8d9f2143762a44e1d56729e238107d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add a first-class Agent Plugins v1 package that exposes maestria's methodology as a portable, skills-only plugin, plus CLI commands to validate and stage portable packages.
 
 ## 0.11.1
 
@@ -135,7 +135,7 @@
 
 ### Minor Changes
 
-- [#209](https://github.com/agustinusnathaniel/maestria/pull/209) [`47b15b5`](https://github.com/agustinusnathaniel/maestria/commit/47b15b58afa4def30f1ecfc39dbdc942779391e4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add Maestria CLI compatibility for the Prime Agent platform (`prime-agent`). The CLI detects the
+- [#209](https://github.com/agustinusnathaniel/maestria/pull/209) [`47b15b5`](https://github.com/agustinusnathaniel/maestria/commit/47b15b58afa4def30f1ecfc39dbdc942779391e4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add maestria CLI compatibility for the Prime Agent platform (`prime-agent`). The CLI detects the
   Prime Agent binary, inspects its package registrations via `prime-agent package list`, and
   delegates install, update, status, check, and uninstall to Prime's native package commands
   (`package install`/`update`/`remove npm:@maestria/prime-agent`).
@@ -155,7 +155,7 @@
 
 ### Minor Changes
 
-- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add Maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
+- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
   both hosts, stages the published npm package into a local marketplace, and delegates install,
   update, status, check, and uninstall operations to the host plugin manager.
 

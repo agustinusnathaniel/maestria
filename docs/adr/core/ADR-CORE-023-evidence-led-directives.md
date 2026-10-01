@@ -6,16 +6,16 @@ Accepted (2026-09-06)
 
 ## Context
 
-An audit prompted by [Eric Provencher's article on skills and prompts](https://x.com/pvncher/status/2095991462416490862) found Maestria's direct-route policy conflicting with specialist instructions: builders could select one slice without assigning the remainder, diagnosis demanded Git-history and repository-wide searches regardless of symptom, local policy required permission to create a test file, and delivery and specialist checks overlapped.
+An audit prompted by [Eric Provencher's article on skills and prompts](https://x.com/pvncher/status/2095991462416490862) found maestria's direct-route policy conflicting with specialist instructions: builders could select one slice without assigning the remainder, diagnosis demanded Git-history and repository-wide searches regardless of symptom, local policy required permission to create a test file, and delivery and specialist checks overlapped.
 
-The article motivates reassessing accumulated instructions, but Maestria supports multiple models and hosts; removing a constraint requires a clear replacement contract, not an assumption that every model behaves like Astra.
+The article motivates reassessing accumulated instructions, but maestria supports multiple models and hosts; removing a constraint requires a clear replacement contract, not an assumption that every model behaves like Astra.
 
 ## Goals
 
 - Keep specialists accountable for complete assigned outcomes.
 - Match investigation, verification, formatting, and skill loading to the task.
 - Allow in-scope coverage and routine dependencies without procedural approval gates.
-- Keep downstream global instructions independent of Maestria paths.
+- Keep downstream global instructions independent of maestria paths.
 - Preserve independent review, bounded repair, host permissions, and PR-based delivery where supported.
 
 ## Non-Goals
@@ -31,7 +31,7 @@ The article motivates reassessing accumulated instructions, but Maestria support
 3. Specialists choose checks that establish acceptance; the delivery owner runs repository gates on the integrated result and reuses valid results. Read-only audits and plans end at their artifact with relevant verification, not implementation gates.
 4. New regression-test files are allowed when they materially protect an in-scope contract; explain the benefit rather than asking because coverage needs a file. Necessary dependencies are evaluated in scope; material architecture, licensing, cost, security, and scope changes still escalate.
 5. Writer formatting and architect comparisons follow the needed information. General reviewers weigh applicable risk categories instead of a verdict per category. Specialist skill loading is conditional on task and availability.
-6. Global source-ownership guidance refers to the consuming project's authoritative source and generation workflow; Maestria paths and sync commands stay in repository instructions. Visual PR evidence mechanics live in a conditional orchestrator reference using the delivery tool's current capabilities, not a cached CLI version or syntax.
+6. Global source-ownership guidance refers to the consuming project's authoritative source and generation workflow; maestria paths and sync commands stay in repository instructions. Visual PR evidence mechanics live in a conditional orchestrator reference using the delivery tool's current capabilities, not a cached CLI version or syntax.
 7. Consolidate root instructions and correct the Pi boundary: core library modules stay browser-safe; the Pi runtime adapter may use Node.js APIs.
 
 This supersedes procedural test-file approval and unconditional multi-command repetition and refines ADR-CORE-019's single-home and low-ceremony policies without changing its PR-delivery or bounded-repair contracts. Constraints repeated in independently loaded specialist prompts stay where standalone reliability requires them.

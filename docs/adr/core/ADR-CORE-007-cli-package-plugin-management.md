@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-Maestria ships the same AI engineering methodology to multiple coding agent platforms, each with different installation and update mechanics:
+maestria ships the same AI engineering methodology to multiple coding agent platforms, each with different installation and update mechanics:
 
 | Platform | Install method | Update method |
 | --- | --- | --- |

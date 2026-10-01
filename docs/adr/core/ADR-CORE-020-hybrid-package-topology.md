@@ -6,7 +6,7 @@ Accepted (2026-08-27)
 
 ## Context
 
-Maestria ships a canonical methodology (`packages/core/agent-directives/`, ADR-CORE-005) that must run on multiple hosts. It is distributed through separately published host adapters, a management CLI, and separate runtime transports (Kimi, Pi, OMP, Claude Code, Cursor, Codex, Hermes). Three tensions accumulated:
+maestria ships a canonical methodology (`packages/core/agent-directives/`, ADR-CORE-005) that must run on multiple hosts. It is distributed through separately published host adapters, a management CLI, and separate runtime transports (Kimi, Pi, OMP, Claude Code, Cursor, Codex, Hermes). Three tensions accumulated:
 
 1. **Canonical vs projection drift.** The sync pipeline (ADR-CORE-005, ADR-CORE-016) is the single source of truth, but helper logic began duplicating across hosts. The workflow-mode mechanics (`fein`/`sonar`/`blitz`, ADR-OC-003) were byte-identical in the OpenCode and Pi-family implementations - same keyword constants, markers, priority (`fein > sonar > blitz`), word-boundary case-insensitive detection, disabled-keyword support, code-block/inline-code exclusion, keyword stripping with trailing-colon cleanup, and `## MODE:` extraction - diverging in API shape only.
 2. **Pi-family divergence.** `@maestria/pi` and `@maestria/omp` share `@maestria/shared-pi` for state, compaction, review, commands, tools, and mode mechanics; their skill validators were byte-identical filesystem/frontmatter routines with no platform divergence. Prime Agent stays intentionally isolated by ADR-CORE-014: its pinned Prime fork types and fail-closed skill prompt behavior are a verified extension subset.

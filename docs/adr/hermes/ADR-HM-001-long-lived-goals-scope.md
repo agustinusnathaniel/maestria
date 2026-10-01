@@ -6,7 +6,7 @@ Accepted (2026-07-16)
 
 ## Context
 
-The `@maestria/hermes` plugin brings the Maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes Agent platform. Hermes has a built-in `/goal` feature ([documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals)) that provides:
+The `@maestria/hermes` plugin brings the maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes Agent platform. Hermes has a built-in `/goal` feature ([documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals)) that provides:
 
 - A standing objective that survives across turns
 - Automatic continuation after each turn (a judge checks whether the goal is achieved)

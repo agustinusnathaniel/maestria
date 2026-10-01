@@ -99,7 +99,7 @@
 
 - [#157](https://github.com/agustinusnathaniel/maestria/pull/157) [`906f836`](https://github.com/agustinusnathaniel/maestria/commit/906f836a96a2f53e838c29d3a9e82d5c2336ba49) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Selective routing contract in the canonical orchestrator directives.
 
-  **Three routes** - `direct` (host executes, no Maestria specialist spawn),
+  **Three routes** - `direct` (host executes, no maestria specialist spawn),
   `focused` (one targeted specialist, one reviewer for non-trivial
   work), and `full` (bounded recon, design, implementation, and review). The
   full pipeline is an explicit option for complex or high-risk work and for
@@ -122,7 +122,7 @@
   `@reviewer`; where the host cannot enforce separate sessions (e.g. Kimi, Pi,
   OMP, Hermes), the split is advisory and stated as such.
 
-  **How this affects you:** Maestria no longer routes every turn through the
+  **How this affects you:** maestria no longer routes every turn through the
   full pipeline. Small explanations and tiny edits run directly or through one
   specialist; the full pipeline stays available for complex, high-risk, or
   explicitly `fein` work. No action required on your end - your agents apply

@@ -5,9 +5,9 @@
 ## Prerequisites
 
 - Codex CLI 0.145.0 or a later version whose plugin and skills behavior has been independently reverified.
-- npm on `PATH` when using the Maestria CLI installer.
+- npm on `PATH` when using the maestria CLI installer.
 
-## Persistent installation through Maestria
+## Persistent installation through maestria
 
 Install the published package and register it with Codex's native plugin manager:
 
@@ -35,7 +35,7 @@ codex plugin marketplace add agustinusnathaniel/maestria
 codex plugin add maestria@maestria
 ```
 
-This direct path installs the published plugin and its skills. `codex plugin add` consumes a `PLUGIN@MARKETPLACE` selector; it does not accept `@maestria/codex` as a bare npm argument. The Maestria CLI remains the full setup path because it additionally copies the bundled native agent TOMLs into `$CODEX_HOME/agents/` and manages the global orchestration instruction block. A direct Codex uninstall removes only the plugin:
+This direct path installs the published plugin and its skills. `codex plugin add` consumes a `PLUGIN@MARKETPLACE` selector; it does not accept `@maestria/codex` as a bare npm argument. The maestria CLI remains the full setup path because it additionally copies the bundled native agent TOMLs into `$CODEX_HOME/agents/` and manages the global orchestration instruction block. A direct Codex uninstall removes only the plugin:
 
 ```bash
 codex plugin remove maestria@maestria
@@ -62,7 +62,7 @@ After `maestria install codex`, start a new Codex session. The managed global in
 
 ## Native model configuration
 
-The plugin manifest declares skills, while the Maestria CLI configures the native custom-agent model files and managed global orchestration instructions it installs:
+The plugin manifest declares skills, while the maestria CLI configures the native custom-agent model files and managed global orchestration instructions it installs:
 
 ```bash
 npx maestria configure codex --global --set builder=gpt-5.6-terra
