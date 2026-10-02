@@ -611,13 +611,23 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
 };
 
 /**
+ * Range for the Pi subagent dispatch peer. Kept in step with the
+ * '@gotgenes/pi-subagents' catalog entry in pnpm-workspace.yaml, which
+ * `@maestria/pi` declares as its peer. Bare latest would install a version the
+ * peer range can reject; Pi accepts a semver range after the `npm:` prefix and
+ * reconciles updates inside it (`parseNpmSpec` + `validRange` in the host's
+ * package manager).
+ */
+const PI_SUBAGENTS_RANGE = '^21.5.1';
+
+/**
  * Pi's subagent dispatch needs @gotgenes/pi-subagents. It is installed before
  * every install/update; a failure is ignored so a missing peer dependency
  * cannot block the main package install.
  */
 const piSubagentsPrerequisite: Effect.Effect<void> = run(
   'pi',
-  ['install', 'npm:@gotgenes/pi-subagents'],
+  ['install', `npm:@gotgenes/pi-subagents@${PI_SUBAGENTS_RANGE}`],
   60_000,
 ).pipe(Effect.catchEager(() => Effect.void));
 
