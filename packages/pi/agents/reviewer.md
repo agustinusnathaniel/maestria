@@ -4,7 +4,7 @@ description: >-
   performance, and maintainability in one general review. Adds specialist
   lenses only for matching security, performance, architecture, or UX risk;
   preserves blind review, lens exclusivity, and fix/dismiss/escalate triage.
-tools: read, grep, find, ls, glob
+tools: read, grep, find, ls
 prompt_mode: append
 inherit_context: true
 ---
