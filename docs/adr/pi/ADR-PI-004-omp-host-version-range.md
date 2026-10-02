@@ -1,4 +1,4 @@
-# ADR-PI-003: OMP Host Version Range and Independent Version Line
+# ADR-PI-004: OMP Host Version Range and Independent Version Line
 
 ## Status
 
@@ -10,7 +10,7 @@ Accepted (2026-10-02), Confidence: High
 
 OMP is a fork of Pi that versions independently. Its major numbers do not track Pi's, so Pi's version is not a proxy for what OMP supports, and a range derived from Pi's cadence is wrong for OMP for reasons unrelated to compatibility.
 
-Two wiring details also differed from the sibling host packages in this repository. The range lived as a literal in `packages/omp/package.json`, while other host-facing packages resolve their host through the `pnpm-workspace.yaml` catalog. And a peer range is only one of three places a host version can be recorded, the others being the lockfile and the runtime support matrix, so a range that changes in one place and not the others silently disagrees with what was actually verified.
+Two wiring details made the range easy to record in more than one place. The range lived as a literal in `packages/omp/package.json` and had no single home. And a peer range is only one of three places a host version can be recorded, the others being the lockfile and the runtime support matrix, so a range that changes in one place and not the others silently disagrees with what was actually verified.
 
 Under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) clause 3 this record decides the range and its rationale. It does not assert the currently resolved host version; read the concrete version from `pnpm-lock.yaml` and the verified host behavior from [docs/runtime-support-matrix.md](../../runtime-support-matrix.md).
 
@@ -18,7 +18,7 @@ Under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) 
 
 1. **Widen the peer range to `>=17.0.5 <19.0.0`.** The floor stays at `17.0.5`, the earliest host line the extension is claimed to work against, so this decision never widens the range downward and does not retroactively promise support for older hosts. The ceiling is set to `19.0.0`, the next major after the published line, so 18.x is admitted while the range still refuses to make claims about an unreleased major. Raising the ceiling is a separate decision that requires evidence that the new major satisfies the extension surface, not a calendar expectation.
 
-2. **Move the range into the workspace catalog.** `pnpm-workspace.yaml` holds `@oh-my-pi/pi-coding-agent: '>=17.0.5 <19.0.0'` and `packages/omp` declares `"@oh-my-pi/pi-coding-agent": "catalog:"`, matching how the other host packages in this repository are wired. Install, typecheck, and peer validation then read one range instead of a literal that can drift from it.
+2. **Move the range into the workspace catalog.** `pnpm-workspace.yaml` holds `@oh-my-pi/pi-coding-agent: '>=17.0.5 <19.0.0'` and `packages/omp` declares `"@oh-my-pi/pi-coding-agent": "catalog:"`. That gives the range a single home. Install, typecheck, and peer validation then read one range instead of a literal that can drift from it.
 
 3. **Track OMP's version line independently of Pi's majors.** Whether `@maestria/omp` supports an OMP release is determined by that release's own notes and by our verification against it. When OMP's version moves, the response is to check the host's exports and behavior, never to infer compatibility from Pi's version or from OMP's number relative to Pi's.
 
@@ -42,7 +42,7 @@ Under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) 
 
 ## Alternatives Considered
 
-- **Leave the range literal in `packages/omp/package.json`.** Rejected: it keeps a second home for a contract the repository already centralizes for other host packages, and the two would drift on the next bump.
+- **Leave the range literal in `packages/omp/package.json`.** Rejected: it keeps the range in two homes, and the two would drift on the next bump.
 - **Pin an exact version or use a caret range (`=18.4.8`, `^18.0.0`).** Rejected: both re-break on the next minor release, which is the churn this decision exists to remove.
 - **Drop the ceiling entirely (`>=17.0.5`).** Rejected: it would admit every future major, including majors that reshape the package's export surface, with no signal that a decision was needed.
 - **Derive the ceiling from Pi's version line.** Rejected: OMP versions independently, so Pi's cadence carries no information about OMP's compatibility.
