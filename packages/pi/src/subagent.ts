@@ -380,7 +380,7 @@ const unavailableResult = (): ToolResult => ({
         'Install it as a Pi extension:',
         '',
         '```',
-        'pi install npm:@gotgenes/pi-subagents',
+        'pi install npm:@gotgenes/pi-subagents@^21.5.1',
         '```',
         '',
         'Then restart your Pi session.',

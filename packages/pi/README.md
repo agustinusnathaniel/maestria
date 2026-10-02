@@ -11,7 +11,7 @@ A [Pi coding agent](https://pi.software/) extension that brings maestria's struc
 pnpx maestria@latest install pi
 
 # Manual: install the required peer dependency first, then the extension
-pi install npm:@gotgenes/pi-subagents
+pi install npm:@gotgenes/pi-subagents@^21.5.1
 pi install npm:@maestria/pi
 ```
 
@@ -32,7 +32,7 @@ Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (ru
 
 ## Support / Platform Notes
 
-- Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package; the maestria CLI installs it for you.
+- Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package (supported range `^21.5.1`); the maestria CLI installs it for you.
 - The methodology is advisory prompt guidance; the maker/checker split is enforced at the tool level only where Pi supports review-mode tool blocking.
 - Pi-specific: `@maestria/omp` is a separate package for Oh My Pi.
 
