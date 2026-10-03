@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.19
+
+### Patch Changes
+
+- [#380](https://github.com/agustinusnathaniel/maestria/pull/380) [`00f2137`](https://github.com/agustinusnathaniel/maestria/commit/00f21377f7f84c9c6e1919ca7a10812b6e7f9634) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Raise the Node.js engine floor to `>=22.19.0` to match the Pi host requirement.
+
 ## 0.7.18
 
 ### Patch Changes
