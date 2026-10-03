@@ -24,6 +24,8 @@ Contributors, maintainers, and platform adapter authors. To install or use maest
 
 ADRs record why a design was chosen, including alternatives and trade-offs. Read the relevant record before changing architecture; use current guides and source code to confirm present behavior.
 
+The collection keeps consequential architectural choices. Procedures and documentation conventions live in the guides above; retired records remain in Git history. Numbering gaps are intentional. Use the [ADR criteria](guides/doc-format.md#new-adrs) before adding another record.
+
 | Area                                                      | Records                          |
 | --------------------------------------------------------- | -------------------------------- |
 | Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/)           |

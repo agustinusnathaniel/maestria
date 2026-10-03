@@ -2,150 +2,47 @@
 
 ## Status
 
-Accepted (2026-09-24). Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but the retention list in Decision 6 is ambiguous about one contract, generated provenance `[verified]`. The list names generated provenance as a test contract to retain, alongside sync byte identity, which reads as a per-package assertion. [scripts/check-sync](../../../scripts/check-sync) already enforces it instead, byte-comparatively: the generated comment is written by the sync projection and the check regenerates every output and exits 1 on any difference, so removing the `Auto-generated from @maestria/core` line from a single generated SKILL.md fails that check. The per-package prose assertions over the same comment are therefore redundant rather than load-bearing, and sync remains the enforcing source for that contract. The frozen text is retained.
+Accepted (2026-09-24). Confidence: High. Correction (2026-09-28): [scripts/check-sync](../../../scripts/check-sync) regenerates expected projections and detects content differences, including generated provenance headers, so per-package prose assertions over those headers add no separate contract. Condensed 2026-10-03; the decision remains in force.
 
 ## Context
 
-maestria's existing testing guidance protects observable behavior, intentional regression coverage, real boundaries, and host authorization. It also leaves several loopholes:
+Earlier testing guidance protected observable behavior but did not require selecting evidence before implementation. Parallel guidance left room for post-code unit tests, duplicate bug-fix tests, and prose assertions that could not establish model behavior across hosts.
 
-- The global testing rule allows a new test file when it materially protects a contract, but does not require test selection before implementation.
-- `docs/testing.md` recommends the cheapest meaningful verification and rejects a blanket end-to-end requirement, which leaves complex features open to parallel post-code unit suites.
-- The contributor workflow says to add tests for new behavior without stating when the test is selected or written.
-- The directive review guide describes exact wording and order pins as preservation evidence, even though prose pins can fail on harmless rewrites and cannot establish cross-host model behavior.
-- A platform-specific Kimi routing table says that diagnosis means writing a regression test, without requiring a genuine behavior gap.
-
-These gaps conflict with the desired policy: tautological and change-detector tests are harmful, bug fixes do not need duplicate regression tests, unit tests must not be written after code, complex features should use E2E as the sole feature-testing mechanism, and isolated systems need a failure-mode inventory before implementation.
-
-This decision changes methodology guidance. It does not change host permissions, runtime enforcement, or the safety and review floors.
-
-## Goals
-
-- Put the binding testing principles in one concise, always-loaded canonical source.
-- Select behavior tests before production code and make complex-feature E2E evidence explicit.
-- Preserve genuine behavior-gap coverage for bug fixes.
-- Require a complete failure-mode inventory before isolated-system implementation.
-- Keep lint, typecheck, build, sync, and existing package checks as verification gates.
-- Retire prose-only text pins that maintain implementation wording instead of durable behavior.
-- Preserve safety, authorization, host controls, independent review, visual-evidence classification, and canonical sync.
-
-## Non-Goals
-
-- No new runtime test harness, host permission, sandbox, or enforcement mechanism.
-- No removal of existing package checks, build checks, or deterministic sync checks. The integrated reduction retires only pure prose, heading/order, and change-detector assertions; durable pre-existing contract cases are restored in the focused directive suite.
-- No universal E2E requirement for simple or deterministic work.
-- No claim that directive text guarantees model behavior on every host.
-- No change to the canonical sync pipeline or generated-output ownership model.
+This decision sets the shared testing policy. It does not add test infrastructure or runtime controls.
 
 ## Decision
 
-### 1. One canonical testing contract
+The binding cross-platform contract lives in [the canonical agent rules](../../../packages/core/agent-directives/rules.md); definitions, procedures, and examples live in [Testing Philosophy](../../testing.md).
 
-`packages/core/agent-directives/rules.md` is the single always-loaded source for cross-platform testing behavior. The rule is concise and states that:
+- Before production code, state the observable contract and acceptance evidence, select the test boundary, and write selected behavior tests first. Never write unit tests after implementation.
+- For a bug fix, run existing behavior tests first. Add a regression test only for a genuine gap; the new test must fail before the fix and catch the same failure if it returns.
+- For a complex feature, strongly prefer E2E as the sole feature-testing mechanism. Each E2E test must leave a verifiable, repeatable artifact with a stable location, reproduction steps, and expected signal. Classify UI evidence separately.
+- If a system must be tested in isolation, inventory its applicable failure modes before tests or code, including expected behavior, planned check, and evidence for each. Derive tests from that inventory.
+- Keep relevant lint, typecheck, build, sync, and existing package checks as repository gates. Host permissions and authorization still govern production access, data changes, and consequential side effects.
+- Keep checks for machine-readable contracts, manifests and file layout, safety and authorization boundaries, host-specific adapters, and actual executable behavior.
+- Exact wording and heading order are not behavioral evidence. Use sync checks for generated projections, executable tests for runtime contracts, and [directive change review](../../directive-change-review.md) for model behavior. Prose pins do not prove cross-host model outcomes.
+- Reject tautological and change-detector tests; they protect implementation shape instead of observable behavior.
 
-- Tautological and change-detector tests are harmful.
-- Bug-fix regression tests require a genuine gap in behavior testing.
-- Unit tests must not be written after code.
-- E2E is strongly preferred as the sole feature-testing mechanism for complex features.
-- Every E2E test ends with a verifiable and repeatable artifact.
-- An isolated system requires every failure mode to be written before the code.
+## Non-Goals
 
-`docs/testing.md` supplies definitions, workflow, and examples. Root instructions and contributor guidance point to these sources instead of maintaining separate behavioral contracts.
-
-### 2. Pre-code selection and bug-fix discipline
-
-Before writing production code, state the observable contract, select the test boundary, and identify the acceptance evidence. A new unit test must come from the pre-code contract or a failure-mode inventory. It is never an after-the-fact coverage task.
-
-For a bug fix, run the existing behavior test first. Add a regression test only when the existing behavior suite has a genuine gap and the new test would fail before the fix and catch the same failure if it returned. Do not add a test that repeats the fix or duplicates an existing behavior check.
-
-### 3. Complex features and E2E artifacts
-
-For a complex feature, strongly prefer E2E tests as the sole feature-testing mechanism. Do not add a parallel unit suite after implementation. Lint, typecheck, build, sync, and existing package checks remain verification gates, but they do not select the feature test and do not authorize post-code unit tests.
-
-At the end of each E2E test, produce an inspectable artifact with a stable location, deterministic reproduction procedure, and expected signal. A test artifact is distinct from rendered UI evidence, but visual evidence classification remains mandatory for rendered changes.
-
-### 4. Isolated-system failure-mode inventory
-
-Isolation is an explicit exception, not a coverage shortcut. Before writing tests or code for an isolated system, record its applicable input, state, dependency, concurrency, recovery, and security failure modes. For each, name the expected behavior, planned check, and evidence artifact. Write tests from that inventory first. The detailed workflow lives in [Testing Philosophy](../../testing.md#isolated-systems); isolation never permits a unit test after implementation.
-
-### 5. Verification gates remain gates
-
-The policy does not replace repository verification. Lint, typecheck, build, sync, and existing package checks continue to run when relevant. They are evidence about the boundaries they exercise, not substitutes for pre-code test selection. Host authorization and approval controls still apply to tests that access production, mutate data, or create consequential side effects.
-
-### 6. Retire prose-only text pins
-
-Exact wording, heading-order, and repeated-phrase assertions are not acceptance evidence for behavior guidance. A prose-only text pin can fail after a harmless rewrite and can encourage duplication across generated projections.
-
-The original implementation removed prose-only, heading/order, and change-detector assertions from `packages/core/tests/directives.test.ts` while retaining durable contract coverage.
-
-Retain tests that protect durable machine-readable contracts, sync byte identity, generated provenance, file layout, manifests, safety and authorization boundaries, host-specific adapters, and actual executable behavior. Retain scenario review for model behavior. Text tests must not be used to claim that a directive produces a particular model outcome on every host.
-
-### 7. Preserve the existing floors
-
-Safety and authorization precedence, host permissions, independent review, visual evidence, repository checks, and canonical sync remain in force. Platform-specific routing changes belong in hand-authored configuration; generated projections are regenerated from their sources.
-
-### 8. Partial supersession of earlier decisions
-
-This ADR supersedes ADR-CORE-023 in part. Its evidence-led routing and proportionate verification decisions remain, but its allowance for new regression-test files without a preidentified behavior gap is narrowed by the pre-code and genuine-gap rules.
-
-This ADR also narrows ADR-CORE-019's use of text-pinned contracts as a general preservation strategy. Its single-home, bounded-repair, terminal-artifact, and independent-review decisions remain in force.
+- No runtime enforcement, test harness, host permission, or sandbox is introduced.
+- Simple or deterministic work does not require E2E testing.
 
 ## Consequences
 
-- Behavior-level evidence replaces maintenance-heavy prose and implementation-shape tests. Bug fixes add regression coverage only for a genuine gap, while complex features favor E2E evidence and isolated systems require a failure-mode contract.
-- E2E setup and failure-mode inventories add upfront work. Removing prose pins loses a cheap wording signal, so directive behavior still needs scenario review.
-- Existing deterministic checks remain verification gates. The policy is guidance, not runtime enforcement; host behavior can differ.
-
-## Assumptions
-
-- `[verified]` The canonical rules file is projected to the global-rule outputs listed in the repository sync configurations.
-- `[verified]` The original core directive suite contained prose and heading-order assertions distinct from sync, provenance, manifest, and executable contract checks.
-- `[verified]` The repository requires sync, build, lint, type, and workspace checks in addition to behavior tests.
-- `[inferred]` E2E artifacts and pre-code failure-mode inventories will improve the practical evidence quality of complex work across supported hosts. This ADR does not claim measured model-performance improvement.
+Pre-code selection, E2E artifacts, and isolated-system inventories add upfront work while making expected behavior and evidence easier to inspect. Removing prose pins loses a cheap wording-drift signal; representative scenario review remains necessary for model behavior. Host outcomes may vary, and this methodology does not guarantee them.
 
 ## Alternatives Considered
 
-### Keep the current proportionate policy with a short caveat
-
-Rejected. A caveat would leave post-code unit tests and unconditioned regression-test wording available, and would not define the E2E artifact contract.
-
-### Put the strict policy only in project-local `.maestria/rules.md`
-
-Rejected for this cross-platform methodology change. That file is appropriate for repository-specific overrides, but it cannot provide the canonical behavior projected into published platform packages.
-
-### Require unit tests for every component or coverage target
-
-Rejected. This recreates the harmful tests this ADR removes and rewards implementation-shaped coverage.
-
-### Keep exact wording and order tests as the primary preservation evidence
-
-Rejected. Such tests maintain prose rather than behavior, fail on harmless edits, and cannot establish cross-host model behavior.
-
-### Require E2E tests for every task
-
-Rejected. Deterministic package checks and pre-code isolated-system tests remain necessary for simple work and for systems that cannot be observed through a user-facing E2E boundary.
-
-## Verification
-
-For future directive changes, regenerate projections, run `scripts/check-sync` and the repository [completion checks](../../checklist.md), then compare representative behavior using [directive change review](../../directive-change-review.md). Report machine-readable checks separately from scenario outcomes; text assertions alone do not establish model behavior.
-
-## Rollback
-
-Revert the canonical rules and related hand-authored guidance together, then regenerate projections and check sync. Do not revert generated outputs alone; keep this ADR as the historical record.
-
-## Related Decisions
-
-- [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): canonical source and generated projections.
-- [ADR-CORE-003](ADR-CORE-003-agent-conventions.md): `!!!` markers and directive conventions.
-- [ADR-CORE-022](ADR-CORE-022-agent-plugins-portable-projection.md): portable global-rules projection.
+- Keep test selection implicit: rejected because it leaves timing and evidence boundaries unclear.
+- Require unit tests for every component or coverage target: rejected because it rewards implementation-shaped checks.
+- Require E2E for every task: rejected because simple deterministic checks and isolated-system cases need proportionate boundaries.
+- Keep exact-wording pins as primary preservation evidence: rejected because harmless edits break them and they cannot prove model behavior.
+- Keep the shared policy only in project-local rules: rejected because the contract applies across platform projections.
 
 ## Supersession
 
-Two partial relations, declared by Decision 8 above and linked from the other record:
-
-- [ADR-CORE-023](ADR-CORE-023-evidence-led-directives.md): superseded in part. Its evidence-led routing and proportionate verification decisions remain in force; only its allowance for a new regression-test file without a preidentified behavior gap is narrowed, by the pre-code selection and genuine-gap rules.
-- [ADR-CORE-019](ADR-CORE-019-directive-simplification.md): narrowed, not replaced. Its single-home, bounded-repair, terminal-artifact, and independent-review decisions remain in force; only its use of text-pinned contracts as a general preservation strategy is narrowed, by Decision 6.
-
-This record keeps its original context, decision, consequences, assumptions, and date.
+This decision narrows [ADR-CORE-019](ADR-CORE-019-directive-simplification.md) where its earlier guidance allowed regression tests without a preidentified behavior gap or treated prose pins as general preservation evidence. CORE-019's other decisions remain in force.
 
 ## Date
 

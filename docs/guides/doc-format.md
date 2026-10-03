@@ -37,6 +37,10 @@ Published READMEs render outside the repository, so links to repository files mu
 
 ## New ADRs
 
+Create an ADR when a choice changes a structural boundary, public contract, trust model, or costly dependency and its alternatives will matter to a future maintainer. Routine fixes, tool settings, installation procedures, terminology changes, and completed editorial work belong in source, contributor guides, or the delivery history. A change does not need an ADR merely because it touched several files.
+
+Use `docs/adr/<area>/ADR-{PREFIX}-{NNN}-{slug}.md`, with numbering scoped to the area prefix. This avoids collisions between platform decisions without renumbering other areas.
+
 Every new ADR must cover **Status, Context, Decision, Consequences, Alternatives Considered, and Date**, plus a one-word **Confidence** on the Status line. Use `Proposed`, `Accepted`, `Deprecated`, or `Superseded` for status; write the date as `YYYY-MM-DD`. Goals and Non-Goals are recommended, not required.
 
 - Write Consequences with positive, negative, and neutral outcomes, and never hide a negative.
@@ -47,9 +51,9 @@ Every new ADR must cover **Status, Context, Decision, Consequences, Alternatives
 - Add `Lessons Learned`, `Rollback`, `Verification`, or `Related Decisions` when they help explain or operate the decision.
 - Record only architecturally significant, hard-to-reverse decisions, and keep a record to roughly two pages. Move supporting material to a design document and link it.
 
-Accepted records are frozen. On acceptance, Context, Decision, Consequences, Assumptions, Alternatives Considered, and Date stop changing, and a change of mind becomes a new record that supersedes or extends the original. An accepted record accepts in place a Status transition and either a successor annotation or a dated divergent-claim annotation; ADR-CORE-030 defines both forms. This supersedes the earlier rule that historical ADRs could be revised while preserving their original sections.
+Keep decision history traceable. Correct factual errors and condense records in place while preserving the decision, relevant rationale, rejected alternatives, negative consequences, and security boundaries. Date substantive amendments; retain the original decision date. A materially different architectural choice needs a successor record and a clear supersession link.
 
-Do not retrofit legacy records to match this template. The one bounded editorial pass authorized by [ADR-CORE-030](../adr/core/ADR-CORE-030-adr-immutability-and-supersession.md) has been performed. [ADR-CORE-031](../adr/core/ADR-CORE-031-editorial-pass-evidence-in-git.md) locates its ledger in the immutable delivery commit; it grants no further editorial pass. [ADR-CORE-032](../adr/core/ADR-CORE-032-one-time-condensation-of-review-signals-record.md) authorizes and exhausts one separate, content-preserving rewrite of ADR-CORE-012. Follow ADR-CORE-030's lifecycle rules for later changes.
+Remove records that contain only procedures, duplicated guidance, completed work, or obsolete implementation detail. Consolidate overlapping decisions into their owning record and repair incoming references. Preserve consequential historical trade-offs in a short dated passage when they still constrain that decision; Git retains the full earlier text. Editorial work needs a reviewable diff, not a new ADR granting permission to edit another ADR. Keep existing identifiers and numbering gaps so old references remain traceable; allocate new numbers above the highest number ever used in that namespace.
 
 The `Context` heading is retained for compatibility with existing records.
 

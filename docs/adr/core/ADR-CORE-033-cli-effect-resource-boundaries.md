@@ -31,7 +31,7 @@ Keep synchronous helpers and plugin hooks in ordinary TypeScript. Pi's current p
 ## Supersession
 
 - Extends [ADR-CORE-007](ADR-CORE-007-cli-package-plugin-management.md)'s CLI decision with scoped archive resources and subprocess cancellation.
-- Supersedes [ADR-CORE-017](ADR-CORE-017-selective-effect-v4-adoption.md)'s requirement to use Effect for Pi polling. Plugin adoption remains driven by a demonstrated need.
+- Supersedes the 2026-08-13 experiment requiring Effect for Pi polling. That experiment addressed orphaned sibling polls and host aborts; tested Promise-based polling now provides sibling cleanup without imposing Effect on plugins. Pure state/rendering helpers, OpenCode hooks, OMP native task handoff, and directive/sync code stay ordinary TypeScript until a demonstrated need changes the trade-off.
 
 ## Date
 

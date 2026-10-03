@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17). Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but two claims in the frozen text have drifted from the shipped orchestrator skill `[verified]`. The Swarm Usage section and the routing-table row it feeds default `AgentSwarm` to N≥3 independent items, and the single-agent fallback is described as covering 1-2 items, but the shipped skill dispatches at 2 or more uniform items. The Risks entry asserting that subagents cannot use the `Skill` tool is false: the shipped skill reports the `Skill` tool as available to the `plan` and `coder` profiles, with `explore` the profile whose persona content must be pre-loaded, so the constraint is narrower than the frozen text states and persona inlining remains necessary only for `explore`. [packages/kimi-code/sync.config.ts](../../../packages/kimi-code/sync.config.ts) is the authoritative source for both values, and [packages/kimi-code/skills/orchestrator/SKILL.md](../../../packages/kimi-code/skills/orchestrator/SKILL.md) is the generated artifact it produces. That source states the swarm threshold two ways rather than one, and the shipped skill inherits both: alongside the 2-or-more dispatch sentence, the skill's frontmatter `whenToUse` and the first entry of its `When to use AgentSwarm` checklist both still read N≥3. The shipped artifact is therefore internally inconsistent on this threshold, so a reader who follows the pointer to the current value meets the contradiction unaided unless it is named here. The 2-or-more sentence is the operative dispatch instruction, and the two N≥3 entries state a narrower trigger that neither text marks as superseding the other. The two dated 2026-09-22 notes that carried these claims were removed by the bounded pass recorded in ADR-CORE-030, one folded into the routing-table paragraph below without its threshold claim and one deleted outright, so this annotation restores what they stated. The frozen text is retained.
+Accepted (2026-06-12; revised 2026-06-17). Correction (2026-09-28): the historical swarm threshold and profile mapping below diverge from the [sync config](../../../packages/kimi-code/sync.config.ts) and its [orchestrator projection](../../../packages/kimi-code/skills/orchestrator/SKILL.md). The projection routes architect/reviewer to `plan`; `Skill` is available to `plan` and `coder`, while `explore` still needs inlined persona content. Swarm guidance is internally inconsistent: the operative dispatch sentence uses two or more items, while the frontmatter/checklist still say three. Reverify those operational details at source; this record preserves the declarative-plugin and persona-mapping rationale.
 
 ## Supersession
 
@@ -122,7 +122,7 @@ The table above is the persona-selection decision; the specialist mapping above 
 - **User forgets the AGENTS.md copy** - rules are missing silently. Mitigation: INSTALL.md checklist and skills referencing AGENTS.md.
 - **User modifications are overwritten** - `/plugins install` overwrites edits to bundled skills. Mitigation: fork the plugin for customizations.
 - **User skips the recommended hooks** - destructive-command blocking and per-turn reminders are unavailable. Mitigation: the installation guide's checklist and the orchestrator's `whenToUse` reminder.
-- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split (see [ADR-CORE-012](../core/ADR-CORE-012-deterministic-review-signals-fail-loud-exit.md)). Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
+- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split (see [ADR-CORE-019](../core/ADR-CORE-019-directive-simplification.md)). Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
 - **Architect was remapped from `plan` to `coder`** - `plan` has no Bash, blocking validation (`which`, `npm view`); `coder` restores it while making write tools technically available. Mitigation: the persona restricts Bash to read-only validation.
 - **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`.
 - **`AgentSwarm` is exclusive-deny** - it must be the only tool call in its turn, so exploration and swarm fan-out take two turns. Mitigation: the orchestrator skill documents the pattern; `resume_agent_ids` re-feeds unfinished items.
@@ -142,9 +142,9 @@ With 3+ platforms, consider extracting a canonical agent schema, skill registry,
 
 ## Related Decisions
 
-- ADR-CORE-001 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
+- ADR-CORE-019 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
 - ADR-CORE-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
-- ADR-CORE-003: Agent conventions (!!! markers, cross-references, skill pattern - carried forward into SKILL.md)
+- Canonical specialist directives carry prompt conventions and skill-loading guidance; `!!!` markers communicate methodology, not host enforcement.
 
 ## Date
 

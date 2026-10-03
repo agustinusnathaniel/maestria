@@ -6,7 +6,7 @@ Accepted (2026-09-24), Confidence: High
 
 ## Context
 
-This decision was taken inside [ADR-OC-001](ADR-OC-001-tool-permission-design.md) and extracted into its own record on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md), because it decides a different subject from that record: the shared Pi and OMP command interceptor, not the OpenCode agent permission design. The 2026-09-24 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
+This decision was taken inside [ADR-OC-001](ADR-OC-001-tool-permission-design.md) and extracted into its own record on 2026-09-28, because it decides a different subject from that record: the shared Pi and OMP command interceptor, not the OpenCode agent permission design. The 2026-09-24 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
 
 The shared Pi/OMP tool interceptor recognized a broad command-prefix list. That list included `find` and package-manager test forms. `find` can execute or delete through flags, and package-manager test or run forms can execute lifecycle scripts and mutate a workspace. A prefix check also does not by itself establish that every shell segment, substitution, redirect, or lookalike command is safe. `[verified]`
 
@@ -24,9 +24,22 @@ The maintained option lists and representative allow and deny cases live in [`ba
 
 ## Failure-mode inventory
 
-[ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md) requires a failure-mode inventory before an isolated system is implemented. The case IDs and required results for this decision (`BASH-01` through `BASH-12`) are preserved in [ADR-OC-001](ADR-OC-001-tool-permission-design.md) under its Failure-mode inventory section, so that the inventory this decision is verified against is recorded in exactly one place.
+The case IDs below retain the planned boundary contract. The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and `pnpm e2e:fail-closed` sample behavior; they do not prove every case or live-host enforcement.
 
-The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) cover representative forms, and `pnpm e2e:fail-closed` samples the integrated boundary. Neither produces one artifact per case.
+| ID | Input or failure mode | Required result |
+| --- | --- | --- |
+| BASH-01 | Safe query forms | Allow exact names and safe options. |
+| BASH-02 | Pipeline | Allow only when every segment is approved. |
+| BASH-03 | `2>&1` | Allow parsed standard-stream duplication, never file redirection. |
+| BASH-04 | `find` | Block every form before execution. |
+| BASH-05 | Package-manager commands | Block lifecycle and download entry points. |
+| BASH-06 | Command or process substitution | Block substitutions. |
+| BASH-07 | File-target output or stderr redirect | Block the write. |
+| BASH-08 | Chaining, newline, background work, or unsafe pipeline segment | Block the whole command. |
+| BASH-09 | Prefix lookalike or malformed token | Block rather than partially match. |
+| BASH-10 | Git mutation or output-writing option | Block without changing model or state. |
+| BASH-11 | Destructive pattern behind a safe prefix | Do not classify it as read-only. |
+| BASH-12 | Empty, leading-separator, or ambiguous input | Block without invoking a host. |
 
 ## Security Boundaries
 
@@ -78,7 +91,7 @@ Run the shared parser, Pi, and OMP package tests, and `pnpm e2e:fail-closed` for
 ## Related Decisions
 
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): the pre-code failure-mode inventory this decision's cases come from.
-- [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md): shared Pi/OMP adapter ownership.
+- [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): shared Pi/OMP adapter ownership.
 - [ADR-HM-003](../hermes/ADR-HM-003-credential-safe-subprocess-boundary.md): credential-safe subprocess boundary.
 - [Testing Philosophy](../../testing.md): behavior-test selection and evidence requirements.
 

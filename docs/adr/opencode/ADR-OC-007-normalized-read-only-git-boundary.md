@@ -6,7 +6,7 @@ Accepted (2026-09-24), Confidence: High
 
 ## Context
 
-This decision was taken inside [ADR-OC-001](ADR-OC-001-tool-permission-design.md) and extracted into its own record on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md), because it decides a different subject from that record: the read-only Git boundary, not the OpenCode agent permission design. The 2026-09-24 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
+This decision was taken inside [ADR-OC-001](ADR-OC-001-tool-permission-design.md) and extracted into its own record on 2026-09-28, because it decides a different subject from that record: the read-only Git boundary, not the OpenCode agent permission design. The 2026-09-24 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
 
 The earlier read-only Bash amendment narrowed the command family but still described Git commands as coarse examples. A prefix such as `git diff*` cannot establish that the invocation is patch-safe, normalized, free of external helpers, or protected from repository configuration. Bare `git diff`, `git log -p`, and `git show` therefore remain denied unless the normalized form is present.
 
@@ -19,7 +19,20 @@ The earlier read-only Bash amendment narrowed the command family but still descr
 
 ## Failure-mode inventory
 
-[ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md) requires a failure-mode inventory before an isolated system is implemented. The case IDs and required results for this decision (`GIT-01` through `GIT-10`) are preserved in [ADR-OC-001](ADR-OC-001-tool-permission-design.md) under its Failure inventory section, so that the inventory this decision is verified against is recorded in exactly one place. The current executable checks live in the [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and the consolidated E2E probe; they sample the inventory rather than proving every case.
+The case IDs below retain the planned boundary contract. The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and `pnpm e2e:fail-closed` sample behavior; they do not prove every case or live-host enforcement.
+
+| ID | Required result |
+| --- | --- |
+| GIT-01 | Deny bare `git diff`. |
+| GIT-02 | Deny bare `git log -p`. |
+| GIT-03 | Deny bare `git show`. |
+| GIT-04 | Allow only the normalized prefix and diff safety flags. |
+| GIT-05 | Reject custom format, pretty, and signature controls in log/show. |
+| GIT-06 | Allow narrow status, branch, and metadata-only log forms under the normalized prefix. |
+| GIT-07 | Deny external diff, text conversion, helpers, aliases, arbitrary config, and unknown options. |
+| GIT-08 | Deny mutation, substitution, redirection, chaining, and output files. |
+| GIT-09 | Prove seeded configuration cannot enable hooks, fsmonitor, pager, or optional locks. |
+| GIT-10 | Keep OpenCode glob claims separate from token-level parser guarantees. |
 
 ## Security Boundaries
 

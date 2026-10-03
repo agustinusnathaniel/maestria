@@ -40,7 +40,7 @@ Example:
 
 ```
 Outcome: Map the auth module's session handling paths before we refactor login.
-Context and constraints: /src/auth/session.ts (the main file) and ADR-CORE-003
+Context and constraints: /src/auth/session.ts (the main file) and ADR-CORE-019
   in docs/adr/core/. Trace every code path that reads or writes session state;
   do not edit files. We already know the token refresh path has a race condition
   (issue #42), and session.ts line 89 uses wall-clock rather than server time.
