@@ -6,7 +6,7 @@ import { testOverrides } from './tooling/lint/test-overrides.js';
 
 export default defineConfig({
   fmt: {
-    // Ultracite oxfmt preset as base - via vite-plus hybrid (ADR-CORE-021).
+    // Ultracite oxfmt preset as base - composed in the authoritative Vite+ config.
     // Spread first so repo overrides win. Keep single authority in vite.config.ts,
     // no standalone oxfmt.config.ts.
     ...oxfmtPreset,
@@ -54,7 +54,7 @@ export default defineConfig({
     trailingComma: 'all',
   },
   lint: {
-    // Ultracite oxlint/core preset as base - via vite-plus hybrid (ADR-CORE-021).
+    // Ultracite oxlint/core preset as base - composed in the authoritative Vite+ config.
     // Spread first so repo rules win. No standalone oxlint.config.ts.
     ...oxlintPreset,
     ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
@@ -64,7 +64,7 @@ export default defineConfig({
     plugins: [...(oxlintPreset.plugins ?? [])],
     rules: {
       ...oxlintPreset.rules,
-      // Strict Ultracite core preset - only intentional project overrides remain (see ADR-021)
+      // Strict Ultracite core preset - only intentional project overrides remain (see CONTRIBUTING.md)
       curly: 'error',
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],

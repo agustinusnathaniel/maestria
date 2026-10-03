@@ -31,11 +31,11 @@ Read relevant ADRs before changing architecture, sync behavior, or agent convent
 | --- | --- |
 | Plugin architecture or canonical sync | [CORE-002](docs/adr/core/ADR-CORE-002-plugin-architecture.md), [CORE-005](docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) |
 | Portable Agent Plugins projection | [CORE-022](docs/adr/core/ADR-CORE-022-agent-plugins-portable-projection.md) |
-| Agent routing, persistence, or instruction policy | [CORE-019](docs/adr/core/ADR-CORE-019-directive-simplification.md), [CORE-023](docs/adr/core/ADR-CORE-023-evidence-led-directives.md) |
+| Agent routing, persistence, or instruction policy | [CORE-019](docs/adr/core/ADR-CORE-019-directive-simplification.md) |
 | OpenCode permissions or workflow modes | [OC-001](docs/adr/opencode/ADR-OC-001-tool-permission-design.md), [OC-003](docs/adr/opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) |
-| Kimi Code integration | [KC-000](docs/adr/kimi-code/ADR-KC-000-kimi-code-distribution.md), [KC-001](docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) |
+| Kimi Code integration | [KC-001](docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) |
 | Pi rules or compaction | [PI-001](docs/adr/pi/ADR-PI-001-rules-injection.md), [PI-002](docs/adr/pi/ADR-PI-002-compaction-state-preservation.md) |
-| Documentation or decision-record lifecycle | [CORE-030](docs/adr/core/ADR-CORE-030-adr-immutability-and-supersession.md) |
+| Documentation or decision-record lifecycle | [Documentation conventions](docs/guides/doc-format.md) |
 
 - [Testing philosophy](docs/testing.md): choosing coverage, test boundaries, and fixtures.
 - [Contributing](CONTRIBUTING.md): setup, package workflows, changesets, and delivery.

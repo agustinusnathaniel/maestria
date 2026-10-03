@@ -49,7 +49,7 @@ Negative:
 
 ## References
 
-- `docs/adr/core/ADR-CORE-001-global-rules-scope.md` - what belongs in global rules
+- [CORE-019](../core/ADR-CORE-019-directive-simplification.md) - global principles versus specialist methodology
 - `docs/adr/core/ADR-CORE-002-plugin-architecture.md` - opencode's rules injection pattern
 - Pi extensions documentation - the `before_agent_start` event
 

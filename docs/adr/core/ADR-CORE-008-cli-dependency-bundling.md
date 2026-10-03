@@ -1,96 +1,43 @@
-# ADR-CORE-008: CLI Dependency Bundling
+# ADR-CORE-008: Self-Contained CLI Dependencies and Version Semantics
 
 ## Status
 
-Accepted. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but two claims in the frozen text have drifted from the repository `[verified]`. The Decision names four runtime packages and the Consequences describe an empty `dependencies` field. [apps/maestria-cli/package.json](../../../apps/maestria-cli/package.json) now carries a non-empty `dependencies` block, and the `deps.alwaysBundle` list in [apps/maestria-cli/vite.config.ts](../../../apps/maestria-cli/vite.config.ts) holds more entries than the four packages named below. Both files are authoritative for the current state. The original text is retained.
+Accepted (2026-06-30), Confidence: High. Amended 2026-09-08 to omit unconsumed sourcemaps; consolidated 2026-10-03 with the version-comparison decision of 2026-10-01. Package-manager commands and version pins belong in repository configuration and contributor guidance.
 
 ## Context
 
-The maestria CLI (`apps/maestria-cli/`) is distributed as a single npm package with a `bin` entry point and `files: ["dist"]`; users interact with it via `npx maestria` or `pnpx maestria`. The artifact is a single bundled JS file produced by `vp pack` (vite-plus/tsdown).
+The maestria CLI is invoked through npm package runners. Externalizing its runtime libraries originally made installation fetch unnecessary transitive dependencies, including a native addon that produced build-script warnings. A CLI artifact should carry its implementation instead of making each user reconstruct the development graph.
 
-Initially, the CLI's `package.json` listed 4 runtime packages under `dependencies`:
-
-| Package          | Purpose                                            |
-| ---------------- | -------------------------------------------------- |
-| `@clack/prompts` | Interactive CLI prompts (select, confirm, spinner) |
-| `citty`          | CLI framework (typed arg parsing, subcommands)     |
-| `effect`         | Error handling & async orchestration               |
-| `picocolors`     | Terminal ANSI coloring                             |
-
-The bundler (`vp pack`) treats everything in `dependencies` as external by default - correct for libraries, wrong for CLIs. The consequence: `npx maestria` triggered npm to download the Effect beta and its transitive dependencies, including `msgpackr-extract` (a native addon with build scripts), producing a confusing `Ignored build scripts: msgpackr-extract` warning during install.
-
-The [xtarter project](https://github.com/agustinusnathaniel/xtarter) (same author, similar monorepo structure) demonstrated a proven pattern: move runtime dependencies to `devDependencies` and configure `deps.alwaysBundle` in the vite-plus config to inline them, resulting in a single self-contained JS artifact with zero runtime dependencies for end users.
-
-## Goals
-
-1. **Self-contained distribution** - `npx maestria` should install and run without downloading a large set of runtime dependencies at install time.
-2. **Eliminate confusing install warnings** - the `Ignored build scripts: msgpackr-extract` warning must not appear for end users.
-3. **Match bundler semantics** - CLI packages should inline their runtime dependencies, not externalize them; the `dependencies` field should reflect actual runtime requirements (none).
-4. **Align with proven patterns** - follow the convention established by xtarter for CLI bundling in this monorepo.
-
-## Non-Goals
-
-1. **Does NOT change the build tool** - vite-plus and `vp pack` remain the CLI's build tool; only the bundling configuration changes.
-2. **Does NOT change the CLI's runtime behavior** - the inlined code produces identical output; this is a packaging change only.
-3. **Does NOT eliminate the `effect` dependency from the monorepo** - `effect` remains a dev dependency, still downloaded during CI and local development builds.
-4. **Does NOT change how other packages in the monorepo bundle** - this decision applies only to `apps/maestria-cli/`; library packages should continue externalizing their dependencies.
+The original custom version comparison later proved incorrect: locale collation reverses case-sensitive prerelease identifiers such as `alpha.A` and `alpha.a`, and the validation expression accepted leading zeroes in numeric identifiers. Patching those cases would leave the CLI responsible for more of SemVer's grammar.
 
 ## Decision
 
-Move the 4 runtime packages (`@clack/prompts`, `citty`, `effect`, `picocolors`) from `dependencies` to `devDependencies` in the CLI's `package.json`, and configure `deps.alwaysBundle` in its `vite.config.ts` to tell the bundler to inline them.
+Bundle runtime functions into the CLI artifact with the existing Vite+/tsdown build. Keep library-package externalization separate from this CLI choice. The [CLI manifest](../../../apps/maestria-cli/package.json) and [build configuration](../../../apps/maestria-cli/vite.config.ts) own the dependency declarations and bundle list; this record does not require an empty `dependencies` field or a particular package count.
 
-### Package and Bundler Configuration
+Use npm's maintained `semver` comparison and validation through focused subpath imports, bundled with the runtime. Preserve strict CLI syntax: no `v` prefix, whitespace aliases, ranges, or coercion. Preserve `latest`, `unknown`, and empty-string behavior at the CLI boundary. Reject malformed numeric identifiers and ignore build metadata for precedence. This replaces the earlier suffix-strip and locale-comparison experiment rather than extending it.
 
-`apps/maestria-cli/package.json` and its `vite.config.ts` are authoritative for the result of this decision: the runtime packages were moved out of `dependencies` and into `devDependencies`, and `deps.alwaysBundle` inlines them so the published artifact carries no bare runtime imports beyond Node.js 22 built-ins. The bundler resolves each listed package's entry from `node_modules` and tree-shakes unused exports, so only the Effect patterns the CLI uses are emitted; the rest of the config (entry, `node22` target, minification) is unchanged.
+Omit published JavaScript sourcemaps while no error-reporting pipeline consumes them: their size exceeded the bundled runtime without serving a maintained consumer.
 
 ## Consequences
 
-### Positive
-
-- **Self-contained distribution** - `npx maestria` installs instantly, with no runtime dependency download.
-- **Eliminated install warning** - the `Ignored build scripts: msgpackr-extract` warning from `msgpackr-extract`'s native addon no longer appears for end users.
-- **Tree-shaking at build time** - only the Effect code actually used by the CLI is inlined; unused modules (large portions of the Effect ecosystem) are dropped during bundling.
-- **Consistent with monorepo conventions** - follows the pattern proven by xtarter, reducing cognitive overhead for maintainers working across both projects.
-- **Clearer package.json semantics** - an empty `dependencies` field accurately reflects that the CLI has no runtime requirements beyond Node.js.
-
-### Before/After Comparison
-
-The bundled artifact is larger than the pre-inlining build, but runtime dependency install drops to zero and the build-script warning disappears.
-
-### Negative
-
-- **Larger bundle size** - the artifact grows because Effect code is inlined instead of referenced externally; for a CLI invoked once per session, this is negligible.
-- **Rebuild required for dependency updates** - updating `effect` (or any bundled dep) requires a rebuild and republish of the CLI package; version resolution at install time no longer applies.
-- **Two-step onboarding for new dependencies** - any future runtime dependency must be added to both `devDependencies` (for the build to resolve) and `alwaysBundle` (for the bundler to inline). This is a documentation and review burden.
-- **No shared caching** - if multiple CLI tools in the same monorepo used Effect, each would bundle its own copy; in this monorepo there is only one CLI, so this is not a practical concern.
-
-### Caveats
-
-- **`pnpm.overrides.effect` is now vestigial** - the override was originally needed to pin the beta version across the monorepo. Since `effect` is bundled into the CLI artifact and is no longer a runtime dependency, it only affects development and CI builds (where `effect` is installed as a dev dependency for type-checking and testing). It could be removed, but keeping it does no harm; it is a no-op in production installs.
+- Package-runner installation gets a self-contained artifact without the original transitive native-addon install path.
+- Maintained SemVer parsing owns grammar and precedence, while the CLI keeps its public sentinel behavior and helper shapes.
+- Bundling grows the artifact and prevents sharing those libraries across separately installed CLIs. Dependency fixes require a CLI rebuild and republication.
+- New runtime dependencies need compatible declarations and bundler configuration. Focused imports limit emitted code but still add a direct dependency and development types.
+- Omitting sourcemaps reduces published size at the cost of less source-level debugging information for consumers.
 
 ## Alternatives Considered
 
-### Option A: Keep dependencies, suppress the warning
-
-Add a `.npmrc` with `ignore-scripts=true` or suppress the build script warning at the package level. Rejected because: suppressing the warning hides the symptom without fixing the cause. Users would still download megabytes of unused code at install time; the warning exists because `msgpackr-extract` has a native addon build script that pnpm ignores, and the real fix is to not ship that addon at all.
-
-### Option B: Explicit external list
-
-Keep packages in `dependencies` but explicitly configure them as bundled via `deps.alwaysBundle`. Rejected because: this creates a confusing mismatch between `dependencies` (which signals "these are runtime requirements") and bundling behavior (which makes them not runtime requirements). Future maintainers would see packages in `dependencies` and assume they resolve at install time; moving to `devDependencies` makes the intent unambiguous.
-
-### Option C: Single-file distribution via esbuild
-
-Replace vite-plus with a raw esbuild script that produces a single self-contained file and drop the `vp pack` dependency. Rejected because: vite-plus provides TypeScript path resolution, test integration, and monorepo-consistent config; raw esbuild would duplicate this infrastructure and diverge from how every other package builds. The bundling change is a config diff, not a toolchain diff.
+- **Suppress native-addon install warnings:** rejected because it hides the symptom and retains unnecessary downloads.
+- **Replace the build with raw esbuild:** rejected because it duplicates workspace path-resolution and build infrastructure without a needed capability.
+- **Keep handwritten SemVer rules:** rejected because locale ordering and numeric validation failures show the maintenance cost of owning the parser.
+- **Import the full SemVer API or coerce user versions:** rejected because ranges and aliases are outside the CLI contract.
 
 ## Related Decisions
 
-- ADR-CORE-007 (CLI Package for Plugin Management) - established the CLI's architecture, technology choices, and the bundling context that this ADR refines
-- [xtarter](https://github.com/agustinusnathaniel/xtarter) (same author, other monorepo) - the bundling pattern (`devDependencies` + `alwaysBundle`) was adapted from xtarter's CLI configuration
+- [CORE-007](ADR-CORE-007-cli-package-plugin-management.md): CLI responsibilities and host management.
+- [CORE-033](ADR-CORE-033-cli-effect-resource-boundaries.md): scoped installation resources and cancellation.
 
 ## Date
 
-2026-06-30
-
-## Revision
-
-On 2026-09-08 the CLI stopped publishing generated JavaScript sourcemaps, because the maps were substantially larger than the bundled runtime and no error-reporting pipeline consumed them; the build still uses vite-plus/tsdown with its default `sourcemap: false`.
+2026-06-30; version semantics adopted 2026-10-01; consolidated 2026-10-03.

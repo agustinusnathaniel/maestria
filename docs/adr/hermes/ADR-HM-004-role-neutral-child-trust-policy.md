@@ -6,7 +6,7 @@ Accepted (2026-08-10), Confidence: High
 
 ## Context
 
-This decision was taken inside [ADR-HM-002](ADR-HM-002-orchestration-policy.md) and extracted into its own record on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md), because it decides a different subject from that record: the child-trust boundary, not the orchestrator's delegation default. The 2026-08-10 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
+This decision was taken inside [ADR-HM-002](ADR-HM-002-orchestration-policy.md) and extracted into its own record on 2026-09-28, because it decides a different subject from that record: the child-trust boundary, not the orchestrator's delegation default. The 2026-08-10 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
 
 The Revision in ADR-HM-002 matched the native subagent-start child-role value to the seven maestria specialist names and gave each match that specialist's tool set. Hermes' native delegated-child roles are `leaf` and `orchestrator` topology roles only, not specialist identities, and no authenticated channel binds a child to a specialist with write capability, so the grant was unsupported. This record supersedes the role-based child-permission elements of that Revision.
 

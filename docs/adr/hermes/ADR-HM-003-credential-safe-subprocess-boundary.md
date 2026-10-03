@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-09-24). The adapter is implemented; complete case-by-case verification remains pending. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the decision below still holds and this record stays in force, but the second sentence of this line states work state as of 2026-09-24 rather than a durable property of the decision, so it carries no standing and will not stay true `[verified]`. Current verification status is held by the [consolidated E2E probe](../../../scripts/e2e/fail-closed-evidence.ts) and the artifact it regenerates at `artifacts/fail-closed-evidence.json` (a local, untracked path), both driven by the `e2e:fail-closed` and `e2e:phase-b` scripts in the root [package.json](../../../package.json), and by `pnpm --filter @maestria/hermes test` for the package tests. Read those sources for what is verified: they sample subprocess success, timeout, output bounds, and platform cleanup availability, and they do not establish every `SUB-*` or `SUB-OWN-*` row. A live host probe remains necessary before any host-enforcement claim. The original text is retained.
+Accepted (2026-09-24). Current verification is owned by the [consolidated E2E probe](../../../scripts/e2e/fail-closed-evidence.ts) and package tests; the inventories below describe intended contracts, not case-by-case proof. The probe samples subprocess success, timeout, output bounds, and platform cleanup availability. A live host probe is still needed before claiming host enforcement.
 
 ## Context
 

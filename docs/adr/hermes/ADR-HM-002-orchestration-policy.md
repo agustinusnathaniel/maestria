@@ -76,6 +76,6 @@ The runtime is the authority on whether each boundary is mechanically enforced o
 
 ## Supersession
 
-The Approved Role-Neutral Child Trust Policy that this record carried from 2026-08-10 is now [ADR-HM-004](ADR-HM-004-role-neutral-child-trust-policy.md), extracted on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) because it decides a subject other than this record's. This record keeps its original context, decision, consequences, and date. ADR-HM-004 holds the decision itself, its rationale, and its negative consequences.
+The Approved Role-Neutral Child Trust Policy that this record carried from 2026-08-10 is now [ADR-HM-004](ADR-HM-004-role-neutral-child-trust-policy.md), extracted on 2026-09-28 because it decides a subject other than this record's. This record keeps its original context, decision, consequences, and date. ADR-HM-004 holds the decision itself, its rationale, and its negative consequences.
 
 Frozen text above that says "the Amendment" means the policy recorded in ADR-HM-004. The Revision's supersession notice, the comparison table, and the security boundaries above are retained in substance for exactly that reason.

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amended 2026-09-24 for the shared Pi/OMP read-only Bash boundary and the normalized Git repair contract. Those two amendments are now [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md); see Supersession. Divergent-claim annotation (2026-09-28, recorded under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md) clause 7): the YAML block in Decision 3 does not match the live orchestrator frontmatter `[verified]`. The orchestrator does not use a per-tool bash allow list. It uses a default deny with a single narrow allow pattern, and it has no `pwd` entry; `pwd` appears in the other seven agent files. The authoritative source for that generated frontmatter is the `orchestrator.md` block in [packages/opencode/sync.config.ts](../../../packages/opencode/sync.config.ts), and [packages/opencode/agents/orchestrator.md](../../../packages/opencode/agents/orchestrator.md) is the projection it produces. The block is retained rather than relocated, because the content it shows is not present at that path, so the clause 6 precondition is unmet.
+Accepted (2026-06-13). The 2026-09-24 shared Pi/OMP Bash and Git decisions live in [OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Correction (2026-09-28): the historical `pwd` example below is not the live orchestrator policy; [the sync config](../../../packages/opencode/sync.config.ts) owns generated permissions. The orchestrator uses default deny with a narrow allow pattern, not that example's per-tool list.
 
 ## Context
 
@@ -44,7 +44,7 @@ bash:
 
 ### 4. Revert `webfetch: ask` - Keep `webfetch: allow` for All Agents
 
-(The install-flow implications are documented in ADR-OC-000; this ADR covers the permission design principle.)
+The earlier skill-install procedure followed the same principle: routine web prompts added friction without changing tool-choice policy.
 
 The first audit tried `webfetch: ask` for adventurer, builder, and diagnose. The user pointed out friction with no policy benefit: the opensrc-vs-webfetch guidance already lives in each agent's `## Rules` section, and `ask` would prompt on every web request, even legitimate single-page lookups. All three were reverted to `webfetch: allow`; every agent now allows it.
 
@@ -86,24 +86,11 @@ The permission system enforces coarse gates (web access, file edits, command exe
 4. **LSP permission is harmless when the flag isn't set**, and forward-looking when it is.
 5. **Audit permissions after adding agents, not before.** The batch audit was the right call, though incremental audits catch no-ops earlier.
 
-## Failure-mode inventory: read-only Bash
+## Permission Lessons Consolidated (2026-10-03)
 
-The case IDs below are the contract the read-only Bash decision is verified against. That decision is [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md). The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) cover representative forms, and `pnpm e2e:fail-closed` samples the integrated boundary; neither produces one artifact per case.
+The 2026-07-03 MCP investigation left implicit MCP access unchanged. Permission audits must include server-prefixed tools: built-in denials do not establish a blanket MCP denial. At the time, one narrow server did not justify a heuristic plugin hook; explicit per-server denial was the preferred response if bypassing delegation became observed behavior. Prompt-only restraint is advisory, and a server rename or newly configured server requires fresh permission evidence.
 
-| ID | Input or failure mode | Required result |
-| --- | --- | --- |
-| BASH-01 | Safe query forms | Allow exact names and safe options. |
-| BASH-02 | Pipeline | Allow only when every segment is approved. |
-| BASH-03 | `2>&1` | Allow parsed standard-stream duplication, never file redirection. |
-| BASH-04 | `find` | Block every form before execution. |
-| BASH-05 | Package-manager commands | Block lifecycle and download entry points. |
-| BASH-06 | Command or process substitution | Block substitutions. |
-| BASH-07 | File-target output or stderr redirect | Block the write. |
-| BASH-08 | Chaining, newline, background work, or unsafe pipeline segment | Block the whole command. |
-| BASH-09 | Prefix lookalike or malformed token | Block rather than partially match. |
-| BASH-10 | Git mutation or output-writing option | Block without changing model or state. |
-| BASH-11 | Destructive pattern behind a safe prefix | Do not classify it as read-only. |
-| BASH-12 | Empty, leading-separator, or ambiguous input | Block without invoking a host. |
+The per-commit user-question checkpoint was retired in August 2026 because it reset existing authorization, interrupted routine delivery, and conflicted with the autonomy contract. Validated, in-scope feature-branch commits follow canonical authorization and required independent review; runtime permissions still govern who can execute them. Merge and release remain separate boundaries. Historical release notes describe the earlier checkpoint, not current instructions.
 
 ## Host-enforcement boundary
 
@@ -111,31 +98,14 @@ Retained because it constrains how this record's own permission claims may be de
 
 An OpenCode permission glob is coarse, non-token-level host configuration. A permission entry described in this record, or carried in a generated agent projection, is not evidence of the normalized read-only Git policy. A broad `git*` style permission is an implementation-role capability. The normalization itself is decided in [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md).
 
-## Failure inventory: read-only Git
-
-The case IDs below are the contract the normalized read-only Git decision is verified against. That decision is [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Current executable checks live in the [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and the consolidated E2E probe; they sample the inventory rather than proving every case.
-
-| ID | Required result |
-| --- | --- |
-| GIT-01 | Deny bare `git diff`. |
-| GIT-02 | Deny bare `git log -p`. |
-| GIT-03 | Deny bare `git show`. |
-| GIT-04 | Allow only the normalized prefix and diff safety flags. |
-| GIT-05 | Reject custom format, pretty, and signature controls in log/show. |
-| GIT-06 | Allow narrow status, branch, and metadata-only log forms under the normalized prefix. |
-| GIT-07 | Deny external diff, text conversion, helpers, aliases, arbitrary config, and unknown options. |
-| GIT-08 | Deny mutation, substitution, redirection, chaining, and output files. |
-| GIT-09 | Prove seeded configuration cannot enable hooks, fsmonitor, pager, or optional locks. |
-| GIT-10 | Keep OpenCode glob claims separate from token-level parser guarantees. |
-
 ## Supersession
 
-Extended by two records, extracted on 2026-09-28 under [ADR-CORE-030](../core/ADR-CORE-030-adr-immutability-and-supersession.md), because each decides a subject other than this record's:
+Extended by two records, extracted on 2026-09-28, because each decides a subject other than this record's:
 
 - [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) owns the shared Pi/OMP read-only Bash boundary introduced by the 2026-09-24 amendment.
 - [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md) owns the normalized read-only Git boundary introduced by the 2026-09-24 repair amendment.
 
-This record keeps its original context, decision, consequences, and date, and continues to own the OpenCode agent permission design: the coarse-gate principle, the individual tool permissions, the audit that produced them, and the lessons learned. The two failure inventories and the host-enforcement boundary above are retained because they constrain claims this record still makes about its own permission entries.
+This record keeps its original context, decision, consequences, and date, and continues to own the OpenCode agent permission design: the coarse-gate principle, the individual tool permissions, the audit that produced them, and the lessons learned. The failure inventories live with those two decisions; the host-enforcement boundary here constrains claims about OpenCode permission entries.
 
 ## Date
 

@@ -87,7 +87,7 @@ One-word machine-detectable intent in plain words, with per-turn detection (mid-
 
 ## Lessons Learned
 
-Plain words over brackets came from user-first reasoning; per-turn mode eliminates stale-state bugs (no session flag to reconcile across mid-session switches or compacted state); the hybrid split follows ADR-CORE-002 (minimal hooks) and ADR-OC-001 (policy in directives); mode prompts are orchestrator rules, not global rules, per ADR-CORE-001's cross-cutting-only filter; denylist config is forward-safe (a fourth mode reaches existing users automatically).
+Plain words over brackets came from user-first reasoning; per-turn mode eliminates stale-state bugs (no session flag to reconcile across mid-session switches or compacted state); the hybrid split follows ADR-CORE-002 (minimal hooks) and ADR-OC-001 (policy in directives); mode prompts are orchestrator rules, not global rules, per ADR-CORE-019's cross-cutting-only filter; denylist config is forward-safe (a fourth mode reaches existing users automatically).
 
 ## Date
 
