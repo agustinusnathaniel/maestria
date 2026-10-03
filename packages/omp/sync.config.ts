@@ -5,6 +5,8 @@
 // - agents/*.md (7 specialists): deployed for omp subagent dispatch
 // - skills/orchestrator/SKILL.md: omp orchestrator skill
 // - skills/global-rules/SKILL.md: omp global-rules skill
+//
+// OMP is a Pi fork on an independent version line: never derive its peer range from Pi.
 
 import { agentDirectiveSync } from '../core/scripts/lib/agent-directive-sync.js';
 
