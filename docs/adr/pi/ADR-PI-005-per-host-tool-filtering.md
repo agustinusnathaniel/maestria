@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-02), Confidence: High.
+Accepted (2026-10-02), Confidence: High. Amended 2026-10-04: narrowed the title to per-host filtering alone, moved the two peer-line decisions to the runtime support matrix, and restored the verified inert-name consequence on the OMP projection. The original decision date is unchanged.
 
 ## Context
 
@@ -24,6 +24,8 @@ Every name in a shipped list is one the target host registers, so a stale declar
 Tool-set knowledge is duplicated by design: the sync table declares what a specialist needs, and each host config declares what that host registers. The Pi host list is transcribed by hand and must be re-checked against the host whenever the host pin moves; a host that adds a builtin otherwise changes nothing until a specialist declares that name.
 
 Review mode's separate read-only allowlist also names `glob` and was left unchanged: an unknown entry there is inert, the opposite semantic from the exhaustive frontmatter allowlist corrected here.
+
+The OMP pass-through carries the same defect class on the half of the family this record otherwise does not touch. `ls` appears in the emitted OMP `tools:` lines, and OMP registers no builtin by that name and has no alias that maps it onto one, so each occurrence names nothing the host can activate and denies nothing while granting nothing. `find` is unregistered by name too but is not inert: OMP's `normalizeToolName` maps it as a legacy alias onto `glob`, and the host applies that normalization to agent frontmatter `tools:` lists, so it resolves to a real tool. Whether any other emitted name resolves is the host's own list to answer, read OMP's `BUILTIN_TOOL_NAMES` rather than trusting a name recorded here. Correcting `ls` would mean giving OMP a list of its own, reopening the pass-through as a separate decision `[verified]`.
 
 ## Security Boundaries
 
