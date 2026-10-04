@@ -14,7 +14,7 @@ No codemode. Tool-level enforcement is only as strong as the host event surface,
 
 ## Security Boundaries
 
-Codemode stays outside the verified enforcement path until the host documents in-script `tool_call` emission. No alternate host execution route may be assumed to preserve tool-level enforcement. That enforcement is the `tool_call` interceptor installed by `installToolInterceptors` in `packages/pi/src/tools.ts`, which carries this same invariant as a comment at its installation site. The premise that a host execution mode still emits `tool_call` for in-script invocations is unverified, recorded and dated in `E-PI-TOOLS-01`.
+Codemode stays outside the verified enforcement path until the host documents in-script `tool_call` emission. No alternate host execution route may be assumed to preserve tool-level enforcement. That enforcement is the Pi extension's `tool_call` interceptor, which carries this same invariant as a comment at its installation site. The premise that a host execution mode still emits `tool_call` for in-script invocations is unverified, recorded and dated in `E-PI-TOOLS-01`.
 
 ## Consequences
 

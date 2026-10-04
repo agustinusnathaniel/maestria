@@ -258,13 +258,13 @@ Evidence for the `@gotgenes/pi-subagents` peer and for Pi host builtin tool name
 
 ## Pi
 
-Dated evidence for the Pi tool-enforcement boundary. Enforcement here is host-observed, not package-owned: the adapter can only block a call inside its `tool_call` handler, and review mode only narrows the host tool list. Both halves depend on the host surfacing every invocation. Support levels in the [snapshot](#snapshot) are unchanged.
+Dated evidence for the Pi tool-enforcement boundary. Enforcement here is host-observed, not package-owned: the Pi adapter can only block a call inside the interceptor it registers on `tool_call`, the only maestria layer in this Pi extension that observes a call, and review mode only narrows the host tool list. Both halves depend on the host surfacing every invocation. Support levels in the [snapshot](#snapshot) are unchanged.
 
 ### Evidence (reviewed 2026-10-04)
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-PI-TOOLS-02 | Pi | Tool-level enforcement | Tool-level enforcement is conditional on the host emitting `tool_call` for every tool invocation: that handler is the only maestria layer that observes a call, and review-mode `setActiveTools` narrowing can only withhold tools the host already exposes. Whether a non-default host execution mode emits `tool_call` for in-script invocations is unverified (codemode is one example). In review mode the interceptor blocks any tool name outside the read-only set, which bounds the exposure but cannot cover a call the host never surfaces. No live host probe has been performed | unpinned - reverify before implementation | `packages/pi/src/tools.ts`; `packages/shared/pi/src/commands-core.ts`; `packages/shared/pi/src/tools-core.ts` | 2026-10-04 | not tested |
+| E-PI-TOOLS-02 | Pi | Tool-level enforcement | Tool-level enforcement is conditional on the host emitting `tool_call` for every tool invocation: that handler is the only maestria layer in this Pi extension that observes a call, and review-mode `setActiveTools` narrowing can only withhold tools the host already exposes. Whether a non-default host execution mode emits `tool_call` for in-script invocations is unverified (codemode is one example). In review mode the interceptor blocks any tool name outside the read-only set, which bounds the exposure but cannot cover a call the host never surfaces. No live host probe has been performed | unpinned - reverify before implementation | `packages/pi/src/tools.ts`; `packages/shared/pi/src/commands-core.ts`; `packages/shared/pi/src/tools-core.ts` | 2026-10-04 | not tested |
 
 ---
 
