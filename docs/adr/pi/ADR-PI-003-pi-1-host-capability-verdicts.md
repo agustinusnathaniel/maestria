@@ -16,7 +16,7 @@ Pi 1.0 added codemode, tool search, and MCP as built-ins. The adapter exposes on
 
 ## Alternatives Considered
 
-- **Stay on the pre-1.0 floor.** Rejected because the published stable host line is `1.0.0`, the adapter surface verifies intact against it, and the supported version is tracked in [docs/runtime-support-matrix.md](../../runtime-support-matrix.md).
+- **Stay on the pre-1.0 floor.** Rejected because a published stable host line exists, the adapter surface verifies intact against it, and the supported version is tracked in [docs/runtime-support-matrix.md](../../runtime-support-matrix.md).
 - **Adopt codemode now.** Rejected for the reasons in Decision 1: no large-surface problem to compress, an unproven interaction with review-mode narrowing, and an unverified enforcement boundary inside QuickJS scripts.
 - **Adopt section patching now.** Rejected because the whole-string return path we rely on is intact, so a second injection mechanism would double the surface to verify for no measured behavior gain.
 - **Widen the peer ceiling beyond the caret.** Rejected because an unbounded range would silently admit an unverified next major before it is checked against the adapter.
