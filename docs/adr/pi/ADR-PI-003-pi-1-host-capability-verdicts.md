@@ -6,7 +6,7 @@ Accepted (2026-10-02), Confidence: High. Amended 2026-10-04: reduced the record 
 
 ## Context
 
-Codemode is a host setting, not a maestria code path, so it earns a record only for why it stays off: no host source available here establishes whether a host execution mode that runs invocations in-script still emits `tool_call`. That boundary is stated at `installToolInterceptors` and recorded as `E-PI-TOOLS-01` in [docs/runtime-support-matrix.md](../../runtime-support-matrix.md).
+Codemode is a host setting, not a maestria code path, so it earns a record only for why it stays off: no host source available here establishes whether a host execution mode that runs invocations in-script still emits `tool_call`. That boundary is stated at `installToolInterceptors` and recorded as `E-PI-TOOLS-02` in [docs/runtime-support-matrix.md](../../runtime-support-matrix.md).
 
 ## Decision
 
@@ -14,7 +14,7 @@ No codemode. Tool-level enforcement is only as strong as the host event surface,
 
 ## Security Boundaries
 
-Codemode stays outside the verified enforcement path until the host documents in-script `tool_call` emission. No alternate host execution route may be assumed to preserve tool-level enforcement. That enforcement is the Pi extension's `tool_call` interceptor, which carries this same invariant as a comment at its installation site. The premise that a host execution mode still emits `tool_call` for in-script invocations is unverified, recorded and dated in `E-PI-TOOLS-01`.
+Codemode stays outside the verified enforcement path until the host documents in-script `tool_call` emission. No alternate host execution route may be assumed to preserve tool-level enforcement. That enforcement is the Pi extension's `tool_call` interceptor, which carries this same invariant as a comment at its installation site. The premise that a host execution mode still emits `tool_call` for in-script invocations is unverified, recorded and dated in `E-PI-TOOLS-02`.
 
 ## Consequences
 
@@ -22,7 +22,7 @@ No compression lever. Review-mode narrowing plus the interceptor stay the only t
 
 ## Assumptions
 
-- `[inferred]` In-script invocation emission is unverified for any non-default host execution mode; `E-PI-TOOLS-01` records the gap and its date.
+- `[inferred]` In-script invocation emission is unverified for any non-default host execution mode; `E-PI-TOOLS-02` records the gap and its date.
 - `[verified]` No live host probe is part of this decision.
 
 ## Alternatives Considered
