@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
@@ -103,6 +103,109 @@ describe('canonical specialist roster', () => {
       );
       expect(uncovered, platform).toEqual([]);
       expect(/\borchestrator\b/u.test(text), platform).toBe(false);
+    }
+  });
+});
+
+// ── Host tool-name drift guard ──
+//
+// A generated `tools:` entry naming a tool the host does not register is inert,
+// not an error: the frontmatter parser does not validate names, so the filter
+// entry silently denies nothing and the capability is simply lost. Both host
+// lists are read from each installed host's own shipped constant rather than
+// from any declaration here, so these assertions can fail when a host changes.
+
+const PACKAGES_DIR = path.join(import.meta.dirname, '..', '..');
+
+/** Package root of an installed host, so a missing install fails loudly here. */
+const hostPackageRoot = (platform: string, packageName: string): string => {
+  const manifest = path.join(PACKAGES_DIR, platform, 'node_modules', packageName, 'package.json');
+  if (!existsSync(manifest)) {
+    throw new Error(`Host not installed, cannot guard tool names: ${packageName} (${manifest})`);
+  }
+  return path.dirname(realpathSync(manifest));
+};
+
+const quotedNames = (source: string, declaration: RegExp, label: string): string[] => {
+  const body = source.match(declaration)?.groups?.names;
+  if (body === undefined) {
+    throw new Error(`Could not read ${label}; the host changed its exported shape`);
+  }
+  return [...body.matchAll(/["'](?<name>[^"']+)["']/gu)].map((match) => match.groups?.name ?? '');
+};
+
+const piHostTools = (): string[] => {
+  const source = readFileSync(
+    path.join(
+      hostPackageRoot('pi', '@earendil-works/pi-coding-agent'),
+      'dist',
+      'core',
+      'tools',
+      'index.js',
+    ),
+    'utf-8',
+  );
+  return quotedNames(
+    source,
+    /allToolNames\s*=\s*new Set\(\s*\[(?<names>[\s\S]*?)\]\s*\)/u,
+    'Pi allToolNames',
+  );
+};
+
+const ompHostTools = (): string[] => {
+  const source = readFileSync(
+    path.join(
+      hostPackageRoot('omp', '@oh-my-pi/pi-coding-agent'),
+      'src',
+      'tools',
+      'builtin-names.ts',
+    ),
+    'utf-8',
+  );
+  return quotedNames(
+    source,
+    /BUILTIN_TOOL_NAMES\s*=\s*\[(?<names>[\s\S]*?)\]\s*as const/u,
+    'OMP BUILTIN_TOOL_NAMES',
+  );
+};
+
+const TOOLS_LINE = /^tools: (?<names>.*)$/mu;
+
+/** Tool names the shipped agent file for `agentFile` grants, or null when undeclared. */
+const grantedTools = (platform: string, agentFile: string): string[] | null => {
+  const source = readFileSync(path.join(PACKAGES_DIR, platform, 'agents', agentFile), 'utf-8');
+  const declared = TOOLS_LINE.exec(source)?.groups?.names;
+  return declared === undefined ? null : declared.split(',').map((name) => name.trim());
+};
+
+const agentFiles = (platform: string): string[] =>
+  readdirSync(path.join(PACKAGES_DIR, platform, 'agents'))
+    .filter((file) => file.endsWith('.md'))
+    .toSorted();
+
+describe('generated agent tool lists', () => {
+  it('grants only tools the Pi host registers', () => {
+    const hostTools = new Set(piHostTools());
+    for (const agentFile of agentFiles('pi')) {
+      const granted = grantedTools('pi', agentFile) ?? [];
+      expect(
+        granted.filter((tool) => !hostTools.has(tool)),
+        agentFile,
+      ).toEqual([]);
+    }
+  });
+
+  it('grants only tools at least one Pi-family host registers', () => {
+    // OMP passes its declared lists through unchanged, so its shipped files
+    // carry the full declared table; a name neither host registers is dead on
+    // every host that consumes this sync.
+    const hostTools = new Set([...piHostTools(), ...ompHostTools()]);
+    for (const agentFile of agentFiles('omp')) {
+      const granted = grantedTools('omp', agentFile) ?? [];
+      expect(
+        granted.filter((tool) => !hostTools.has(tool)),
+        agentFile,
+      ).toEqual([]);
     }
   });
 });

@@ -3,7 +3,7 @@ description: >-
   Codebase reconnaissance specialist. Maps unknown territory, traces
   call chains and dependencies, discovers module relationships, and
   produces structured recon reports for downstream specialists.
-tools: read, grep, find, ls, glob
+tools: read, grep, find, ls
 prompt_mode: append
 inherit_context: true
 ---

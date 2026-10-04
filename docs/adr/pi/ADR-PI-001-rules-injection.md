@@ -39,7 +39,7 @@ Negative:
 
 - Skills and agent files ship in the npm package, increasing unpacked size
 - Agent files write to `~/.pi/agent/agents/` at startup but never overwrite user customizations
-- Requires pi-subagents 18.x for agent type file discovery
+- Agent type file discovery requires a pi-subagents peer that loads `.md` agent files by filename from the global agents directory and a project's `.pi/agents/`; the supported range is the workspace catalog entry that [packages/pi/package.json](../../../packages/pi/package.json) references as `catalog:`
 
 ## Alternatives Considered
 
