@@ -7,13 +7,16 @@ import { persistState } from '@maestria/shared-pi/state-core';
 export type ToolApi = Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'on'>;
 
 /**
- * Registers the only maestria layer that observes a `tool_call`, so it carries
- * the whole enforcement boundary: read-only and orchestrator blocks here,
- * review-mode narrowing of the host tool list in `review-core.ts`. Narrowing
- * can only withhold tools the host already exposes, and neither half reaches a
- * call the host does not surface. A host execution mode that runs invocations
- * in-script without emitting `tool_call` (codemode is one example) therefore
- * removes tool-level enforcement entirely. See ADR-PI-003.
+ * Registers the only maestria layer in this Pi extension that observes a
+ * `tool_call`, so it carries the interceptor half of the enforcement boundary:
+ * the read-only and orchestrator blocks here. The other half is review-mode
+ * narrowing of the host tool list, applied in `commands-core.ts` and restored
+ * by `review-core.ts`. Narrowing can only withhold tools the host already
+ * exposes, and neither half reaches a call the host does not surface. A host
+ * execution mode that runs invocations in-script without emitting `tool_call`
+ * (codemode is one example) removes this interceptor; whether review-mode
+ * narrowing still binds then is a separate question, because it depends on the
+ * host honoring the active tool list for in-script invocations. See ADR-PI-003.
  */
 export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
   const handler = createToolCallHandler({
