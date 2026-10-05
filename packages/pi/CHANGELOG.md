@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- [#381](https://github.com/agustinusnathaniel/maestria/pull/381) [`3d8c8be`](https://github.com/agustinusnathaniel/maestria/commit/3d8c8be919e07fa340ceb3e04690623b3f653d52) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Support Pi 1.0 as the host line: peer range moves to ^1.0.0 with no adapter behavior change.
+
+- [#383](https://github.com/agustinusnathaniel/maestria/pull/383) [`7e40875`](https://github.com/agustinusnathaniel/maestria/commit/7e4087547b6bb2396904be3251e2f8c635c532f6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move the `@gotgenes/pi-subagents` peer to the 21.x line and reference the range through the workspace catalog. The declared `^18.0.0` peer rejected the 21.x releases that the documented install path was already installing unpinned, so a fresh `maestria install pi` produced a peer conflict. The 21.9.0 contract is unchanged for everything this package calls: `getSubagentsService`, `spawn`, `getRecord`, `abort`, the `SpawnOptions` keys passed, and the `SUBAGENT_EVENTS` names subscribed to. Its new `typebox` peer is already declared here, so the upgrade adds no second dependency.
+
+### Patch Changes
+
+- [#380](https://github.com/agustinusnathaniel/maestria/pull/380) [`00f2137`](https://github.com/agustinusnathaniel/maestria/commit/00f21377f7f84c9c6e1919ca7a10812b6e7f9634) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Raise the Node.js engine floor to `>=22.19.0` to match the Pi host requirement.
+
+- [#383](https://github.com/agustinusnathaniel/maestria/pull/383) [`7e40875`](https://github.com/agustinusnathaniel/maestria/commit/7e4087547b6bb2396904be3251e2f8c635c532f6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Stop emitting the `glob` tool name in generated Pi agent frontmatter. Pi does not register a `glob` builtin, and its frontmatter parser does not validate tool names, so the entry was an inert filter that denied nothing and granted nothing. Pi now receives only tool names its host registers; `find` and `grep` already cover glob-shaped search. Oh My Pi, where `glob` is a real builtin, is unaffected and its generated files are unchanged.
+
 ## 0.7.18
 
 ### Patch Changes

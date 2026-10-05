@@ -1,5 +1,11 @@
 # @maestria/prime-agent
 
+## 0.3.17
+
+### Patch Changes
+
+- [#387](https://github.com/agustinusnathaniel/maestria/pull/387) [`4f46585`](https://github.com/agustinusnathaniel/maestria/commit/4f46585a509ce652e717c004907c236f2ce5a49c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Raise the Node.js engine floor to `>=22.19.0` across the Pi-family packages as a conservative alignment with the Pi host line's requirement. The floor is provisional rather than host-derived: `@oh-my-pi/pi-coding-agent` declares only a Bun engine and no `node` key, and Prime Agent has no published host manifest to confirm it against.
+
 ## 0.3.16
 
 ### Patch Changes

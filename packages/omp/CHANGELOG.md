@@ -1,5 +1,15 @@
 # @maestria/omp
 
+## 0.6.0
+
+### Minor Changes
+
+- [#382](https://github.com/agustinusnathaniel/maestria/pull/382) [`0ff4605`](https://github.com/agustinusnathaniel/maestria/commit/0ff46051f3b6852efeba677d0e3ed140b2fc14d9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Widen the `@oh-my-pi/pi-coding-agent` peer range to `>=17.0.5 <19.0.0` so the published Oh My Pi 18.x line is admitted, and move the range into the workspace catalog so the range has a single home that install, typecheck, and peer validation all read. No adapter change was required; the package typechecks and its tests pass against 18.x.
+
+### Patch Changes
+
+- [#387](https://github.com/agustinusnathaniel/maestria/pull/387) [`4f46585`](https://github.com/agustinusnathaniel/maestria/commit/4f46585a509ce652e717c004907c236f2ce5a49c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Raise the Node.js engine floor to `>=22.19.0` across the Pi-family packages as a conservative alignment with the Pi host line's requirement. The floor is provisional rather than host-derived: `@oh-my-pi/pi-coding-agent` declares only a Bun engine and no `node` key, and Prime Agent has no published host manifest to confirm it against.
+
 ## 0.5.17
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # maestria
 
+## 0.14.0
+
+### Minor Changes
+
+- [#383](https://github.com/agustinusnathaniel/maestria/pull/383) [`7e40875`](https://github.com/agustinusnathaniel/maestria/commit/7e4087547b6bb2396904be3251e2f8c635c532f6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Pin the Pi subagent prerequisite to its supported range instead of installing bare latest. `pi install npm:@gotgenes/pi-subagents` tracked the registry's latest line, so a new upstream major could change what an install puts on a user's machine and put it outside the `@maestria/pi` peer range. A failure to install the prerequisite is still ignored so it cannot block the main package install.
+
 ## 0.13.5
 
 ### Patch Changes
