@@ -24,28 +24,13 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 ## Install Native Integrations
 
-Install maestria for all detected platforms:
-
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
 Or select one with `maestria install <platform>`. Supported platforms: OpenCode, Kimi Code, Pi, Oh My Pi, Cursor, Hermes, Prime Agent, Claude Code, and Codex CLI. See the [command reference](/cli/commands/#install) for platform IDs and package details.
 
-### Stage a portable Agent Plugin
+## Stage a portable Agent Plugin
 
-Portable packages are artifacts, not runtime platforms: they do not appear in `maestria status`, and `maestria install` does not activate them.
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate ./my-plugin" />
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install @maestria/agent-plugin" />
-
-The CLI validates the package, stages it in the maestria cache, and prints the directory for the compatible client's own installer or local-plugin setting. See the [portable Agent Plugin guide](/agent-plugin/) for the handoff and package boundary.
-
-## Manage Your Installation
-
-Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> to see which supported platforms are on your `PATH`, whether maestria is installed, and which versions are available.
-
-Then use `install`, `update`, or `configure` to manage an integration; portable packages use `plugin validate` and `plugin install`. All commands support `--json`; runtime platform commands also support `--quiet` to suppress spinner animations for CI.
-
-Use `maestria doctor` to diagnose methodology skill setup without changing anything, and `maestria setup` to coordinate optional ecosystem tool checks and skill installation for a project. `install`, `update`, and `setup` accept `--skills` and `--exclude-skills` to select the `create-pull-request` and `docs-update` methodology skills; see the [command reference](/cli/commands/#install) for defaults.
+Portable packages are artifacts, not runtime platforms: they do not appear in `maestria status`, and `maestria install` does not activate them. `plugin validate` checks a package, and `plugin install` stages it for a compatible client's own installer. See the [portable Agent Plugin guide](/agent-plugin/).
 
 ## Explore the Docs
 

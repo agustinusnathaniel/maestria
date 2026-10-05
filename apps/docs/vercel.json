@@ -1,5 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/pi", "destination": "/pi-omp/", "permanent": true },
+    { "source": "/pi/", "destination": "/pi-omp/", "permanent": true },
+    { "source": "/omp", "destination": "/pi-omp/", "permanent": true },
+    { "source": "/omp/", "destination": "/pi-omp/", "permanent": true },
+    { "source": "/pi.md", "destination": "/pi-omp.md", "permanent": true },
+    { "source": "/omp.md", "destination": "/pi-omp.md", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -1,0 +1,7 @@
+# The former /pi/ and /omp/ doc sections were consolidated into /pi-omp/.
+/pi /pi-omp/ 301
+/pi/ /pi-omp/ 301
+/omp /pi-omp/ 301
+/omp/ /pi-omp/ 301
+/pi.md /pi-omp.md 301
+/omp.md /pi-omp.md 301
