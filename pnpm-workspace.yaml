@@ -17,6 +17,10 @@ catalog:
   '@fontsource-variable/alan-sans': ^5.3.1
   '@fontsource-variable/sn-pro': ^5.3.0
   '@earendil-works/pi-coding-agent': '^1.0.0'
+  # OMP is a Pi fork on an independent version line, so never derive its peer range from Pi. Raising a host peer
+  # ceiling (Pi or OMP) is a separate decision that requires evidence the new major satisfies the extension
+  # surface, not a calendar expectation.
+  '@oh-my-pi/pi-coding-agent': '>=17.0.5 <19.0.0'
   '@gotgenes/pi-subagents': '^21.5.1'
   effect: 4.0.0
   jsonc-parser: ^3.3.1

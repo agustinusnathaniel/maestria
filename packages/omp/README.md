@@ -27,6 +27,7 @@ Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (ru
 ## Support / Platform Notes
 
 - Relies on OMP's built-in task dispatch and the public OMP extension API, which exposes tool names but not tool provenance - so native `goal` calls cannot be exempted from enforcement when provenance is unknown.
+- Host compatibility is the `@oh-my-pi/pi-coding-agent` peer range declared in this package's manifest; the host version verified against is recorded in the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
 - Unlike `@maestria/pi`, no `@gotgenes/pi-subagents` dependency is required.
 - Methodology is advisory prompt guidance; read-only restrictions are advisory where OMP does not structurally enforce them.
 - The `engines.node` floor is provisional rather than host-derived. It was taken from `@earendil-works/pi-coding-agent` (the Pi host), but this package's host `@oh-my-pi/pi-coding-agent` declares only a Bun engine and no `node` key, and `@maestria/prime-agent` carries the same floor with no published host manifest to confirm it.
