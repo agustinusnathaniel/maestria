@@ -3,21 +3,45 @@ title: Changelog
 description: Release history for the maestria CLI.
 ---
 
-## Unreleased
+## v0.14.0
+
+### Pinned Pi prerequisite
+
+- `maestria install pi` pins the `@gotgenes/pi-subagents` prerequisite to its supported range instead of installing bare latest, so a new upstream major can no longer change what an install puts on your machine. A failed prerequisite install still cannot block the main package install.
+
+## v0.13.5
 
 ### Safer package staging
 
-- Stage npm archives in an isolated temporary directory and clean it up after success or failure. Failed downloads preserve the existing plugin files.
+- Stage npm archives in an isolated temporary directory and clean them up after success or failure. Failed downloads preserve the existing plugin files.
 - Stop child commands when their Effect is interrupted, and surface unexpected version-probe defects instead of attempting an update.
 
 ### Correct version precedence
 
 - Compare prerelease identifiers in SemVer order, including case-sensitive text. Reject numeric identifiers with leading zeroes while preserving build metadata support.
 
+## v0.13.4
+
+### Fewer redundant version checks
+
+- Interactive updates reuse versions already detected instead of re-checking, and install, uninstall, doctor, setup, and bulk updates skip latest-version lookups when they only need installation state.
+
+## v0.13.3
+
 ### Reliable setup and skill recovery
 
 - Keep recorded skill ownership when an add or removal fails alongside a successful skill operation, so a retry can recover safely.
 - Verify project-scoped skill sources in the requested `--cwd` and recognize xtarterize JSON statuses containing nested data.
+
+### Clearer setup scope and cancel semantics
+
+- Setup skill prompts, review lines, summary output, and action reports carry global scope labels, and the final confirmation states the target directory role plus full cancel semantics; display strings only, no behavior change.
+
+## v0.13.2
+
+### Strict flag handling
+
+- Passing `--compact` to `maestria check` or `maestria doctor` fails loud with exit code 1 and guidance to use `--json` or `--quiet`, instead of silently ignoring the flag.
 
 ### Setup no-op runs
 
