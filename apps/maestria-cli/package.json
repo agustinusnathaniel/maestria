@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.13.5",
+  "version": "0.14.0",
   "description": "maestria CLI - manage runtime integrations and portable Agent Plugins",
   "keywords": [
     "agent-plugins",
