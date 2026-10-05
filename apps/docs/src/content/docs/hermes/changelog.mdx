@@ -7,6 +7,20 @@ description: Release history for @maestria/hermes.
 
 - Project customization (`.maestria/workflow.md` then `.maestria/rules.md`) loads as subordinate guidance, re-read every `pre_llm_call` turn with a visible error banner; see the [methodology changelog](/core/changelog/).
 
+## 0.1.23 (2026-10-01)
+
+- `/review` and `/plan` now reach Hermes' built-in commands instead of being swallowed by the plugin's mode switch. The plugin registers `/fein`, `/sonar`, `/blitz`, `/mode`, and `/mode-clear`; its reviewer and planner specialists run as `/fein` pipeline stages.
+- Sonar mode can now read installed skills and recall past sessions (`skill_view`, `skills_list`, `session_search`), matching what delegated children already could. `skill_manage` stays blocked, and no write, shell, code-execution, or delegation tool was added to any mode.
+
+## 0.1.22 (2026-09-30)
+
+- Agents reassess explanatory comments and redundant tests before accepting changes, and shared directive text was consolidated with no behavior change; see the [methodology changelog](/core/changelog/).
+
+## 0.1.21 (2026-09-25)
+
+- Agents follow behavior-first testing guidance and deliver work as verified, reviewable slices with designs shown before implementation; see the [methodology changelog](/core/changelog/).
+- The opt-in methodology annotation hook and mode footer middleware were removed, and mode-switch pipeline text is unified in one table.
+
 ## 0.1.20 (2026-09-18)
 
 - Consistent PR delivery contract with proportional documentation assessment; see the [methodology changelog](/core/changelog/).

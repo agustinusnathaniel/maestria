@@ -5,8 +5,14 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
-## Unreleased
+## 2026-09-30
 
+- **Comments and tests earn their keep.** Implementers and reviewers now reassess explanatory comments and redundant tests before accepting a change.
+- **Directive text consolidated.** The human-facing output contract lives once in the shared global rules, and dense rules prose was split into scannable paragraphs; no obligation was moved, retired, or weakened.
+
+## 2026-09-25
+
+- **Testing guidance is behavior-first.** Agents reject tautological and change-detector tests, select test behavior before implementing, prefer end-to-end artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
 - **Reviewable increments and visible design.** Agents commit coherent verified slices during multi-phase implementation, plan independently reviewable PRs early, and show architect or planner designs in a concise user-facing brief before dependent implementation. Integrated checks and review still govern delivery.
 
 ## 2026-09-23

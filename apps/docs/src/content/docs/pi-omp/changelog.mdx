@@ -5,6 +5,40 @@ description: Release history for @maestria/pi and @maestria/omp.
 
 Entries apply to both `@maestria/pi` and `@maestria/omp` unless otherwise noted.
 
+## v0.8.0 (Pi) / v0.6.0 (OMP)
+
+_October 5, 2026_
+
+- **Pi 1.0 and the Oh My Pi 18.x line are supported hosts.** `@maestria/pi` accepts Pi `^1.0.0` and `@maestria/omp` admits Oh My Pi 18.x; no adapter behavior change on either side.
+- **Fresh Pi installs no longer hit a subagent peer conflict.** The `@gotgenes/pi-subagents` peer moved to its supported 21.x range, matching what the documented install path already installs.
+- The Node.js floor for the Pi-family packages is now **22.19+**, matching the Pi host requirement.
+- Pi specialist agent files no longer name a `glob` tool that Pi does not register; Oh My Pi output, where `glob` is a real builtin, is unchanged.
+
+## v0.7.18 (Pi)
+
+_October 1, 2026_
+
+- Subagent polling and parallel result handling were simplified; timeout, abort, and sibling cleanup behavior are preserved.
+
+## v0.7.17 (Pi) / v0.5.17 (OMP)
+
+_September 30, 2026_
+
+- Agents reassess explanatory comments and redundant tests before accepting changes, and shared directive text was consolidated with no behavior change; see the [methodology changelog](/core/changelog/).
+
+## v0.7.16 (Pi) / v0.5.16 (OMP)
+
+_September 25, 2026_
+
+- Agents follow behavior-first testing guidance and deliver work as verified, reviewable slices with designs shown before implementation; see the [methodology changelog](/core/changelog/).
+- OMP only: the opt-in methodology annotation hook and mode footer middleware were removed, and mode-switch pipeline text is unified in one table.
+
+## v0.7.15 (Pi) / v0.5.15 (OMP)
+
+_September 24, 2026_
+
+- Project customization (`.maestria/workflow.md`, `.maestria/rules.md`) now loads through one shared loader across integrations; ordering, live reloads, and error reporting are unchanged.
+
 ## v0.7.14 (Pi) / v0.5.14 (OMP)
 
 _September 23, 2026_
