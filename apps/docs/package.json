@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "vp run build-site",
     "preview": "astro preview",
     "sync": "astro sync",
     "astro": "astro",

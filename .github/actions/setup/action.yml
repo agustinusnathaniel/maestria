@@ -25,6 +25,7 @@ runs:
     # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
     - uses: pnpm/setup@v3
       with:
+        # Hosted CI samples were faster without transferring the large pnpm store archive.
         cache: false
         require-lockfile: true
     - name: Restore vp task cache

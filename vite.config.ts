@@ -85,15 +85,6 @@ export default defineConfig({
   run: {
     cache: { scripts: true, tasks: true },
     tasks: {
-      '@maestria/docs#build': {
-        cache: true,
-        command: 'astro build',
-        // Astro writes and reads .astro during build (cooperative thrashing) -> always miss.
-        // Exclude .astro from fingerprint and archive only dist to enable cache hit.
-        // See https://viteplus.dev/guide/automatic-data-tracking#override-inputs-and-outputs
-        input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
-        output: ['dist/**'],
-      },
       'check-ci': {
         cache: false,
         command: [
