@@ -12,6 +12,9 @@ export default defineConfig({
         // Astro reads and writes generated metadata; only dist needs restoration.
         input: [
           { auto: true },
+          'src/**',
+          'public/**',
+          '!**/.astro/**',
           '!.astro/**',
           '!dist/**',
           // The lockfile and manifests replace volatile pnpm installer metadata.
