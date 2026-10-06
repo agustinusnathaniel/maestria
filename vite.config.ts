@@ -173,8 +173,11 @@ export default defineConfig({
           'packages/core/scripts/**/*.ts',
           'packages/core/agent-directives/**/*.md',
           'packages/*/sync.config.ts',
-        ],
-        output: [
+          'package.json',
+          'packages/*/package.json',
+          'pnpm-lock.yaml',
+          'pnpm-workspace.yaml',
+          // Projections are checked inputs; cache hits must never restore them.
           'packages/*/agents/**',
           'packages/*/commands/**',
           'packages/*/prompts/**',
@@ -182,6 +185,7 @@ export default defineConfig({
           'packages/**/skills/**',
           'packages/*/SYSTEM.md',
         ],
+        output: [],
       },
       'test-sync-plugin-versions': {
         cache: true,
