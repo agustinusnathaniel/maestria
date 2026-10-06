@@ -25,7 +25,7 @@ runs:
     # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
     - uses: pnpm/setup@v3
       with:
-        cache: true
+        cache: false
         require-lockfile: true
     - name: Restore vp task cache
       uses: actions/cache@v6
