@@ -1,0 +1,17 @@
+export const projects = [
+  'apps/docs',
+  'apps/maestria-cli',
+  'packages/agent-plugin',
+  'packages/claude-code',
+  'packages/codex',
+  'packages/core',
+  'packages/cursor',
+  'packages/kimi-code',
+  'packages/omp',
+  'packages/opencode',
+  'packages/pi',
+  'packages/prime-agent',
+  'packages/shared/mode',
+  'packages/shared/pi',
+  'packages/shared/project-config',
+];
