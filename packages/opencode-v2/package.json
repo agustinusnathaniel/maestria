@@ -2,7 +2,7 @@
   "name": "@maestria/opencode-v2",
   "version": "0.1.0",
   "private": true,
-  "description": "OpenCode V2 beta plugin - Maestria methodology (POC)",
+  "description": "OpenCode V2 plugin - Maestria methodology",
   "files": [
     "dist",
     "agents",

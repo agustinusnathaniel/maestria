@@ -1,6 +1,6 @@
 # @maestria/opencode-v2
 
-> Experimental POC: Maestria methodology on the OpenCode V2 plugin API. Re-verified against `@opencode/plugin@2.0.24` and the current `/v2` docs on 2026-10-08. The pin keeps `effect@4.0.0-rc.112` to match the plugin package's own dependency; the workspace catalog has moved on (stable `4.0.0`).
+> Maestria methodology on the OpenCode V2 plugin API. Verified against `@opencode/plugin@2.0.24` and the current `/v2` docs on 2026-10-08. The pin keeps `effect@4.0.0-rc.112` to match the plugin package's own dependency; the workspace catalog has moved on (stable `4.0.0`).
 
 ## Install
 
@@ -46,7 +46,7 @@ Notes:
 
 - **Context hook only, by design.** The SDK now ships `prompt`, `compaction`, `generate`, `title`, and other hooks, but mode injection stays on `"context"`: it runs before every model dispatch (including tool-driven continuations), so the mode marker persists for the whole agent loop, and detection plus keyword strip stay in one place (`src/hooks/session.ts`).
 - **No RPC or CLI surface.** This is a server plugin only: no custom RPC methods/events and no TUI extension (`./tui`). Adding either would be a separate entrypoint and package surface.
-- **Separate package from V1.** This POC ships as its own `@maestria/opencode-v2` package (plugin id `maestria.v2`) coexisting with the stable V1 `maestria` plugin. Live docs (`/migrate-v1`) describe converging both in one default export (`Plugin.define(...)` spread plus a legacy `server()` entrypoint, supported since OpenCode 1.18.29). Convergence is deferred until V2 leaves beta; see the note in `src/index.ts`.
+- **Separate package from V1.** This ships as its own `@maestria/opencode-v2` package (plugin id `maestria.v2`) coexisting with the stable V1 `maestria` plugin. Live docs (`/migrate-v1`) describe supporting V1 and V2 from one package export (`Plugin.define(...)` spread plus a legacy `server()` entrypoint, supported since OpenCode 1.18.29). That convergence is a separate follow-up; until then this package tracks the V2 API and V1 stays untouched.
 - **No permissions mapping.** Canonical specialist directives define no permissions, so none are mapped into agent drafts. If needed later, V2 supports ordered permissions rule arrays per agent (last matching rule wins).
 
 ## Development
