@@ -24,19 +24,19 @@
     "check": "vp check"
   },
   "dependencies": {
-    "effect": "4.0.0-beta.101",
+    "effect": "4.0.0-rc.112",
     "yaml": "^2.9.0",
     "zod": "^4.4.0"
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
-    "@opencode-ai/plugin": "0.0.0-next-17444",
+    "@opencode/plugin": "^2.0.24",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=0.0.0-next-0"
+    "@opencode/plugin": "^2.0.0"
   },
   "opencode": {
     "type": "plugin",

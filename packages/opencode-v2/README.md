@@ -1,10 +1,10 @@
 # @maestria/opencode-v2
 
-> Experimental POC: Maestria methodology on the OpenCode V2 beta plugin API. V2 is beta - APIs change. Re-verified against `@opencode-ai/plugin@0.0.0-next-17444` (npm `next` dist-tag unchanged since 2026-08-24) and the current `/v2` docs on 2026-09-17. The pin keeps `effect@4.0.0-beta.101` to match the plugin package's own dependency; the workspace catalog has moved on (rc.113).
+> Experimental POC: Maestria methodology on the OpenCode V2 plugin API. Re-verified against `@opencode/plugin@2.0.24` and the current `/v2` docs on 2026-10-08. The pin keeps `effect@4.0.0-rc.112` to match the plugin package's own dependency; the workspace catalog has moved on (stable `4.0.0`).
 
 ## Install
 
-V2 runs as `opencode2`. Add the plugin to your `opencode.json`:
+Add the plugin to your `opencode.json`:
 
 ```json
 {
@@ -14,37 +14,38 @@ V2 runs as `opencode2`. Add the plugin to your `opencode.json`:
 
 ## What it does
 
-- Registers the 8 Maestria agents (orchestrator + 7 specialists) via `ctx.agent.transform()` - `AgentDraft.update()` is an upsert, so missing agents are created (verified against the upstream opencode repository, github.com/anomalyco/opencode).
+- Registers the 8 Maestria agents (orchestrator + 7 specialists) via `ctx.agent.transform()` - `AgentEditor.update()` is an upsert, so missing agents are created.
 - Declares the global rules file (`rules/AGENTS.md`, synced from `@maestria/core`) as a native instruction source via `ctx.reference.transform()`.
 - Detects mode keywords (`fein` / `sonar` / `blitz`) in user messages via `ctx.session.hook("context")`, injects the mode marker + prompt into `system`, and strips the keyword.
+- Registers the 3 workflow mode commands (`fein` / `sonar` / `blitz`) via `ctx.command.transform()` - each `execute` prepends its synced template to the invocation text and submits it as a session prompt, preserving attachments and the delivery mode.
+- Registers core skills via `ctx.skill.transform()` (`Skill.Info` with `path` + `content`, validated through the SDK schema).
 
 ## Verified API surface (vs docs)
 
-Checked against the installed package types (zero `any` casts) and https://opencode.ai/v2/docs/build/plugins/ plus https://opencode.ai/v2/docs/agents/ on 2026-09-17. Live docs describe a newer API than the pin implements; rows below record both sides.
+Checked against the installed package types (zero `any` casts) and https://opencode.ai/v2/docs/build/plugins/ plus https://opencode.ai/v2/docs/build/plugins/effect/ on 2026-10-08. All rows match the pin.
 
-| Domain | Docs say | Package (next-17444) says | Verdict |
+| Domain | Docs say | Package (2.0.24) says | Verdict |
 | --- | --- | --- | --- |
-| `ctx.agent.transform` | `list`,`get`,`default`,`update`,`remove` | same draft ops; `update(id, cb)` is an upsert | ✅ match |
-| `ctx.reference.transform` | `add`, `remove`, `list`, `get` | `add(name, source)` with `{ type: "local", path, description?, hidden? }` local sources, plus `remove`, `list`; no `get` | ✅ compatible (this plugin only uses `add`) |
+| `ctx.agent.transform` | `list`, `get`, `default`, `update`, `remove` | same editor ops; `update(id, cb)` is an upsert | ✅ match |
+| `ctx.reference.transform` | `add`, `remove`, `list`, `get` | same ops; local sources are `{ type: "local", path }` with no `description` | ✅ match (this plugin only uses `add`) |
 | `ctx.session.hook("context")` | mutable `system`, `messages`, `tools` before model dispatch | `SessionContext` with mutable `system: SystemPart[]`, `messages: Message[]`, `tools` record | ✅ match |
-| `ctx.session.hook` other hooks | `prompt`, `compaction`, `generate`, `title`, `model.request`, `http.request` / `http.response`, `retry`, experimental `ws.*` | only `context`, `http.request`, `http.response` | ❌ pin behind docs (see Known limitations) |
-| `ctx.tool.transform` | one-arg `add(tool)` plus `list`, `get`, `namespace`, `update`, `remove` | `ToolDraft.add({ name, ... })` one-arg only; `name` is required inside the tool object | ✅ compatible (verified; currently unused, no tool registration) |
-| `ctx.catalog.model.default` | `set(providerID, modelID)` | `set(providerID, modelID)` | ✅ match |
-| `ctx.command.transform` | add-only `add({ name, description, execute })` | template model `list`, `get`, `update(name, cb)`, `remove`; no `add` | ❌ pin behind docs (code uses get/update only; missing entries warn since the pin has no `add`) |
+| `ctx.session.hook` other hooks | `prompt`, `compaction`, `generate`, `title`, `model.request`, `http.request` / `http.response`, `retry`, experimental `ws.*` | same hook set on `SessionHooks` | ✅ match (this plugin uses only `context`; see Known limitations) |
+| `ctx.command.transform` | add-only `add({ name, description, execute })` | same add-only `CommandEditor` | ✅ match |
 | Agent fields | `system` / `permissions[]` / `steps`; warns against legacy `prompt` / `maxSteps` | same V2 field names on `Agent.Info` | ✅ match (docs no longer use V1 names) |
-| `ctx.skill.transform` | `list`, `get`, `add`, `update`, `remove` over `Skill.Info` | CRUD shape: `add(skill)`, `update(id, cb)`, `remove(id)`, `list()`; no `get` | ✅ compatible (code uses `list().find()` instead of `get`) |
+| `ctx.skill.transform` | `list`, `get`, `add`, `update`, `remove` over `Skill.Info` | same ops; `Skill.Info` is `{ id, name, description?, autoinvoke?, path, content }` | ✅ match |
 
 Notes:
 
-- The tool registration mismatch from August (docs two-arg `tools.add(name, tool)` vs package one-arg) is resolved on both sides: current docs and the pin both use one-arg `add(tool)`. The remaining gap is the reverse: docs list extra editors (`list`, `get`, `namespace`, `update`, `remove`) the pin lacks.
-- The skill `get(id)` helper exists in current docs but not in the pin; the loader uses `list().find()` so no code change is needed.
-- The command gap is structural: docs describe code-style commands with an `execute` callback, the pin describes template-style commands discovered from `agents/commands/`. `src/transforms/commands.ts` uses `get()` plus `update()` in place, and warns when a synced template has no draft entry (the pin has no `add()`).
-- Session hook coverage beyond `"context"` (notably `"compaction"`, the documented V2 destination for V1 `experimental.session.compacting` per `/migrate-v1`) is not available in the pin; see Known limitations.
+- The command gap from the `next-17444` era (template-style `list`/`get`/`update`/`remove` with no `add`) is gone: stable V2 uses code-style commands on both sides, and `src/transforms/commands.ts` registers via `add()` with an `execute` callback.
+- The skill `location` field is now `path`, and `get(id)` exists, so the loader uses `get()` directly instead of `list().find()`.
+- The reference `description` field is gone from the client-level contract, so the rules entry is path-only.
+- RPC (`/build/plugins/rpc`, `/build/plugins/effect/rpc`) and CLI (`/build/plugins/cli`, `@opencode/plugin/tui`) are separate surfaces this server plugin does not use; see Known limitations.
+- Console (`/console`) needs no plugin integration: workspace Policies arrive as policy statements with final authority over local configuration, and this plugin sets no permissions or models that could fight them.
 
 ## Known limitations
 
-- **No compaction injection.** V1 plugins could intercept `experimental.session.compacting` to customize the compaction prompt. The documented V2 destination is `ctx.session.hook("compaction", ...)` (see `/migrate-v1`), but the pinned `next-17444` package only exposes `context`, `http.request`, and `http.response` hooks, so compaction stays out of reach on this pin. Compaction is observable only through `ctx.event.subscribe()`. This is an intentional non-port until the pin moves to a track (beta/dev) that ships the hook.
-- **Beta channel tracking.** The plugin targets the V2 beta promise API and pins an exact version from the npm `next` dist-tag. Bumps require re-diffing the installed `.d.ts` files; expect breaking renames between next builds. The `next` tag still resolves to `0.0.0-next-17444` as of 2026-09-17; newer API (compaction/generate/title hooks, command `add`, skill/reference `get`) is visible on the `beta` (`0.0.0-beta-19271`) and `dev` tracks and in live docs.
+- **Context hook only, by design.** The SDK now ships `prompt`, `compaction`, `generate`, `title`, and other hooks, but mode injection stays on `"context"`: it runs before every model dispatch (including tool-driven continuations), so the mode marker persists for the whole agent loop, and detection plus keyword strip stay in one place (`src/hooks/session.ts`).
+- **No RPC or CLI surface.** This is a server plugin only: no custom RPC methods/events and no TUI extension (`./tui`). Adding either would be a separate entrypoint and package surface.
 - **Separate package from V1.** This POC ships as its own `@maestria/opencode-v2` package (plugin id `maestria.v2`) coexisting with the stable V1 `maestria` plugin. Live docs (`/migrate-v1`) describe converging both in one default export (`Plugin.define(...)` spread plus a legacy `server()` entrypoint, supported since OpenCode 1.18.29). Convergence is deferred until V2 leaves beta; see the note in `src/index.ts`.
 - **No permissions mapping.** Canonical specialist directives define no permissions, so none are mapped into agent drafts. If needed later, V2 supports ordered permissions rule arrays per agent (last matching rule wins).
 

@@ -2,8 +2,8 @@ import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import { Effect, Schema } from 'effect';
 import type { Scope } from 'effect';
-import { Skill } from '@opencode-ai/plugin/effect';
-import type { SkillDraft, Transform } from '@/types.js';
+import { Skill } from '@opencode/plugin/effect';
+import type { SkillEditor, Transform } from '@/types.js';
 import { readSyncedMarkdown } from '@/markdown.js';
 import { CORE_SKILLS_DIR } from '@/root.js';
 
@@ -46,11 +46,10 @@ const loadSkillFiles = (): SkillFile[] => {
 
 /**
  * Register skills via `skill.transform`. Skill.Info requires id, name,
- * location, content (validated through the SDK schema, not cast). The pin
- * has no skill `get()`, so existing entries are found via `list().find()`.
+ * path, content (validated through the SDK schema, not cast).
  */
 export const registerSkillTransforms = (ctx: {
-  skill: { transform: Transform<SkillDraft> };
+  skill: { transform: Transform<SkillEditor> };
 }): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerSkillTransformsEffect() {
     const skillFiles = loadSkillFiles();
@@ -61,7 +60,7 @@ export const registerSkillTransforms = (ctx: {
       return;
     }
 
-    yield* ctx.skill.transform((draft: SkillDraft) => {
+    yield* ctx.skill.transform((draft: SkillEditor) => {
       for (const file of skillFiles) {
         const description = deriveDescription(file.content);
         try {
@@ -69,18 +68,18 @@ export const registerSkillTransforms = (ctx: {
             content: file.content,
             description,
             id: file.name,
-            location: file.path,
             name: file.name,
+            path: file.path,
           });
 
-          const existing = draft.list().find((s) => s.id === file.name || s.name === file.name);
+          const existing = draft.get(file.name);
           if (existing) {
             draft.update(file.name, (skill) => {
               if (info.description !== undefined && info.description !== '') {
                 skill.description = info.description;
               }
               skill.content = info.content;
-              skill.location = info.location;
+              skill.path = info.path;
             });
           } else {
             draft.add(info);

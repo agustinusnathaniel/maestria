@@ -3,7 +3,7 @@ import { Effect } from 'effect';
 import type { Scope } from 'effect';
 import { MODE_KEYWORDS } from '@maestria/shared-mode';
 import type { ModeKeyword } from '@maestria/shared-mode';
-import type { CommandDraft, Transform } from '@/types.js';
+import type { CommandEditor, PluginContext, Transform } from '@/types.js';
 import { readSyncedMarkdown } from '@/markdown.js';
 import { COMMANDS_DIR } from '@/root.js';
 
@@ -16,34 +16,49 @@ const COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
   sonar: 'Research only - read-only recon and planning, stop before implementation',
 };
 
-// Workflow mode commands via `command.transform`. The pinned SDK has no
-// `add()`, only list/get/update/remove, so missing commands warn instead of
-// throwing (operator re-runs sync or checks `sync.config.ts`).
+// Workflow mode commands via `command.transform`. The V2 command API is
+// add-only code-style commands (`add({ name, description, execute })`), so
+// each mode prepends its synced template to the invocation text and submits
+// it as a session prompt, preserving attachments and the delivery mode.
 export const registerCommandTransforms = (ctx: {
-  command: { transform: Transform<CommandDraft> };
+  command: { transform: Transform<CommandEditor> };
+  session: { prompt: PluginContext['session']['prompt'] };
 }): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerCommandTransformsEffect() {
-    yield* ctx.command.transform((draft: CommandDraft) => {
-      for (const name of MODE_KEYWORDS) {
-        // readSyncedMarkdown warns and returns null when the synced template
-        // is missing; the template renders as prompt content on /<name>.
-        const template = readSyncedMarkdown(path.join(COMMANDS_DIR, `${name}.md`), 'command');
-        if (template === null) {
-          continue;
-        }
+    const templates = new Map<ModeKeyword, string>();
+    for (const name of MODE_KEYWORDS) {
+      // readSyncedMarkdown warns and returns null when the synced template
+      // is missing; modes without a template are skipped.
+      const template = readSyncedMarkdown(path.join(COMMANDS_DIR, `${name}.md`), 'command');
+      if (template !== null) {
+        templates.set(name, template);
+      }
+    }
+    if (templates.size === 0) {
+      console.warn(
+        `[maestria-v2] No command templates found in "${COMMANDS_DIR}"; skipping command registration.`,
+      );
+      return;
+    }
 
+    yield* ctx.command.transform((editor) => {
+      for (const [name, template] of templates) {
         try {
-          const existing = draft.get(name);
-          if (existing) {
-            draft.update(name, (cmd) => {
-              cmd.template = template;
-              cmd.description = COMMAND_DESCRIPTIONS[name];
-            });
-          } else {
-            console.warn(
-              `[maestria-v2] Command "${name}" not found in draft (no add() available) - ensure sync copied it to ${COMMANDS_DIR}.`,
-            );
-          }
+          editor.add({
+            description: COMMAND_DESCRIPTIONS[name],
+            execute: (input) =>
+              ctx.session
+                .prompt({
+                  agents: input.prompt.agents,
+                  delivery: input.delivery,
+                  files: input.prompt.files,
+                  sessionID: input.sessionID,
+                  skills: input.prompt.skills,
+                  text: `${template}\n\n${input.prompt.text}`,
+                })
+                .pipe(Effect.asVoid),
+            name,
+          });
         } catch (error) {
           console.warn(`[maestria-v2] Failed to register command "${name}":`, error);
         }

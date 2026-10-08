@@ -1,11 +1,11 @@
 import { Effect } from 'effect';
 import type { Scope } from 'effect';
-import type { AgentDraft, Transform } from '@/types.js';
+import type { AgentEditor, Transform } from '@/types.js';
 import type { AgentInfo } from '@/agents.js';
 import { isAgentMode, loadAgents, loadOrchestrator } from '@/agents.js';
 
 export const registerAgentTransforms = (ctx: {
-  agent: { transform: Transform<AgentDraft> };
+  agent: { transform: Transform<AgentEditor> };
 }): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerAgentTransformsEffect() {
     const orchestrator = loadOrchestrator();
@@ -18,7 +18,7 @@ export const registerAgentTransforms = (ctx: {
       ...loadAgents(),
     };
 
-    yield* ctx.agent.transform((registry: AgentDraft) => {
+    yield* ctx.agent.transform((registry: AgentEditor) => {
       for (const [name, config] of Object.entries(agents)) {
         const fallback = name === 'orchestrator' ? 'all' : 'subagent';
         try {

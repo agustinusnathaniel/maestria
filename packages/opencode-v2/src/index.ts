@@ -1,5 +1,5 @@
 import { Effect } from 'effect';
-import { Plugin } from '@opencode-ai/plugin/effect';
+import { Plugin } from '@opencode/plugin/effect';
 import type { PluginContext } from '@/types.js';
 import type { MaestriaPluginOptions } from '@/modes.js';
 import { maestriaOptionsSchema } from '@/modes.js';

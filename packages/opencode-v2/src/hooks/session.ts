@@ -4,9 +4,10 @@ import type { PluginContext, SessionContext } from '@/types.js';
 import type { MaestriaPluginOptions } from '@/modes.js';
 import { detectMode } from '@/modes.js';
 
-// Mode handling stays on the `context` hook: the pinned SDK
-// (0.0.0-next-17444) exposes only `context` on SessionHooks, no `prompt`
-// hook, so detection, system push, and keyword strip live here together.
+// Mode handling stays on the `context` hook: it runs before every model
+// dispatch (including tool-driven continuations), so the mode marker persists
+// for the whole agent loop. The `prompt` hook only runs once at admission;
+// keyword stripping lives here alongside detection so both stay in one place.
 export const registerSessionHooks = (
   ctx: PluginContext,
   options: MaestriaPluginOptions,
