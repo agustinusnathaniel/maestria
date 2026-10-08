@@ -1,3 +1,6 @@
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 ---
 name: Iteration Limits
 description: Set acceptance and termination conditions before looping, with bounded review passes

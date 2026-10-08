@@ -16,6 +16,12 @@ export default Plugin.define({
   effect: (ctx: PluginContext) =>
     Effect.gen(function* initMaestriaV2() {
       const parseResult = maestriaOptionsSchema.safeParse(ctx.options ?? {});
+      if (!parseResult.success) {
+        console.warn(
+          '[maestria-v2] Ignoring invalid plugin options, using defaults:',
+          parseResult.error.issues,
+        );
+      }
       const options: MaestriaPluginOptions = parseResult.success ? parseResult.data : {};
       yield* registerAgentTransforms(ctx);
       yield* registerReferenceTransforms(ctx);

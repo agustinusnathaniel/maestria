@@ -57,13 +57,18 @@ describe('registerReferenceTransforms', () => {
 describe('registerAgentTransforms', () => {
   it('updates exactly the 8 known agents, orchestrator first', async () => {
     const updated: string[] = [];
+    const drafts = new Map<string, Record<string, unknown>>();
     const registry: AgentEditor = {
       default: () => {},
       get: () => {},
       list: () => [],
       remove: () => {},
-      update: (id) => {
+      update: (id, update) => {
         updated.push(id);
+        const draft: Record<string, unknown> = {};
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test replays the captured updater into a plain object to assert passthrough.
+        update(draft as never);
+        drafts.set(id, draft);
       },
     };
 
@@ -96,12 +101,58 @@ describe('registerAgentTransforms', () => {
         'writer',
       ].toSorted(),
     );
+
+    // Permissions pass through to the draft: every agent carries a non-empty
+    // ruleset, and the safety-critical shapes survive (orchestrator lockdown
+    // with its subagent allowlist, planner's ask-gated edits).
+    interface DraftPermissions {
+      permissions?: unknown;
+    }
+    for (const [id, draft] of drafts) {
+      const { permissions } = draft as DraftPermissions;
+      expect(Array.isArray(permissions) && permissions.length > 0, `"${id}".permissions`).toBe(
+        true,
+      );
+    }
+    interface PermissionRule {
+      action: string;
+      effect: string;
+      resource: string;
+    }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test asserts the rule shape field by field below via toContainEqual.
+    const orchestratorRules = (drafts.get('orchestrator') as DraftPermissions)
+      .permissions as PermissionRule[];
+    expect(orchestratorRules).toContainEqual({
+      action: 'subagent',
+      effect: 'allow',
+      resource: 'builder',
+    });
+    expect(orchestratorRules).toContainEqual({ action: 'edit', effect: 'deny', resource: '*' });
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- same shape assertion as above.
+    const plannerRules = (drafts.get('planner') as DraftPermissions)
+      .permissions as PermissionRule[];
+    expect(plannerRules).toContainEqual({ action: 'edit', effect: 'ask', resource: '*' });
   });
 });
 
 describe('registerCommandTransforms', () => {
-  it('adds one code-style command per mode template', async () => {
-    type CommandDefinition = Parameters<CommandEditor['add']>[0];
+  type CommandDefinition = Parameters<CommandEditor['add']>[0];
+  interface PromptedInput {
+    sessionID: unknown;
+    text: unknown;
+    delivery: unknown;
+    files: unknown;
+    agents: unknown;
+    skills: unknown;
+  }
+
+  // Single constructor for the command/session double both tests need:
+  // captures the transform callback, runs registration, replays the callback
+  // into a collecting editor, and returns what was added. Keeps the SDK
+  // Transform signature tracked in one place instead of two.
+  const setupCommandCapture = async (
+    onPrompt: (input: PromptedInput) => void,
+  ): Promise<CommandDefinition[]> => {
     const added: CommandDefinition[] = [];
     let captured: ((editor: { add: (def: CommandDefinition) => void }) => void) | undefined;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test double implements only the command/session surface the transform touches.
@@ -114,56 +165,8 @@ describe('registerCommandTransforms', () => {
         },
       },
       session: {
-        prompt: () => Effect.void,
-      },
-    } as unknown as Parameters<typeof registerCommandTransforms>[0];
-
-    await runRegister(registerCommandTransforms(ctx));
-    expect(captured).toBeTypeOf('function');
-    captured?.({
-      add: (def) => {
-        added.push(def);
-      },
-    });
-
-    expect(added.map((def) => def.name).toSorted()).toEqual(['blitz', 'fein', 'sonar']);
-    for (const def of added) {
-      expect(def.description?.length).toBeGreaterThan(0);
-      expect(def.execute).toBeTypeOf('function');
-    }
-  });
-
-  it('execute prepends the mode template and forwards session, text, and delivery', async () => {
-    type CommandDefinition = Parameters<CommandEditor['add']>[0];
-    const added: CommandDefinition[] = [];
-    const prompted: {
-      sessionID: unknown;
-      text: unknown;
-      delivery: unknown;
-      files: unknown;
-      agents: unknown;
-      skills: unknown;
-    }[] = [];
-    let captured: ((editor: { add: (def: CommandDefinition) => void }) => void) | undefined;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test double implements only the command/session surface the transform touches.
-    const ctx = {
-      command: {
-        // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy it.
-        transform: (callback: (editor: { add: (def: CommandDefinition) => void }) => void) => {
-          captured = callback;
-          return registered;
-        },
-      },
-      session: {
-        prompt: (input: {
-          sessionID: unknown;
-          text: unknown;
-          delivery: unknown;
-          files: unknown;
-          agents: unknown;
-          skills: unknown;
-        }) => {
-          prompted.push(input);
+        prompt: (input: PromptedInput) => {
+          onPrompt(input);
           return Effect.void;
         },
       },
@@ -175,6 +178,24 @@ describe('registerCommandTransforms', () => {
       add: (def) => {
         added.push(def);
       },
+    });
+    return added;
+  };
+
+  it('adds one code-style command per mode template', async () => {
+    const added = await setupCommandCapture(() => {});
+
+    expect(added.map((def) => def.name).toSorted()).toEqual(['blitz', 'fein', 'sonar']);
+    for (const def of added) {
+      expect(def.description?.length).toBeGreaterThan(0);
+      expect(def.execute).toBeTypeOf('function');
+    }
+  });
+
+  it('execute prepends the mode template and forwards session, text, and delivery', async () => {
+    const prompted: PromptedInput[] = [];
+    const added = await setupCommandCapture((input) => {
+      prompted.push(input);
     });
     const fein = added.find((def) => def.name === 'fein');
     expect(fein).toBeDefined();
@@ -246,7 +267,16 @@ describe('registerSkillTransforms', () => {
     for (const [id, skill] of store) {
       expect(skill.path.endsWith(`${id}.md`)).toBe(true);
       expect(skill.content.length).toBeGreaterThan(0);
+      // Pushed content is the Markdown body: the sync header and the
+      // frontmatter block must never leak into the conversation.
+      expect(skill.content.startsWith('<!--')).toBe(false);
+      expect(skill.content.startsWith('---')).toBe(false);
     }
+    // Frontmatter path (not the heading fallback): the canonical description
+    // survives sync into the registered skill.
+    expect(store.get('handoff')?.description).toBe(
+      'Decide when a handoff is needed and what outcome-only context it must carry',
+    );
 
     const sizeBefore = store.size;
     captured?.(draft);

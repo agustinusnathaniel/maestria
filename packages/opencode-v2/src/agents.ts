@@ -6,6 +6,7 @@ import { AGENTS_DIR } from '@/root.js';
 export interface AgentInfo {
   description: string;
   mode: string;
+  permissions: AgentPermissionRule[];
   prompt: string;
   steps?: number;
   color?: string;
@@ -19,6 +20,39 @@ export const isAgentMode = (value: unknown): value is AgentMode =>
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+export interface AgentPermissionRule {
+  action: string;
+  effect: 'allow' | 'ask' | 'deny';
+  resource: string;
+}
+
+const isPermissionRule = (value: unknown): value is AgentPermissionRule =>
+  isRecord(value) &&
+  typeof value.action === 'string' &&
+  typeof value.resource === 'string' &&
+  (value.effect === 'allow' || value.effect === 'deny' || value.effect === 'ask');
+
+// Fail closed: generated files are machine-written, so a malformed block
+// means the sync data is wrong. Throwing skips the agent (warned per file by
+// the caller) instead of registering it under-permissioned.
+const parsePermissions = (value: unknown): AgentPermissionRule[] => {
+  if (value === undefined) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    throw new TypeError(
+      'Invalid permissions frontmatter: expected an array of {action, resource, effect} rules',
+    );
+  }
+  const rules = value.filter(isPermissionRule);
+  if (rules.length !== value.length) {
+    throw new Error(
+      'Invalid permissions frontmatter: every rule needs a string action/resource and effect allow|deny|ask',
+    );
+  }
+  return rules;
+};
+
 const parseFrontmatter = (yamlStr: string): Omit<AgentInfo, 'prompt'> => {
   const parsed = parseYaml(yamlStr) as unknown;
   const result = isRecord(parsed) ? parsed : {};
@@ -26,6 +60,7 @@ const parseFrontmatter = (yamlStr: string): Omit<AgentInfo, 'prompt'> => {
     color: typeof result.color === 'string' ? result.color : undefined,
     description: typeof result.description === 'string' ? result.description : '',
     mode: typeof result.mode === 'string' && result.mode !== '' ? result.mode : 'subagent',
+    permissions: parsePermissions(result.permissions),
     steps:
       result.steps !== undefined && result.steps !== null && result.steps !== ''
         ? Number(result.steps)

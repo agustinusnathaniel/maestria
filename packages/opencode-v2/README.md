@@ -18,7 +18,7 @@ Add the plugin to your `opencode.json`:
 - Declares the global rules file (`rules/AGENTS.md`, synced from `@maestria/core`) as a native instruction source via `ctx.reference.transform()`.
 - Detects mode keywords (`fein` / `sonar` / `blitz`) in user messages via `ctx.session.hook("context")`, injects the mode marker + prompt into `system`, and strips the keyword.
 - Registers the 3 workflow mode commands (`fein` / `sonar` / `blitz`) via `ctx.command.transform()` - each `execute` prepends its synced template to the invocation text and submits it as a session prompt, preserving attachments and the delivery mode.
-- Registers core skills via `ctx.skill.transform()` (`Skill.Info` with `path` + `content`, validated through the SDK schema).
+- Registers core skills (synced into `skills/` from `@maestria/core`) via `ctx.skill.transform()` (`Skill.Info` with `path` + frontmatter-free `content`, validated through the SDK schema).
 
 ## Verified API surface (vs docs)
 
@@ -47,7 +47,8 @@ Notes:
 - **Context hook only, by design.** The SDK now ships `prompt`, `compaction`, `generate`, `title`, and other hooks, but mode injection stays on `"context"`: it runs before every model dispatch (including tool-driven continuations), so the mode marker persists for the whole agent loop, and detection plus keyword strip stay in one place (`src/hooks/session.ts`).
 - **No RPC or CLI surface.** This is a server plugin only: no custom RPC methods/events and no TUI extension (`./tui`). Adding either would be a separate entrypoint and package surface.
 - **Separate package from V1.** This ships as its own `@maestria/opencode-v2` package (plugin id `maestria.v2`) coexisting with the stable V1 `maestria` plugin. Live docs (`/migrate-v1`) describe supporting V1 and V2 from one package export (`Plugin.define(...)` spread plus a legacy `server()` entrypoint, supported since OpenCode 1.18.29). That convergence is a separate follow-up; until then this package tracks the V2 API and V1 stays untouched.
-- **No permissions mapping.** Canonical specialist directives define no permissions, so none are mapped into agent drafts. If needed later, V2 supports ordered permissions rule arrays per agent (last matching rule wins).
+- **No on-the-fly permission overrides.** Agents carry ordered `permissions` rule arrays ported from the V1 maps (`bash` renamed to `shell`, `task` to `subagent`, scalar tool effects expanded to `resource: "*"`; rule order preserved since last match wins). The 2.0.24 effect API exposes the `evaluate` hook but no session-rules replacement, and V1 never used its ask-hook counterpart, so nothing further is ported.
+- **Content is read once at load.** Agents, rules, mode templates, and skills load from the package files when the plugin initializes; there is no file watching. After editing directives and re-running `scripts/sync-all`, reload the plugin (or restart the host) to pick the changes up.
 
 ## Development
 

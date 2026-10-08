@@ -26,6 +26,7 @@ export const registerAgentTransforms = (ctx: {
             draft.description = config.description;
             draft.system = config.prompt;
             draft.mode = isAgentMode(config.mode) ? config.mode : fallback;
+            draft.permissions = config.permissions;
             draft.steps = config.steps;
             if (config.color !== undefined && config.color !== '') {
               draft.color = config.color;

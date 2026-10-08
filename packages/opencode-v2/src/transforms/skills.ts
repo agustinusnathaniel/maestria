@@ -3,13 +3,22 @@ import path from 'node:path';
 import { Effect, Schema } from 'effect';
 import type { Scope } from 'effect';
 import { Skill } from '@opencode/plugin/effect';
+import { parse as parseYaml } from 'yaml';
 import type { SkillEditor, Transform } from '@/types.js';
-import { readSyncedMarkdown } from '@/markdown.js';
-import { CORE_SKILLS_DIR } from '@/root.js';
+import { readSyncedMarkdown, stripAutoGenComment } from '@/markdown.js';
+import { SKILLS_DIR } from '@/root.js';
+
+// Frontmatter block the documented skill format opens with (`name`,
+// `description`). Same shape the shared Pi/OMP validator enforces.
+const FRONTMATTER_RE = /^---\n(?<frontmatter>[\s\S]*?)\n---\n*/u;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const deriveDescription = (content: string): string | undefined => {
-  // Skill files open with an ATX heading; use it as the description when
-  // present (keeps the optional SDK field unset otherwise).
+  // Skill files open with an ATX heading; use it as the description when no
+  // frontmatter description exists (keeps the optional SDK field unset
+  // otherwise).
   const headingMatch = /^#\s+(?<heading>.+)$/mu.exec(content.trim());
   const heading = headingMatch?.groups?.heading?.trim() ?? '';
   return heading.length > 0 && heading.length < 120 ? heading : undefined;
@@ -18,28 +27,73 @@ const deriveDescription = (content: string): string | undefined => {
 interface SkillFile {
   name: string;
   path: string;
+  description?: string;
   content: string;
 }
 
-// Canonical core location (sync emits no skills dir and the package ships
-// none). Returns [] when the dir is missing, unreadable, or holds no .md
-// files, so the caller has a single empty-check.
+// Split a synced skill file into its frontmatter and body. The file opens
+// with the pipeline's auto-generated header, so that is lifted before the
+// block is matched. The host adds the Markdown body without frontmatter to
+// the conversation, so pushed content must never carry the block. Returns
+// null for empty bodies (caller skips).
+const parseSkillFile = (filePath: string, content: string): SkillFile | null => {
+  const name = path.basename(filePath, '.md');
+  const body = stripAutoGenComment(content);
+  const match = FRONTMATTER_RE.exec(body);
+  if (!match) {
+    return { content: body, description: deriveDescription(body), name, path: filePath };
+  }
+  let frontmatter: Record<string, unknown> = {};
+  try {
+    const parsed: unknown = parseYaml(match.groups?.frontmatter ?? '');
+    frontmatter = isRecord(parsed) ? parsed : {};
+  } catch {
+    // Malformed frontmatter falls through to the heading fallback below.
+  }
+  const rawDescription = frontmatter.description;
+  const bodyText = body.slice(match[0].length);
+  if (bodyText.trim().length === 0) {
+    return null;
+  }
+  return {
+    content: bodyText,
+    description:
+      typeof rawDescription === 'string' && rawDescription !== ''
+        ? rawDescription
+        : deriveDescription(bodyText),
+    name,
+    path: filePath,
+  };
+};
+
+// Bundled skills dir (see sync.config.ts). No core fallback: agents and rules
+// resolve bundled-only too, and check-sync guarantees the copy is current.
 const loadSkillFiles = (): SkillFile[] => {
   let files: string[];
   try {
-    files = readdirSync(CORE_SKILLS_DIR).filter((f) => f.endsWith('.md'));
+    files = readdirSync(SKILLS_DIR).filter((f) => f.endsWith('.md'));
   } catch (error) {
-    console.warn(`[maestria-v2] Failed to list skills dir "${CORE_SKILLS_DIR}":`, error);
+    console.warn(`[maestria-v2] Failed to list skills dir "${SKILLS_DIR}":`, error);
     return [];
   }
   const out: SkillFile[] = [];
   for (const file of files) {
-    const fullPath = path.join(CORE_SKILLS_DIR, file);
+    const fullPath = path.join(SKILLS_DIR, file);
     const content = readSyncedMarkdown(fullPath, 'skill file');
     if (content === null) {
       continue;
     }
-    out.push({ content, name: path.basename(file, '.md'), path: fullPath });
+    const parsed = parseSkillFile(fullPath, content);
+    if (parsed === null) {
+      console.warn(`[maestria-v2] Skipping empty skill file "${fullPath}".`);
+      continue;
+    }
+    if (parsed.description === undefined) {
+      console.warn(
+        `[maestria-v2] Skill "${parsed.name}" has no description and will not be advertised to the model.`,
+      );
+    }
+    out.push(parsed);
   }
   return out;
 };
@@ -55,18 +109,17 @@ export const registerSkillTransforms = (ctx: {
     const skillFiles = loadSkillFiles();
     if (skillFiles.length === 0) {
       console.warn(
-        `[maestria-v2] No skill files found in "${CORE_SKILLS_DIR}"; skipping skill registration.`,
+        `[maestria-v2] No skill files found in "${SKILLS_DIR}"; skipping skill registration.`,
       );
       return;
     }
 
     yield* ctx.skill.transform((draft: SkillEditor) => {
       for (const file of skillFiles) {
-        const description = deriveDescription(file.content);
         try {
           const info = Schema.decodeSync(Skill.Info)({
             content: file.content,
-            description,
+            description: file.description,
             id: file.name,
             name: file.name,
             path: file.path,

@@ -1,6 +1,91 @@
 ---
 description: Systematic bug tracing, root cause analysis
 mode: subagent
+permissions:
+  - action: shell
+    effect: allow
+    resource: ls*
+  - action: shell
+    effect: allow
+    resource: cat*
+  - action: shell
+    effect: allow
+    resource: echo*
+  - action: shell
+    effect: allow
+    resource: head*
+  - action: shell
+    effect: allow
+    resource: tail*
+  - action: shell
+    effect: allow
+    resource: grep*
+  - action: shell
+    effect: allow
+    resource: rg*
+  - action: shell
+    effect: allow
+    resource: wc*
+  - action: shell
+    effect: allow
+    resource: which*
+  - action: shell
+    effect: allow
+    resource: diff*
+  - action: shell
+    effect: allow
+    resource: stat*
+  - action: shell
+    effect: allow
+    resource: pwd*
+  - action: shell
+    effect: allow
+    resource: cd*
+  - action: shell
+    effect: allow
+    resource: printf*
+  - action: shell
+    effect: allow
+    resource: git status*
+  - action: shell
+    effect: allow
+    resource: git blame*
+  - action: shell
+    effect: allow
+    resource: env
+  - action: shell
+    effect: allow
+    resource: pwd
+  - action: shell
+    effect: ask
+    resource: "*"
+  - action: edit
+    effect: allow
+    resource: "*"
+  - action: glob
+    effect: allow
+    resource: "*"
+  - action: grep
+    effect: allow
+    resource: "*"
+  - action: lsp
+    effect: allow
+    resource: "*"
+  - action: read
+    effect: allow
+    resource: "*"
+  - action: skill
+    effect: allow
+    resource: "*"
+  - action: todowrite
+    effect: allow
+    resource: "*"
+  - action: webfetch
+    effect: allow
+    resource: "*"
+  - action: websearch
+    effect: ask
+    resource: "*"
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
