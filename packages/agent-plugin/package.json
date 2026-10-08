@@ -1,8 +1,8 @@
 {
   "name": "@maestria/agent-plugin",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": false,
-  "description": "Maestria's portable Agent Plugins v1 package: workflow methodology as Agent Skills",
+  "description": "maestria's portable Agent Plugins v1 package: workflow methodology as Agent Skills",
   "keywords": [
     "agent-plugins",
     "agent-skills",

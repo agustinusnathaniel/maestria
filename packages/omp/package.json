@@ -1,7 +1,7 @@
 {
   "name": "@maestria/omp",
-  "version": "0.5.16",
-  "description": "Maestria extension for the Oh My Pi coding agent",
+  "version": "0.6.0",
+  "description": "maestria extension for the Oh My Pi coding agent",
   "keywords": [
     "agent-orchestration",
     "coding-agent",
@@ -42,10 +42,10 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@oh-my-pi/pi-coding-agent": ">=17.0.5 <18.0.0"
+    "@oh-my-pi/pi-coding-agent": "catalog:"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.19.0"
   },
   "omp": {
     "extensions": [

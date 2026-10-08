@@ -42,7 +42,18 @@ logger = logging.getLogger(__name__)
 # Every slash command the plugin registers and pre-gateway dispatch handles.
 # Single source of truth: the plugin registration tests assert register()
 # exposes exactly this set, so neither path can drift from the other.
-MAESTRIA_COMMANDS = frozenset({"fein", "sonar", "blitz", "mode", "mode-clear", "review", "plan"})
+#
+# `/review` and `/plan` are deliberately ABSENT.  Hermes core owns both names
+# (`hermes_cli.commands.COMMAND_REGISTRY`: `/review` spawns an independent
+# review subagent, `/plan` writes a plan file).  A plugin command that collides
+# with a core command is rejected by `PluginManager.register_command`, but this
+# set also gates `pre_gateway_dispatch`, which runs BEFORE command resolution
+# and returns `{"action": "skip"}`.  Listing them here therefore did not fail
+# loudly: the registration was skipped, the message was dropped, and core's
+# real command never ran.  Keep this set to names core does not own; the
+# `test_commands_do_not_collide_with_core` test enforces it against the live
+# registry.
+MAESTRIA_COMMANDS = frozenset({"fein", "sonar", "blitz", "mode", "mode-clear"})
 
 # Fallback descriptions for the mode commands, used when the synced SKILL.md
 # frontmatter is unavailable.  Keys are the mode-switch command names.
@@ -104,7 +115,7 @@ def render_mode_status(mode: Optional[str], read_only: bool) -> str:
     """
     label = mode or "neutral"
     return (
-        f"**Maestria Status**\n\n"
+        f"**maestria Status**\n\n"
         f"Mode: **{label}**\n"
         f"Read-only: {'Yes' if read_only else 'No'}"
     )
@@ -117,7 +128,7 @@ def render_mode_switch(mode: str, pipeline: str) -> str:
 
 def render_mode_clear() -> str:
     """Render the shared /mode-clear response."""
-    return "Cleared Maestria mode. Neutral routing is active."
+    return "Cleared maestria mode. Neutral routing is active."
 
 
 def _get_state_path() -> Path:

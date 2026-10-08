@@ -6,9 +6,8 @@ import type { PlatformHandler } from '@/lib/platforms.js';
 import * as shell from '@/lib/shell.js';
 
 // Claude install/update stage the payload through marketplace cache dirs
-// frozen at module load, so the filesystem is fully stubbed here (a
-// pre-seeded tarball name satisfies the pack lookup); the test observes only
-// host commands and their deadlines.
+// frozen at module load, so the filesystem is fully stubbed here; the test
+// observes only host commands and their deadlines.
 vi.mock('@/lib/shell.js', async (importOriginal) => {
   const actual = await importOriginal<typeof shell>();
   return {
@@ -19,6 +18,7 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
 
 interface FsPromisesStubs {
   access: () => Promise<void>;
+  mkdtemp: (prefix: string) => Promise<string>;
   mkdir: () => Promise<void>;
   readFile: () => Promise<string>;
   readdir: () => Promise<string[]>;
@@ -33,6 +33,10 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     ...actual,
     access: vi.fn(async () => {}),
     mkdir: vi.fn(async () => {}),
+    mkdtemp: vi.fn(async (prefix: string) => {
+      await Promise.resolve();
+      return `${prefix}claude-test`;
+    }),
     readFile: vi.fn(async () => {
       await Promise.resolve();
       throw new Error('ENOENT: no such file or directory');

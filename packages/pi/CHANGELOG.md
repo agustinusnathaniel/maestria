@@ -1,10 +1,41 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- [#381](https://github.com/agustinusnathaniel/maestria/pull/381) [`3d8c8be`](https://github.com/agustinusnathaniel/maestria/commit/3d8c8be919e07fa340ceb3e04690623b3f653d52) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Support Pi 1.0 as the host line: peer range moves to ^1.0.0 with no adapter behavior change.
+
+- [#383](https://github.com/agustinusnathaniel/maestria/pull/383) [`7e40875`](https://github.com/agustinusnathaniel/maestria/commit/7e4087547b6bb2396904be3251e2f8c635c532f6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move the `@gotgenes/pi-subagents` peer to the 21.x line and reference the range through the workspace catalog. The declared `^18.0.0` peer rejected the 21.x releases that the documented install path was already installing unpinned, so a fresh `maestria install pi` produced a peer conflict. The 21.9.0 contract is unchanged for everything this package calls: `getSubagentsService`, `spawn`, `getRecord`, `abort`, the `SpawnOptions` keys passed, and the `SUBAGENT_EVENTS` names subscribed to. Its new `typebox` peer is already declared here, so the upgrade adds no second dependency.
+
+### Patch Changes
+
+- [#380](https://github.com/agustinusnathaniel/maestria/pull/380) [`00f2137`](https://github.com/agustinusnathaniel/maestria/commit/00f21377f7f84c9c6e1919ca7a10812b6e7f9634) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Raise the Node.js engine floor to `>=22.19.0` to match the Pi host requirement.
+
+- [#383](https://github.com/agustinusnathaniel/maestria/pull/383) [`7e40875`](https://github.com/agustinusnathaniel/maestria/commit/7e4087547b6bb2396904be3251e2f8c635c532f6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Stop emitting the `glob` tool name in generated Pi agent frontmatter. Pi does not register a `glob` builtin, and its frontmatter parser does not validate tool names, so the entry was an inert filter that denied nothing and granted nothing. Pi now receives only tool names its host registers; `find` and `grep` already cover glob-shaped search. Oh My Pi, where `glob` is a real builtin, is unaffected and its generated files are unchanged.
+
+## 0.7.18
+
+### Patch Changes
+
+- [#378](https://github.com/agustinusnathaniel/maestria/pull/378) [`0b3dda6`](https://github.com/agustinusnathaniel/maestria/commit/0b3dda64021f8a622e822672f06f3a994c832ac1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Simplify subagent polling and parallel result handling while preserving timeout, abort, and sibling cleanup behavior.
+
+## 0.7.17
+
+### Patch Changes
+
+- [#361](https://github.com/agustinusnathaniel/maestria/pull/361) [`b7fa663`](https://github.com/agustinusnathaniel/maestria/commit/b7fa663bd790e42da120712f85d1f1eadc40bde4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prompt implementers and reviewers to reassess explanatory comments and redundant tests before accepting a change.
+
+- [#370](https://github.com/agustinusnathaniel/maestria/pull/370) [`aeb0713`](https://github.com/agustinusnathaniel/maestria/commit/aeb0713fa0ea59e1bddfc14c9e2d3ade04a91795) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Consolidate duplicated agent directive text without changing behavior.
+  - The human-facing output contract now lives once in the shared global rules; specialist prompts point at it instead of restating it, keeping per-specialist scope and trigger wording.
+  - Dense rules prose is split into scannable paragraphs with identical wording, and restated adventurer/architect wording is collapsed.
+  - No obligation was moved without a pointer, retired, or weakened; all directive contract tests pass unmodified.
+
 ## 0.7.16
 
 ### Patch Changes
 
-- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated Maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
 
 - [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Harden production subprocess, persisted-state, review-mode, Bash-policy, deployment-test, and OpenCode permission boundaries for P1 test safety.
 
@@ -33,11 +64,10 @@
 ### Patch Changes
 
 - [#316](https://github.com/agustinusnathaniel/maestria/pull/316) [`7a9334b`](https://github.com/agustinusnathaniel/maestria/commit/7a9334b3c020d8cbd91441e1ced33495a75b6f7a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Restore a consistent PR delivery contract.
-  
   - Titles use explicit Conventional Commits; bodies use literal ## headings in order (Summary, Changes, Verification, plus Visual evidence and Breaking changes when applicable), respecting explicit project templates.
   - Changes carries the Work Results table (File, What changed, Why); Verification carries checks, results, and unresolved gaps.
   - Pushes that change the cumulative diff or verification evidence update the PR title and body with a published-body readback. Acceptance classifies visual evidence as required or not applicable with reason, carries it through briefs, checks rendered coverage in review, reads back the published body at delivery, and treats an open PR as complete only with its applicable evidence.
-  
+
   Also restores proportional documentation assessment: internal docs, user-facing docs, changelog/release notes, and required changesets are assessed separately, only affected categories are updated, plausible unaffected categories note a reason, and required docs carry through briefs to reconciliation.
 
 ## 0.7.12
@@ -82,7 +112,7 @@
 
 - [#281](https://github.com/agustinusnathaniel/maestria/pull/281) [`5c5729b`](https://github.com/agustinusnathaniel/maestria/commit/5c5729b0f70d54f4181b2a5a2f1aad87fe0a92af) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix stale skill references so prescribed skills resolve at load time: planner skill guidance no longer names the removed `to-issues` and `to-prd` skills, and the duplicated Kimi orchestrator skill prescription (which restated canonical skill governance and drifted stale) is removed so `sync.config.ts` only adapts toward the plugin runtime. Clarify in the orchestrator's Role-Based Pipeline that `@diagnose` analyzes the bug, applies the minimal fix, and verifies the repair instead of grouping it with analyze-only thinkers. Correct the canonical agent-directives README index to count 8 pipeline agents (orchestrator + 7 specialists) and list `orchestrator.md`.
 
-- [#280](https://github.com/agustinusnathaniel/maestria/pull/280) [`7c038cd`](https://github.com/agustinusnathaniel/maestria/commit/7c038cd28448149f4154510ee0866f0a3ef523f8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make agent investigation, verification, skill loading, and output structure proportional to the task. Preserve complete assignment ownership and delivery, allow necessary in-scope regression coverage, and keep downstream instructions independent of Maestria repository paths.
+- [#280](https://github.com/agustinusnathaniel/maestria/pull/280) [`7c038cd`](https://github.com/agustinusnathaniel/maestria/commit/7c038cd28448149f4154510ee0866f0a3ef523f8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make agent investigation, verification, skill loading, and output structure proportional to the task. Preserve complete assignment ownership and delivery, allow necessary in-scope regression coverage, and keep downstream instructions independent of maestria repository paths.
 
 ## 0.7.5
 
@@ -230,7 +260,7 @@
 
 - [#157](https://github.com/agustinusnathaniel/maestria/pull/157) [`906f836`](https://github.com/agustinusnathaniel/maestria/commit/906f836a96a2f53e838c29d3a9e82d5c2336ba49) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Selective routing contract in the canonical orchestrator directives.
 
-  **Three routes** - `direct` (host executes, no Maestria specialist spawn),
+  **Three routes** - `direct` (host executes, no maestria specialist spawn),
   `focused` (one targeted specialist, one reviewer for non-trivial
   work), and `full` (bounded recon, design, implementation, and review). The
   full pipeline is an explicit option for complex or high-risk work and for
@@ -253,7 +283,7 @@
   `@reviewer`; where the host cannot enforce separate sessions (e.g. Kimi, Pi,
   OMP, Hermes), the split is advisory and stated as such.
 
-  **How this affects you:** Maestria no longer routes every turn through the
+  **How this affects you:** maestria no longer routes every turn through the
   full pipeline. Small explanations and tiny edits run directly or through one
   specialist; the full pipeline stays available for complex, high-risk, or
   explicitly `fein` work. No action required on your end - your agents apply
@@ -580,7 +610,7 @@
 
 - [#12](https://github.com/agustinusnathaniel/maestria/pull/12) [`95a0ea0`](https://github.com/agustinusnathaniel/maestria/commit/95a0ea084f2ca48b5283375b55ab1c81c5f8a014) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat(pi): ship @maestria/pi@0.1.0 with full agent orchestration
 
-  Implements the `@maestria/pi` package - a Pi coding agent extension bringing Maestria's structured agent orchestration (recon → design → implement → review) to the Pi ecosystem.
+  Implements the `@maestria/pi` package - a Pi coding agent extension bringing maestria's structured agent orchestration (recon → design → implement → review) to the Pi ecosystem.
 
   Includes:
   - 9 source modules: extension, modes, rules, rules-content, state, compaction, subagent, commands, tools

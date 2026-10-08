@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "maestria",
-  "description": "Portable AI engineering workflows for Claude Code and compatible Maestria runtimes.",
+  "description": "Portable AI engineering workflows for Claude Code and compatible maestria runtimes.",
   "owner": {
     "name": "Agustinus Nathaniel",
     "url": "https://github.com/agustinusnathaniel"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "maestria",
-      "displayName": "Maestria",
+      "displayName": "maestria",
       "description": "Portable AI engineering workflows for Claude Code.",
       "source": {
         "source": "npm",

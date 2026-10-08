@@ -71,8 +71,11 @@ const getToolDef = (pi: MockPi): SubagentToolDefinition => {
   return tool;
 };
 
-const install = (pi: MockPi, state: ReturnType<typeof createInitialState>): void => {
+const setup = (events?: MockEventBus) => {
+  const pi = createMockPi(events);
+  const state = createInitialState();
   installSubagentTool(pi, state);
+  return { pi, state, toolDef: getToolDef(pi) };
 };
 
 const createMockEventBus = (): MockEventBus => {
@@ -134,19 +137,12 @@ const getResultText = (result: ToolResult): string => {
 
 describe('installSubagentTool - single mode (backward compat)', () => {
   it('registers a tool named "maestria_subagent"', () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     expect(toolDef.name).toBe('maestria_subagent');
   });
 
   it('returns an actionable message for unknown agent names', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
       { agent: 'unknown', task: 'do something' },
@@ -165,11 +161,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
   });
 
   it('returns an actionable message when agent is missing', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
       { task: 'do something' },
@@ -187,22 +179,14 @@ describe('installSubagentTool - single mode (backward compat)', () => {
   });
 
   it('rejects empty task description', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute('call-1', { agent: 'builder', task: '' }, undefined, undefined, {}),
     ).rejects.toThrow('Task description is required');
   });
 
   it('falls back to handoff text when SDK is unavailable', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
       { agent: 'builder', task: 'do something' },
@@ -214,11 +198,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
   });
 
   it('works with explicit mode=single', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
       { agent: 'builder', mode: 'single', task: 'do something' },
@@ -232,11 +212,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
 
 describe('installSubagentTool - parallel mode', () => {
   it('throws for 1 task (below minimum of 2)', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute(
         'call-1',
@@ -252,11 +228,7 @@ describe('installSubagentTool - parallel mode', () => {
   });
 
   it('throws for more than 8 tasks', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const tasks = Array.from({ length: 9 }, (_, i) => ({
       agent: 'builder' as const,
       task: `task ${i + 1}`,
@@ -267,11 +239,7 @@ describe('installSubagentTool - parallel mode', () => {
   });
 
   it('throws for unknown agent in tasks', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute(
         'call-1',
@@ -290,11 +258,7 @@ describe('installSubagentTool - parallel mode', () => {
   });
 
   it('throws when a task has empty description', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute(
         'call-1',
@@ -313,11 +277,7 @@ describe('installSubagentTool - parallel mode', () => {
   });
 
   it('falls back to handoff text when SDK is unavailable (valid parallel)', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
       {
@@ -337,11 +297,7 @@ describe('installSubagentTool - parallel mode', () => {
 
 describe('installSubagentTool - chain mode', () => {
   it('throws for 1 task (below minimum of 2)', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute(
         'call-1',
@@ -357,11 +313,7 @@ describe('installSubagentTool - chain mode', () => {
   });
 
   it('throws for unknown agent in tasks', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute(
         'call-1',
@@ -380,11 +332,7 @@ describe('installSubagentTool - chain mode', () => {
   });
 
   it('falls back to handoff text when SDK is unavailable (valid chain)', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
       {
@@ -405,9 +353,7 @@ describe('installSubagentTool - chain mode', () => {
 describe('installSubagentTool - event subscription persistence', () => {
   it('persists state on STARTED event', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
-    install(pi, state);
+    const { pi, state } = setup(events);
 
     events._emit(SUBAGENT_EVENTS.STARTED, { id: 'agent-1', type: 'builder' });
 
@@ -419,14 +365,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on COMPLETED event', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
+    const { pi, state } = setup(events);
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
       type: 'builder',
     };
-    install(pi, state);
 
     events._emit(SUBAGENT_EVENTS.COMPLETED, { id: 'agent-1' });
 
@@ -437,14 +381,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on FAILED event', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
+    const { pi, state } = setup(events);
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
       type: 'builder',
     };
-    install(pi, state);
 
     events._emit(SUBAGENT_EVENTS.FAILED, { id: 'agent-1', status: 'error' });
 
@@ -455,9 +397,7 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on STEERED event when agent is new', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
-    install(pi, state);
+    const { pi, state } = setup(events);
 
     events._emit(SUBAGENT_EVENTS.STEERED, { id: 'agent-new' });
 
@@ -469,14 +409,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on STEERED event when agent already exists', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
+    const { pi, state } = setup(events);
     state.subagentStatus['existing-agent'] = {
       startedAt: Date.now(),
       status: 'running',
       type: 'architect',
     };
-    install(pi, state);
 
     events._emit(SUBAGENT_EVENTS.STEERED, { id: 'existing-agent' });
 
@@ -489,9 +427,7 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('emits maestria:subagent:started on STARTED event', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
-    install(pi, state);
+    setup(events);
 
     events._emit(SUBAGENT_EVENTS.STARTED, { id: 'agent-1', type: 'builder' });
 
@@ -503,14 +439,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('emits maestria:subagent:completed on COMPLETED event', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
+    const { state } = setup(events);
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
       type: 'builder',
     };
-    install(pi, state);
 
     events._emit(SUBAGENT_EVENTS.COMPLETED, { id: 'agent-1' });
 
@@ -522,14 +456,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('emits maestria:subagent:failed on FAILED event', () => {
     const events = createMockEventBus();
-    const pi = createMockPi(events);
-    const state = createInitialState();
+    const { state } = setup(events);
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
       type: 'builder',
     };
-    install(pi, state);
 
     events._emit(SUBAGENT_EVENTS.FAILED, { id: 'agent-1', status: 'error' });
 
@@ -542,22 +474,14 @@ describe('installSubagentTool - event subscription persistence', () => {
 
 describe('installSubagentTool - validation errors without tasks', () => {
   it('throws for mode=parallel without tasks', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute('call-1', { mode: 'parallel' }, undefined, undefined, {}),
     ).rejects.toThrow('tasks array is required');
   });
 
   it('throws for mode=chain without tasks', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { toolDef } = setup();
     await expect(
       toolDef.execute('call-1', { mode: 'chain' }, undefined, undefined, {}),
     ).rejects.toThrow('tasks array is required');
@@ -572,11 +496,7 @@ describe('installSubagentTool - handoff recording', () => {
   });
 
   it('records specialist in state for single mode', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { pi, state, toolDef } = setup();
     await toolDef.execute(
       'call-1',
       { agent: 'builder', task: 'build the feature' },
@@ -592,11 +512,7 @@ describe('installSubagentTool - handoff recording', () => {
   });
 
   it('deduplicates specialists across repeated delegation', async () => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-
-    const toolDef = getToolDef(pi);
+    const { state, toolDef } = setup();
     await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
     await toolDef.execute(
       'call-2',
@@ -611,18 +527,6 @@ describe('installSubagentTool - handoff recording', () => {
 });
 
 describe('installSubagentTool - parallel partial failure', () => {
-  const installTool = (): {
-    pi: MockPi;
-    state: ReturnType<typeof createInitialState>;
-    toolDef: SubagentToolDefinition;
-  } => {
-    const pi = createMockPi();
-    const state = createInitialState();
-    install(pi, state);
-    const toolDef = getToolDef(pi);
-    return { pi, state, toolDef };
-  };
-
   it('preserves completed results when one subagent is cleaned up (poll throws)', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
     subagentsServiceMock.spawn.mockImplementation((agent: string) =>
@@ -635,7 +539,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       id === 'id-a' ? { result: 'RESULT_A_OK', status: 'completed' } : undefined,
     );
 
-    const { toolDef } = installTool();
+    const { toolDef } = setup();
 
     const result = await toolDef.execute(
       'call-1',
@@ -678,7 +582,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       return id === 'id-a' ? { status: 'running' } : undefined;
     });
 
-    const { toolDef } = installTool();
+    const { toolDef } = setup();
 
     await toolDef.execute(
       'call-1',
@@ -707,7 +611,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       id === 'id-a' ? { result: 'STEP_A_OK', status: 'completed' } : undefined,
     );
 
-    const { toolDef } = installTool();
+    const { toolDef } = setup();
 
     const result = await toolDef.execute(
       'call-1',
@@ -747,7 +651,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       return { result: 'DONE', status: 'completed' };
     });
 
-    const { toolDef } = installTool();
+    const { toolDef } = setup();
 
     await toolDef.execute(
       'call-1',
@@ -786,7 +690,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       throw new Error('spawn failed for architect');
     });
 
-    const { toolDef } = installTool();
+    const { toolDef } = setup();
 
     const result = await toolDef.execute(
       'call-1',

@@ -1,6 +1,6 @@
 /** Shared subagent validation utilities for Pi-family packages. */
 
-/** Maestria cross-extension event names. */
+/** maestria cross-extension event names. */
 export const MAESTRIA_EVENTS = {
   REVIEW_ACTIVATED: 'maestria:review:activated',
   REVIEW_DEACTIVATED: 'maestria:review:deactivated',

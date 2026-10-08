@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Find the current instructions, design rationale, and historical context needed to work on Maestria.
+Find the current instructions, design rationale, and historical context needed to work on maestria.
 
 ## Audience
 
-Contributors, maintainers, and platform adapter authors. To install or use Maestria, start with the [public documentation](https://maestria.sznm.dev) or a [package README](../README.md#packages).
+Contributors, maintainers, and platform adapter authors. To install or use maestria, start with the [public documentation](https://maestria.sznm.dev) or a [package README](../README.md#packages).
 
 ## Start with Your Task
 
@@ -23,6 +23,8 @@ Contributors, maintainers, and platform adapter authors. To install or use Maest
 ## Find a Design Decision
 
 ADRs record why a design was chosen, including alternatives and trade-offs. Read the relevant record before changing architecture; use current guides and source code to confirm present behavior.
+
+The collection keeps consequential architectural choices. Procedures and documentation conventions live in the guides above; retired records remain in Git history. Numbering gaps are intentional. Use the [ADR criteria](guides/doc-format.md#new-adrs) before adding another record.
 
 | Area                                                      | Records                          |
 | --------------------------------------------------------- | -------------------------------- |

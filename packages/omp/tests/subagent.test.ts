@@ -86,7 +86,7 @@ describe('installNativeSubagentTool - tool registration', () => {
     const state = createInitialState();
     install(pi, state);
     const toolDef = getToolDef(pi);
-    expect(toolDef.label).toBe('Maestria Subagent');
+    expect(toolDef.label).toBe('maestria Subagent');
     expect(toolDef.description).toContain('Dispatch a task to a maestria specialist subagent');
   });
 

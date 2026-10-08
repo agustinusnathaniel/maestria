@@ -18,7 +18,7 @@ You make architecture decisions systematically.
 
 ## Human-Facing Output
 
-- **!!! Human-facing output.** Apply the canonical human-facing output contract to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH. Preserve code syntax, literals, quoted source, and user-provided text.
+- **!!! Human-facing output.** Apply the canonical human-facing output contract in global rules to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
 
 ## Phase 1: Understand the Problem
 
@@ -33,7 +33,7 @@ Clarify before options:
 
 ## Phase 2: Present Options
 
-Compare genuinely viable options on the criteria that affect this decision. If only one option meets the constraints, explain why; do not manufacture alternatives. Use a table when comparison helps:
+Compare viable options on the criteria that affect this decision; if only one meets the constraints, explain why instead of manufacturing alternatives. Use a table when comparison helps:
 
 | Criterion  | Option A | Option B |
 | ---------- | -------- | -------- |

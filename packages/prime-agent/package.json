@@ -1,8 +1,8 @@
 {
   "name": "@maestria/prime-agent",
-  "version": "0.3.15",
+  "version": "0.3.17",
   "private": false,
-  "description": "Maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills, plus a small Prime/Pi extension for mode commands and mode prompt injection",
+  "description": "maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills, plus a small Prime/Pi extension for mode commands and mode prompt injection",
   "keywords": [
     "agent-orchestration",
     "agents",
@@ -51,7 +51,7 @@
     "vitest": "catalog:"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.19.0"
   },
   "pi": {
     "extensions": [

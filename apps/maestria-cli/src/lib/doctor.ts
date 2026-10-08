@@ -95,7 +95,7 @@ const buildDoctorReport = (
       shared.push({ path: redactHome(observedPath), providers, skill });
     } else {
       notes.push(
-        `Existing unmanaged skill '${skill}' at ${redactHome(observedPath)} has no Maestria selection record.`,
+        `Existing unmanaged skill '${skill}' at ${redactHome(observedPath)} has no maestria selection record.`,
       );
       next.push(
         `Run 'maestria install ${status.id} --exclude-skills ${skill}' to leave it alone, or remove it manually first.`,
@@ -111,7 +111,7 @@ const buildDoctorReport = (
     next.push(`Run 'maestria update ${status.id}' to restore the recorded selection.`);
   }
   if (recorded === null) {
-    notes.push('No Maestria skill selection is recorded for this platform.');
+    notes.push('No maestria skill selection is recorded for this platform.');
     next.push(`Run 'maestria install ${status.id}' to record a selection.`);
   }
   if (!status.available) {

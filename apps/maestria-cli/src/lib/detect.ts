@@ -4,8 +4,15 @@ import { getPlatform, platforms } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformStatus } from '@/types.js';
 
-/** Check availability, installation, and versions for all platforms in parallel. */
-const detectOne = (platform: PlatformHandler): Effect.Effect<PlatformStatus> =>
+interface DetectionOptions {
+  readonly includeLatest?: boolean;
+}
+
+/** Check availability and installation, optionally fetching latest versions. */
+const detectOne = (
+  platform: PlatformHandler,
+  options: DetectionOptions = {},
+): Effect.Effect<PlatformStatus> =>
   Effect.gen(function* detectOneEffect() {
     const available = yield* platform.detect;
     let installed = false;
@@ -16,12 +23,12 @@ const detectOne = (platform: PlatformHandler): Effect.Effect<PlatformStatus> =>
       installed = yield* platform.isInstalled;
       if (installed) {
         installedVersion = yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
+          Effect.catchEager(() => Effect.succeed('unknown')),
         );
       }
-      latestVersion = yield* platform.getLatestVersion.pipe(
-        Effect.catchCause(() => Effect.succeed('')),
-      );
+      if (options.includeLatest !== false) {
+        latestVersion = yield* platform.getLatestVersion;
+      }
     }
 
     return {
@@ -34,9 +41,9 @@ const detectOne = (platform: PlatformHandler): Effect.Effect<PlatformStatus> =>
     };
   });
 
-export const detectAll = (): Effect.Effect<PlatformStatus[]> =>
+export const detectAll = (options: DetectionOptions = {}): Effect.Effect<PlatformStatus[]> =>
   Effect.all(
-    platforms.map((p) => detectOne(p)),
+    platforms.map((p) => detectOne(p, options)),
     { concurrency: 'unbounded' },
   );
 
@@ -57,5 +64,5 @@ export const detectSingle = (platformId: string): Effect.Effect<PlatformStatus> 
 };
 
 /** Platforms that are both available and have maestria installed. */
-export const detectInstalled = (): Effect.Effect<PlatformStatus[]> =>
-  detectAll().pipe(Effect.map((stats) => stats.filter((s) => s.available && s.installed)));
+export const detectInstalled = (options: DetectionOptions = {}): Effect.Effect<PlatformStatus[]> =>
+  detectAll(options).pipe(Effect.map((stats) => stats.filter((s) => s.available && s.installed)));

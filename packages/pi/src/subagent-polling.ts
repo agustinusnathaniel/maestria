@@ -54,8 +54,8 @@ export interface PollSubagentOptions {
  *
  * The first record is read immediately; each interval re-reads, emits a
  * progress update, and counts toward Math.ceil(timeoutMs / intervalMs).
- * A host abort is observed at the next sleep boundary (within one
- * interval) rather than by interrupting the sleep itself.
+ * A host abort is checked before and after each sleep, so a signal raised
+ * during the sleep is observed within one interval.
  */
 export const pollSubagent = async (options: PollSubagentOptions): Promise<SubagentRecord> => {
   const intervalMs = options.intervalMs ?? POLL_INTERVAL_MS;
@@ -63,17 +63,16 @@ export const pollSubagent = async (options: PollSubagentOptions): Promise<Subage
   const maxPolls = Math.ceil(timeoutMs / intervalMs);
   const { id, label, sendUpdates, service, signal } = options;
   const aborted = (): SubagentPollError =>
-    new SubagentPollError({ id, message: 'Maestria subagent call aborted', reason: 'aborted' });
+    new SubagentPollError({ id, message: 'maestria subagent call aborted', reason: 'aborted' });
   const throwIfAborted = (): void => {
     if (signal?.aborted === true) {
       throw aborted();
     }
   };
 
-  const poll = async (
-    record: SubagentRecord | undefined,
-    polls: number,
-  ): Promise<SubagentRecord> => {
+  let record = service.getRecord(id);
+  let polls = 0;
+  while (true) {
     if (record === undefined) {
       throw new SubagentPollError({
         id,
@@ -92,24 +91,22 @@ export const pollSubagent = async (options: PollSubagentOptions): Promise<Subage
       });
     }
     throwIfAborted();
+    // oxlint-disable-next-line no-await-in-loop -- each poll waits before reading the next record
     await sleep(intervalMs);
     throwIfAborted();
-    const next = service.getRecord(id);
-    const nextPolls = polls + 1;
+    record = service.getRecord(id);
+    polls += 1;
     if (sendUpdates) {
       options.onUpdate?.({
         content: [
           {
-            text: `${label} running... (${Math.round((nextPolls * intervalMs) / 1000)}s)`,
+            text: `${label} running... (${Math.round((polls * intervalMs) / 1000)}s)`,
             type: 'text' as const,
           },
         ],
       });
     }
-    return await poll(next, nextPolls);
-  };
-
-  return await poll(service.getRecord(id), 0);
+  }
 };
 
 /**

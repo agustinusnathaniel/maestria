@@ -1,9 +1,9 @@
 ---
 title: Workflow Patterns
-description: Practical patterns for choosing and combining Maestria routes without adding unnecessary delegation.
+description: Practical patterns for choosing and combining maestria routes without adding unnecessary delegation.
 ---
 
-Use this page to choose a starting point for a task. [Specialist Reference](/core/agents/) has role details, [Pipeline & Roles](/core/pipeline/) the execution model, and [When to use Maestria](/core/when-to-use/) the cost and risk trade-off.
+Use this page to choose a starting point for a task. [Specialist Reference](/core/agents/) has role details, [Pipeline & Roles](/core/pipeline/) the execution model, and [When to use maestria](/core/when-to-use/) the cost and risk trade-off.
 
 ## Match the Task to a Route
 
@@ -52,7 +52,7 @@ Use one independent reviewer for ordinary pre-merge validation, adding a securit
 
 Projects may add two root-only files, loaded in order: `.maestria/workflow.md` for project context, required reading, and quality gates, then `.maestria/rules.md` for local non-negotiable constraints. Each file carries a subordinate-guidance header: it may replace configurable workflows but never waives safety, authorization, or host permissions. Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
 
-Keep these files short: reusable methodology belongs in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
+Keep these files short: reusable methodology belongs in the canonical maestria directives, project decisions in ADRs, and one-off task details in the handoff.
 
 ### How engines load them
 
@@ -71,4 +71,4 @@ Missing or empty files are skipped silently. A present-but-unusable file (a dire
 
 - [Specialist Reference](/core/agents/)
 - [Pipeline & Roles](/core/pipeline/)
-- [When to use Maestria](/core/when-to-use/)
+- [When to use maestria](/core/when-to-use/)

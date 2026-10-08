@@ -39,103 +39,68 @@ const { isAbsolute, join, win32 } = nodePath;
 const readOpenCodeConfig = (): Effect.Effect<string, CommandError> => {
   const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
   const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
-  return readTextFile(jsoncPath).pipe(Effect.catchCause(() => readTextFile(jsonPath)));
+  return readTextFile(jsoncPath).pipe(
+    Effect.catchTag('CommandError', () => readTextFile(jsonPath)),
+  );
 };
 
-/**
- * Install a package from an npm tarball into a destination directory.
- *
- * Shared by the kimi-code and cursor platform handlers, which both pack
- * Maestria-scoped packages to /tmp and extract them into their platform's
- * plugin directory. The tarball name derives from the package name with
- * the @maestria/ scope stripped (e.g. @maestria/kimi-code ->
- * maestria-kimi-code-*.tgz).
- *
- * @param pkg    Full npm package name (e.g. '@maestria/kimi-code')
- * @param dest   Destination directory to extract into
- * @param opts   Optional npm dist-tag (default 'latest')
- */
-const cleanupStaleTarball = (
-  tmpDir: string,
-  prefix: string,
-  dest: string,
-): Effect.Effect<void, CommandError> =>
-  Effect.tryPromise({
-    catch: (error) =>
-      new CommandError({
-        command: `cleanup ${tmpDir}/${prefix}*.tgz and ${dest}`,
-        message: String(error),
-      }),
-    try: async () => {
-      const { readdir, unlink, rm } = await import('node:fs/promises');
-      const entries = await readdir(tmpDir);
-      const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-      await Promise.all(
-        stale.map(async (e) => {
-          await unlink(join(tmpDir, e));
-        }),
-      );
-      await rm(dest, { force: true, recursive: true });
-    },
-  });
-
-const findPackedTarball = (
-  tmpDir: string,
-  prefix: string,
-  pkgAtTag: string,
-): Effect.Effect<string, CommandError> =>
-  Effect.tryPromise({
-    catch: (error) =>
-      new CommandError({
-        command: `find tarball ${tmpDir}/${prefix}*.tgz`,
-        message: String(error),
-      }),
-    try: async () => {
-      const { readdir } = await import('node:fs/promises');
-      const entries = await readdir(tmpDir);
-      const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-      if (matches.length === 0) {
-        throw new Error(`no tarball found for ${pkgAtTag} in ${tmpDir}`);
-      }
-      if (matches.length > 1) {
-        throw new Error(`ambiguous tarballs for ${pkgAtTag} in ${tmpDir}: ${matches.join(', ')}`);
-      }
-      return join(tmpDir, matches[0]);
-    },
-  });
-
+/** Pack and extract a package in a private staging directory. */
 const installNpmTarball = (
   pkg: string,
   dest: string,
   opts: { tag?: string } = {},
-): Effect.Effect<void, CommandError> => {
-  const tag = opts.tag ?? 'latest';
-  const shortName = pkg.replace('@maestria/', '');
-  const prefix = `maestria-${shortName}-`;
-  const pkgAtTag = `${pkg}@${tag}`;
-  const tmpDir = tmpdir();
-  return Effect.gen(function* installNpmTarballEffect() {
-    yield* cleanupStaleTarball(tmpDir, prefix, dest);
-    yield* run('npm', ['pack', pkgAtTag, '--pack-destination', tmpDir], 120_000);
-    const tarballPath = yield* findPackedTarball(tmpDir, prefix, pkgAtTag);
-    yield* Effect.tryPromise({
-      catch: (error) => new CommandError({ command: `mkdir -p ${dest}`, message: String(error) }),
-      try: async () => {
-        const { mkdir } = await import('node:fs/promises');
-        await mkdir(dest, { recursive: true });
-      },
-    });
-    yield* run('tar', ['-xzf', tarballPath, '-C', dest, '--strip-components=1'], 120_000);
-    yield* Effect.tryPromise({
+): Effect.Effect<void, CommandError> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
       catch: (error) =>
-        new CommandError({ command: `rm -f ${tarballPath}`, message: String(error) }),
+        new CommandError({ command: 'create npm pack directory', message: String(error) }),
       try: async () => {
-        const { unlink } = await import('node:fs/promises');
-        await unlink(tarballPath);
+        const { mkdtemp } = await import('node:fs/promises');
+        return await mkdtemp(join(tmpdir(), 'maestria-'));
       },
-    });
-  });
-};
+    }),
+    (stagingDir) =>
+      Effect.gen(function* installNpmTarballEffect() {
+        const pkgAtTag = `${pkg}@${opts.tag ?? 'latest'}`;
+        yield* run('npm', ['pack', pkgAtTag, '--pack-destination', stagingDir], 120_000);
+        const archive = yield* Effect.tryPromise({
+          catch: (error) =>
+            new CommandError({ command: `find tarball for ${pkgAtTag}`, message: String(error) }),
+          try: async () => {
+            const { readdir } = await import('node:fs/promises');
+            const entries = await readdir(stagingDir);
+            const matches = entries.filter((entry) => entry.endsWith('.tgz'));
+            const [filename] = matches;
+            if (matches.length !== 1 || filename === undefined) {
+              throw new Error(`expected one packed archive, found ${matches.length}`);
+            }
+            return join(stagingDir, filename);
+          },
+        });
+        yield* Effect.tryPromise({
+          catch: (error) =>
+            new CommandError({ command: `replace ${dest}`, message: String(error) }),
+          try: async () => {
+            const { mkdir, rm } = await import('node:fs/promises');
+            await rm(dest, { force: true, recursive: true });
+            await mkdir(dest, { recursive: true });
+          },
+        });
+        yield* run('tar', ['-xzf', archive, '-C', dest, '--strip-components=1'], 120_000);
+      }),
+    (stagingDir) =>
+      Effect.tryPromise({
+        catch: (error) =>
+          new CommandError({
+            command: `remove npm pack directory ${stagingDir}`,
+            message: String(error),
+          }),
+        try: async () => {
+          const { rm } = await import('node:fs/promises');
+          await rm(stagingDir, { force: true, recursive: true });
+        },
+      }),
+  );
 
 /**
  * Version string from a parsed JSON manifest. Missing, malformed, and
@@ -212,13 +177,13 @@ const hostPluginList = (command: 'claude' | 'codex'): Effect.Effect<string, Comm
 const hostPluginVersion = (command: 'claude' | 'codex'): Effect.Effect<string, CommandError> =>
   hostPluginList(command).pipe(
     Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => Effect.succeed('unknown')),
+    Effect.catchEager(() => Effect.succeed('unknown')),
   );
 
 const hostPluginInstalled = (command: 'claude' | 'codex'): Effect.Effect<boolean> =>
   hostPluginList(command).pipe(
     Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => Effect.succeed(false)),
+    Effect.catchEager(() => Effect.succeed(false)),
   );
 
 /** Marketplace data a host CLI needs to prepare its local plugin marketplace. */
@@ -278,7 +243,7 @@ const claudeMarketplace: NpmMarketplace = {
     },
     plugins: [
       {
-        displayName: 'Maestria',
+        displayName: 'maestria',
         name: MAESTRIA_PLUGIN,
         source: './plugins/maestria',
       },
@@ -292,7 +257,7 @@ const codexMarketplace: NpmMarketplace = {
   dir: CODEX_MARKETPLACE_DIR,
   file: '.agents/plugins/marketplace.json',
   manifest: {
-    interface: { displayName: 'Maestria' },
+    interface: { displayName: 'maestria' },
     name: MAESTRIA_MARKETPLACE,
     plugins: [
       {
@@ -478,7 +443,7 @@ const opencode: PlatformDefinition = {
         ),
       );
     }),
-    Effect.catchCause(() => Effect.succeed('unknown')),
+    Effect.catchEager(() => Effect.succeed('unknown')),
   ),
   id: 'opencode',
   install: Effect.gen(function* install() {
@@ -488,7 +453,7 @@ const opencode: PlatformDefinition = {
   }).pipe(Effect.asVoid),
   isInstalled: readOpenCodeConfig().pipe(
     Effect.map((out) => out.includes('@maestria/opencode')),
-    Effect.catchCause(() => Effect.succeed(false)),
+    Effect.catchEager(() => Effect.succeed(false)),
   ),
   label: 'OpenCode',
   npmPackage: '@maestria/opencode',
@@ -509,7 +474,7 @@ const opencode: PlatformDefinition = {
       // Check if installed globally or at project level
       const globalConfig = yield* readOpenCodeConfig().pipe(
         Effect.map((out) => out.includes('@maestria/opencode')),
-        Effect.catchCause(() => Effect.succeed(false)),
+        Effect.catchEager(() => Effect.succeed(false)),
       );
       const flag = globalConfig ? ['-g', '--force'] : ['--force'];
       // Cold fetches outlast the 30s default; match install's 120s deadline.
@@ -598,7 +563,7 @@ interface PiStylePlatformDefinition {
   readonly referencePrefix: string;
   /** Plugin command group (`['plugin']` for omp; empty for Pi). */
   readonly commandPrefix: readonly string[];
-  /** package.json whose `version` reports the installed Maestria package. */
+  /** package.json whose `version` reports the installed maestria package. */
   readonly installedPackageJsonPath: string;
   /** Peer dependency installed before every install/update; failures are ignored. */
   readonly prerequisite?: Effect.Effect<void>;
@@ -616,7 +581,7 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
   return {
     detect: commandExists(definition.binary),
     getInstalledVersion: readPackageJsonVersion(definition.installedPackageJsonPath).pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
+      Effect.catchEager(() => Effect.succeed('unknown')),
     ),
     id: definition.id,
     install: Effect.gen(function* install() {
@@ -646,15 +611,25 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
 };
 
 /**
+ * Range for the Pi subagent dispatch peer. Kept in step with the
+ * '@gotgenes/pi-subagents' catalog entry in pnpm-workspace.yaml, which
+ * `@maestria/pi` declares as its peer. Bare latest would install a version the
+ * peer range can reject; Pi accepts a semver range after the `npm:` prefix and
+ * reconciles updates inside it (`parseNpmSpec` + `validRange` in the host's
+ * package manager).
+ */
+const PI_SUBAGENTS_RANGE = '^21.5.1';
+
+/**
  * Pi's subagent dispatch needs @gotgenes/pi-subagents. It is installed before
  * every install/update; a failure is ignored so a missing peer dependency
  * cannot block the main package install.
  */
 const piSubagentsPrerequisite: Effect.Effect<void> = run(
   'pi',
-  ['install', 'npm:@gotgenes/pi-subagents'],
+  ['install', `npm:@gotgenes/pi-subagents@${PI_SUBAGENTS_RANGE}`],
   60_000,
-).pipe(Effect.catchCause(() => Effect.void));
+).pipe(Effect.catchEager(() => Effect.void));
 
 const pi: PlatformDefinition = piStylePlatform({
   binary: 'pi',
@@ -810,7 +785,7 @@ const primeMaestriaInstalledVersion = (output: string): Effect.Effect<string, Co
   }
 
   return readPackageJsonVersion(`${installedPath}/package.json`).pipe(
-    Effect.catchCause(() => Effect.succeed('unknown')),
+    Effect.catchEager(() => Effect.succeed('unknown')),
   );
 };
 
@@ -846,7 +821,7 @@ const removePrimeTempCwd = (dir: string): Effect.Effect<void> =>
       const { rm } = await import('node:fs/promises');
       await rm(dir, { force: true, recursive: true });
     },
-  }).pipe(Effect.catchCause(() => Effect.void));
+  }).pipe(Effect.catchEager(() => Effect.void));
 
 /**
  * Run a Prime Agent package command from a freshly created empty temporary
@@ -924,7 +899,7 @@ const primeAgent: PlatformDefinition = {
   detect: commandExists('prime-agent'),
   getInstalledVersion: primePackageList.pipe(
     Effect.flatMap(primeMaestriaInstalledVersion),
-    Effect.catchCause(() => Effect.succeed('unknown')),
+    Effect.catchEager(() => Effect.succeed('unknown')),
   ),
   id: 'prime-agent',
   install: withPrimeTempCwd((cwd) =>
@@ -932,7 +907,7 @@ const primeAgent: PlatformDefinition = {
   ).pipe(Effect.asVoid),
   isInstalled: primePackageList.pipe(
     Effect.map(hasPrimeMaestriaPackage),
-    Effect.catchCause(() => Effect.succeed(false)),
+    Effect.catchEager(() => Effect.succeed(false)),
   ),
   label: 'Prime Agent',
   npmPackage: '@maestria/prime-agent',
@@ -987,9 +962,7 @@ const replacePlatformPayload = <State>(
     yield* options.replace();
     yield* options.restore(state);
     if (options.invalidatePackage !== undefined && options.invalidatePackage !== '') {
-      yield* invalidateVersionCache(options.invalidatePackage).pipe(
-        Effect.catchCause(() => Effect.void),
-      );
+      yield* invalidateVersionCache(options.invalidatePackage);
     }
   });
 
@@ -1006,7 +979,7 @@ const kimiCode: PlatformDefinition = {
   }),
   getInstalledVersion: Effect.suspend(() =>
     readPackageJsonVersion(`${kimiManagedPluginDir()}/kimi.plugin.json`).pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
+      Effect.catchEager(() => Effect.succeed('unknown')),
     ),
   ),
   id: 'kimi-code',
@@ -1023,7 +996,7 @@ const kimiCode: PlatformDefinition = {
     Effect.flatMap((installed) =>
       installed ? Effect.succeed(true) : fileExists(`${kimiManagedPluginDir()}/kimi.plugin.json`),
     ),
-    Effect.catchCause(() => Effect.succeed(false)),
+    Effect.catchEager(() => Effect.succeed(false)),
   ),
   label: 'Kimi Code',
   npmPackage: '@maestria/kimi-code',
@@ -1049,7 +1022,7 @@ const hermes: PlatformDefinition = {
       const match = /^version:\s*["']?(?<version>.+?)["']?\s*$/mu.exec(out);
       return match?.groups?.version ?? 'unknown';
     }),
-    Effect.catchCause(() => Effect.succeed('unknown')),
+    Effect.catchEager(() => Effect.succeed('unknown')),
   ),
   getLatestVersion: Effect.succeed('see GitHub releases'),
   id: 'hermes',
@@ -1171,7 +1144,7 @@ const cursor: PlatformDefinition = {
     return yield* fileExists(`${homedir()}/.cursor`);
   }),
   getInstalledVersion: readPackageJsonVersion(`${CURSOR_PLUGIN_DIR}/package.json`).pipe(
-    Effect.catchCause(() => Effect.succeed('unknown')),
+    Effect.catchEager(() => Effect.succeed('unknown')),
   ),
   id: 'cursor',
   install: replacePlatformPayload({

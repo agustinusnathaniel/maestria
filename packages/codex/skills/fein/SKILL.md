@@ -1,5 +1,5 @@
 ---
-description: "Full Maestria pipeline: reconnaissance, design, implementation, and independent review."
+description: "Full maestria pipeline: reconnaissance, design, implementation, and independent review."
 name: fein
 ---
 

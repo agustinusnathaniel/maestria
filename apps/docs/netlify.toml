@@ -2,6 +2,37 @@
 command = "pnpm --filter @maestria/docs build"
 publish = "dist"
 
+# The former /pi/ and /omp/ doc sections were consolidated into /pi-omp/.
+[[redirects]]
+from = "/pi"
+to = "/pi-omp/"
+status = 301
+
+[[redirects]]
+from = "/pi/"
+to = "/pi-omp/"
+status = 301
+
+[[redirects]]
+from = "/omp"
+to = "/pi-omp/"
+status = 301
+
+[[redirects]]
+from = "/omp/"
+to = "/pi-omp/"
+status = 301
+
+[[redirects]]
+from = "/pi.md"
+to = "/pi-omp.md"
+status = 301
+
+[[redirects]]
+from = "/omp.md"
+to = "/pi-omp.md"
+status = 301
+
 [build.environment]
 NODE_VERSION = "24"
 COREPACK_INTEGRITY_KEYS = "0"

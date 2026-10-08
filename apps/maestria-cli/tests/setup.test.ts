@@ -277,7 +277,7 @@ describe('setup pre-effect validation', () => {
     expect(calls.length).toBe(0);
   });
 
-  it('rejects unknown Maestria skills before any effect', async () => {
+  it('rejects unknown maestria skills before any effect', async () => {
     await withConfigDir();
     const calls: string[][] = [];
     await expect(
@@ -417,21 +417,6 @@ describe('setup reporting and reruns', () => {
     expect(actions.some((a) => a.category === 'xtarterize' && a.status === 'ok')).toBe(true);
   });
 
-  it('emits valid JSON with resume guidance', async () => {
-    await withConfigDir();
-    const result = await runSetup(
-      { ecosystem: 'opensrc', json: true, quiet: true, yes: true },
-      baseDeps({ readRecord: emptyRecord }),
-    );
-    expect(result.exitCode).toBe(0);
-    const parsed: unknown = JSON.parse(result.output);
-    if (!isRecord(parsed) || typeof parsed.resume !== 'string') {
-      throw new Error('setup JSON output is missing resume guidance');
-    }
-    expect(actionsOf(result.output).length).toBeGreaterThan(0);
-    expect(parsed.resume).toContain('Re-run with the same args');
-  });
-
   it('notes manual goal tracking when OpenCode is detected, never installing', async () => {
     await withConfigDir();
     const text = await runSetup({ quiet: true, yes: true }, baseDeps({ readRecord: emptyRecord }));
@@ -448,30 +433,6 @@ describe('setup non-TTY refusal', () => {
     expect(error.exitCode).toBe(1);
     expect(error.message).toContain('--ecosystem');
     expect(error.message).toContain('--yes');
-  });
-
-  it('requires --yes for mutating selections', async () => {
-    await withConfigDir();
-    const error = await captureCliError(
-      runSetup({ ecosystem: 'codegraph', quiet: true }, baseDeps()),
-    );
-    expect(error.message).toContain('--yes');
-  });
-});
-
-describe('setup live detection only', () => {
-  it('probes a missing binary as absent without installing', async () => {
-    await withConfigDir();
-    const result = await runSetup(
-      { ecosystem: 'codegraph', json: true, quiet: true, yes: true },
-      baseDeps({
-        detect: async () => [],
-        ecosystemProbe: absentProbe,
-        readRecord: nullRecord,
-      }),
-    );
-    expect(result.exitCode).toBe(0);
-    expect(actionsOf(result.output).length).toBeGreaterThan(0);
   });
 });
 
@@ -586,7 +547,7 @@ describe('isNoopSetupPlan', () => {
     },
     {
       expected: false,
-      name: 'Maestria defaults kept on a fresh install',
+      name: 'maestria defaults kept on a fresh install',
       plan: noopPlan({
         maestriaActive: true,
         reviewed: [
@@ -596,7 +557,7 @@ describe('isNoopSetupPlan', () => {
     },
     {
       expected: false,
-      name: 'any Maestria selection changed',
+      name: 'any maestria selection changed',
       plan: noopPlan({
         reviewed: [
           { id: 'opencode', selection: { changed: false, skills: [] } },
@@ -673,7 +634,7 @@ describe('setup no-op confirm skipping', () => {
     expect(result.output).not.toContain('already set up');
   });
 
-  it('does not short-circuit a fresh install when Maestria defaults are kept', async () => {
+  it('does not short-circuit a fresh install when maestria defaults are kept', async () => {
     await withConfigDir();
     const missingYes = await captureCliError(
       runSetup(

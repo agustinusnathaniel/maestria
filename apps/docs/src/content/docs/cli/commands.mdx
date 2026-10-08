@@ -15,7 +15,7 @@ These flags apply across the CLI:
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text) is supported on status, install, update, uninstall, configure, and setup. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes. Examples appear on every command except `uninstall`; AI-agent tips appear on `maestria`, `configure`, `plugin`, `plugin install`, `plugin validate`, and `setup`.
+`--compact` (machine-friendly text) is supported on status, install, update, uninstall, configure, and setup. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes; examples appear on every command except `uninstall`.
 
 `maestria` with no arguments runs `maestria status`.
 
@@ -65,7 +65,7 @@ Each platform object:
 | `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
 | `label` | string | Human-readable name |
 | `available` | boolean | CLI tool detected on `$PATH` |
-| `installed` | boolean | Maestria is installed for this platform |
+| `installed` | boolean | maestria is installed for this platform |
 | `installedVersion` | string | Version string from the installed package |
 | `latestVersion` | string | Latest version available on npm |
 
@@ -140,14 +140,14 @@ Skill flags are validated before any change. An unmanaged skill already present 
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
 
-**Prime Agent** uses its native package manager. Maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
+**Prime Agent** uses its native package manager. maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
 
 Prime has two additional constraints:
 
-- **Global scope only.** Maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh temporary directory that exposes only user settings; the directory is removed afterward.
-- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. Maestria detects a pinned user-scope registration and reports an error instead of silently skipping it.
+- **Global scope only.** maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh temporary directory that exposes only user settings; the directory is removed afterward.
+- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. maestria detects a pinned user-scope registration and reports an error instead of silently skipping it.
 
 ### Error handling
 
@@ -331,7 +331,7 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 
 Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
 
-Uninstall removes only Maestria-recorded methodology skills, and only when no other observed consumer shares the same installed path. A platform with no skill record keeps its companion in place with a manual removal command; unknown skill IDs keep their history.
+Uninstall removes only maestria-recorded methodology skills, and only when no other observed consumer shares the same installed path. A platform with no skill record keeps its companion in place with a manual removal command; unknown skill IDs keep their history.
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
@@ -508,9 +508,9 @@ maestria setup [--ecosystem <csv>] [--xtarterize-skills] [--skill-source <owner/
 | `--ecosystem` | Ecosystem tools to check (CSV, or omit for interactive selection). Known: `codegraph, agent-browser, opensrc`. Detection only; never installs automatically. |
 | `--xtarterize-skills` | Apply project skills via xtarterize (`agent/skills-install`) for the target cwd |
 | `--skill-source` | Skill source to install via the skills CLI (repeatable or CSV). Format: `<owner/repo:scope>` with scope `project` or `global`. Skip by omitting. |
-| `--skills` | Maestria methodology skills to activate (CSV, or `none` for no skills). Default: recorded selection, else `create-pull-request, docs-update`. |
+| `--skills` | maestria methodology skills to activate (CSV, or `none` for no skills). Default: recorded selection, else `create-pull-request, docs-update`. |
 | `--maestria-skills` | Alias for `--skills`. `--skills` wins when both are set. |
-| `--exclude-skills` | Maestria methodology skills to skip (CSV). Never touches independently installed copies. |
+| `--exclude-skills` | maestria methodology skills to skip (CSV). Never touches independently installed copies. |
 | `--cwd` | Project directory the setup targets. Defaults to the current directory. |
 | `--yes`, `-y` | Confirm all setup actions non-interactively (required for non-TTY) |
 | `--json` | Output the per-action report as JSON |
@@ -519,7 +519,7 @@ maestria setup [--ecosystem <csv>] [--xtarterize-skills] [--skill-source <owner/
 
 ### Behavior
 
-`setup` plans three independent groups and runs only the confirmed ones: ecosystem tool checks (detection plus manual steps, never automatic installs), xtarterize project skills for `--cwd`, and skill sources plus the Maestria methodology selection. Project scope follows `--cwd` (or the current directory); re-run with the same args to resume. Skill flags are validated before any change, same as `install`.
+`setup` plans three independent groups and runs only the confirmed ones: ecosystem tool checks (detection plus manual steps, never automatic installs), xtarterize project skills for `--cwd`, and skill sources plus the maestria methodology selection. Project scope follows `--cwd` (or the current directory); re-run with the same args to resume. Skill flags are validated before any change, same as `install`.
 
 ### Example
 

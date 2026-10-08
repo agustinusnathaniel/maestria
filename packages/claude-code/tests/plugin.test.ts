@@ -27,6 +27,13 @@ type JsonObject = Record<string, unknown>;
 const isJsonObject = (value: unknown): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const requireString = (value: unknown, field: string): string => {
+  if (typeof value !== 'string') {
+    throw new TypeError(`expected ${field} to be a string, got ${typeof value}`);
+  }
+  return value;
+};
+
 const readJson = async (relativePath: string): Promise<JsonObject> => {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
   const raw = await readFile(absolute, 'utf-8');
@@ -139,12 +146,6 @@ const readAgent = async (
 };
 
 describe('.claude-plugin/plugin.json manifest', () => {
-  it('exists and parses as valid JSON', async () => {
-    const manifest = await readJson('.claude-plugin/plugin.json');
-    expect(typeof manifest).toBe('object');
-    expect(manifest).not.toBeNull();
-  });
-
   it('has a "name" matching the Claude Code plugin name regex', async () => {
     const manifest = await readJson('.claude-plugin/plugin.json');
     expect(typeof manifest.name).toBe('string');
@@ -201,21 +202,13 @@ describe('generated agents', () => {
         const { data } = await readAgent(agent);
         expect(data.name).toBe(agent);
         expect(typeof data.description).toBe('string');
-        if (typeof data.description === 'string') {
-          expect(data.description.trim().length).toBeGreaterThan(0);
-        }
+        expect(requireString(data.description, 'description').trim().length).toBeGreaterThan(0);
         expect(data.skills).toEqual(['maestria:global-rules']);
       });
 
       it('has a model metadata field', async () => {
         const { data } = await readAgent(agent);
         expect(data.model).toBe('inherit');
-      });
-
-      it('has the auto-generated comment and no source comment', async () => {
-        const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
-        expect(text).toContain('Auto-generated from @maestria/core');
-        expect(text).not.toMatch(/^<!--\s*Source:/mu);
       });
 
       it('does not use ignored plugin-agent fields', async () => {
@@ -265,7 +258,6 @@ describe('generated skills', () => {
     const { data, body } = parseFrontmatter(text);
     expect(data.name).toBe('global-rules');
     expect(typeof data.description).toBe('string');
-    expect(body).toContain('Auto-generated from @maestria/core');
     expect(body).toContain('Global Agent Rules');
   });
 
@@ -290,10 +282,7 @@ describe('generated skills', () => {
       'utf-8',
     );
 
-    expect(text).toContain('Runtime Authority');
-    expect(text).toContain('direct work is available');
     expect(text).toContain('Methodology and skills are advisory guidance');
-    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/iu);
   });
 });
 

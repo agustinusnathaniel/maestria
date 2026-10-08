@@ -1,10 +1,10 @@
-# Maestria agent instructions
+# maestria agent instructions
 
-Maestria provides installable plugins for structured AI engineering work. An orchestrator routes tasks to seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, and writer. Small, familiar tasks can run directly in the host session; delegation and permissions depend on the platform.
+maestria provides installable plugins for structured AI engineering work. An orchestrator routes tasks to seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, and writer. Small, familiar tasks can run directly in the host session; delegation and permissions depend on the platform.
 
-## When to use Maestria
+## When to use maestria
 
-Use Maestria when you need to:
+Use maestria when you need to:
 
 - Install or wire structured agent-methodology plugins into a supported coding platform: OpenCode, Kimi Code, Pi, Hermes, Claude Code, Codex CLI, Cursor, prime-agent, or OMP.
 - Install the portable Agent Plugins v1 package when your client supports the standard `plugin.json` and `skills/` layout: https://maestria.sznm.dev/agent-plugin/
@@ -12,7 +12,7 @@ Use Maestria when you need to:
 - Decide how to route a task: direct execution vs specialist dispatch vs the full staged pipeline (thinker, worker, verifier).
 - Enforce maker/checker review: the builder never approves its own work; an independent reviewer signs off.
 
-## How to call Maestria
+## How to call maestria
 
 Install into a supported coding platform:
 

@@ -36,7 +36,7 @@ const collectInstallTargets = async (
     return platformIds.map((id) => ({ id }));
   }
   if (all) {
-    const detected = await detectWithSpinner(isQuiet, detectAll());
+    const detected = await detectWithSpinner(isQuiet, detectAll({ includeLatest: false }));
     const toInstall = detected
       .filter((s) => s.available && !s.installed)
       .map((p) => ({ id: p.id, label: p.label }));
@@ -49,7 +49,7 @@ const collectInstallTargets = async (
     return toInstall;
   }
   assertInteractiveTerminal('install');
-  const allPlatforms = await detectWithSpinner(isQuiet, detectAll());
+  const allPlatforms = await detectWithSpinner(isQuiet, detectAll({ includeLatest: false }));
   const installable = allPlatforms
     .filter((s) => s.available && !s.installed)
     .map((p) => ({ id: p.id, label: p.label }));
@@ -58,7 +58,7 @@ const collectInstallTargets = async (
       exitCode: 0,
       output: allPlatforms.every((s) => !s.available)
         ? 'No supported coding agent platforms detected on this machine.'
-        : 'Maestria is already installed for all detected platforms.',
+        : 'maestria is already installed for all detected platforms.',
     };
   }
   const selected = await groupMultiselect({

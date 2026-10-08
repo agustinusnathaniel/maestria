@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-09-24). The adapter is implemented; complete case-by-case verification remains pending.
+Accepted (2026-09-24). Current verification is owned by the [consolidated E2E probe](../../../scripts/e2e/fail-closed-evidence.ts) and package tests; the inventories below describe intended contracts, not case-by-case proof. The probe samples subprocess success, timeout, output bounds, and platform cleanup availability. A live host probe is still needed before claiming host enforcement.
 
 ## Context
 
@@ -142,10 +142,8 @@ Revert the route-boundary implementation, its tests, and this ADR together. Do n
 ## Related Decisions
 
 - [ADR-HM-000](ADR-HM-000-plugin-over-skills-only.md): Hermes plugin distribution and host-native enforcement boundary.
-- [ADR-HM-002](ADR-HM-002-orchestration-policy.md): trusted top-level and role-neutral child capability policy.
 - [ADR-OC-001](../opencode/ADR-OC-001-tool-permission-design.md): coarse OpenCode permission policy and host-enforcement limits.
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): pre-code test selection and repeatable evidence.
-- [Testing Philosophy](../../testing.md): test selection and evidence requirements.
 
 ## Date
 

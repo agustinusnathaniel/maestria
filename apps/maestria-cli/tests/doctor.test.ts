@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { handleDoctor } from '@/commands/doctor.js';
 import { collectDoctorReports } from '@/lib/doctor.js';
+import { isRecord } from '@/lib/primitives.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { COMPANION_SKILL, DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
@@ -393,43 +394,29 @@ describe('doctor reports', () => {
       expect(human.output).not.toContain('--exclude-skills');
 
       const json = await runJson(fakeListCli(inventory), largeStatuses, null);
-      expect(parsed(json)).toMatchObject({
-        platforms: [
-          {
-            id: 'opencode',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-            ],
-          },
-          {
-            id: 'omp',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-            ],
-          },
-          {
-            id: 'prime-agent',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-            ],
-          },
-          {
-            id: 'cursor',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-              expect.stringContaining('to install the plugin'),
-            ],
-          },
-        ],
-      });
+      const report = parsed(json);
+      if (!isRecord(report) || !Array.isArray(report.platforms)) {
+        throw new Error('Doctor JSON is missing platforms');
+      }
+      const { platforms } = report;
+      expect(platforms.map((platform) => (isRecord(platform) ? platform.id : undefined))).toEqual([
+        'opencode',
+        'omp',
+        'prime-agent',
+        'cursor',
+      ]);
+      for (const platform of platforms) {
+        if (!isRecord(platform) || !Array.isArray(platform.next)) {
+          throw new Error('Doctor JSON is missing next actions');
+        }
+        expect(platform.next).toHaveLength(platform.id === 'cursor' ? 4 : 3);
+        expect(platform.next[0]).toContain('--exclude-skills');
+        expect(platform.next[1]).toContain('--exclude-skills');
+        expect(platform.next[2]).toContain('to record a selection');
+        if (platform.id === 'cursor') {
+          expect(platform.next[3]).toContain('to install the plugin');
+        }
+      }
     });
   });
 });

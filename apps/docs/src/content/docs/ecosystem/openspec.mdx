@@ -1,11 +1,11 @@
 ---
 title: OpenSpec and Spec Kit
-description: Independent spec tools Maestria reads alongside its own contract header, without owning or managing them.
+description: Independent spec tools maestria reads alongside its own contract header, without owning or managing them.
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-OpenSpec is an independent project under the MIT license, maintained by Fission AI and OpenSpec contributors. Spec Kit is an independent project under the MIT license, maintained by GitHub. Neither is part of Maestria, and Maestria does not require, install, or manage either tool.
+OpenSpec is an independent project under the MIT license, maintained by Fission AI and OpenSpec contributors. Spec Kit is an independent project under the MIT license, maintained by GitHub. Neither is part of maestria, and maestria does not require, install, or manage either tool.
 
 ## What They Are
 
@@ -13,15 +13,15 @@ OpenSpec is a lightweight spec framework for capturing what to build and trackin
 
 Spec Kit is a spec-driven toolkit for defining what to build before building it with any AI coding agent. It keeps feature specs in `specs/<feature>` alongside a project constitution.
 
-## Why Use Them With Maestria
+## Why Use Them With maestria
 
-Maestria detects specs owned by other tools and references them read-only. If a project already uses OpenSpec (`openspec/specs` or `openspec/changes`) or Spec Kit (`specs/<feature>` plus constitution), the spec-contract skill carries pointers to that owning truth across steps and leaves those files to their owning workflow.
+maestria detects specs owned by other tools and references them read-only. If a project already uses OpenSpec (`openspec/specs` or `openspec/changes`) or Spec Kit (`specs/<feature>` plus constitution), the spec-contract skill carries pointers to that owning truth across steps and leaves those files to their owning workflow.
 
 Absence of a spec is normal; tiny work skips the header.
 
 ## Installation
 
-Install and update specs with their own upstream instructions. Run these commands yourself; Maestria never runs installs for you.
+Install and update specs with their own upstream instructions. Run these commands yourself; maestria never runs installs for you.
 
 **OpenSpec:**
 
@@ -49,7 +49,7 @@ specify init <PROJECT_NAME>
 
 ## Quick Start
 
-Work in the owning tool first (OpenSpec or Spec Kit), then let Maestria reference the result. The spec-contract header points at the existing spec, and each step keeps carrying that pointer while the owning workflow stays in charge of its own files.
+Work in the owning tool first (OpenSpec or Spec Kit), then let maestria reference the result. The spec-contract header points at the existing spec, and each step keeps carrying that pointer while the owning workflow stays in charge of its own files.
 
 ## Resources
 

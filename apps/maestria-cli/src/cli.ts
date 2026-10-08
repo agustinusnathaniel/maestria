@@ -99,7 +99,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   plugin: {
     examples: [
       'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
-      'maestria plugin install                 Stage @maestria/agent-plugin in the Maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugin in the maestria cache',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
       'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
     ],
@@ -114,7 +114,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria setup --ecosystem codegraph,opensrc --yes  Check ecosystem tools non-interactively',
       'maestria setup --xtarterize-skills --cwd ./my-project --yes  Apply project skills',
       'maestria setup --skill-source acme/skills:global --yes  Install a skill source globally',
-      'maestria setup --skills create-pull-request --yes  Reconcile Maestria skills',
+      'maestria setup --skills create-pull-request --yes  Reconcile maestria skills',
       'maestria setup --json             Output the per-action report as JSON',
     ],
     tip: [
@@ -150,7 +150,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
 const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   install: {
     examples: [
-      'maestria plugin install                 Stage @maestria/agent-plugin in the Maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugin in the maestria cache',
       'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
       'maestria plugin install --json          Output the staged package report as JSON',

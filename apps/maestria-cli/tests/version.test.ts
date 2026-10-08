@@ -3,6 +3,23 @@ import { describe, expect, it } from 'vite-plus/test';
 import { compareVersions, isValidVersion, isVersionEq, isVersionGt } from '@/lib/version.js';
 
 describe('compareVersions', () => {
+  it('uses ASCII prerelease order and compares numeric identifiers below text identifiers', () => {
+    expect(compareVersions('1.0.0-alpha.A', '1.0.0-alpha.a')).toBe(-1);
+    expect(compareVersions('1.0.0-alpha.2', '1.0.0-alpha.10')).toBe(-1);
+    expect(compareVersions('1.0.0-alpha.10', '1.0.0-alpha.A')).toBe(-1);
+    expect(compareVersions('1.0.0-alpha', '1.0.0-alpha.0')).toBe(-1);
+  });
+
+  it('rejects malformed numeric identifiers without accepting npm prefix or whitespace aliases', () => {
+    expect(isValidVersion('01.0.0')).toBe(false);
+    expect(isValidVersion('1.0.0-01')).toBe(false);
+    expect(compareVersions('1.0.0-01', '1.0.0-1')).toBe(null);
+    expect(isValidVersion('v1.0.0')).toBe(false);
+    expect(isValidVersion(' 1.0.0')).toBe(false);
+    expect(isValidVersion('1.0.0 ')).toBe(false);
+    expect(isValidVersion('1.0.0+001')).toBe(true);
+  });
+
   it('handles sentinels, numeric segments, prerelease, and latest', () => {
     expect(compareVersions('0.1.13', 'see GitHub releases')).toBe(null);
     expect(compareVersions('see GitHub releases', '0.1.13')).toBe(null);

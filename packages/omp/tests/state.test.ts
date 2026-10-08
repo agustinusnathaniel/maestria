@@ -3,31 +3,15 @@ import { describe, expect, it } from 'vite-plus/test';
 import { isOmpModel } from '@/model.js';
 import {
   createInitialState,
-  exitReviewMode,
   FILE_HISTORY_CAP,
   HANDOFF_HISTORY_CAP,
-  persistState,
-  recordFileModified,
-  recordFileRead,
-  recordHandoff,
-  recordSpecialistDelegated,
   renderMaestriaSummary,
 } from '@maestria/shared-pi/state-core';
-import { restoreOriginalState } from '@/state/review.js';
 
 describe('state modules', () => {
-  it('exposes the shared state API and the omp restore helper', () => {
+  it('pins the shared history caps', () => {
     expect(HANDOFF_HISTORY_CAP).toBe(5);
     expect(FILE_HISTORY_CAP).toBe(10);
-    expect(typeof createInitialState).toBe('function');
-    expect(typeof recordHandoff).toBe('function');
-    expect(typeof recordFileModified).toBe('function');
-    expect(typeof recordFileRead).toBe('function');
-    expect(typeof recordSpecialistDelegated).toBe('function');
-    expect(typeof exitReviewMode).toBe('function');
-    expect(typeof persistState).toBe('function');
-    expect(typeof renderMaestriaSummary).toBe('function');
-    expect(typeof restoreOriginalState).toBe('function');
   });
 
   it('serves shared initial state', () => {

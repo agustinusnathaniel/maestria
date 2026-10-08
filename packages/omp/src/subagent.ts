@@ -154,7 +154,7 @@ export const installNativeSubagentTool = (pi: ExtensionAPI, state: MaestriaState
       }
       return await executeSubagent(pi, state, params);
     },
-    label: 'Maestria Subagent',
+    label: 'maestria Subagent',
     name: 'maestria_subagent',
     parameters: pi.zod.object({
       agent: pi.zod

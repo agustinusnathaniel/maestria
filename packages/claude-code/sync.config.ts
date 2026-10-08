@@ -137,7 +137,7 @@ export default {
     'orchestrator.md': {
       append: ORCHESTRATOR_APPEND,
       frontmatter: {
-        description: `Maestria workflow dispatcher for Claude Code routing, handoffs, and independent review.`,
+        description: `maestria workflow dispatcher for Claude Code routing, handoffs, and independent review.`,
         name: 'orchestrator',
       },
       output: '../skills/orchestrator/SKILL.md',

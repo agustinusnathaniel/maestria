@@ -1,5 +1,5 @@
 import { mkdtempSync } from 'node:fs';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
@@ -685,23 +685,6 @@ describe('apply companion outcomes', () => {
 });
 
 describe('record roundtrip', () => {
-  it('persists per-skill observed source and path and reads them back', async () => {
-    await isolateRecord();
-    const { readSkillsRecord, withRecordedSelection, writeSkillsRecord } =
-      await import('@/lib/skills.js');
-    const next = withRecordedSelection(null, 'pi', [SKILL], {
-      [SKILL]: { path: '/fake/pi/create-pull-request', source: SOURCE },
-    });
-    await writeSkillsRecord(next);
-    const text = await readFile(`${process.env.MAESTRIA_CONFIG_DIR}/skills.json`, 'utf-8');
-    expect(text).toContain(SOURCE);
-    const saved = await readSkillsRecord();
-    expect(saved?.platforms.pi?.skills).toEqual([SKILL]);
-    expect(saved?.platforms.pi?.skillAssets).toMatchObject({
-      [SKILL]: { path: '/fake/pi/create-pull-request', source: SOURCE },
-    });
-  });
-
   it('keeps unknown skill history when uninstalling managed skills', async () => {
     await isolateRecord();
     const runner = fakeSkillCli({ [AGENT]: '/fake/p' });

@@ -1,4 +1,4 @@
-/** Managed Codex global instruction block for automatic Maestria routing. */
+/** Managed Codex global instruction block for automatic maestria routing. */
 
 export const CODEX_MANAGED_INSTRUCTIONS_START = '<!-- maestria:codex-orchestrator:start -->';
 export const CODEX_MANAGED_INSTRUCTIONS_END = '<!-- maestria:codex-orchestrator:end -->';
@@ -27,22 +27,22 @@ const hasExactlyOne = (content: string, marker: string): boolean =>
 const normalizeManagedBlock = (block: string): string => {
   const normalized = block.trim();
   if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_START)) {
-    throw new Error('Codex Maestria instruction block is missing its start marker');
+    throw new Error('Codex maestria instruction block is missing its start marker');
   }
   if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_END)) {
-    throw new Error('Codex Maestria instruction block is missing its end marker');
+    throw new Error('Codex maestria instruction block is missing its end marker');
   }
   if (
     normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_START) >
     normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_END)
   ) {
-    throw new Error('Codex Maestria instruction block markers are out of order');
+    throw new Error('Codex maestria instruction block markers are out of order');
   }
   return normalized;
 };
 
 /**
- * Return the one Maestria-managed block in a Codex instruction file.
+ * Return the one maestria-managed block in a Codex instruction file.
  *
  * A malformed or duplicated marker is rejected so an install cannot silently
  * damage a user-owned instruction file.
@@ -57,7 +57,7 @@ export const codexManagedInstructionRange = (
     return undefined;
   }
   if (starts.length !== 1 || ends.length !== 1 || starts[0] > ends[0]) {
-    throw new Error('Codex Maestria instruction markers are malformed or duplicated');
+    throw new Error('Codex maestria instruction markers are malformed or duplicated');
   }
 
   return {

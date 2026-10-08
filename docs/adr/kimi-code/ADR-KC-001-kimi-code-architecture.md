@@ -2,12 +2,12 @@
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17)
+Accepted (2026-06-12; revised 2026-06-17). Correction (2026-09-28): the historical swarm threshold and profile mapping below diverge from the [sync config](../../../packages/kimi-code/sync.config.ts) and its [orchestrator projection](../../../packages/kimi-code/skills/orchestrator/SKILL.md). The projection routes architect/reviewer to `plan`; `Skill` is available to `plan` and `coder`, while `explore` still needs inlined persona content. Swarm guidance is internally inconsistent: the operative dispatch sentence uses two or more items, while the frontmatter/checklist still say three. Reverify those operational details at source; this record preserves the declarative-plugin and persona-mapping rationale.
 
-### Revision History
+## Supersession
 
-- **2026-06-12** - Original draft accepted with the orchestrator-skill pattern and the 7-specialist → 3-subagent mapping
-- **2026-06-17** - Revised after the `@maestria/opencode` plugin shipped and Kimi Code source was reverified at v0.13.1. Corrects factual errors (hooks, compaction, install URL, permission scope), adds `AgentSwarm` / swarm-mode integration, revises the specialist mapping per the `@architect` review, and adds a recommended `[[hooks]]` block for `config.toml`
+- **2026-06-12**: original draft accepted with the orchestrator-skill pattern and the 7-specialist to 3-subagent mapping.
+- **2026-06-17**: revised after `@maestria/opencode` shipped and Kimi Code was reverified at v0.13.1, which corrected the hooks, compaction, install URL, and permission-scope entries and added swarm integration, the revised specialist mapping, and a recommended `[[hooks]]` block.
 
 ## Context
 
@@ -39,7 +39,7 @@ A plugin may register `mcpServers`, `skills`, one `sessionStart.skill` (single t
 
 ### Specialist → Subagent Profile Mapping
 
-| Maestria Agent | Kimi Subagent | Rationale |
+| maestria Agent | Kimi Subagent | Rationale |
 | --- | --- | --- |
 | **Orchestrator** | Main agent (auto-loaded) | `sessionStart.skill`; teaches methodology, delegation, and swarm usage; must route heavy work to specialists |
 | **Builder** | `coder` | Write, Edit, Bash |
@@ -52,8 +52,6 @@ A plugin may register `mcpServers`, `skills`, one `sessionStart.skill` (single t
 
 The non-obvious constraints are prompt-enforced, not tool-enforced: `explore`'s Bash is a full shell, and `coder`'s Write/Edit are excluded from review only by persona instruction.
 
-> **Note (2026-09-22).** The table above is the 2026-06-17 decision record. The shipped package has since remapped architect and reviewer to `plan` and writer and diagnose to `coder` (see `skillInstructions` in `packages/kimi-code/kimi.plugin.json` and the routing table in `packages/kimi-code/skills/orchestrator/SKILL.md`), and the swarm fan-out threshold is now 2+ uniform items rather than the N≥3 recorded below. The orchestrator skill is the operational source for the current mapping; this ADR is not re-deciding it here.
-
 ### Swarm Usage (AgentSwarm + SwarmMode)
 
 `AgentSwarm` fans one prompt template across N independent items (fields documented in the tool's own description); `SwarmMode` is toggled by `/swarm on|off` or `/swarm <task>` and auto-exits when the turn completes.
@@ -63,8 +61,6 @@ The non-obvious constraints are prompt-enforced, not tool-enforced: `explore`'s 
 **Orchestrator's swarm design:** default to `AgentSwarm` for the same kind of work across N≥3 independent items (cheaper per item, rate-limit-aware retry, live progress); a single `Agent` call for 1-2 items or stateful work. Specialist persona content is inlined into `prompt_template` at the `{{item}}` position; `resume_agent_ids` retries only unfinished items (`completed` / `failed` / `aborted` per subagent).
 
 ### Routing Table
-
-The orchestrator skill embeds the model-facing routing table (persona plus `subagent_type` per request type, with swarm fan-out inlined in `prompt_template` and no alongside `Agent` call). The table above records the ADR decision; the skill holds the current operational copy.
 
 | Request type | subagent_type | Persona |
 | --- | --- | --- |
@@ -76,6 +72,8 @@ The orchestrator skill embeds the model-facing routing table (persona plus `suba
 | Code review / QA | `coder` | @reviewer (persona **MUST forbid editing**) |
 | Documentation | `coder` | @writer |
 | Swarm fan-out (≥3 independent items) | varies | inlined in `prompt_template`; no `Agent` call alongside |
+
+The table above is the persona-selection decision; the specialist mapping above it is the agent-to-profile decision. The orchestrator skill holds the current operational copy, and it is keyed by persona rather than by request type `[verified]`: its `## Specialist → Subagent Routing` table maps each of the 7 personas to a subagent type and has no swarm fan-out row, and its `## Swarm Usage (AgentSwarm)` section carries the fan-out guidance separately. That skill's current mapping has also diverged from the decision above: it routes architect and reviewer to `plan` rather than `coder`, so the reviewer's no-edit constraint is now carried by the read-only `plan` profile and by the reviewer's own persona line rather than by a persona instruction against `coder`'s write tools. The request-type-to-persona selection recorded here, including the 2026-06-17 revision that moved architect, writer, and diagnose to `coder`, is therefore the decision record and survives only in this record `[verified]`.
 
 ### Comparison: OpenCode vs. Kimi Code Plugin
 
@@ -101,8 +99,6 @@ The orchestrator skill embeds the model-facing routing table (persona plus `suba
 - **No compaction injection** - `PreCompact`/`PostCompact` observe only; compaction summaries are plugin-inaccessible.
 - **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`; the plugin documents them in the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/) (including the `PreToolUse` Bash guard, `UserPromptSubmit` reminder, and `PreCompact`/`PostCompact` logging), but the user copies them in.
 
-> **Note (2026-09-22).** The shipped orchestrator skill reports the `Skill` tool as available to the `plan` and `coder` profiles (pre-load persona content only for `explore`), which relaxes the "subagents cannot use the Skill tool" risk recorded under Risks below. Sub-skill nesting still caps at 3 levels. The skill is the operational source; the risk entry below is retained as the original constraint record.
-
 ## Consequences
 
 ### Positive
@@ -126,9 +122,9 @@ The orchestrator skill embeds the model-facing routing table (persona plus `suba
 - **User forgets the AGENTS.md copy** - rules are missing silently. Mitigation: INSTALL.md checklist and skills referencing AGENTS.md.
 - **User modifications are overwritten** - `/plugins install` overwrites edits to bundled skills. Mitigation: fork the plugin for customizations.
 - **User skips the recommended hooks** - destructive-command blocking and per-turn reminders are unavailable. Mitigation: the installation guide's checklist and the orchestrator's `whenToUse` reminder.
-- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split (see [ADR-CORE-012](../core/ADR-CORE-012-deterministic-review-signals-fail-loud-exit.md)). Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
+- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split (see [ADR-CORE-019](../core/ADR-CORE-019-directive-simplification.md)). Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
 - **Architect was remapped from `plan` to `coder`** - `plan` has no Bash, blocking validation (`which`, `npm view`); `coder` restores it while making write tools technically available. Mitigation: the persona restricts Bash to read-only validation.
-- **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`. (See the 2026-09-22 note above for the current relaxation.)
+- **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`.
 - **`AgentSwarm` is exclusive-deny** - it must be the only tool call in its turn, so exploration and swarm fan-out take two turns. Mitigation: the orchestrator skill documents the pattern; `resume_agent_ids` re-feeds unfinished items.
 - **Sub-skill hierarchy caps at 3 levels** - the orchestrator → persona chain is at the cap; an orchestrator-of-orchestrators pipeline needs a different solution. Revisit if the limit is raised.
 
@@ -146,9 +142,9 @@ With 3+ platforms, consider extracting a canonical agent schema, skill registry,
 
 ## Related Decisions
 
-- ADR-CORE-001 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
+- ADR-CORE-019 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
 - ADR-CORE-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
-- ADR-CORE-003: Agent conventions (!!! markers, cross-references, skill pattern - carried forward into SKILL.md)
+- Canonical specialist directives carry prompt conventions and skill-loading guidance; `!!!` markers communicate methodology, not host enforcement.
 
 ## Date
 

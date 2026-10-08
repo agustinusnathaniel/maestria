@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - **Cursor IDE** and/or **Cursor CLI** (`agent` on `$PATH`)
-- The plugin itself requires no Node.js runtime. The Maestria CLI install below requires Node.js, pnpm (`pnpx`), and npm.
+- The plugin itself requires no Node.js runtime. The maestria CLI install below requires Node.js, pnpm (`pnpx`), and npm.
 
 ## Via maestria CLI (recommended)
 
@@ -42,7 +42,7 @@ pnpx maestria@latest update cursor --version 0.2.2
 1. Open **Customize → Plugins** (IDE) and confirm `maestria` is listed, **or**
 2. In Agent chat, confirm `/fein`, `/sonar`, `/blitz` appear
 3. Confirm specialists are available as agents (adventurer, builder, reviewer, …)
-4. Confirm global rules include Maestria content (`alwaysApply`)
+4. Confirm global rules include maestria content (`alwaysApply`)
 
 ## Uninstall
 

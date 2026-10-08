@@ -1,5 +1,5 @@
 /**
- * Shared platform registry - single source of truth for every Maestria
+ * Shared platform registry - single source of truth for every maestria
  * platform adapter across the homepage adapter grid and footer.
  *
  * Blurbs are presentation copy; keep them in sync with the homepage card
@@ -98,7 +98,7 @@ export const platforms: Platform[] = [
     name: '@maestria/hermes',
   },
   {
-    blurb: 'Skills-first Maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
+    blurb: 'Skills-first maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
     href: '/prime-agent/',
     id: 'prime-agent',
     installArgs: 'install prime-agent',

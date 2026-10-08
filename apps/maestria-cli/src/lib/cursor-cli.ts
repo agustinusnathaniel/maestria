@@ -14,7 +14,7 @@ export const cursorCliName = (): Effect.Effect<string | undefined> =>
       cliName = 'cursor-agent';
     } else if (yield* commandExists('agent')) {
       const version = yield* run('agent', ['--version'], 3000).pipe(
-        Effect.catchCause(() => Effect.succeed('')),
+        Effect.catchEager(() => Effect.succeed('')),
       );
       if (/cursor/iu.test(version)) {
         cliName = 'agent';

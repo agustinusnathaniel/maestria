@@ -1,5 +1,5 @@
-name: 'Maestria Setup'
-description: 'Install dependencies with pnpm, optionally setup Python + ruff, restore vp task cache'
+name: 'maestria Setup'
+description: 'Install dependencies with pnpm (which brings Node too), optionally setup Python + ruff, restore vp task cache'
 inputs:
   python:
     description: 'Set up Python and install ruff (required for check-python)'
@@ -8,9 +8,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-node@v6
-      with:
-        node-version-file: '.node-version'
     - uses: actions/setup-python@v6
       if: inputs.python == 'true'
       with:
@@ -25,9 +22,11 @@ runs:
       if: inputs.python == 'true'
       run: pip install ruff==0.16.7
       shell: bash
-    - uses: pnpm/setup@v2
+    # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
+    - uses: pnpm/setup@v3
       with:
         cache: true
+        require-lockfile: true
     - name: Restore vp task cache
       uses: actions/cache@v6
       with:

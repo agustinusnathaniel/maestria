@@ -138,6 +138,23 @@ describe('pi platform uninstall', () => {
   });
 });
 
+describe('pi subagent prerequisite', () => {
+  it('pins the pi-subagents peer to a range instead of installing bare latest', () => {
+    // The prerequisite effect is built at module load, so its run(...) call is
+    // already recorded; assert before any test clears the shared mock.
+    const prerequisite = vi
+      .mocked(shell.run)
+      .mock.calls.find(
+        (call) => call[0] === 'pi' && call[1]?.[1]?.startsWith('npm:@gotgenes/pi-subagents'),
+      );
+
+    const spec = prerequisite?.[1]?.[1] ?? '';
+    // The peer range lives in the workspace catalog; pinning bare `latest`
+    // here installed versions the @maestria/pi peer range can reject.
+    expect(spec).toMatch(/^npm:@gotgenes\/pi-subagents@\^\d+\.\d+\.\d+$/u);
+  });
+});
+
 describe('pi and omp package commands', () => {
   it('drives install, update, and uninstall with exact command arrays', async () => {
     // Uninstall effects are built at module load, so the recorded call is the

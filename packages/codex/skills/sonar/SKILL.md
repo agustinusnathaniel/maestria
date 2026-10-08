@@ -1,5 +1,5 @@
 ---
-description: Research-only Maestria route using read-only specialist skills, then stop before implementation.
+description: Research-only maestria route using read-only specialist skills, then stop before implementation.
 name: sonar
 ---
 

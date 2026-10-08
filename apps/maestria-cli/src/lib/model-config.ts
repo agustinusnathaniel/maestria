@@ -196,14 +196,14 @@ export const parseCodexAgentModel = (content: string): string | undefined =>
 export const setCodexAgentModel = (content: string, model: string): string =>
   setCodexTopLevelString(content, 'model', model || undefined);
 
-/** Create the smallest native Codex custom-agent file for a Maestria role. */
+/** Create the smallest native Codex custom-agent file for a maestria role. */
 export const createCodexAgentConfig = (
   agent: AgentName,
   model: string,
   nativeName = codexManagedAgentName(agent),
 ): string => {
   const readOnly = new Set<AgentName>(['adventurer', 'architect', 'planner', 'reviewer']);
-  const description = `Maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
+  const description = `maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
   const instructions = [
     `Load the $maestria:${agent} skill before acting.`,
     `Stay within the ${agent} specialist role and return a concise handoff to the parent agent.`,
@@ -283,7 +283,7 @@ const opencode: ModelConfigHandler = {
   readCurrent: (level) =>
     findOpenCodeConfigPath(level).pipe(
       Effect.flatMap((configPath) =>
-        readTextFile(configPath).pipe(Effect.catchCause(() => Effect.succeed(''))),
+        readTextFile(configPath).pipe(Effect.catchEager(() => Effect.succeed(''))),
       ),
       Effect.map(parseConfigModels),
     ),
@@ -292,7 +292,7 @@ const opencode: ModelConfigHandler = {
     Effect.gen(function* write() {
       const configPath = yield* findOpenCodeConfigPath(level);
       const text = yield* readTextFile(configPath).pipe(
-        Effect.catchCause(() => Effect.succeed('{}')),
+        Effect.catchEager(() => Effect.succeed('{}')),
       );
       let next = text;
       for (const [agent, model] of Object.entries(models)) {
@@ -322,7 +322,7 @@ const codex: ModelConfigHandler = {
       (agent) =>
         resolveCodexAgentPath(level, agent).pipe(
           Effect.flatMap((agentPath) => readTextFile(agentPath)),
-          Effect.catchCause(() => Effect.succeed('')),
+          Effect.catchEager(() => Effect.succeed('')),
         ),
       parseCodexAgentModel,
     ),
@@ -364,7 +364,7 @@ const listCursorModels = (): Effect.Effect<string[], CommandError> =>
       // `agent models` is the current command; retain the older flag as a
       // compatibility fallback for cursor-agent releases that still expose it.
       return run(cli, ['models'], 30_000).pipe(
-        Effect.catchCause(() => run(cli, ['--list-models'], 30_000)),
+        Effect.catchTag('CommandError', () => run(cli, ['--list-models'], 30_000)),
       );
     }),
     Effect.map(parseCursorModels),
@@ -397,7 +397,7 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
     const global = `${cfg.globalDir}/${agent}.md`;
     return readTextFile(target)
       .pipe(
-        Effect.catchCause(() =>
+        Effect.catchTag('CommandError', () =>
           level === 'global'
             ? Effect.fail(
                 new CommandError({
@@ -406,7 +406,7 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
                 }),
               )
             : readTextFile(global).pipe(
-                Effect.catchCause(() =>
+                Effect.catchTag('CommandError', () =>
                   Effect.fail(
                     new CommandError({
                       command: `read ${global}`,
@@ -433,7 +433,7 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
         (agent) =>
           resolveAgent(level, agent).pipe(
             Effect.map(({ content }) => content),
-            Effect.catchCause(() => Effect.succeed('')),
+            Effect.catchEager(() => Effect.succeed('')),
           ),
         (content) => parseAgentFrontmatterModel(content, { fallbackToContent: true }),
       ),

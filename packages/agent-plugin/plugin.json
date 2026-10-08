@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "maestria",
-  "version": "0.1.9",
-  "description": "Portable Maestria engineering methodology delivered as Agent Skills for compatible clients.",
+  "version": "0.1.10",
+  "description": "Portable maestria engineering methodology delivered as Agent Skills for compatible clients.",
   "author": {
     "name": "agustinusnathaniel",
     "url": "https://github.com/agustinusnathaniel"

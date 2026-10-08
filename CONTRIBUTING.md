@@ -1,4 +1,4 @@
-# Contributing to Maestria
+# Contributing to maestria
 
 ## Start Here
 
@@ -8,7 +8,9 @@ vp install
 vp check
 ```
 
-Maestria uses [Vite+](https://viteplus.dev) for formatting, linting, type-checking, tests, and builds. Use the package-specific commands below when you need to narrow a check.
+maestria uses [Vite+](https://viteplus.dev) for formatting, linting, type-checking, tests, and builds. Use the package-specific commands below when you need to narrow a check. Ultracite supplies presets through the root `vite.config.ts`; Vite+ remains the command, configuration, and staged-hook authority so competing tool paths cannot drift. External initialization must preserve hand-authored repository instructions and canonical/generated directive ownership.
+
+Treat shared toolchain upgrades as deliberate reviewed changes. Keep related Vite+ catalog entries aligned and inspect lockfile regeneration for unrelated upgrades; adding a workspace package should not silently upgrade every package's tooling. Runtime version authority is `devEngines.runtime` in the root manifest. CI and release workflows stay separate so cancellation of superseded PR checks cannot interrupt publishing; static docs rendering runs separately from package-only release builds.
 
 ## Repository Map
 

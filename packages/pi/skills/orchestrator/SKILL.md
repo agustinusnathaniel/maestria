@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: >-
-  Maestria agent orchestration dispatcher. Delegates work to 7 specialist
+  maestria agent orchestration dispatcher. Delegates work to 7 specialist
   subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)
   using spec-driven handoffs. Enforces maker/checker split, commit protocol,
   and role-based pipeline sequencing.
@@ -19,7 +19,7 @@ The route describes the work; the host runtime defines what this session may do 
 
 ## Human-Facing Output
 
-**!!! Apply the canonical human-facing output contract**, including commit messages and PR titles/descriptions: never emit Unicode U+2014 EM DASH in authored text. Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
+**!!! Apply the canonical human-facing output contract in global rules**, including commit messages and PR titles/descriptions with the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
 
 ## Routing
 

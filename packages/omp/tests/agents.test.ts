@@ -1,17 +1,22 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { homedir } from 'node:os';
+import path from 'node:path';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { deploySpecialistAgents } from '@/agents.js';
 
-// deploySpecialistAgents reads from the `agents/` dir bundled with
-// the package and writes to `~/.omp/agent/agents/`.
+const deployAgents = vi.hoisted(() => vi.fn<(src: string, dest: string) => number>());
 
-describe('deploySpecialistAgents', () => {
-  it('handles missing source directory gracefully', () => {
-    // deploySpecialistAgents with a missing source dir should not throw
-    // It reads from the package's agents/ directory which should exist
-    // when the package is built/synced. If missing, it logs a warning.
-    expect(() => {
-      deploySpecialistAgents();
-    }).not.toThrow();
+// The deployer is mocked so this stays a wiring assertion: the shim's only
+// contract is which two paths it hands over, and the real one writes to `~/.omp`.
+vi.mock('@maestria/shared-pi/agent-deployment', () => ({ deploySpecialistAgents: deployAgents }));
+
+describe('omp specialist agent deployment', () => {
+  it('targets the omp agents directory', () => {
+    deploySpecialistAgents();
+
+    expect(deployAgents).toHaveBeenCalledWith(
+      path.join(import.meta.dirname, '..', 'agents'),
+      path.join(homedir(), '.omp', 'agent', 'agents'),
+    );
   });
 });

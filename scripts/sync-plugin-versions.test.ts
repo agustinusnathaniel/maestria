@@ -147,7 +147,6 @@ describe('syncTarget', () => {
         const results = syncTarget(pkg, manifestPaths, check);
         expect(results).toHaveLength(1);
         expect(results[0]).toMatch(/^ERROR: /u);
-        expect(results[0]).not.toMatch(/^DRIFT: /u);
       }
       expect(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8')).toBe(text);
     }

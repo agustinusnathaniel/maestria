@@ -63,17 +63,6 @@ const createMockPi = (): MockPi => ({
 });
 
 describe('extension smoke tests', () => {
-  it('exports a default function', () => {
-    expect(typeof extension).toBe('function');
-  });
-
-  it('wires up without crashing', () => {
-    const mockPi = createMockPi();
-    expect(() => {
-      invokeExtension(mockPi);
-    }).not.toThrow();
-  });
-
   it('registers the maestria_subagent tool', () => {
     const mockPi = createMockPi();
     invokeExtension(mockPi);
@@ -86,9 +75,7 @@ describe('extension smoke tests', () => {
     const [toolDef] = toolCall;
 
     // registerTool receives a single object argument with a name property
-    if (typeof toolDef === 'object' && toolDef !== null) {
-      expect(toolDef).toHaveProperty('name', 'maestria_subagent');
-    }
+    expect(toolDef).toHaveProperty('name', 'maestria_subagent');
   });
 
   it('registers all expected mode and workflow commands', () => {

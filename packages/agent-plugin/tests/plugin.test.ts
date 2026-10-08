@@ -45,9 +45,13 @@ const pathExists = async (relativePath: string): Promise<boolean> => {
 
 const parseFrontmatter = (text: string): Record<string, string> => {
   const lines = text.split(/\r?\n/u);
-  expect(lines[0]?.trim()).toBe('---');
+  if (lines[0]?.trim() !== '---') {
+    throw new Error('missing opening frontmatter fence');
+  }
   const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
-  expect(close).toBeGreaterThan(0);
+  if (close === -1) {
+    throw new Error('missing closing frontmatter fence');
+  }
 
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
@@ -105,7 +109,7 @@ describe('generated portable skills', () => {
   });
 
   for (const skill of EXPECTED_SKILLS) {
-    it(`${skill} has Agent Skills frontmatter and generated provenance`, async () => {
+    it(`${skill} has Agent Skills frontmatter and no native dispatch markers`, async () => {
       const relativePath = `skills/${skill}/SKILL.md`;
       expect(await pathExists(relativePath)).toBe(true);
       const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8');
@@ -113,7 +117,6 @@ describe('generated portable skills', () => {
 
       expect(frontmatter.name).toBe(skill);
       expect(frontmatter.description).toBeTruthy();
-      expect(text).toContain('Auto-generated from @maestria/core');
       expect(text).not.toMatch(/\$maestria:/u);
       expect(text).not.toMatch(
         /@(?:adventurer|architect|builder|diagnose|orchestrator|planner|reviewer|writer)\b/u,

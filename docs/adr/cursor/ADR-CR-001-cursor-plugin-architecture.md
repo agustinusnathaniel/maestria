@@ -6,7 +6,7 @@ Accepted (2026-07-21)
 
 ## Context
 
-Maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
+maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
 
 ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Cursor has since added first-class plugins that bundle those primitives into one installable package, used from Customize in the IDE and `agent --plugin-dir` / local plugins in the CLI. Unlike OpenCode, no TypeScript hooks apply: Cursor plugins are declarative (same class as Kimi Code) with custom agents (Task subagents), skills, rules, and slash commands.
 
@@ -26,12 +26,7 @@ ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Curso
 
 ### Component map
 
-| Canonical source       | Cursor output                                | Role                   |
-| ---------------------- | -------------------------------------------- | ---------------------- |
-| `rules.md`             | `rules/maestria-global.mdc`                  | Always-on global rules |
-| `specialists/*.md` (7) | `agents/<name>.md`                           | Task subagents         |
-| `orchestrator.md`      | `skills/orchestrator/SKILL.md`               | Dispatcher methodology |
-| (platform)             | `commands/{fein,sonar,blitz,orchestrate}.md` | Workflow modes         |
+Each canonical directive projects to one Cursor path: `rules.md` to the always-on global rule, `specialists/*.md` to `agents/<name>.md`, `orchestrator.md` to the orchestrator skill, and the platform workflow modes to `commands/*.md`. The projection itself is owned by the Cursor sync config, `packages/cursor/sync.config.ts`, which regenerates the output paths rather than restating them here.
 
 ### Maker/checker (v1)
 
@@ -65,7 +60,6 @@ The Cursor sync config derives agents, the orchestrator skill, and the global ru
 
 ## Related Decisions
 
-- [ADR-CORE-000](../core/ADR-CORE-000-adr-structure.md) - CR prefix reserved for Cursor
 - [ADR-CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md) - sync bridge
 - [ADR-CORE-007](../core/ADR-CORE-007-cli-package-plugin-management.md) - CLI platform handlers
 - [ADR-KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) - declarative precedent; named Cursor as candidate

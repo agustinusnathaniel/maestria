@@ -1,12 +1,18 @@
 ---
 title: Methodology Changelog
-description: Changes to agent directives, global rules, and pipeline methodology across all Maestria platforms.
+description: Changes to agent directives, global rules, and pipeline methodology across all maestria platforms.
 ---
 
-This changelog tracks meaningful changes to how Maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
+This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
-## Unreleased
+## 2026-09-30
 
+- **Comments and tests earn their keep.** Implementers and reviewers now reassess explanatory comments and redundant tests before accepting a change.
+- **Directive text consolidated.** The human-facing output contract lives once in the shared global rules, and dense rules prose was split into scannable paragraphs; no obligation was moved, retired, or weakened.
+
+## 2026-09-25
+
+- **Testing guidance is behavior-first.** Agents reject tautological and change-detector tests, select test behavior before implementing, prefer end-to-end artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
 - **Reviewable increments and visible design.** Agents commit coherent verified slices during multi-phase implementation, plan independently reviewable PRs early, and show architect or planner designs in a concise user-facing brief before dependent implementation. Integrated checks and review still govern delivery.
 
 ## 2026-09-23
@@ -51,7 +57,7 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 
 ## 2026-08-13
 
-- **Claude Code and Codex CLI projections documented.** The Claude Code plugin is a native candidate, while the Codex CLI package remains provisional and skills-only. Both are installable through the Maestria CLI's host-native marketplace adapters.
+- **Claude Code and Codex CLI projections documented.** The Claude Code plugin is a native candidate, while the Codex CLI package remains provisional and skills-only. Both are installable through the maestria CLI's host-native marketplace adapters.
 - **Effort calibrated to task risk.** Directives now match effort to stakes, prefer mature ecosystem solutions over custom infrastructure, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
 - **Runtime-aware routing.** Direct, focused, and full routes are selected according to task needs and host capabilities. `fein` can request the full pipeline, while direct execution remains available for known low-risk work where the host permits it.
 - **Compact, evidence-oriented work.** Directives and handoffs emphasize the material context, evidence, and outcome needed for the next decision instead of a fixed output schema. No-action and no-PR outcomes are valid when the work does not justify implementation.
@@ -73,7 +79,7 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 
 ## 2026-08-03
 
-- **Selective routing by task class.** Maestria now guides turns through direct, focused, or full routes: explanations and discovery use direct execution, tiny edits use direct execution or a native builder, ordinary code changes use focused delegation, and complex or high-risk work uses the full pipeline with independent review where supported. The full route is selected for that work or for explicit `fein` requests, not forced for every turn.
+- **Selective routing by task class.** maestria now guides turns through direct, focused, or full routes: explanations and discovery use direct execution, tiny edits use direct execution or a native builder, ordinary code changes use focused delegation, and complex or high-risk work uses the full pipeline with independent review where supported. The full route is selected for that work or for explicit `fein` requests, not forced for every turn.
 - **Explicit modes and route-scaled safeguards.** `fein` selects the full route, `sonar` is research-only, and `blitz` is a low-risk/direct bypass that does not waive safety floors. Delegation and review scale with the route. Maker/checker enforcement varies by platform; where separate sessions or tool controls are unavailable, the split is advisory.
 
 ## 2026-07-29

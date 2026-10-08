@@ -1,5 +1,5 @@
 /**
- * Shared compaction handlers for Maestria platform packages.
+ * Shared compaction handlers for maestria platform packages.
  *
  * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.

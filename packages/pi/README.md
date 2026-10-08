@@ -1,8 +1,8 @@
 # @maestria/pi
 
-A [Pi coding agent](https://pi.software/) extension that brings Maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
+A [Pi coding agent](https://pi.software/) extension that brings maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
@@ -11,7 +11,7 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 pnpx maestria@latest install pi
 
 # Manual: install the required peer dependency first, then the extension
-pi install npm:@gotgenes/pi-subagents
+pi install npm:@gotgenes/pi-subagents@^21.5.1
 pi install npm:@maestria/pi
 ```
 
@@ -32,7 +32,7 @@ Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (ru
 
 ## Support / Platform Notes
 
-- Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package; the maestria CLI installs it for you.
+- Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package (supported range `^21.5.1`); the maestria CLI installs it for you.
 - The methodology is advisory prompt guidance; the maker/checker split is enforced at the tool level only where Pi supports review-mode tool blocking.
 - Pi-specific: `@maestria/omp` is a separate package for Oh My Pi.
 

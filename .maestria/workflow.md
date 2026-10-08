@@ -1,6 +1,6 @@
-# Maestria Project Workflow
+# maestria Project Workflow
 
-Project-specific routing for the Maestria monorepo. Use the smallest safe route: direct execution for familiar, low-risk work; reconnaissance or design when the code or approach is uncertain; full orchestration when independent stages materially reduce risk.
+Project-specific routing for the maestria monorepo. Use the smallest safe route: direct execution for familiar, low-risk work; reconnaissance or design when the code or approach is uncertain; full orchestration when independent stages materially reduce risk.
 
 ## Before Changing Files
 
@@ -25,7 +25,7 @@ Read relevant decisions before changing architecture, package boundaries, sync b
 | Hermes                                               | docs/adr/hermes/    |
 | Pi and Oh My Pi                                      | docs/adr/pi/        |
 
-Create an ADR for a new architectural pattern, dependency, or structural boundary. Use the required fields in the documentation format guide at ../docs/guides/doc-format.md.
+Create an ADR for a consequential architectural choice whose alternatives will matter later. Use the selection criteria and required fields in [the documentation format guide](../docs/guides/doc-format.md#new-adrs); routine dependency updates and documentation edits need no separate record.
 
 ## Reuse Before Adding
 

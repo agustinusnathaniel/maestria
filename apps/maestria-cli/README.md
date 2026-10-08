@@ -1,12 +1,12 @@
 # maestria
 
-A single CLI to install, update, and uninstall Maestria runtime integrations across coding agent platforms, and to validate or stage portable Agent Plugins.
+A single CLI to install, update, and uninstall maestria runtime integrations across coding agent platforms, and to validate or stage portable Agent Plugins.
 
 ```bash
 npx maestria status
 ```
 
-> This project is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This project is part of maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Usage
 
@@ -19,9 +19,9 @@ npx maestria status
 | `maestria check <platform>` | Verify a platform installation |
 | `maestria doctor` | Diagnose skill setup without changing anything (read-only) |
 | `maestria setup [--ecosystem ...] [--xtarterize-skills] [--skill-source ...]` | Coordinate optional setup across ecosystem tools and skills (nothing runs before confirm) |
-| `maestria configure [platform] [--set agent=model,...]` | Choose which model each Maestria specialist agent uses (opencode, codex, cursor, pi, omp); `--set` configures non-interactively |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi, omp); `--set` configures non-interactively |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
-| `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the Maestria cache or an explicit destination |
+| `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the maestria cache or an explicit destination |
 
 ### Methodology skills
 
@@ -29,7 +29,7 @@ npx maestria status
 
 ### Setup
 
-`maestria setup` coordinates optional setup in one place: ecosystem binary detection (`codegraph`, `agent-browser`, `opensrc`) with manual install steps only, project skills via `xtarterize add agent/skills-install --json --cwd <dir>` (gated on the JSON status field, with `.gitignore` changes reported), skill sources via the `skills` CLI with per-source `project` or `global` scope, and Maestria methodology skills reusing the `install`/`update` selection record plus `--skills`/`--exclude-skills` semantics. Detection is read-only; interactive mode groups the categories in one multiselect plus a review screen and final confirm, while non-TTY requires full flags plus `--yes` and never prompts. Reports are per action (`ok`/`failed`/`skipped` with resume guidance); reruns skip completed work via detection. Project scope follows `--cwd` (or the current directory). When OpenCode is detected, setup notes manual goal tracking only and never installs a goal plugin. Supports `--json` and `--quiet`.
+`maestria setup` coordinates optional setup in one place: ecosystem binary detection (`codegraph`, `agent-browser`, `opensrc`) with manual install steps only, project skills via `xtarterize add agent/skills-install --json --cwd <dir>` (gated on the JSON status field, with `.gitignore` changes reported), skill sources via the `skills` CLI with per-source `project` or `global` scope, and maestria methodology skills reusing the `install`/`update` selection record plus `--skills`/`--exclude-skills` semantics. Detection is read-only; interactive mode groups the categories in one multiselect plus a review screen and final confirm, while non-TTY requires full flags plus `--yes` and never prompts. Reports are per action (`ok`/`failed`/`skipped` with resume guidance); reruns skip completed work via detection. Project scope follows `--cwd` (or the current directory). When OpenCode is detected, setup notes manual goal tracking only and never installs a goal plugin. Supports `--json` and `--quiet`.
 
 ### Doctor
 

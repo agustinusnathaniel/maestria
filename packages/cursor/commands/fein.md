@@ -1,6 +1,6 @@
 ---
 name: fein
-description: Run the full Maestria pipeline (recon -> design -> implement -> review)
+description: Run the full maestria pipeline (recon -> design -> implement -> review)
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

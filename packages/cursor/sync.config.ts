@@ -84,7 +84,7 @@ export default {
       prepend: [
         '---',
         'name: blitz',
-        'description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)',
+        'description: Fast maestria implementation via builder (skip optional recon/design unless unknown; required review remains)',
         '---',
         '',
       ].join('\n'),
@@ -101,7 +101,7 @@ export default {
       prepend: [
         '---',
         'name: fein',
-        'description: Run the full Maestria pipeline (recon -> design -> implement -> review)',
+        'description: Run the full maestria pipeline (recon -> design -> implement -> review)',
         '---',
         '',
       ].join('\n'),
@@ -118,7 +118,7 @@ export default {
       prepend: [
         '---',
         'name: sonar',
-        'description: Research-only Maestria mode (recon -> design, no implementation)',
+        'description: Research-only maestria mode (recon -> design, no implementation)',
         '---',
         '',
       ].join('\n'),
@@ -136,7 +136,7 @@ export default {
       append: ORCHESTRATOR_APPEND,
       frontmatter: {
         description:
-          'Maestria workflow dispatcher for Cursor routing, handoffs, and independent review.',
+          'maestria workflow dispatcher for Cursor routing, handoffs, and independent review.',
         name: 'orchestrator',
       },
       output: '../skills/orchestrator/SKILL.md',
@@ -167,7 +167,7 @@ export default {
       frontmatter: {
         alwaysApply: true,
         description:
-          'Maestria global agent rules - always apply for Cursor sessions using the maestria plugin',
+          'maestria global agent rules - always apply for Cursor sessions using the maestria plugin',
       },
       output: '../rules/maestria-global.mdc',
       replace: [

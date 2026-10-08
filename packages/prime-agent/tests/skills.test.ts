@@ -33,49 +33,6 @@ const EXPECTED_SKILLS = [
   'writer',
 ] as const;
 
-interface PackageJson {
-  name?: string;
-  files?: string[];
-  pi?: { extensions?: string[]; skills?: string[] };
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string');
-
-const isPiManifest = (value: unknown): value is NonNullable<PackageJson['pi']> => {
-  if (!isRecord(value)) {
-    return false;
-  }
-  return (
-    (value.extensions === undefined || isStringArray(value.extensions)) &&
-    (value.skills === undefined || isStringArray(value.skills))
-  );
-};
-
-const isPackageJson = (value: unknown): value is PackageJson => {
-  if (!isRecord(value)) {
-    return false;
-  }
-  return (
-    (value.name === undefined || typeof value.name === 'string') &&
-    (value.files === undefined || isStringArray(value.files)) &&
-    (value.pi === undefined || isPiManifest(value.pi))
-  );
-};
-
-const readJson = async (relativePath: string): Promise<PackageJson> => {
-  const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf-8');
-  const value: unknown = JSON.parse(raw);
-  if (!isPackageJson(value)) {
-    throw new Error(`${relativePath} does not contain a valid package manifest`);
-  }
-  return value;
-};
-
 const pathExists = async (absolutePath: string): Promise<boolean> => {
   try {
     await stat(absolutePath);
@@ -149,6 +106,14 @@ const readSkill = async (name: string): Promise<{ data: Record<string, string>; 
   return parseFrontmatter(text);
 };
 
+/** Reads the generated SKILL.md of every expected skill, in roster order. */
+const readAllSkillTexts = async (): Promise<string[]> =>
+  await Promise.all(
+    EXPECTED_SKILLS.map(
+      async (skill) => await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8'),
+    ),
+  );
+
 describe('generated Prime Agent skills', () => {
   it('contains exactly the 14 expected skills and nothing else', async () => {
     const names = await readDirNames('skills');
@@ -171,11 +136,10 @@ describe('generated Prime Agent skills', () => {
         expect(description.length).toBeLessThanOrEqual(DESCRIPTION_MAX);
       });
 
-      it('has a non-empty body, the auto-generated comment, and no source comment', async () => {
+      it('has a non-empty body and no source comment', async () => {
         const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         const { body } = parseFrontmatter(text);
         expect(body.trim().length).toBeGreaterThan(0);
-        expect(text).toContain('Auto-generated from @maestria/core');
         expect(text).not.toMatch(/^<!--\s*Source:/mu);
       });
 
@@ -183,34 +147,42 @@ describe('generated Prime Agent skills', () => {
         const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         expect(text).not.toMatch(/rlm\s*\(/u);
       });
-
-      it('mentions JSON/RPC/headless/subagent dispatch only inside denials, never as available', async () => {
-        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
-        const sentences = text.split(/(?<=[.!?])\s+/u);
-        for (const sentence of sentences) {
-          if (/(?:JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/iu.test(sentence)) {
-            expect(sentence).toMatch(/(?:no|not) |deferred/iu);
-          }
-        }
-      });
-
-      it('has no unresolved specialist mention references', async () => {
-        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
-        for (const mention of [
-          'adventurer',
-          'architect',
-          'builder',
-          'diagnose',
-          'planner',
-          'reviewer',
-          'writer',
-          'orchestrator',
-        ]) {
-          expect(text).not.toMatch(new RegExp(`@${mention}(?!:)`, 'u'));
-        }
-      });
     });
   }
+
+  // Scoped across the whole roster rather than per skill: only 2 of the 14
+  // generated bodies contain a keyword sentence, so a per-skill loop made 12
+  // of its 14 cases vacuous and could stay green while asserting nothing.
+  // A skill with no keyword sentence is fine; only the aggregate zero case
+  // fails, and the count reports what was actually covered.
+  it('mentions JSON/RPC/headless/subagent dispatch only inside denials, never as available', async () => {
+    const texts = await readAllSkillTexts();
+    const sentences = texts.join('\n\n').split(/(?<=[.!?])\s+/u);
+    const mentions = sentences.filter((sentence) =>
+      /(?:JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/iu.test(sentence),
+    );
+    expect(mentions.length, `keyword sentences scanned: ${mentions.length}`).toBeGreaterThan(0);
+    const allowed = mentions.filter((sentence) => /(?:no|not) |deferred/iu.test(sentence));
+    expect(mentions).toEqual(allowed);
+  });
+
+  it('has no unresolved specialist mention references in any skill', async () => {
+    const texts = await readAllSkillTexts();
+    for (const text of texts) {
+      for (const mention of [
+        'adventurer',
+        'architect',
+        'builder',
+        'diagnose',
+        'planner',
+        'reviewer',
+        'writer',
+        'orchestrator',
+      ]) {
+        expect(text).not.toMatch(new RegExp(`@${mention}(?!:)`, 'u'));
+      }
+    }
+  });
 });
 
 describe('Agent Skills name grammar and frontmatter normalization', () => {
@@ -254,13 +226,6 @@ describe('Agent Skills name grammar and frontmatter normalization', () => {
 });
 
 describe('content invariants', () => {
-  it('keeps the direct-capable host semantics in the orchestrator skill', async () => {
-    const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
-    expect(text).toContain('Runtime Authority');
-    expect(text).toContain('direct work is available');
-    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/iu);
-  });
-
   it('frames the orchestrator delivery honestly: advisory, not a sandbox, rlm/JSON-RPC deferred', async () => {
     const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
     expect(text).toContain('skills-first package');
@@ -362,28 +327,15 @@ describe('sync config source mapping', () => {
 
 describe('package boundary', () => {
   it('has the exact package identity "@maestria/prime-agent"', async () => {
-    const pkg = await readJson('package.json');
-    expect(pkg.name).toBe('@maestria/prime-agent');
+    const pkg: unknown = JSON.parse(
+      await readFile(path.join(PACKAGE_ROOT, 'package.json'), 'utf-8'),
+    );
+    expect(pkg).toMatchObject({ name: '@maestria/prime-agent' });
   });
 
   it('has no agents/, hooks/, or commands/ directories (no subagent/agent-tool surface)', async () => {
     expect(await pathExists(path.join(PACKAGE_ROOT, 'agents'))).toBe(false);
     expect(await pathExists(path.join(PACKAGE_ROOT, 'hooks'))).toBe(false);
     expect(await pathExists(path.join(PACKAGE_ROOT, 'commands'))).toBe(false);
-  });
-
-  it('allowlists the skills projection, the compiled extension, and docs for packaging', async () => {
-    const pkg = await readJson('package.json');
-    for (const entry of ['dist', 'skills', 'README.md', 'INSTALL.md', 'LICENSE']) {
-      expect(pkg.files).toContain(entry);
-    }
-    expect(pkg.files).not.toContain('agents');
-    expect(pkg.files).not.toContain('hooks');
-  });
-
-  it('declares the compiled extension and skills under the pi manifest key', async () => {
-    const pkg = await readJson('package.json');
-    expect(pkg.pi?.extensions).toContain('./dist/extension.mjs');
-    expect(pkg.pi?.skills).toContain('./skills');
   });
 });

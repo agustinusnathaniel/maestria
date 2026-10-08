@@ -9,7 +9,7 @@ After installation, Hermes loads the plugin's skills, commands, and hooks at sta
 
 <Aside type="caution" title="Reserve fein mode for staged work">
   Use /blitz for a small read-only task. Use the default `fein` mode when specialist handoffs and
-  independent review justify the extra model work. See [When to Use Maestria](/core/when-to-use/).
+  independent review justify the extra model work. See [When to Use maestria](/core/when-to-use/).
 </Aside>
 
 ## Start a Session
@@ -23,8 +23,6 @@ Launch Hermes in the project you want to work on.
 | /fein | Full pipeline | Unfamiliar, multi-stage, or high-risk work |
 | /sonar | Research only, then stop | Understanding a codebase or comparing approaches |
 | /blitz | Direct read, research, and LLM work | Small work where direct execution is appropriate |
-| /review | Activate fein | Full pipeline; dedicated review behavior is not yet implemented |
-| /plan | Activate fein | Full pipeline; dedicated planning behavior is not yet implemented |
 | /mode or /mode-clear | Show or clear the mode | Inspecting state or returning to neutral routing |
 
 A mode command applies to all sessions that share the same `HERMES_HOME`; use /mode-clear to stop that persistence.
@@ -47,11 +45,11 @@ Explain what the add function in src/math.ts does.
 
 ## Understand the permission boundary
 
-Maestria specialist names are routing roles, not permission identities. A trusted top-level session performs direct code changes; delegated children receive a fixed read, research, and LLM-only policy (no writes, code execution, shell, delegation, or OpenCode). Review and landing remain advisory because Hermes has no native review-state gate.
+maestria specialist names are routing roles, not permission identities. A trusted top-level session performs direct code changes; delegated children receive a fixed read, research, and read-only-inspection policy (no writes, code execution, shell, delegation, or OpenCode). Review and landing remain advisory because Hermes has no native review-state gate.
 
 ## Long-Running Work
 
-Use Hermes's /goal feature when the objective must survive session boundaries. Maestria does not require a memory provider.
+Use Hermes's /goal feature when the objective must survive session boundaries. maestria does not require a memory provider.
 
 ## Next Steps
 

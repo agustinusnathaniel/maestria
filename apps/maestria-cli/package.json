@@ -1,7 +1,7 @@
 {
   "name": "maestria",
-  "version": "0.13.3",
-  "description": "Maestria CLI - manage runtime integrations and portable Agent Plugins",
+  "version": "0.14.0",
+  "description": "maestria CLI - manage runtime integrations and portable Agent Plugins",
   "keywords": [
     "agent-plugins",
     "ai-agent",
@@ -45,10 +45,12 @@
   "devDependencies": {
     "@clack/prompts": "^1.8.0",
     "@types/node": "catalog:",
+    "@types/semver": "catalog:",
     "citty": "^0.2.2",
     "effect": "catalog:",
     "jsonc-parser": "catalog:",
     "picocolors": "^1.1.1",
+    "semver": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },

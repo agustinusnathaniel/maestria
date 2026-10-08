@@ -15,7 +15,7 @@ import type { JsonRecord } from '@/lib/primitives.js';
 import { CommandError } from '@/lib/shell.js';
 
 // Codex plugin manifests do not declare custom agents or primary-session
-// instructions. The published Maestria package carries native agent TOMLs and
+// instructions. The published maestria package carries native agent TOMLs and
 // a managed AGENTS.md block as companion payloads, and the CLI owns copying
 // them into Codex's documented locations.
 const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
@@ -39,7 +39,7 @@ const validateCodexManifestContent = (
   parsed: JsonRecord,
 ): parsed is JsonRecord & CodexManagedAgentManifest => {
   if (parsed.version !== 1 || !Array.isArray(parsed.files)) {
-    throw new Error(`invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`);
+    throw new Error(`invalid maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`);
   }
   if (
     !parsed.files.every((file) => typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/u.test(file))
@@ -83,12 +83,12 @@ const readCodexManagedAgentManifest = (): Effect.Effect<CodexManagedAgentManifes
       const parsed = parseJsonRecord(raw);
       if (parsed === undefined) {
         throw new Error(
-          `invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
+          `invalid maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
         );
       }
       if (!validateCodexManifestContent(parsed)) {
         throw new Error(
-          `invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
+          `invalid maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
         );
       }
       return {
@@ -104,6 +104,14 @@ const readCodexManagedAgentManifest = (): Effect.Effect<CodexManagedAgentManifes
     },
   });
 
+const writeAtomicCodexFile = async (filePath: string, content: string): Promise<void> => {
+  const { mkdir, rename, writeFile } = await import('node:fs/promises');
+  await mkdir(codexHome(), { recursive: true });
+  const tempPath = `${filePath}.tmp`;
+  await writeFile(tempPath, content, 'utf-8');
+  await rename(tempPath, filePath);
+};
+
 const writeCodexManagedAgentManifest = (
   manifest: CodexManagedAgentManifest,
 ): Effect.Effect<void, CommandError> =>
@@ -114,12 +122,10 @@ const writeCodexManagedAgentManifest = (
         message: String(error),
       }),
     try: async () => {
-      const { mkdir, rename, writeFile } = await import('node:fs/promises');
-      await mkdir(codexHome(), { recursive: true });
-      const manifestPath = codexManagedAgentManifestPath();
-      const tempPath = `${manifestPath}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf-8');
-      await rename(tempPath, manifestPath);
+      await writeAtomicCodexFile(
+        codexManagedAgentManifestPath(),
+        `${JSON.stringify(manifest, null, 2)}\n`,
+      );
     },
   });
 
@@ -178,14 +184,6 @@ const isOwnedEmpty = (
   manifest: CodexManagedAgentManifest,
 ): boolean =>
   next.length === 0 && manifest.instructionsCreated === true && manifest.instructionsFile === file;
-
-const writeAtomicCodexFile = async (filePath: string, content: string): Promise<void> => {
-  const { mkdir, rename, writeFile } = await import('node:fs/promises');
-  await mkdir(codexHome(), { recursive: true });
-  const tempPath = `${filePath}.tmp`;
-  await writeFile(tempPath, content, 'utf-8');
-  await rename(tempPath, filePath);
-};
 
 const removeCodexFiles = async (files: readonly string[], directory: string): Promise<void> => {
   const { rm } = await import('node:fs/promises');
@@ -270,7 +268,7 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
       yield* Effect.fail(
         new CommandError({
           command: 'validate codex instructions',
-          message: `missing Maestria instruction markers in ${sourceInstructionsPath}`,
+          message: `missing maestria instruction markers in ${sourceInstructionsPath}`,
         }),
       );
     }

@@ -1,8 +1,8 @@
 # @maestria/opencode
 
-An OpenCode plugin that provides Maestria's specialist agents, shared engineering rules, and review workflows.
+An OpenCode plugin that provides maestria's specialist agents, shared engineering rules, and review workflows.
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
