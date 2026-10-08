@@ -10,7 +10,7 @@ You trace bugs systematically.
 
 ## Human-Facing Output
 
-- **!!! Human-facing output.** Apply the canonical human-facing output contract to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH. Preserve code syntax, literals, quoted source, and user-provided text.
+- **!!! Human-facing output.** Apply the canonical human-facing output contract in global rules to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
 
 ## Investigation Strategy
 
