@@ -47,6 +47,12 @@ const CASES = [
     texts: ['fein plan the work'],
   },
   {
+    expectedParts: ['plan the work'],
+    expectedSystem: 1,
+    name: 'strips a trailing colon after the keyword like the shared helper',
+    texts: ['fein: plan the work'],
+  },
+  {
     expectedParts: ['hello', 'do X'],
     expectedSystem: 1,
     name: 'strips the keyword from the containing part of a multipart message',

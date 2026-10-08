@@ -3,6 +3,7 @@ import type { Scope } from 'effect';
 import type { PluginContext, SessionContext } from '@/types.js';
 import type { MaestriaPluginOptions } from '@/modes.js';
 import { detectMode } from '@/modes.js';
+import { stripKeyword } from '@maestria/shared-mode';
 
 // Mode handling stays on the `context` hook: it runs before every model
 // dispatch (including tool-driven continuations), so the mode marker persists
@@ -41,13 +42,13 @@ export const registerSessionHooks = (
 
         // Parts were joined with '\n' for detection, so the keyword sits in
         // the part spanning result.index (first iteration for single-part).
+        // Stripping delegates to the canonical shared helper so V2 matches
+        // V1 behavior (leading-colon cleanup, double-space collapse).
         let offset = 0;
         for (const part of textParts) {
           const at = result.index - offset;
           if (at >= 0 && at <= part.text.length) {
-            part.text = (part.text.slice(0, at) + part.text.slice(at + result.keyword.length))
-              .replace(/:?\s*$/u, '')
-              .trim();
+            part.text = stripKeyword(part.text, { index: at, keyword: result.keyword });
             break;
           }
           offset += part.text.length + 1;

@@ -136,7 +136,14 @@ describe('registerCommandTransforms', () => {
   it('execute prepends the mode template and forwards session, text, and delivery', async () => {
     type CommandDefinition = Parameters<CommandEditor['add']>[0];
     const added: CommandDefinition[] = [];
-    const prompted: { sessionID: unknown; text: unknown; delivery: unknown }[] = [];
+    const prompted: {
+      sessionID: unknown;
+      text: unknown;
+      delivery: unknown;
+      files: unknown;
+      agents: unknown;
+      skills: unknown;
+    }[] = [];
     let captured: ((editor: { add: (def: CommandDefinition) => void }) => void) | undefined;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test double implements only the command/session surface the transform touches.
     const ctx = {
@@ -148,7 +155,14 @@ describe('registerCommandTransforms', () => {
         },
       },
       session: {
-        prompt: (input: { sessionID: unknown; text: unknown; delivery: unknown }) => {
+        prompt: (input: {
+          sessionID: unknown;
+          text: unknown;
+          delivery: unknown;
+          files: unknown;
+          agents: unknown;
+          skills: unknown;
+        }) => {
           prompted.push(input);
           return Effect.void;
         },
@@ -168,7 +182,12 @@ describe('registerCommandTransforms', () => {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CommandInvocation carries branded session/message IDs the test does not need to mint.
     const invocation = {
       delivery: 'steer',
-      prompt: { text: 'plan the work' },
+      prompt: {
+        agents: [{ name: 'builder' }],
+        files: [{ uri: 'file:///workspace/plan.md' }],
+        skills: [{ id: 'review' }],
+        text: 'plan the work',
+      },
       sessionID: 'session-1',
     } as unknown as CommandInvocation;
     await Effect.runPromise(fein?.execute(invocation) ?? Effect.void);
@@ -180,6 +199,9 @@ describe('registerCommandTransforms', () => {
     expect(submitted).toContain('fein');
     expect(prompted[0].delivery).toBe('steer');
     expect(prompted[0].sessionID).toBe('session-1');
+    expect(prompted[0].files).toEqual([{ uri: 'file:///workspace/plan.md' }]);
+    expect(prompted[0].agents).toEqual([{ name: 'builder' }]);
+    expect(prompted[0].skills).toEqual([{ id: 'review' }]);
   });
 });
 
