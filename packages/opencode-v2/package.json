@@ -40,9 +40,5 @@
   },
   "engines": {
     "node": ">=22.12.0"
-  },
-  "opencode": {
-    "type": "plugin",
-    "v2": true
   }
 }
