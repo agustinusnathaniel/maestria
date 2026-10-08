@@ -1,8 +1,25 @@
 {
   "name": "@maestria/opencode-v2",
   "version": "0.1.0",
-  "private": true,
   "description": "OpenCode V2 plugin - Maestria methodology",
+  "keywords": [
+    "agents",
+    "ai",
+    "maestria",
+    "opencode",
+    "plugin"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/opencode-v2#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/opencode-v2"
+  },
   "files": [
     "dist",
     "agents",
@@ -17,6 +34,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "vp pack",
