@@ -14,7 +14,7 @@ Add the plugin to your `opencode.json`:
 
 ## What it does
 
-- Registers the 8 Maestria agents (orchestrator + 7 specialists) via `ctx.agent.transform()` - `AgentEditor.update()` is an upsert, so missing agents are created.
+- Registers the 8 Maestria agents (orchestrator + 7 specialists) via `ctx.agent.transform()` - `AgentEditor.update()` is an upsert, so missing agents are created. Each agent carries ordered `permissions` rules ported from the V1 maps.
 - Declares the global rules file (`rules/AGENTS.md`, synced from `@maestria/core`) as a native instruction source via `ctx.reference.transform()`.
 - Detects mode keywords (`fein` / `sonar` / `blitz`) in user messages via `ctx.session.hook("context")`, injects the mode marker + prompt into `system`, and strips the keyword.
 - Registers the 3 workflow mode commands (`fein` / `sonar` / `blitz`) via `ctx.command.transform()` - each `execute` prepends its synced template to the invocation text and submits it as a session prompt, preserving attachments and the delivery mode.
@@ -31,7 +31,7 @@ Checked against the installed package types (zero `any` casts) and https://openc
 | `ctx.session.hook("context")` | mutable `system`, `messages`, `tools` before model dispatch | `SessionContext` with mutable `system: SystemPart[]`, `messages: Message[]`, `tools` record | ✅ match |
 | `ctx.session.hook` other hooks | `prompt`, `compaction`, `generate`, `title`, `model.request`, `http.request` / `http.response`, `retry`, experimental `ws.*` | same hook set on `SessionHooks` | ✅ match (this plugin uses only `context`; see Known limitations) |
 | `ctx.command.transform` | add-only `add({ name, description, execute })` | same add-only `CommandEditor` | ✅ match |
-| Agent fields | `system` / `permissions[]` / `steps`; warns against legacy `prompt` / `maxSteps` | same V2 field names on `Agent.Info` | ✅ match (docs no longer use V1 names) |
+| Agent fields | `system` / `permissions[]` / `steps`; warns against legacy `prompt` / `maxSteps` | same V2 field names on `Agent.Info` | ✅ match (permissions mapped from the V1 maps) |
 | `ctx.skill.transform` | `list`, `get`, `add`, `update`, `remove` over `Skill.Info` | same ops; `Skill.Info` is `{ id, name, description?, autoinvoke?, path, content }` | ✅ match |
 
 Notes:
@@ -40,7 +40,7 @@ Notes:
 - The skill `location` field is now `path`, and `get(id)` exists, so the loader uses `get()` directly instead of `list().find()`.
 - The reference `description` field is gone from the client-level contract, so the rules entry is path-only.
 - RPC (`/build/plugins/rpc`, `/build/plugins/effect/rpc`) and CLI (`/build/plugins/cli`, `@opencode/plugin/tui`) are separate surfaces this server plugin does not use; see Known limitations.
-- Console (`/console`) needs no plugin integration: workspace Policies arrive as policy statements with final authority over local configuration, and this plugin sets no permissions or models that could fight them.
+- Console (`/console`) needs no plugin integration: workspace Policies arrive as policy statements with final authority over local configuration, and this plugin defines no models that could fight them.
 
 ## Known limitations
 
@@ -53,7 +53,7 @@ Notes:
 ## Development
 
 ```bash
-scripts/sync-all   # regenerate agents/ + rules/ from canonical core directives (repo root)
+scripts/sync-all   # regenerate agents/ + rules/ + skills/ from canonical core directives (repo root)
 pnpm check         # format, lint, type-check; verifies sync state via scripts/check-sync
 vp pack            # build to dist/
 ```
