@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- model-config aggregates 5 platform handlers (opencode/codex/pi/cursor/omp) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
+// oxlint-disable max-lines -- model-config aggregates 4 platform handlers (opencode/codex/pi/cursor) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
 import { Effect } from 'effect';
 import {
   applyEdits,
@@ -76,20 +76,6 @@ export const parsePiModels = (out: string): string[] =>
     .map((line) => line.trim().split(/\s+/u))
     .filter((parts) => parts.length >= 2 && parts[0] !== 'provider')
     .map((parts) => `${parts[0]}/${parts[1]}`);
-
-/** `omp models --json` -> { models: [{ provider, id, selector, ... }] } */
-export const parseOmpModels = (out: string): string[] => {
-  const parsed = parseJsonValue(out);
-  if (!isRecord(parsed) || !Array.isArray(parsed.models)) {
-    return [];
-  }
-  return parsed.models.flatMap((model) => {
-    if (!isRecord(model) || typeof model.selector !== 'string' || model.selector.length === 0) {
-      return [];
-    }
-    return [model.selector];
-  });
-};
 
 /** `agent --list-models` -> one Cursor model id per line. */
 export const parseCursorModels = (out: string): string[] => {
@@ -472,23 +458,7 @@ const cursor = createAgentFileHandler({
   restartHint: 'Start a new Cursor Agent session for the changes to take effect.',
 });
 
-const omp = createAgentFileHandler({
-  cli: 'omp',
-  globalDir: `${homedir()}/.omp/agent/agents`,
-  id: 'omp',
-  label: 'Oh My Pi',
-  listModels: run('omp', ['models', '--json'], 30_000).pipe(Effect.map(parseOmpModels)),
-  projectDir: '.omp/agents',
-  restartHint: 'Restart omp (or start a new session) for the changes to take effect.',
-});
-
-export const modelConfigHandlers: readonly ModelConfigHandler[] = [
-  opencode,
-  codex,
-  cursor,
-  pi,
-  omp,
-];
+export const modelConfigHandlers: readonly ModelConfigHandler[] = [opencode, codex, cursor, pi];
 
 export const getModelConfigHandler = (id: string): ModelConfigHandler | undefined =>
   modelConfigHandlers.find((h) => h.id === id);

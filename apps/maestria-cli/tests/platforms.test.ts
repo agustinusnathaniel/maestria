@@ -161,7 +161,7 @@ describe('pi and omp package commands', () => {
       .mock.calls.find(
         (call) => call[0] === 'omp' && call[1]?.[0] === 'plugin' && call[1]?.[1] === 'uninstall',
       );
-    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/omp']);
+    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/plugin']);
 
     vi.clearAllMocks();
     const pi = requirePlatform('pi');
@@ -182,9 +182,13 @@ describe('pi and omp package commands', () => {
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi'], 120_000]);
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@latest'], 120_000]);
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@1.2.3'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@latest'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@1.2.3'], 120_000]);
+    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/plugin'], 120_000]);
+    expect(calls).toContainEqual([
+      'omp',
+      ['plugin', 'install', '@maestria/plugin@latest'],
+      120_000,
+    ]);
+    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/plugin@1.2.3'], 120_000]);
   });
 });
 

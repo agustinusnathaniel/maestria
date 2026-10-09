@@ -878,14 +878,20 @@ const cursor: PlatformDefinition = {
     }),
 };
 
-// omp has built-in task dispatch, so it has no subagent prerequisite.
+// OMP consumes the consolidated portable plugin: `omp plugin install`
+// stages `@maestria/plugin`, whose root manifest and shared skills OMP loads
+// natively (see packages/plugin/integrations/omp/README.md). No
+// maestria-owned executable ships for OMP: no session hooks, no tool
+// interception, and no per-agent model files, so OMP has no model-config
+// handler. The retired `@maestria/omp` payload is not removed automatically;
+// uninstall it first when migrating (`omp plugin uninstall @maestria/omp`).
 const omp: PlatformDefinition = piStylePlatform({
   binary: 'omp',
   commandPrefix: ['plugin'],
   id: 'omp',
-  installedPackageJsonPath: `${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`,
+  installedPackageJsonPath: `${homedir()}/.omp/plugins/node_modules/@maestria/plugin/package.json`,
   label: 'Oh My Pi',
-  npmPackage: '@maestria/omp',
+  npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   referencePrefix: '',
 });
 
