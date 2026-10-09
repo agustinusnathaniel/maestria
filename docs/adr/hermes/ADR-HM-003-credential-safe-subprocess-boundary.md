@@ -4,6 +4,10 @@
 
 Accepted (2026-09-24). Current verification is owned by the [consolidated E2E probe](../../../scripts/e2e/fail-closed-evidence.ts) and package tests; the inventories below describe intended contracts, not case-by-case proof. The probe samples subprocess success, timeout, output bounds, and platform cleanup availability. A live host probe is still needed before claiming host enforcement.
 
+## Retirement amendment (2026-10-10)
+
+The owner selected portable Agent Plugins support in [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md). The Python adapter has been removed. This record preserves its historical rationale; its tool gating, hooks, bridge, and mode-state guarantees no longer describe the shipped plugin. Hermes owns permissions, trust, and lifecycle in the replacement.
+
 ## Context
 
 The Hermes `opencode_route` tool delegates a goal to the OpenCode CLI. The pre-repair handler at the documented base commit called `subprocess.run` with an argument vector, captured text output, inherited the parent environment, and returned truncated `stdout`, `stderr`, and exception text as JSON. Those are useful baseline behaviors, but they do not define a credential-safe boundary. A child can print a token, a host exception can include a command or environment value, and an inherited environment can expose unrelated credentials to the child. `[verified]`

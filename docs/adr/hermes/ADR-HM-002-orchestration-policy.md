@@ -8,6 +8,10 @@ Accepted (2026-07-17). Revised (2026-08-10) - supersedes the single-thread defau
 
 > The original 2026-07-17 policy is superseded by the Revision below, whose role-based child-permission elements are in turn superseded by the role-neutral child trust policy in [ADR-HM-004](ADR-HM-004-role-neutral-child-trust-policy.md). The original Context and Decision remain historical record; the runtime (`packages/hermes/`) and canonical directives are the operational source, and the runtime wins.
 
+## Retirement amendment (2026-10-10)
+
+The owner selected portable Agent Plugins support in [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md). The Python adapter has been removed. This record preserves its historical rationale; its tool gating, hooks, bridge, and mode-state guarantees no longer describe the shipped plugin. Hermes owns permissions, trust, and lifecycle in the replacement.
+
 ## Context (original, 2026-07-17)
 
 The orchestrator directive was ported from `@maestria/opencode`, where it is a **pure dispatcher** with no implementation tools because the coding agent implements. On Hermes the orchestrator has **full tool access** (read, write, bash, LLM, delegation), so that mandate forces unnecessary delegation for simple tasks that are faster and more reliable in a single turn.

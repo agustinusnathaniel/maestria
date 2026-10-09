@@ -44,20 +44,10 @@ export default defineConfig({
         }),
         starlightLlmsTxt({
           description:
-            'Portable AI engineering workflows for OpenCode, Claude Code, Kimi Code, Cursor, Pi, and Hermes. ' +
-            'Includes @maestria/opencode (8 agents, global rules injection), ' +
-            '@maestria/claude-code (declarative Claude Code plugin with specialist agents, ' +
-            'orchestrator and global-rules skills, and fein/sonar/blitz workflow commands), ' +
-            '@maestria/codex (Codex CLI skills projection with specialist workflows, ' +
-            'orchestration, handoffs, and review contracts), ' +
-            '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
-            '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
-            '@maestria/pi (full agent orchestration for Pi Coding Agent), ' +
-            '@maestria/hermes (methodology layer for Hermes Agent), ' +
-            '@maestria/prime-agent (maestria methodology for Prime Agent as Agent Skills ' +
-            'plus a verified Prime/Pi extension for workflow modes), and ' +
-            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX), ' +
-            '@maestria/agent-plugin (the portable Agent Plugins v1 skills-only package).',
+            'Portable AI engineering workflows. @maestria/plugin bundles Codex, Claude Code, ' +
+            'Cursor, Kimi Code, Devin, ZCode, Hermes, and portable Agent Plugins resources. ' +
+            'Native runtime adapters remain available as @maestria/opencode, @maestria/pi, ' +
+            '@maestria/omp, and @maestria/prime-agent.',
           details:
             'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [maestria agent instructions](https://maestria.sznm.dev/agents.md).',
           optionalLinks: [
@@ -140,7 +130,7 @@ export default defineConfig({
             { label: 'Overview', link: '/agent-plugin/' },
             { label: 'Compatibility', link: '/agent-plugin/compatibility/' },
           ],
-          label: '@maestria/agent-plugin',
+          label: 'Agent Plugins',
         },
         {
           items: [
@@ -194,7 +184,7 @@ export default defineConfig({
             { label: 'Changelog', link: '/kimi-code/changelog/' },
             { label: 'Contributing', link: '/kimi-code/contributing/' },
           ],
-          label: '@maestria/kimi-code',
+          label: 'Kimi Code',
         },
         {
           collapsed: true,
@@ -207,7 +197,7 @@ export default defineConfig({
             { label: 'Changelog', link: '/claude-code/changelog/' },
             { label: 'Contributing', link: '/claude-code/contributing/' },
           ],
-          label: '@maestria/claude-code',
+          label: 'Claude Code',
         },
         {
           collapsed: true,
@@ -220,7 +210,7 @@ export default defineConfig({
             { label: 'Changelog', link: '/codex/changelog/' },
             { label: 'Contributing', link: '/codex/contributing/' },
           ],
-          label: '@maestria/codex',
+          label: 'Codex',
         },
         {
           collapsed: true,
@@ -233,7 +223,7 @@ export default defineConfig({
             { label: 'Changelog', link: '/cursor/changelog/' },
             { label: 'Contributing', link: '/cursor/contributing/' },
           ],
-          label: '@maestria/cursor',
+          label: 'Cursor',
         },
         {
           collapsed: true,
@@ -261,7 +251,7 @@ export default defineConfig({
             { label: 'Changelog', link: '/hermes/changelog/' },
             { label: 'Contributing', link: '/hermes/contributing/' },
           ],
-          label: '@maestria/hermes',
+          label: 'Hermes',
         },
         {
           collapsed: true,

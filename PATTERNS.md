@@ -77,7 +77,7 @@ Every substantial pipeline stage needs three controls:
 
 ### Platform Adaptation
 
-Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; OMP and Pi enforce dispatcher behavior in workflow-mode sessions; Hermes is direct-capable by default and gates modes and roles at the tool layer; and Cursor and Claude Code depend more on host/session permissions. Codex, Prime Agent, and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
+Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; OMP and Pi enforce dispatcher behavior in workflow-mode sessions; Hermes consumes portable methodology skills with host-owned tool authority; and Cursor and Claude Code depend more on host/session permissions. Codex, Prime Agent, and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
 
 How each platform implements this pattern:
 
@@ -90,9 +90,9 @@ How each platform implements this pattern:
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
 | **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
 | **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
-| **Hermes** | Python plugin with skills, commands, and tool-layer gating | Methodology ships as skills and slash commands through the Hermes plugin manager. Mode and per-role tool access is gated at the tool layer; pipeline sequencing is advisory prompt guidance. |
+| **Hermes** | Portable skills | The shared plugin exposes methodology through Hermes skill discovery. Permissions, delegation, lifecycle, and session state remain host-owned; the retired Python adapter no longer supplies gates or commands. |
 | **Prime Agent** | Agent Skills + verified extension subset | The 7 specialists, orchestrator, rules, and modes ship as Agent Skills; a small extension adds mode commands and prompt injection. Native `rlm` subagent dispatch has no public JS bridge, so delegation is skill loading plus methodology, not runtime dispatch. |
-| **Agent Plugins v1 (portable)** | Skills-only package | `@maestria/agent-plugin` ships the methodology as standard skills with no runtime adapter, agents, commands, or hooks. The consuming client owns dispatch, context, and permissions. |
+| **Agent Plugins v1 (portable)** | Shared portable surface | `@maestria/plugin` exposes root methodology skills. Native manifests select host-specific resources in the same archive; portable clients retain dispatch, context, and permission authority. |
 
 ---
 
@@ -160,6 +160,6 @@ Self-review fails for three reasons, each documented from real sessions:
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
 | **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
 | **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, planner, and reviewer. The skills themselves are advisory and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
-| **Hermes** | Tool-layer role allowlists | `permissions.py` defines positive per-role allowlists (for example reviewer gets `read` and `llm`), and mode gating blocks writes in `sonar`. Role switching is enforced at the tool layer; prompts remain guidance. |
+| **Hermes** | Portable skills | The shared plugin exposes methodology through Hermes skill discovery. Permissions, delegation, lifecycle, and session state remain host-owned; the retired Python adapter no longer supplies gates or commands. |
 | **Prime Agent** | Advisory roles only | Skills and role prompts state read-only intent, but Prime has no skill-level tool-denial mechanism and the package makes no enforcement claim. |
 | **Agent Plugins v1 (portable)** | Advisory roles only | Read-only roles are prompt guidance; the consuming client owns permissions, tool access, and review setup. |

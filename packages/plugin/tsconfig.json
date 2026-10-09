@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "tests/**/*.ts",
+    "sync.config.ts",
+    "integrations/**/*.ts",
+    "vite.config.ts",
+    "../../scripts/sync-consolidated-plugin.ts"
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  }
+}

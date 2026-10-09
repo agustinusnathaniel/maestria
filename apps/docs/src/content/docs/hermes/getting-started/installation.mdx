@@ -1,66 +1,49 @@
 ---
 title: Installation & Setup
-description: Install @maestria/hermes in Hermes Agent and verify its skills, commands, hooks, and trust boundary.
+description: Install the consolidated Maestria plugin through Hermes portable Agent Plugins support.
 ---
 
-import { Steps } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-@maestria/hermes is a git-based Hermes plugin. It adds 12 skills (9 methodology plus 3 command skills), 5 slash commands, and 9 lifecycle hooks, plus the `opencode_route` tool, which invokes the OpenCode CLI only when you use it.
-
-## Prerequisites
-
-- [Hermes Agent](https://hermes-agent.nousresearch.com)
-- Git, for plugin resolution from the repository
+Hermes consumes the root portable manifest and shared methodology skills in `@maestria/plugin`. It requires a Hermes version that supports [portable Agent Plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).
 
 ## Install
 
-<Steps>
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
 
-1. Install through the maestria CLI:
-
-   <AllPackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
-
-   Or install directly with Hermes, which clones the repository and enables the plugin:
-
-   ```bash
-   hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
-   ```
-
-2. Verify the native plugin record:
-
-   ```bash
-   hermes plugins list
-   ```
-
-   `maestria-hermes` should appear as enabled.
-
-</Steps>
-
-## Verify a New Session
-
-Start Hermes and run:
-
-```text
-/mode
-```
-
-The response should show the active mode. Ask the agent to list the maestria specialists, then try one focused task. If the mode marker or skills are missing, restart Hermes and run `hermes plugins list` again.
-
-## Update
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="update hermes" />
-
-Or update the native plugin: `hermes plugins update maestria-hermes`.
-
-## Uninstall
+Or install through Hermes:
 
 ```bash
-hermes plugins remove maestria-hermes
+hermes plugins install agustinusnathaniel/maestria/packages/plugin --enable
+hermes plugins list
 ```
 
-## Next Steps
+For unreleased work, copy the plugin into an isolated Hermes home and use the host enable command. The plugin should appear as `maestria`. Enable it if your installer leaves it disabled, then start a new session.
 
-- [Quick Start](/hermes/getting-started/quick-start/) - routes, trust boundary, and first tasks
-- [Commands](/hermes/commands/)
-- [Contributing](/hermes/contributing/)
+## Verify skills
+
+Ask Hermes to use `skills_list` to discover the plugin's fully qualified skill names, then `skill_view` to load `global-rules` and `orchestrator`. Do not assume the old Python plugin's `maestria:` namespace: Hermes derives portable namespaces from package identity.
+
+## Migrate the Python adapter
+
+The Maestria installer disables `maestria-hermes` after the replacement installs successfully. A failed install leaves the old adapter enabled. For direct installation, disable the old adapter yourself after verifying the new plugin:
+
+```bash
+hermes plugins disable maestria-hermes
+```
+
+The Python adapter's mode commands, role gates, lifecycle hooks, and OpenCode bridge are retired. The portable skills are advisory; Hermes owns permissions, trust, delegation, and session behavior. Legacy files and user data are not deleted by migration.
+
+## Update and remove
+
+```bash
+hermes plugins update maestria
+hermes plugins remove maestria
+```
+
+The equivalent Maestria commands remain `update hermes` and `uninstall hermes`. Git-based installation does not support npm version pinning.
+
+## Next steps
+
+- [Quick Start](/hermes/getting-started/quick-start/)
+- [Workflow skills](/hermes/commands/)

@@ -1,0 +1,21 @@
+## Codex CLI Integration
+
+### Global rules
+
+Load the `$maestria:global-rules` skill once at session start, before routing work or using specialist skills, and apply it throughout the session. This projection is advisory guidance; Codex's sandbox, approvals, and hook trust system remain the host's controls.
+
+### Specialist skills
+
+Codex supports subagent workflows. The namespaced skills provide the methodology, while the companion native agent pack provides role definitions with the `agent_type` names below. Keep the maker/checker boundary explicit in every handoff.
+
+### Native custom agents
+
+The maestria CLI installs the bundled native agent TOMLs into `$CODEX_HOME/agents/` using collision-resistant names: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist, for example `agent_type: "maestria-builder"`. `maestria configure codex` updates their model settings without changing the role instructions. If the native pack is not installed, use the namespaced skills with Codex's built-in agents or explicit delegation prompts.
+
+### Workflow-mode skills
+
+Use `$maestria:fein` for the full route, `$maestria:sonar` for research-only work, and `$maestria:blitz` for the fast capability-aware route. These are skills rather than Codex slash commands.
+
+### Platform boundary
+
+The Codex plugin manifest declares skills only; the companion maestria CLI installs the package's native custom-agent TOML files, manages their model settings, and adds a marked global orchestration block to Codex's active AGENTS.md instructions. The package contains no hooks or MCP server. Skills and instruction guidance are advisory capabilities, not security enforcement; native custom-agent sandbox settings are the host's boundary. Do not claim that this integration overrides Codex's primary agent or enforces the maestria methodology.

@@ -24,13 +24,8 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 | Package | Description | README |
 | --- | --- | --- |
 | [@maestria/opencode](packages/opencode/) | maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
-| [@maestria/claude-code](packages/claude-code/) | maestria methodology plugin for Claude Code | [README](packages/claude-code/README.md) |
-| [@maestria/codex](packages/codex/) | maestria skills projection for Codex CLI | [README](packages/codex/README.md) |
-| [@maestria/agent-plugin](packages/agent-plugin/) | Portable Agent Plugins v1 skills-only package | [README](packages/agent-plugin/README.md) |
+| [@maestria/plugin](packages/plugin/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, and Agent Plugins clients | [README](packages/plugin/README.md) |
 | [@maestria/omp](packages/omp/) | maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
-| [@maestria/kimi-code](packages/kimi-code/) | maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
-| [@maestria/cursor](packages/cursor/) | maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |
-| [@maestria/hermes](packages/hermes/) | maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
 | [@maestria/pi](packages/pi/) | maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 | [@maestria/prime-agent](packages/prime-agent/) | maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
 
@@ -47,22 +42,15 @@ maestria/
 │   ├── adr/             - Architecture Decision Records
 │   │   ├── core/        - Cross-cutting decisions (ADR-CORE-*)
 │   │   ├── opencode/    - @maestria/opencode decisions (ADR-OC-*)
-│   │   ├── kimi-code/   - @maestria/kimi-code decisions (ADR-KC-*)
-│   │   ├── cursor/      - @maestria/cursor decisions (ADR-CR-*)
 │   │   ├── hermes/      - @maestria/hermes decisions (ADR-HM-*)
 │   │   └── pi/          - @maestria/pi + @maestria/omp decisions (ADR-PI-*)
 │   ├── guides/          - Development guides and conventions
 │   └── plans/           - Historical implementation plans
 ├── packages/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
-│   ├── agent-plugin/    - @maestria/agent-plugin portable Agent Plugins v1 package
+│   ├── plugin/          - Shared declarative plugin and native host resources
 │   ├── opencode/        - @maestria/opencode plugin
-│   ├── claude-code/     - @maestria/claude-code plugin
-│   ├── codex/           - @maestria/codex plugin projection
 │   ├── omp/             - @maestria/omp plugin
-│   ├── kimi-code/       - @maestria/kimi-code plugin
-│   ├── cursor/          - @maestria/cursor plugin
-│   ├── hermes/          - @maestria/hermes plugin (Python)
 │   ├── pi/              - @maestria/pi plugin
 │   ├── prime-agent/     - @maestria/prime-agent plugin (Prime Agent skills + extension)
 │   └── shared/
@@ -142,10 +130,10 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 For per-package uninstall instructions, see:
 
 - [@maestria/opencode uninstall](apps/docs/src/content/docs/opencode/getting-started/installation.mdx)
-- [@maestria/kimi-code uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
+- [@maestria/plugin uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
 - [@maestria/pi & @maestria/omp uninstall](apps/docs/src/content/docs/pi-omp/getting-started/installation.mdx)
-- [@maestria/cursor uninstall](apps/docs/src/content/docs/cursor/getting-started/installation.mdx)
-- [@maestria/claude-code uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
-- [@maestria/codex uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)
-- [@maestria/hermes uninstall](apps/docs/src/content/docs/hermes/getting-started/installation.mdx)
+- [@maestria/plugin uninstall](apps/docs/src/content/docs/cursor/getting-started/installation.mdx)
+- [@maestria/plugin uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
+- [@maestria/plugin uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)
+- [Hermes plugin uninstall](apps/docs/src/content/docs/hermes/getting-started/installation.mdx)
 - [@maestria/prime-agent uninstall](apps/docs/src/content/docs/prime-agent/getting-started/installation.mdx)

@@ -1,12 +1,14 @@
 ---
 title: Installation & Setup
-description: Install @maestria/kimi-code in Kimi Code. The package is a declarative plugin with generated skills, native commands, and a system-prompt contribution.
+description: Install @maestria/plugin in Kimi Code. The package is a declarative plugin with generated skills, native commands, and a system-prompt contribution.
 ---
+
+This integration ships in the shared `@maestria/plugin` package. The `kimi-code` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
 
 import { Steps } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/kimi-code` is a declarative plugin with no build step.
+`@maestria/plugin` is a declarative plugin with no build step.
 
 ## Prerequisites
 
@@ -41,7 +43,7 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 ## Manual Install
 
-To control extraction yourself, run `npm pack @maestria/kimi-code@latest`, extract the tarball, then run `/plugins install <extracted-directory>` from a Kimi Code session. Delete the temporary files afterward.
+To control extraction yourself, run `npm pack @maestria/plugin@latest`, extract the tarball, then run `/plugins install <extracted-directory>` from a Kimi Code session. Delete the temporary files afterward.
 
 ## Optional Session Controls
 

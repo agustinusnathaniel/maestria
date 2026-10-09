@@ -1,13 +1,15 @@
 ---
 title: Installation & Setup
-description: Install and verify @maestria/codex through the maestria CLI.
+description: Install and verify @maestria/plugin through the maestria CLI.
 ---
+
+This integration ships in the shared `@maestria/plugin` package. The `codex` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/codex` is a Codex skills plugin with a companion native custom-agent pack. The maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
+`@maestria/plugin` is a Codex skills plugin with a companion native custom-agent pack. The maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
 
 <Aside type="tip" title="Verified support boundary">
   Verified against Codex CLI `0.145.0` on 2026-08-26. Codex desktop parity and runtime tool

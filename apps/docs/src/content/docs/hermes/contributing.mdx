@@ -1,33 +1,22 @@
 ---
 title: Contributing
-description: Hermes-specific package structure, runtime boundaries, and validation for @maestria/hermes.
+description: Maintain the portable Hermes integration in the shared Maestria plugin.
 ---
 
-For repository setup and PRs, see the [Contributing Guide](/core/contributing/); for shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
+For setup and delivery, see the [Contributing Guide](/core/contributing/).
 
-## Package Boundary
+## Ownership
 
-`@maestria/hermes` is a Python plugin with hand-authored adapter code and methodology skills generated from `packages/core/agent-directives/`.
+Shared methodology lives in `packages/core/agent-directives/`. The consolidated plugin's shared skills and Hermes integration guide are generated; update their projection or guide-generation input instead of editing generated files.
 
-## Design Rules
+Hermes has no Maestria Python adapter. Trust, delegation, tool authority, memory, and lifecycle remain Hermes capabilities.
 
-- Keep reusable methodology in `packages/core/agent-directives/`, not in Hermes-only prompts.
-- Use Hermes-native APIs for commands, delegation, LLM calls, goals, and memory.
-- Keep trust decisions in the native topology and permission boundary; specialist names do not grant child capabilities.
-- Keep optional integrations (memory providers, mode-footer output) outside the core plugin path.
-
-See [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the long-lived goal boundary.
-
-## Test Local Changes
+## Verify
 
 ```bash
-hermes plugins install /path/to/maestria/packages/hermes --enable
-pytest packages/hermes/
-ruff check packages/hermes/src/
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/plugin test
 ```
 
-## Extend the Plugin
-
-Register commands, hooks, middleware, and tools through their registration functions (`register_command`, `register_hook`, `register_middleware`, `register_tool`) and keep the matching `provides_*` entries in `plugin.yaml`. Hermes-only skills go under `src/maestria_hermes/skills/` and register under the bare skill name; everything else comes from the canonical source. The tests compare `plugin.yaml` and `register()` in `src/maestria_hermes/__init__.py`; update both when adding or removing a resource.
-
-Use the [Hermes commands](/hermes/commands/) and [installation guide](/hermes/getting-started/installation/) for user-facing behavior.
+For a live smoke test, use an isolated Hermes home and install the packed plugin, then inspect plugin and skill discovery. Package checks do not prove host enforcement.

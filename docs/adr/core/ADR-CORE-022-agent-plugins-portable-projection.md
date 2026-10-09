@@ -4,6 +4,10 @@
 
 Accepted (2026-09-01), Confidence: High; consolidated 2026-10-03.
 
+## Consolidation amendment (2026-10-10)
+
+[CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) supersedes the separate `@maestria/agent-plugin` package topology. The portable skill surface now ships in `@maestria/plugin`, alongside explicitly selected native host resources. The portable format still grants no runtime enforcement, delegation, or lifecycle authority. The original decision below records the earlier skills-only distribution.
+
 ## Context
 
 maestria maintains canonical agent directives and richer native integrations. Agent Plugins v1 provides a vendor-neutral manifest and Agent Skills layout, but does not standardize runtime agents, commands, hooks, permissions, trust, or session behavior. It is a distribution format, not a runtime model or a suitable canonical representation.

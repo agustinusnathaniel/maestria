@@ -36,9 +36,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-        with:
-          # Release only builds and publishes: no Python linting needed.
-          python: 'false'
       - name: Verify generated plugins are in sync
         run: pnpm exec vp run check-sync
       - name: Build

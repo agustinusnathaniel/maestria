@@ -4,12 +4,13 @@ import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { isRecord } from '@/lib/primitives.js';
+import { MAESTRIA_PLUGIN_PACKAGE } from '@/lib/package-constants.js';
 import { getMaestriaCacheDir, run } from '@/lib/shell.js';
 
 import { formatAgentPluginValidation, validateAgentPlugin } from './agent-plugin-validation.js';
 import type { AgentPluginValidation } from './agent-plugin-validation.js';
 
-export const AGENT_PLUGIN_PACKAGE = '@maestria/agent-plugin';
+export const AGENT_PLUGIN_PACKAGE = MAESTRIA_PLUGIN_PACKAGE;
 
 export interface StageAgentPluginOptions {
   readonly destination?: string;

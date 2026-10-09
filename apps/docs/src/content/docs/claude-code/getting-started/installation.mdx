@@ -1,13 +1,15 @@
 ---
 title: Installation & Setup
-description: How to validate, install, and load @maestria/claude-code through Claude Code or the maestria CLI.
+description: How to validate, install, and load @maestria/plugin through Claude Code or the maestria CLI.
 ---
+
+This integration ships in the shared `@maestria/plugin` package. The `claude-code` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/claude-code` is a declarative, self-contained Claude Code plugin: a `.claude-plugin/plugin.json` manifest plus agent, skill, and command files. No npm install, no build step, no runtime code.
+`@maestria/plugin` is a declarative, self-contained Claude Code plugin: a `.claude-plugin/plugin.json` manifest plus agent, skill, and command files. No npm install, no build step, no runtime code.
 
 <Aside type="caution" title="Verified as a native candidate">
   The package is a `Native candidate`: validation passed with the official Claude Code CLI, but
@@ -25,7 +27,7 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install claude-code" />
 
-The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under `~/.cache/maestria/`, and delegates installation to Claude Code. Plugin state and scope stay in the host runtime.
+The CLI downloads `@maestria/plugin` from npm, stages it in a local marketplace under `~/.cache/maestria/`, and delegates installation to Claude Code. Plugin state and scope stay in the host runtime.
 
 Check, update, or remove the installation with:
 
@@ -40,7 +42,7 @@ Claude Code's marketplace update path selects the latest package. Exact version 
 From a checkout of this repository:
 
 ```bash
-claude plugin validate ./packages/claude-code --strict
+claude plugin validate ./packages/plugin --strict
 ```
 
 `--strict` treats warnings as errors and is the recommended CI check. A clean run prints `✔ Validation passed`.
@@ -54,7 +56,7 @@ claude plugin validate ./packages/claude-code --strict
    `--plugin-dir` is session-only and can be passed multiple times to load several plugins:
 
    ```bash
-   claude --plugin-dir ./packages/claude-code
+   claude --plugin-dir ./packages/plugin
    ```
 
 2. **Confirm the plugin and its components loaded**

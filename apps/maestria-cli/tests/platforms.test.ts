@@ -191,7 +191,27 @@ describe('pi and omp package commands', () => {
   });
 });
 
-describe('hermes plugin command deadlines', () => {
+describe('hermes portable plugin commands', () => {
+  it('keeps the legacy adapter enabled when the replacement install fails', async () => {
+    vi.clearAllMocks();
+    vi.mocked(shell.run).mockImplementationOnce(() =>
+      Effect.fail(
+        new shell.CommandError({ command: 'hermes plugins install', message: 'install failed' }),
+      ),
+    );
+    await expect(Effect.runPromise(requirePlatform('hermes').install)).rejects.toBeDefined();
+    expect(vi.mocked(shell.run).mock.calls.some(([, args]) => args[1] === 'disable')).toBe(false);
+  });
+
+  it('reports the portable plugin identity without a Python adapter', async () => {
+    const hermes = requirePlatform('hermes');
+    expect(hermes.npmPackage).toBe('@maestria/plugin');
+    expect(await Effect.runPromise(hermes.getInstalledVersion)).toBe('0.2.0');
+    vi.clearAllMocks();
+    await Effect.runPromise(hermes.uninstall);
+    expect(shell.run).toHaveBeenCalledWith('hermes', ['plugins', 'remove', 'maestria'], 15_000);
+  });
+
   it('gives the git-based install and update the same generous deadline', async () => {
     vi.clearAllMocks();
     const hermes = requirePlatform('hermes');
@@ -207,11 +227,12 @@ describe('hermes plugin command deadlines', () => {
     expect(calls).toContainEqual([
       'plugins',
       'install',
-      'agustinusnathaniel/maestria/packages/hermes',
+      'agustinusnathaniel/maestria/packages/plugin',
       '--enable',
       120_000,
     ]);
-    expect(calls).toContainEqual(['plugins', 'update', 'maestria-hermes', 120_000]);
+    expect(calls).toContainEqual(['plugins', 'disable', 'maestria-hermes', 15_000]);
+    expect(calls).toContainEqual(['plugins', 'update', 'maestria', 120_000]);
   });
 });
 
@@ -245,12 +266,16 @@ describe('opencode platform update', () => {
 });
 
 describe('marketplace-backed platform handlers', () => {
-  it('registers Claude Code and Codex CLI with their published packages', () => {
+  it('registers the native adapters with the consolidated plugin package', () => {
     const claudeCode = getPlatform('claude-code');
     const codex = getPlatform('codex');
+    const cursor = getPlatform('cursor');
+    const kimiCode = getPlatform('kimi-code');
 
-    expect(claudeCode?.npmPackage).toBe('@maestria/claude-code');
-    expect(codex?.npmPackage).toBe('@maestria/codex');
+    expect(claudeCode?.npmPackage).toBe('@maestria/plugin');
+    expect(codex?.npmPackage).toBe('@maestria/plugin');
+    expect(cursor?.npmPackage).toBe('@maestria/plugin');
+    expect(kimiCode?.npmPackage).toBe('@maestria/plugin');
     expect(claudeCode?.supportsVersionPinning).toBe(false);
     expect(codex?.supportsVersionPinning).toBe(false);
   });

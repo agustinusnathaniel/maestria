@@ -19,7 +19,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   check: {
     examples: [
       'maestria check opencode           Check if @maestria/opencode is installed',
-      'maestria check hermes             Check if @maestria/hermes is installed',
+      'maestria check hermes             Check the shared plugin in Hermes',
       'maestria check prime-agent        Check if @maestria/prime-agent is installed',
       'maestria check --all              Check all detected platforms',
       'maestria check opencode --json    Output as JSON',
@@ -99,7 +99,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   plugin: {
     examples: [
       'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
-      'maestria plugin install                 Stage @maestria/agent-plugin in the maestria cache',
+      'maestria plugin install                 Stage @maestria/plugin in the maestria cache',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
       'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
     ],
@@ -150,7 +150,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
 const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   install: {
     examples: [
-      'maestria plugin install                 Stage @maestria/agent-plugin in the maestria cache',
+      'maestria plugin install                 Stage @maestria/plugin in the maestria cache',
       'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
       'maestria plugin install --json          Output the staged package report as JSON',

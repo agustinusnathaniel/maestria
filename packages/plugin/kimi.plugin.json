@@ -1,0 +1,34 @@
+{
+  "name": "maestria",
+  "version": "0.7.0",
+  "description": "maestria agent pack for Kimi Code - specialist skills with swarm-aware orchestration",
+  "keywords": [
+    "maestria",
+    "kimi-code",
+    "skills",
+    "orchestration",
+    "engineering",
+    "workflow",
+    "swarm"
+  ],
+  "author": {
+    "name": "Agustinus Nathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "skills": "./integrations/kimi-code/skills/",
+  "commands": "./commands/kimi-code/",
+  "systemPromptPath": "./integrations/kimi-code/SYSTEM.md",
+  "sessionStart": {
+    "skill": "orchestrator"
+  },
+  "skillInstructions": "maestria dispatch rules for Kimi Code:\n- 7 specialist personas: builder, adventurer, architect, planner, reviewer, writer, diagnose\n- Use Skill(skill=\"<persona>\") to load a persona, then inline its methodology into Agent()/AgentSwarm() prompts\n- builder/diagnose/writer \u2192 subagent_type \"coder\"; adventurer \u2192 \"explore\"; architect/planner/reviewer \u2192 \"plan\"\n- Routing table in the orchestrator skill shows the full specialist\u2192subagent mapping\n- The orchestrator auto-loads at session start and provides full delegation methodology",
+  "interface": {
+    "displayName": "maestria Agent Pack",
+    "shortDescription": "Specialized engineering workflow skills for Kimi Code",
+    "longDescription": "maestria packages universal rules, 7 specialist personas (builder, adventurer, planner, reviewer, architect, writer, diagnose), and an orchestrator skill that auto-loads at session start. The orchestrator composes personas into prompt templates for Kimi Code's 3 built-in subagents (coder, explore, plan) and uses AgentSwarm for parallel fan-out. Built on the Harness Engineering principle: precise rules, explicit boundaries, and clear delegation chains over raw capability.",
+    "developerName": "Agustinus Nathaniel",
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria"
+  },
+  "agents": []
+}

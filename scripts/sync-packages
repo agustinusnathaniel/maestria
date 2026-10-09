@@ -18,7 +18,7 @@ else
   exit 2
 fi
 
-for config in "$ROOT"/packages/*/sync.config.ts; do
+for config in "$ROOT"/packages/*/sync.config.ts "$ROOT"/packages/plugin/integrations/*/sync.config.ts; do
   [ -f "$config" ] || continue
   PKG_DIR="$(dirname "$config")"
   PKG_NAME="$(basename "$PKG_DIR")"
@@ -36,6 +36,12 @@ for config in "$ROOT"/packages/*/sync.config.ts; do
     fi
   fi
 done
+
+if [ "$HAD_ERROR" -eq 0 ]; then
+  if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts "${1:---write}"); then
+    HAD_ERROR=1
+  fi
+fi
 
 echo ""
 if [ "$HAD_ERROR" -eq 0 ]; then

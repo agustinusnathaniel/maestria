@@ -4,6 +4,10 @@
 
 Accepted (2026-08-10), Confidence: High
 
+## Retirement amendment (2026-10-10)
+
+The owner selected portable Agent Plugins support in [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md). The Python adapter has been removed. This record preserves its historical rationale; its tool gating, hooks, bridge, and mode-state guarantees no longer describe the shipped plugin. Hermes owns permissions, trust, and lifecycle in the replacement.
+
 ## Context
 
 This decision was taken inside [ADR-HM-002](ADR-HM-002-orchestration-policy.md) and extracted into its own record on 2026-09-28, because it decides a different subject from that record: the child-trust boundary, not the orchestrator's delegation default. The 2026-08-10 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.

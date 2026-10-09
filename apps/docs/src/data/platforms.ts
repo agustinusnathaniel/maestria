@@ -53,7 +53,7 @@ export const platforms: Platform[] = [
     id: 'claude-code',
     installArgs: 'install claude-code',
     mark: 'claudeCode',
-    name: '@maestria/claude-code',
+    name: 'Maestria for Claude Code',
   },
   {
     blurb: 'Specialist and workflow skills for Codex CLI.',
@@ -61,7 +61,7 @@ export const platforms: Platform[] = [
     id: 'codex',
     installArgs: 'install codex',
     mark: 'codex',
-    name: '@maestria/codex',
+    name: 'Maestria for Codex',
   },
   {
     blurb: '8 specialized skills with swarm-aware orchestration and no build step.',
@@ -69,7 +69,7 @@ export const platforms: Platform[] = [
     id: 'kimi-code',
     installArgs: 'install kimi-code',
     mark: 'kimiCode',
-    name: '@maestria/kimi-code',
+    name: 'Maestria for Kimi Code',
   },
   {
     blurb: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
@@ -77,7 +77,7 @@ export const platforms: Platform[] = [
     id: 'cursor',
     installArgs: 'install cursor',
     mark: 'cursorMark',
-    name: '@maestria/cursor',
+    name: 'Maestria for Cursor',
   },
   {
     blurb: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
@@ -89,13 +89,12 @@ export const platforms: Platform[] = [
     name: '@maestria/pi & @maestria/omp',
   },
   {
-    blurb: 'Methodology layer for Hermes Agent: specialists, pipeline, and mode system.',
+    blurb: 'Shared methodology skills through Hermes portable plugin support.',
     href: '/hermes/',
     id: 'hermes',
-    // Hermes installs via its own git-based plugin manager, not the maestria CLI.
-    installArgs: '',
+    installArgs: 'install hermes',
     mark: 'hermes',
-    name: '@maestria/hermes',
+    name: 'Maestria for Hermes',
   },
   {
     blurb: 'Skills-first maestria for Prime Agent: specialists, orchestrator, and workflow modes.',

@@ -1,0 +1,67 @@
+{
+  "name": "@maestria/plugin",
+  "version": "0.7.0",
+  "private": false,
+  "description": "maestria consolidated methodology plugin with portable skills and native host overlays",
+  "keywords": [
+    "agent-plugins",
+    "agent-skills",
+    "ai",
+    "maestria",
+    "orchestration",
+    "plugin"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/plugin#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/plugin"
+  },
+  "files": [
+    "plugin.json",
+    ".claude-plugin/plugin.json",
+    ".cursor-plugin/plugin.json",
+    ".codex-plugin/plugin.json",
+    ".devin-plugin/plugin.json",
+    ".zcode-plugin/plugin.json",
+    "kimi.plugin.json",
+    "skills",
+    "agents",
+    "commands",
+    "rules",
+    "assets",
+    "integrations/*/README.md",
+    "integrations/codex/instructions",
+    "integrations/kimi-code/skills",
+    "integrations/kimi-code/SYSTEM.md",
+    "cli/README.md",
+    "automations/README.md",
+    "hooks/README.md",
+    "docs",
+    "INSTALL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

@@ -4,6 +4,16 @@ Maintainer evidence ledger supporting [ADR-CORE-014](adr/core/ADR-CORE-014-runti
 
 Every row is a dated snapshot as of its review date, not a maintenance obligation; reverification timing is governed by [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). Start with the [snapshot](#snapshot) for support decisions, then follow each Evidence ID to its runtime section for sources and verification limits.
 
+## Consolidated distribution (2026-10-10)
+
+`@maestria/plugin` now owns the declarative distributions for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, and portable Agent Plugins clients. Package validation and packed-artifact evidence cover component paths and preserved native metadata. Historical host evidence below predates the consolidation and does not establish live compatibility of the new archive. Devin and ZCode remain candidates until exercised in their hosts. Kimi retains its explicit native persona projection, session-start skill, and system instructions.
+
+The existing CLI platform identifiers remain stable; installers fetch the consolidated archive. Plugin installation does not activate automations or hooks. Native OpenCode, Pi, OMP, and Prime Agent adapters remain separate.
+
+Hermes Python evidence below is historical: its adapter and native role gating were retired in favor of portable skills. It does not establish enforcement by the consolidated plugin.
+
+Consolidated validation (2026-10-10): Claude strict plugin validation passed. Hermes plugin doctor passed, and an isolated home loaded all 14 skills from the npm-packed archive under a generated portable namespace, with no Maestria tools or hooks. These checks do not establish end-to-end task behavior or runtime enforcement.
+
 ## How to read this document
 
 - **Reviewed:** the date the cited source was last verified; older claims are stale against the runtime's current documented state.

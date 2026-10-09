@@ -122,7 +122,7 @@ export const registerKimiPlugin = (): Effect.Effect<void, CommandError> =>
       enabled: current?.enabled ?? true,
       id: MAESTRIA_PLUGIN,
       installedAt: current?.installedAt ?? now,
-      originalSource: '@maestria/kimi-code',
+      originalSource: '@maestria/plugin',
       root: kimiManagedPluginDir(),
       source: 'local-path',
       updatedAt: now,

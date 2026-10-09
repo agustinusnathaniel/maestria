@@ -1,5 +1,5 @@
 ---
-title: '@maestria/agent-plugin'
+title: '@maestria/plugin'
 description: Use maestria's workflow methodology in agent clients that support Agent Plugins v1.
 ---
 
@@ -7,7 +7,7 @@ import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components'
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-@maestria/agent-plugin packages maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
+@maestria/plugin packages maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
 
 <Aside type="tip" title="When to choose the portable package">
   Choose it when you want the same skills across compatible clients with client-owned discovery,
@@ -48,7 +48,7 @@ Use --json for a machine-readable report; the CLI never activates the package or
 <Steps>
 
 1. Open the client's plugin or extension installer.
-2. Install `@maestria/agent-plugin`, or select the directory printed by maestria plugin install.
+2. Install `@maestria/plugin`, or select the directory printed by maestria plugin install.
 3. Reload installed skills or start a new session.
 
 </Steps>
@@ -62,14 +62,14 @@ The command is intentionally namespaced as `maestria plugin ...`: `maestria inst
 Point a client that accepts local plugins at the directory containing plugin.json rather than its nested skills directory:
 
 ```text
-/path/to/maestria/packages/agent-plugin/
+/path/to/maestria/packages/plugin/
 ```
 
 A local checkout is useful when testing unreleased changes.
 
 ## Portable and Native Boundaries
 
-Use portable skills for client-neutral guidance, and a native integration for platform-specific runtime features. The two can coexist.
+Use portable skills for client-neutral guidance, and a native integration for platform-specific runtime features. The consolidated archive contains both surfaces; install it once per host.
 
 | Need                                                | Native guide                 |
 | --------------------------------------------------- | ---------------------------- |
@@ -82,7 +82,7 @@ Use portable skills for client-neutral guidance, and a native integration for pl
 | Prime Agent skills and extension subset             | [Prime Agent](/prime-agent/) |
 | Kimi Code skills, commands, and session integration | [Kimi Code](/kimi-code/)     |
 
-The package provides instructions and workflow resources. It does not provide:
+The portable manifest exposes shared skills. Native manifests select host resources in the same archive; the portable standard itself does not provide:
 
 - native subagent registration
 - slash commands or lifecycle hooks
@@ -119,6 +119,6 @@ Read-only roles are guidance, not a security boundary; the consuming client rema
   <LinkCard
     title="Package source"
     description="Manifest, installation guide, and generated skills."
-    href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugin"
+    href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/plugin"
   />
 </CardGrid>

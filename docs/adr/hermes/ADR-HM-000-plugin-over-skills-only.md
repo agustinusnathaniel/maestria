@@ -4,6 +4,10 @@
 
 Accepted (2026-07-16)
 
+## Retirement amendment (2026-10-10)
+
+The owner selected portable Agent Plugins support in [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md). The Python adapter has been removed. This record preserves its historical rationale; its tool gating, hooks, bridge, and mode-state guarantees no longer describe the shipped plugin. Hermes owns permissions, trust, and lifecycle in the replacement.
+
 ## Context
 
 `@maestria/hermes` delivers the maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes Agent platform, which supports two extension mechanisms:

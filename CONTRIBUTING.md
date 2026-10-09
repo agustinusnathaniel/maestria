@@ -92,15 +92,10 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `pnpm --filter @maestria/kimi-code test` |
+| `plugin` | Host manifests, integration configs, Codex metadata, and guides | Shared `skills/`, native agents/commands/rules, and Kimi personas | `pnpm --filter @maestria/plugin test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 | `omp` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/omp test` and `validate` |
-| `cursor` | `.cursor-plugin/` manifest and declarative files | `agents/`, `skills/`, `rules/`, `commands/` | `pnpm --filter @maestria/cursor test` |
-| `hermes` | Python adapter, hooks, middleware, and commands | `src/maestria_hermes/skills/` | `ruff check src/` |
-| `claude-code` | `.claude-plugin/` manifest | `agents/`, `skills/`, `commands/` | `pnpm --filter @maestria/claude-code test` and `claude plugin validate . --strict` |
-| `codex` | `.codex-plugin/` manifest and native-agent metadata | `skills/` | `pnpm --filter @maestria/codex test` |
 | `prime-agent` | manifest and verified extension subset | `skills/` | package validation and focused tests |
-| `agent-plugin` | portable manifest and package metadata | `skills/` | package validation and focused tests |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.
 

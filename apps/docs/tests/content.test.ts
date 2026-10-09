@@ -92,9 +92,9 @@ describe('portable Agent Plugin documentation', () => {
   it('documents the artifact boundary and installation path', async () => {
     const { full } = await readDoc('agent-plugin/index.mdx');
 
-    expect(full).toContain('@maestria/agent-plugin');
+    expect(full).toContain('@maestria/plugin');
     expect(full).toContain('compatible clients');
-    expect(full).toContain('Install `@maestria/agent-plugin`');
+    expect(full).toContain('Install `@maestria/plugin`');
     expect(full).toContain('plugin.json');
     expect(full).toContain('skills/<name>/SKILL.md');
     expect(full).toContain('The command is intentionally namespaced as `maestria plugin ...`');

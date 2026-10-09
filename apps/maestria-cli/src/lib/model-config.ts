@@ -463,7 +463,7 @@ const cursor = createAgentFileHandler({
   cli: 'agent',
   // The plugin's generated agents are the global source. Project-level
   // configuration is written to Cursor's native `.cursor/agents` overlay.
-  globalDir: `${homedir()}/.cursor/plugins/local/maestria/agents`,
+  globalDir: `${homedir()}/.cursor/plugins/local/maestria/agents/cursor`,
   id: 'cursor',
   isAvailable: cursorCliName().pipe(Effect.map((cli) => cli !== undefined && cli !== '')),
   label: 'Cursor',

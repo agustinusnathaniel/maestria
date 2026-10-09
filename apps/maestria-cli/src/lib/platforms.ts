@@ -2,11 +2,11 @@
 import { Effect } from 'effect';
 import { homedir, tmpdir } from 'node:os';
 import nodePath from 'node:path';
-import picocolors from 'picocolors';
 
 import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
 import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/codex-managed-agents.js';
 import { cursorCliName } from '@/lib/cursor-cli.js';
+import { MAESTRIA_PLUGIN_PACKAGE } from '@/lib/package-constants.js';
 import {
   kimiCodeHome,
   kimiInstalledPath,
@@ -249,7 +249,7 @@ const claudeMarketplace: NpmMarketplace = {
       },
     ],
   },
-  packageName: '@maestria/claude-code',
+  packageName: MAESTRIA_PLUGIN_PACKAGE,
 };
 
 const codexMarketplace: NpmMarketplace = {
@@ -268,7 +268,7 @@ const codexMarketplace: NpmMarketplace = {
       },
     ],
   },
-  packageName: '@maestria/codex',
+  packageName: MAESTRIA_PLUGIN_PACKAGE,
 };
 
 const refreshClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
@@ -489,7 +489,7 @@ const claudeCode: PlatformDefinition = {
   install: runClaudePlugin('install'),
   isInstalled: hostPluginInstalled('claude'),
   label: 'Claude Code',
-  npmPackage: '@maestria/claude-code',
+  npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   supportsVersionPinning: false,
   uninstall: Effect.suspend(() =>
     run('claude', [
@@ -524,7 +524,7 @@ const codex: PlatformDefinition = {
   }).pipe(Effect.asVoid),
   isInstalled: hostPluginInstalled('codex'),
   label: 'Codex CLI',
-  npmPackage: '@maestria/codex',
+  npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   supportsVersionPinning: false,
   uninstall: Effect.gen(function* uninstall() {
     yield* run('codex', [
@@ -988,7 +988,7 @@ const kimiCode: PlatformDefinition = {
     // directory. Kimi's plugin manager treats malformed installed.json as a
     // load failure, so do not destroy the current copy before surfacing it.
     capture: readKimiInstalled,
-    replace: () => installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir()),
+    replace: () => installNpmTarball(MAESTRIA_PLUGIN_PACKAGE, kimiManagedPluginDir()),
     restore: registerKimiPlugin,
   }),
   isInstalled: readKimiInstalled().pipe(
@@ -999,14 +999,14 @@ const kimiCode: PlatformDefinition = {
     Effect.catchEager(() => Effect.succeed(false)),
   ),
   label: 'Kimi Code',
-  npmPackage: '@maestria/kimi-code',
+  npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   uninstall: removeKimiPlugin().pipe(Effect.asVoid),
   update: (version?: string) =>
     replacePlatformPayload({
       capture: readKimiInstalled,
-      invalidatePackage: '@maestria/kimi-code',
+      invalidatePackage: MAESTRIA_PLUGIN_PACKAGE,
       replace: () =>
-        installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir(), {
+        installNpmTarball(MAESTRIA_PLUGIN_PACKAGE, kimiManagedPluginDir(), {
           tag: version ?? 'latest',
         }),
       restore: registerKimiPlugin,
@@ -1015,46 +1015,42 @@ const kimiCode: PlatformDefinition = {
 
 const hermes: PlatformDefinition = {
   detect: commandExists('hermes'),
-  getInstalledVersion: readTextFile(
-    `${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`,
-  ).pipe(
-    Effect.map((out: string) => {
-      const match = /^version:\s*["']?(?<version>.+?)["']?\s*$/mu.exec(out);
-      return match?.groups?.version ?? 'unknown';
-    }),
-    Effect.catchEager(() => Effect.succeed('unknown')),
-  ),
-  getLatestVersion: Effect.succeed('see GitHub releases'),
+  getInstalledVersion: readPackageJsonVersion(
+    `${homedir()}/.hermes/plugins/maestria/plugin.json`,
+  ).pipe(Effect.catchEager(() => Effect.succeed('unknown'))),
   id: 'hermes',
-  // No npmPackage - distributed via hermes plugins install (git-based)
   install: Effect.gen(function* install() {
     yield* run(
       'hermes',
-      ['plugins', 'install', 'agustinusnathaniel/maestria/packages/hermes', '--enable'],
+      ['plugins', 'install', 'agustinusnathaniel/maestria/packages/plugin', '--enable'],
       120_000,
     );
+    const legacy = yield* fileExists(`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`);
+    if (legacy) {
+      yield* run('hermes', ['plugins', 'disable', 'maestria-hermes'], 15_000);
+    }
   }).pipe(Effect.asVoid),
-
-  isInstalled: fileExists(`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`),
+  isInstalled: fileExists(`${homedir()}/.hermes/plugins/maestria/plugin.json`),
   label: 'Hermes',
-  uninstall: Effect.gen(function* uninstall() {
-    yield* run('hermes', ['plugins', 'remove', 'maestria-hermes'], 15_000);
-  }).pipe(Effect.asVoid),
-  update: (_version?: string) =>
+  npmPackage: MAESTRIA_PLUGIN_PACKAGE,
+  supportsVersionPinning: false,
+  uninstall: Effect.suspend(() => run('hermes', ['plugins', 'remove', 'maestria'], 15_000)).pipe(
+    Effect.asVoid,
+  ),
+  update: () =>
     Effect.gen(function* update() {
-      if (_version !== null && _version !== undefined && _version !== '') {
-        console.log(
-          `  ${picocolors.yellow('⚠')} Version pinning is not supported for git-based Hermes plugins. ` +
-            `Updating to latest from git.`,
-        );
+      const portable = yield* fileExists(`${homedir()}/.hermes/plugins/maestria/plugin.json`);
+      if (!portable) {
+        yield* hermes.install;
+        return;
       }
-      // Git pull of latest; shares install's 120s deadline.
-      yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 120_000);
-    }),
+      yield* run('hermes', ['plugins', 'update', 'maestria'], 120_000);
+    }).pipe(Effect.asVoid),
 };
 
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
+const CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents/cursor`;
 export const CURSOR_AGENT_NAMES = MAESTRIA_AGENTS;
 
 /** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
@@ -1062,7 +1058,7 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
   Effect.tryPromise({
     catch: (error) =>
       new CommandError({
-        command: `read Cursor agent models from ${CURSOR_PLUGIN_DIR}/agents`,
+        command: `read Cursor agent models from ${CURSOR_AGENT_DIR}`,
         message: String(error),
       }),
     try: async () => {
@@ -1070,7 +1066,14 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
       const entries = await Promise.all(
         CURSOR_AGENT_NAMES.map(async (agent) => {
           try {
-            const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
+            const content = await readFile(`${CURSOR_AGENT_DIR}/${agent}.md`, 'utf-8').catch(
+              async (error: unknown) => {
+                if (!isFileNotFound(error)) {
+                  throw error;
+                }
+                return await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
+              },
+            );
             const model = parseAgentFrontmatterModel(content, { unquote: true });
             return model === undefined || model === '' ? null : ([agent, model] as const);
           } catch (error) {
@@ -1092,12 +1095,12 @@ const restoreCursorAgentModels = (
   Effect.tryPromise({
     catch: (error) =>
       new CommandError({
-        command: `restore Cursor agent models in ${CURSOR_PLUGIN_DIR}/agents`,
+        command: `restore Cursor agent models in ${CURSOR_AGENT_DIR}`,
         message: String(error),
       }),
     try: async () => {
       const { mkdir, readFile, writeFile } = await import('node:fs/promises');
-      const agentDir = `${CURSOR_PLUGIN_DIR}/agents`;
+      const agentDir = CURSOR_AGENT_DIR;
       await mkdir(agentDir, { recursive: true });
       await Promise.all(
         Object.entries(models).map(async ([agent, model]) => {
@@ -1151,13 +1154,13 @@ const cursor: PlatformDefinition = {
     capture: readCursorAgentModels,
     replace: () =>
       ensureCursorPluginParentDirectory().pipe(
-        Effect.flatMap(() => installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR)),
+        Effect.flatMap(() => installNpmTarball(MAESTRIA_PLUGIN_PACKAGE, CURSOR_PLUGIN_DIR)),
       ),
     restore: restoreCursorAgentModels,
   }),
   isInstalled: fileExists(CURSOR_PLUGIN_JSON),
   label: 'Cursor',
-  npmPackage: '@maestria/cursor',
+  npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   uninstall: Effect.gen(function* uninstall() {
     yield* Effect.tryPromise({
       catch: (e) =>
@@ -1172,9 +1175,9 @@ const cursor: PlatformDefinition = {
   update: (version?: string) =>
     replacePlatformPayload({
       capture: readCursorAgentModels,
-      invalidatePackage: '@maestria/cursor',
+      invalidatePackage: MAESTRIA_PLUGIN_PACKAGE,
       replace: () =>
-        installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR, { tag: version ?? 'latest' }),
+        installNpmTarball(MAESTRIA_PLUGIN_PACKAGE, CURSOR_PLUGIN_DIR, { tag: version ?? 'latest' }),
       restore: restoreCursorAgentModels,
     }),
 };

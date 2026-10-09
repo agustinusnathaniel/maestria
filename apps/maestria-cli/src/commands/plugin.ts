@@ -5,6 +5,7 @@ import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { stageAgentPlugin } from '@/lib/agent-plugin-staging.js';
 import { formatAgentPluginValidation, validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
+import { MAESTRIA_PLUGIN_PACKAGE } from '@/lib/package-constants.js';
 
 export interface PluginValidateArgs {
   json?: boolean;
@@ -81,7 +82,7 @@ const installCommand = defineCommand({
       type: 'boolean',
     },
     source: {
-      default: '@maestria/agent-plugin',
+      default: MAESTRIA_PLUGIN_PACKAGE,
       description: 'Local Agent Plugin directory or npm package specifier',
       type: 'positional',
     },

@@ -2,12 +2,10 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import agentPluginConfig from '../../agent-plugin/sync.config.js';
-import claudeCodeConfig from '../../claude-code/sync.config.js';
-import codexConfig from '../../codex/sync.config.js';
-import cursorConfig from '../../cursor/sync.config.js';
-import hermesConfig from '../../hermes/sync.config.js';
-import kimiCodeConfig from '../../kimi-code/sync.config.js';
+import pluginConfig from '../../plugin/sync.config.js';
+import claudeCodeConfig from '../../plugin/integrations/claude-code/sync.config.js';
+import cursorConfig from '../../plugin/integrations/cursor/sync.config.js';
+import kimiCodeConfig from '../../plugin/integrations/kimi-code/sync.config.js';
 import ompConfig from '../../omp/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
@@ -58,15 +56,13 @@ const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
 };
 
 const syncConfigs: Record<string, SyncConfig> = {
-  'agent-plugin': agentPluginConfig,
   'claude-code': claudeCodeConfig,
-  codex: codexConfig,
   cursor: cursorConfig,
-  hermes: hermesConfig,
   'kimi-code': kimiCodeConfig,
   omp: ompConfig,
   opencode: opencodeConfig,
   pi: piConfig,
+  plugin: pluginConfig,
   'prime-agent': primeAgentConfig,
 };
 
