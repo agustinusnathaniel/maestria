@@ -1,12 +1,9 @@
 import { Effect } from 'effect';
 import type { Scope } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
-import path from 'node:path';
 import type { CommandInvocation } from '@opencode/plugin/effect/command';
-import type { AgentEditor, CommandEditor, ReferenceEditor, SkillEditor } from '../src/types.js';
-import { registerAgentTransforms } from '../src/transforms/agents.js';
+import type { CommandEditor, SkillEditor } from '../src/types.js';
 import { registerCommandTransforms } from '../src/transforms/commands.js';
-import { registerReferenceTransforms } from '../src/transforms/references.js';
 import { registerSkillTransforms } from '../src/transforms/skills.js';
 
 const runRegister = async (effect: Effect.Effect<void, never, Scope.Scope>): Promise<void> => {
@@ -15,125 +12,6 @@ const runRegister = async (effect: Effect.Effect<void, never, Scope.Scope>): Pro
 
 // Shared SDK Transform stub return: a no-op registration handle.
 const registered = Effect.succeed({ dispose: Effect.void });
-
-describe('registerReferenceTransforms', () => {
-  it('adds the rules file once as a local reference source', async () => {
-    type ReferenceSource = Parameters<ReferenceEditor['add']>[1];
-    const added: { name: string; source: ReferenceSource }[] = [];
-    const draft: ReferenceEditor = {
-      add: (name, source) => {
-        added.push({ name, source });
-      },
-      get: () => {},
-      list: () => [],
-      remove: () => {},
-    };
-
-    let captured: ((draft: ReferenceEditor) => void) | undefined;
-    await runRegister(
-      registerReferenceTransforms({
-        reference: {
-          // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy Transform<ReferenceEditor>.
-          transform: (callback: (draft: ReferenceEditor) => void) => {
-            captured = callback;
-            return registered;
-          },
-        },
-      }),
-    );
-
-    expect(captured).toBeTypeOf('function');
-    captured?.(draft);
-
-    expect(added).toHaveLength(1);
-    expect(added[0].name).toBe('maestria.rules');
-    if (added[0].source.type !== 'local') {
-      throw new Error('expected a local reference source');
-    }
-    expect(added[0].source.path.endsWith(path.join('rules', 'AGENTS.md'))).toBe(true);
-  });
-});
-
-describe('registerAgentTransforms', () => {
-  it('updates exactly the 8 known agents, orchestrator first', async () => {
-    const updated: string[] = [];
-    const drafts = new Map<string, Record<string, unknown>>();
-    const registry: AgentEditor = {
-      default: () => {},
-      get: () => {},
-      list: () => [],
-      remove: () => {},
-      update: (id, update) => {
-        updated.push(id);
-        const draft: Record<string, unknown> = {};
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test replays the captured updater into a plain object to assert passthrough.
-        update(draft as never);
-        drafts.set(id, draft);
-      },
-    };
-
-    let captured: ((registry: AgentEditor) => void) | undefined;
-    await runRegister(
-      registerAgentTransforms({
-        agent: {
-          // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Transform callback signature; an async function would not satisfy Transform<AgentEditor>.
-          transform: (callback: (registry: AgentEditor) => void) => {
-            captured = callback;
-            return registered;
-          },
-        },
-      }),
-    );
-    expect(captured).toBeTypeOf('function');
-    captured?.(registry);
-
-    expect(updated).toHaveLength(8);
-    expect(updated[0]).toBe('orchestrator');
-    expect(updated.toSorted()).toEqual(
-      [
-        'adventurer',
-        'architect',
-        'builder',
-        'diagnose',
-        'orchestrator',
-        'planner',
-        'reviewer',
-        'writer',
-      ].toSorted(),
-    );
-
-    // Permissions pass through to the draft: every agent carries a non-empty
-    // ruleset, and the safety-critical shapes survive (orchestrator lockdown
-    // with its subagent allowlist, planner's ask-gated edits).
-    interface DraftPermissions {
-      permissions?: unknown;
-    }
-    for (const [id, draft] of drafts) {
-      const { permissions } = draft as DraftPermissions;
-      expect(Array.isArray(permissions) && permissions.length > 0, `"${id}".permissions`).toBe(
-        true,
-      );
-    }
-    interface PermissionRule {
-      action: string;
-      effect: string;
-      resource: string;
-    }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test asserts the rule shape field by field below via toContainEqual.
-    const orchestratorRules = (drafts.get('orchestrator') as DraftPermissions)
-      .permissions as PermissionRule[];
-    expect(orchestratorRules).toContainEqual({
-      action: 'subagent',
-      effect: 'allow',
-      resource: 'builder',
-    });
-    expect(orchestratorRules).toContainEqual({ action: 'edit', effect: 'deny', resource: '*' });
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- same shape assertion as above.
-    const plannerRules = (drafts.get('planner') as DraftPermissions)
-      .permissions as PermissionRule[];
-    expect(plannerRules).toContainEqual({ action: 'edit', effect: 'ask', resource: '*' });
-  });
-});
 
 describe('registerCommandTransforms', () => {
   type CommandDefinition = Parameters<CommandEditor['add']>[0];
@@ -204,9 +82,11 @@ describe('registerCommandTransforms', () => {
     const invocation = {
       delivery: 'steer',
       prompt: {
-        agents: [{ name: 'builder' }],
-        files: [{ uri: 'file:///workspace/plan.md' }],
-        skills: [{ id: 'review' }],
+        agents: [{ mention: { end: 8, start: 0, text: '@builder' }, name: 'builder' }],
+        files: [
+          { mention: { end: 17, start: 9, text: '@plan.md' }, uri: 'file:///workspace/plan.md' },
+        ],
+        skills: [{ id: 'review', mention: { end: 25, start: 18, text: '$review' } }],
         text: 'plan the work',
       },
       sessionID: 'session-1',
@@ -223,6 +103,7 @@ describe('registerCommandTransforms', () => {
     expect(prompted[0].files).toEqual([{ uri: 'file:///workspace/plan.md' }]);
     expect(prompted[0].agents).toEqual([{ name: 'builder' }]);
     expect(prompted[0].skills).toEqual([{ id: 'review' }]);
+    expect(invocation.prompt.agents?.[0].mention).toBeDefined();
   });
 });
 

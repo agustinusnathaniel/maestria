@@ -19,13 +19,8 @@ const SPECIALIST_DESCRIPTIONS = {
   writer: 'Documentation following structured patterns',
 } as const;
 
-// Per-agent permission rules (V2 `permissions` arrays). Faithful port of the
-// V1 `permission` maps in packages/opencode/sync.config.ts: same rule order
-// (V2 is last-match-wins, so the broad-first/exceptions-after layout keeps
-// its meaning), `bash` renamed to `shell` and `task` to `subagent` per
-// /permissions, scalar tool effects expanded to `resource: '*'`. All other
-// action names transfer verbatim; an action the host never checks simply
-// never matches.
+// V2 permissions preserve the effective V1 policy: last match wins.
+// Legacy bash/task actions become shell/subagent; scalar effects use resource *.
 type PermissionEffect = 'allow' | 'ask' | 'deny';
 
 interface AgentPermissionRule {
@@ -36,9 +31,7 @@ interface AgentPermissionRule {
 
 type ShellEntry = readonly [resource: string, effect: PermissionEffect];
 
-// Read-only shell projection, split so the builder's `du*` insertion names
-// its anchor (mirrors BASE_READ_HEAD/TAIL in packages/opencode/sync.config.ts).
-const BASE_READ_HEAD: readonly ShellEntry[] = [
+const BASE_READ_SHELL: readonly ShellEntry[] = [
   ['ls*', 'allow'],
   ['cat*', 'allow'],
   ['echo*', 'allow'],
@@ -50,15 +43,10 @@ const BASE_READ_HEAD: readonly ShellEntry[] = [
   ['which*', 'allow'],
   ['diff*', 'allow'],
   ['stat*', 'allow'],
-];
-
-const BASE_READ_TAIL: readonly ShellEntry[] = [
   ['pwd*', 'allow'],
   ['cd*', 'allow'],
   ['printf*', 'allow'],
 ];
-
-const BASE_READ_SHELL: readonly ShellEntry[] = [...BASE_READ_HEAD, ...BASE_READ_TAIL];
 
 const toShellRules = (entries: readonly ShellEntry[]): AgentPermissionRule[] =>
   entries.map(([resource, effect]) => ({ action: 'shell', effect, resource }));
@@ -124,23 +112,11 @@ const SPECIALIST_PERMISSIONS: Record<string, AgentPermissionRule[]> = {
     toolRule('websearch', 'ask'),
   ],
   builder: [
-    // du* follows stat* in the established projection.
-    ...toShellRules([
-      ...BASE_READ_HEAD,
-      ['du*', 'allow'],
-      ...BASE_READ_TAIL,
-      ...allow('test*', 'sort*', 'git*'),
-      ['pnpx*', 'ask'],
-      ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
-      ['*', 'ask'],
-    ]),
+    toolRule('shell', 'ask'),
     ...allowTools('edit', 'glob', 'grep', 'lsp', 'read', 'skill', 'todowrite', 'webfetch'),
   ],
   diagnose: [
-    ...shellRules(
-      [],
-      [...allow('git status*', 'git blame*'), ['env', 'allow'], ['pwd', 'allow'], ['*', 'ask']],
-    ),
+    toolRule('shell', 'ask'),
     toolRule('edit', 'allow'),
     ...allowTools('glob', 'grep', 'lsp', 'read', 'skill', 'todowrite', 'webfetch'),
     toolRule('websearch', 'ask'),

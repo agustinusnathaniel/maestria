@@ -1,87 +1,110 @@
 import { Effect } from 'effect';
+import { Skill } from '@opencode/plugin/effect';
 import { describe, expect, it } from 'vite-plus/test';
 import { registerSessionHooks } from '../src/hooks/session.js';
-import type { PluginContext, SessionContext } from '../src/types.js';
+import type { PluginContext, SessionContext, SessionPrompt } from '../src/types.js';
+import type { MaestriaPluginOptions } from '../src/modes.js';
 
-const makeSessionCtx = (texts: string[]): SessionContext => {
-  const messages = [{ content: texts.map((text) => ({ text, type: 'text' })), role: 'user' }];
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test double supplies only the fields the hook reads (messages, system); full SDK branding is unnecessary here.
-  return { messages, system: [] } as unknown as SessionContext;
-};
-
-const captureContextHook = async (): Promise<
-  (sessionCtx: SessionContext) => Effect.Effect<void>
-> => {
-  let captured: ((sessionCtx: SessionContext) => Effect.Effect<void>) | undefined;
+const captureHooks = async (options: MaestriaPluginOptions = {}) => {
+  let prompt: ((event: SessionPrompt) => Effect.Effect<void>) | undefined;
+  let context: ((event: SessionContext) => Effect.Effect<void>) | undefined;
   await Effect.runPromise(
     Effect.scoped(
       registerSessionHooks(
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test double implements only session.hook; the remaining plugin domains are untouched by this hook.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fake implements only the host hook registration seam.
         {
           session: {
-            // oxlint-disable-next-line promise/prefer-await-to-callbacks -- test double must implement the SDK Hooks callback signature; an async function would not satisfy it.
-            hook: (name: string, callback: (sessionCtx: SessionContext) => Effect.Effect<void>) => {
-              expect(name).toBe('context');
-              captured = callback;
-              return Effect.succeed({
-                dispose: Effect.void,
-              });
+            // oxlint-disable-next-line promise/prefer-await-to-callbacks -- implements the SDK callback interface.
+            hook: (name: string, callback: never) => {
+              if (name === 'prompt') {
+                prompt = callback;
+              } else if (name === 'context') {
+                context = callback;
+              }
+              return Effect.succeed({ dispose: Effect.void });
             },
           },
         } as unknown as PluginContext,
-        {},
+        options,
       ),
     ),
   );
-  if (!captured) {
-    throw new Error('expected the context hook to be registered');
+  if (!prompt || !context) {
+    throw new Error('expected prompt and context hooks');
   }
-  return captured;
+  return { context, prompt };
 };
 
-const CASES = [
-  {
-    expectedParts: ['plan the work'],
-    expectedSystem: 1,
-    name: 'pushes the mode block to system and strips a single-part keyword',
-    texts: ['fein plan the work'],
-  },
-  {
-    expectedParts: ['plan the work'],
-    expectedSystem: 1,
-    name: 'strips a trailing colon after the keyword like the shared helper',
-    texts: ['fein: plan the work'],
-  },
-  {
-    expectedParts: ['hello', 'do X'],
-    expectedSystem: 1,
-    name: 'strips the keyword from the containing part of a multipart message',
-    texts: ['hello', 'fein do X'],
-  },
-  {
-    expectedParts: ['plain hello'],
-    expectedSystem: 0,
-    name: 'leaves messages without a keyword untouched',
-    texts: ['plain hello'],
-  },
-];
+const admission = (text: string): SessionPrompt =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- only prompt and session identity are relevant to admission.
+  ({ prompt: { text }, sessionID: 'session-test' }) as unknown as SessionPrompt;
 
-describe('registerSessionHooks keyword strip', () => {
-  for (const { expectedParts, expectedSystem, name, texts } of CASES) {
-    it(name, async () => {
-      const hook = await captureContextHook();
-      const sessionCtx = makeSessionCtx(texts);
+describe('session admission', () => {
+  it('expands every bare mode into durable instructions and strips its trigger', async () => {
+    const { prompt } = await captureHooks();
+    await Promise.all(
+      ['fein', 'sonar', 'blitz'].map(async (mode) => {
+        const event = admission(`${mode.toUpperCase()}: inspect the project`);
+        await Effect.runPromise(prompt(event));
+        expect(event.prompt.text.startsWith(`[MODE: ${mode}]`)).toBe(true);
+        expect(event.prompt.text).toContain(`## MODE: ${mode}`);
+        expect(event.prompt.text.endsWith('\n\ninspect the project')).toBe(true);
+      }),
+    );
+  });
 
-      await Effect.runPromise(hook(sessionCtx));
+  it('does not carry a mode into a later plain turn in the same session', async () => {
+    const { prompt } = await captureHooks();
+    await Effect.runPromise(prompt(admission('fein inspect')));
+    const next = admission('now explain the result');
+    await Effect.runPromise(prompt(next));
+    expect(next.prompt.text).toBe('now explain the result');
+  });
 
-      expect(sessionCtx.system).toHaveLength(expectedSystem);
-      if (expectedSystem > 0) {
-        const systemText =
-          sessionCtx.system[0].type === 'text' ? sessionCtx.system[0].text : undefined;
-        expect(systemText).toContain('## MODE: fein');
-      }
-      const parts = sessionCtx.messages[0].content.filter((p) => p.type === 'text');
-      expect(parts.map((p) => (p.type === 'text' ? p.text : ''))).toEqual(expectedParts);
-    });
-  }
+  it('leaves code, disabled keywords, and empty prompts unchanged', async () => {
+    const { prompt } = await captureHooks({ modes: { disabledKeywords: ['sonar'] } });
+    await Promise.all(
+      ['sonar inspect', '`fein`', '```\nblitz\n```', ''].map(async (text) => {
+        const event = admission(text);
+        await Effect.runPromise(prompt(event));
+        expect(event.prompt.text).toBe(text);
+      }),
+    );
+  });
+
+  it('keeps an expanded slash command intact when it passes through admission', async () => {
+    const { prompt } = await captureHooks();
+    const event = admission('fein inspect');
+    await Effect.runPromise(prompt(event));
+    const expanded = event.prompt.text;
+    await Effect.runPromise(prompt(event));
+    expect(event.prompt.text).toBe(expanded);
+  });
+
+  it('preserves attachments while clearing ranges invalidated by instruction expansion', async () => {
+    const { prompt } = await captureHooks();
+    const event = admission('@builder fein inspect @file');
+    event.prompt.files = [{ mention: { end: 27, start: 22, text: '@file' }, uri: 'file:///file' }];
+    event.prompt.agents = [{ mention: { end: 8, start: 0, text: '@builder' }, name: 'builder' }];
+    event.prompt.skills = [
+      { id: Skill.ID.make('handoff'), mention: { end: 27, start: 22, text: '@file' } },
+    ];
+    await Effect.runPromise(prompt(event));
+    expect(event.prompt.files).toEqual([{ uri: 'file:///file' }]);
+    expect(event.prompt.agents).toEqual([{ name: 'builder' }]);
+    expect(event.prompt.skills).toEqual([{ id: Skill.ID.make('handoff') }]);
+  });
+});
+
+describe('session context', () => {
+  it('adds bundled global rules to every model dispatch without rewriting history', async () => {
+    const { context } = await captureHooks();
+    const messages = [{ content: [{ text: 'plain hello', type: 'text' }], role: 'user' }];
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fake includes only mutable dispatch fields used by the hook.
+    const event = { messages, sessionID: 'session-test', system: [] } as unknown as SessionContext;
+    await Effect.runPromise(context(event));
+    const text = event.system.map((part) => (part.type === 'text' ? part.text : '')).join('\n');
+    expect(text).toContain('Universal Floors');
+    expect(messages[0].content[0].text).toBe('plain hello');
+  });
 });

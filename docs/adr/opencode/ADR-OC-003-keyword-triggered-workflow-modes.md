@@ -81,6 +81,12 @@ The keywords are functional descriptors, not mythological or thematic: **fein** 
 | Allowlist configuration     | New modes should not break setups; denylist is forward-safe.      |
 | Per-agent mode overrides    | Mode governs the orchestrator pipeline, not agents.               |
 
+## V2 adapter amendment (2026-10-09)
+
+OpenCode V2 uses the Effect `session.hook("prompt")` admission hook instead of V1's `chat.message`. Bare keywords expand into the marker, synced mode prompt, and stripped user text before durable admission. Explicit slash commands submit the same template and bypass repeat expansion. Attachment identities remain intact, while mention ranges invalidated by prefixing instructions are removed.
+
+The admitted message carries the mode across continuations, queued delivery, and plugin reloads. No per-session cache or FIFO eviction is needed; each new user prompt selects its own mode. The separate `context` hook appends bundled global rules because V2 reference registration does not load file content as instructions. Auxiliary title and compaction requests retain the host's own guidance.
+
 ## Consequences
 
 One-word machine-detectable intent in plain words, with per-turn detection (mid-task switching, no stale state), a minimal auditable hook, a one-array denylist, and ADR-CORE-002 compliant naming, all without disturbing existing orchestrator behavior. Costs: three more concepts to learn; plain-word false positives (e.g., "sonar" in a code snippet); no hybrid shortcut ("research + build" needs two turns); a trivial per-message processing step. (Historical note: prompts lived in TypeScript for hook injection at the cost of a package rebuild to edit.)

@@ -31,8 +31,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "publishConfig": {
@@ -46,19 +46,20 @@
     "check": "vp check"
   },
   "dependencies": {
-    "effect": "4.0.0-rc.112",
     "yaml": "^2.9.0",
     "zod": "^4.4.0"
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
-    "@opencode/plugin": "^2.0.24",
+    "@opencode/plugin": "^2.0.26",
     "@types/node": "catalog:",
+    "effect": "4.0.0-rc.112",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@opencode/plugin": "^2.0.0"
+    "@opencode/plugin": "^2.0.26",
+    "effect": "^4.0.0-rc.112"
   },
   "engines": {
     "node": ">=22.12.0"

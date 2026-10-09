@@ -49,11 +49,11 @@ export const registerCommandTransforms = (ctx: {
             execute: (input) =>
               ctx.session
                 .prompt({
-                  agents: input.prompt.agents,
+                  agents: input.prompt.agents?.map(({ mention: _mention, ...agent }) => agent),
                   delivery: input.delivery,
-                  files: input.prompt.files,
+                  files: input.prompt.files?.map(({ mention: _mention, ...file }) => file),
                   sessionID: input.sessionID,
-                  skills: input.prompt.skills,
+                  skills: input.prompt.skills?.map(({ mention: _mention, ...skill }) => skill),
                   text: `${template}\n\n${input.prompt.text}`,
                 })
                 .pipe(Effect.asVoid),
