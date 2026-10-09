@@ -6,7 +6,6 @@ import pluginConfig from '../../plugin/sync.config.js';
 import claudeCodeConfig from '../../plugin/integrations/claude-code/sync.config.js';
 import cursorConfig from '../../plugin/integrations/cursor/sync.config.js';
 import kimiCodeConfig from '../../plugin/integrations/kimi-code/sync.config.js';
-import ompConfig from '../../omp/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
@@ -58,7 +57,6 @@ const syncConfigs: Record<string, SyncConfig> = {
   'claude-code': claudeCodeConfig,
   cursor: cursorConfig,
   'kimi-code': kimiCodeConfig,
-  omp: ompConfig,
   opencode: opencodeConfig,
   pi: piConfig,
   plugin: pluginConfig,
@@ -146,23 +144,6 @@ const piHostTools = (): string[] => {
   );
 };
 
-const ompHostTools = (): string[] => {
-  const source = readFileSync(
-    path.join(
-      hostPackageRoot('omp', '@oh-my-pi/pi-coding-agent'),
-      'src',
-      'tools',
-      'builtin-names.ts',
-    ),
-    'utf-8',
-  );
-  return quotedNames(
-    source,
-    /BUILTIN_TOOL_NAMES\s*=\s*\[(?<names>[\s\S]*?)\]\s*as const/u,
-    'OMP BUILTIN_TOOL_NAMES',
-  );
-};
-
 const TOOLS_LINE = /^tools: (?<names>.*)$/mu;
 
 /** Tool names the shipped agent file for `agentFile` grants, or null when undeclared. */
@@ -182,20 +163,6 @@ describe('generated agent tool lists', () => {
     const hostTools = new Set(piHostTools());
     for (const agentFile of agentFiles('pi')) {
       const granted = grantedTools('pi', agentFile) ?? [];
-      expect(
-        granted.filter((tool) => !hostTools.has(tool)),
-        agentFile,
-      ).toEqual([]);
-    }
-  });
-
-  it('grants only tools at least one Pi-family host registers', () => {
-    // OMP passes its declared lists through unchanged, so its shipped files
-    // carry the full declared table; a name neither host registers is dead on
-    // every host that consumes this sync.
-    const hostTools = new Set([...piHostTools(), ...ompHostTools()]);
-    for (const agentFile of agentFiles('omp')) {
-      const granted = grantedTools('omp', agentFile) ?? [];
       expect(
         granted.filter((tool) => !hostTools.has(tool)),
         agentFile,
