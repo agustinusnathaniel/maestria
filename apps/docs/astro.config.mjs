@@ -45,9 +45,8 @@ export default defineConfig({
         starlightLlmsTxt({
           description:
             'Portable AI engineering workflows. @maestria/plugin bundles Codex, Claude Code, ' +
-            'Cursor, Kimi Code, Devin, ZCode, Hermes, and portable Agent Plugins resources. ' +
-            'Native runtime adapters remain available as @maestria/opencode, @maestria/pi, ' +
-            'and @maestria/omp.',
+            'Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and portable Agent Plugins resources. ' +
+            'Native runtime adapters remain available as @maestria/opencode and @maestria/pi.',
           details:
             'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [maestria agent instructions](https://maestria.sznm.dev/agents.md).',
           optionalLinks: [
@@ -237,7 +236,7 @@ export default defineConfig({
             { label: 'Changelog', link: '/pi-omp/changelog/' },
             { label: 'Contributing', link: '/pi-omp/contributing/' },
           ],
-          label: '@maestria/pi & @maestria/omp',
+          label: '@maestria/pi & OMP via plugin',
         },
         {
           collapsed: true,

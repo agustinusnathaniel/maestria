@@ -94,7 +94,6 @@ Use the package README for detailed setup. This table shows where changes normal
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
 | `plugin` | Host manifests, integration configs, Codex metadata, and guides | Shared `skills/`, native agents/commands/rules, and Kimi personas | `pnpm --filter @maestria/plugin test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
-| `omp` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/omp test` and `validate` |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.
 

@@ -77,7 +77,7 @@ Every substantial pipeline stage needs three controls:
 
 ### Platform Adaptation
 
-Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; OMP and Pi enforce dispatcher behavior in workflow-mode sessions; Hermes consumes portable methodology skills with host-owned tool authority; and Cursor and Claude Code depend more on host/session permissions. Codex and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
+Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; Pi enforces dispatcher behavior in workflow-mode sessions; Hermes and OMP consume portable methodology skills with host-owned tool authority; and Cursor and Claude Code depend more on host/session permissions. Codex and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
 
 How each platform implements this pattern:
 
@@ -88,7 +88,7 @@ How each platform implements this pattern:
 | **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
 | **Claude Code** | Declarative agents, skills, and commands | Specialists ship as generated `agents/*.md`; the orchestrator and global rules ship as generated skills; workflow modes ship as generated commands. `disallowedTools` protects the read-only roles. This package ships no hooks. |
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
-| **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
+| **Oh My Pi** | Portable skills + native `task()` | OMP loads the shared plugin skills and dispatches personas through its native `task(agent, task)` tool. No wrapper, no enforcement, no session hooks: the retired native package no longer supplies gates or commands. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
 | **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
 | **Hermes** | Portable skills | The shared plugin exposes methodology through Hermes skill discovery. Permissions, delegation, lifecycle, and session state remain host-owned; the retired Python adapter no longer supplies gates or commands. |
 | **Agent Plugins v1 (portable)** | Shared portable surface | `@maestria/plugin` exposes root methodology skills. Native manifests select host-specific resources in the same archive; portable clients retain dispatch, context, and permission authority. |
@@ -157,7 +157,7 @@ Self-review fails for three reasons, each documented from real sessions:
 | **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
 | **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer, adventurer, and planner agents deny `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
-| **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
+| **Oh My Pi** | Portable skills + native task dispatch | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair, and portable skills add no tool-level enforcement. |
 | **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, planner, and reviewer. The skills themselves are advisory and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
 | **Hermes** | Portable skills | The shared plugin exposes methodology through Hermes skill discovery. Permissions, delegation, lifecycle, and session state remain host-owned; the retired Python adapter no longer supplies gates or commands. |
 | **Agent Plugins v1 (portable)** | Advisory roles only | Read-only roles are prompt guidance; the consuming client owns permissions, tool access, and review setup. |

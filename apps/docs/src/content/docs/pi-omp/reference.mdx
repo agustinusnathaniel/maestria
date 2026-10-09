@@ -1,9 +1,18 @@
 ---
 title: Pi & OMP Reference
-description: Combined reference for @maestria/pi and @maestria/omp - mode commands, subagent dispatch, review mode, and session management.
+description: Combined reference for @maestria/pi and maestria on OMP via the portable plugin - mode commands, subagent dispatch, review mode, and session management.
 ---
 
-import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Aside type="note">
+  OMP runs maestria through portable plugin skills, not the retired `@maestria/omp` native package.
+  Pi sections below describe extension behavior; OMP tabs describe the plugin-skills equivalent.
+  Enforcement, session hooks, and deployment behaviors from the native OMP package are retired; the
+  [OMP integration
+  guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/plugin/integrations/omp/README.md)
+  records the exact boundary.
+</Aside>
 
 ## Contract-Driven Delegation
 
@@ -27,12 +36,14 @@ Every subagent dispatch records the parent task ID and specialist name in the se
   </TabItem>
   <TabItem label="OMP">
 
-**OMP** manages the session tree through its runtime's native subagent lifecycle - no third-party extension needed.
+**OMP** carries handoffs in session context through its native subagent lifecycle. No maestria session tree is recorded: load the `orchestrator` skill and keep handoffs explicit.
 
   </TabItem>
 </Tabs>
 
 ## Commands
+
+Pi registers these slash commands through its extension. OMP has no maestria commands: invoke `fein`, `sonar`, and `blitz` as plugin skills instead.
 
 | Command | Description |
 | --- | --- |
@@ -52,18 +63,18 @@ Every subagent dispatch records the parent task ID and specialist name in the se
 
 ## Pure Dispatcher Enforcement
 
-When a workflow mode is active (fein/sonar/blitz), the platform may block mutation tools in the main session. This enforces the maker/checker split at the tool level. The behavior differs between Pi and OMP:
+When a workflow mode is active (fein/sonar/blitz), Pi may block mutation tools in the main session. This enforces the maker/checker split at the tool level:
 
 - **Pi** blocks `edit`, `write`, `patch`, and mutating `bash` calls while the `subagent` delegation tool is available. Read-only tools and read-only bash commands keep working.
-- **OMP** blocks the same mutations while the native `task()` tool is available, and leaves `maestria_subagent` (the structured handoff wrapper) callable.
+- **OMP** has no tool-level enforcement. The retired native package blocked mutations while `task()` was available; portable skills are advisory prompt guidance and the host owns permissions. Keep the maker/checker split by delegating implementation to a dispatched persona instead of acting directly.
 
-The `maestria_subagent` tool validates parameters, builds a structured handoff, and returns a plan for the native `task()` call. Subagent sessions (without the `task` tool) keep their full specialist toolset.
+The `maestria_subagent` tool validated parameters, built a structured handoff, and returned a plan for the native `task()` call. It retired with `@maestria/omp`: on OMP, call `task(agent, task)` directly after loading the persona skill. Subagent sessions (without the `task` tool) keep their full specialist toolset.
 
 ### Enforcement lifecycle
 
 The orchestrator prompt and global rules are always active. The tool-level restriction (blocking `bash` mutations, `edit`, and `write`) is **not active by default**; it activates only when you set a mode.
 
-Unlike OpenCode, Pi and OMP have no separate `@orchestrator` agent: the orchestrator skill lives in the main session, and a mode keyword adds the mode prompt and, where supported, tool enforcement without switching agents.
+Unlike OpenCode, Pi and OMP have no separate `@orchestrator` agent: the orchestrator skill lives in the main session. On Pi a mode keyword adds the mode prompt and, where supported, tool enforcement without switching agents. On OMP the modes are advisory skills with no enforcement.
 
 | Interaction | Enforcement | What happens |
 | --- | --- | --- |
@@ -73,11 +84,9 @@ Unlike OpenCode, Pi and OMP have no separate `@orchestrator` agent: the orchestr
 
 The mode persists across turns in the same process. Use `/mode-clear` to return to neutral routing without restarting.
 
-### OMP goal state
+### OMP goal state (retired)
 
-maestria observes OMP's public `goal_updated` event and mirrors active, paused, and budget-limited goals into session state. Non-null complete and dropped terminal events clear the current-goal mirror after the transition is persisted. Session start, switch, fork, branch, handoff, and tree-navigation transitions restore the target-session state using a valid public native goal mode entry when available; without readable target goal state, the mirror resets to unknown (`null`) until the next public goal event.
-
-OMP's public extension API exposes tool names but not call provenance, so maestria makes no name-only exception for `goal`: another extension could register a colliding tool. Native goal state remains observable, including paused goals, but resume, complete, and drop remain OMP-owned and available through user-issued `/goal` commands, which maestria never invokes. Model `goal` calls stay blocked during enforcement because their provenance cannot be established.
+The retired `@maestria/omp` package observed OMP's public `goal_updated` event and mirrored active, paused, and budget-limited goals into session state. That mirroring retired with the package: portable skills never read goal state and maestria never invokes `/goal` commands. Manage goals through OMP's own interface.
 
 ## Subagent dispatch
 
@@ -96,7 +105,7 @@ Pi's `maestria_subagent` tool executes single, parallel, and chain dispatch thro
   </TabItem>
   <TabItem label="OMP">
 
-OMP's `maestria_subagent` tool validates the request, records the handoff, and returns a plan for OMP's native `task()` tool, which performs the dispatch. The wrapper is a planning layer, not a copy of Pi's dispatch lifecycle.
+Load the persona skill, then call OMP's native `task()` tool directly. There is no wrapper: the retired `maestria_subagent` planning tool is gone.
 
 ```text
 task(agent: "builder", task: "Implement the login form")
@@ -124,35 +133,26 @@ Dangerous bash patterns (for example `rm -rf /`, `dd if=`, `mkfs`, the fork bomb
 
 ## Specialist Agent Registration
 
-The 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer) are registered via the standard **file-based agent type system** - the same mechanism used by all extensions on both platforms.
+Pi registers the 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer) via the standard **file-based agent type system**.
 
-### How it works
+### How it works (Pi)
 
 <Steps>
 
 1. **Sync pipeline** generates `agents/*.md` files from canonical maestria directives with platform-specific YAML frontmatter, including role-specific tool allowlists and `prompt_mode: append` / `inherit_context: true`
 2. **Extension startup** (`session_start` handler) deploys the agent files to the platform's agent discovery directory
 3. **Subagent dispatch** discovers the files and registers each as an agent type
-4. **Pi's `maestria_subagent(...)` and OMP's native `task(agent: "adventurer", ...)`** look up the registered type, merge the role prompt over the inherited parent context, and spawn the subagent with the platform's tools and instructions.
+4. **Pi's `maestria_subagent(...)`** looks up the registered type, merges the role prompt over the inherited parent context, and spawns the subagent with the platform's tools and instructions.
 
 </Steps>
 
-<Tabs syncKey="runtime">
-  <TabItem label="Pi">
-
 **Pi** deploys agent files to `~/.pi/agent/agents/` (pi-subagents discovery directory).
 
-  </TabItem>
-  <TabItem label="OMP">
+**OMP** no longer deploys agent files: the retired package wrote to `~/.omp/agent/agents/` on session start. OMP personas live only as portable skills now; remove any maestria agent files left in `~/.omp/agent/agents/` from the retired package to avoid stale role prompts.
 
-**OMP** deploys agent files to `~/.omp/agent/agents/` (OMP's native discovery directory).
+### Agent file format (Pi)
 
-  </TabItem>
-</Tabs>
-
-### Agent file format
-
-Each specialist agent file uses the platform's standard YAML frontmatter format (identical for Pi and OMP):
+Each Pi specialist agent file uses the platform's standard YAML frontmatter format:
 
 ```yaml
 ---
@@ -181,13 +181,13 @@ Tool allowlists by role:
 
 This enforces the maker/checker split at the subagent tool level: builder and writer have write access, while the other roles have no write/edit tools. Architect and diagnose retain Bash for evidence gathering, so their role boundaries are not a universal no-execution sandbox.
 
-### Persistence
+### Persistence (Pi)
 
-Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP), so user-customized agents with the same name stay put. To reset to maestria defaults, remove the files from the discovery directory and restart your session.
+Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/`), so user-customized agents with the same name stay put. To reset to maestria defaults, remove the files from the discovery directory and restart your session.
 
 ## Project Loading
 
-`.maestria/workflow.md` then `.maestria/rules.md` load from the session working directory, read fresh on every agent turn and composed with the mode prompt. Missing or empty files are skipped; a present-but-unusable file surfaces via notification plus a STOP banner instead of executing the request. See [Workflow Patterns](/core/workflow-patterns/) for order, precedence, and carry-over.
+`.maestria/workflow.md` then `.maestria/rules.md` load from the session working directory. On Pi they are read fresh on every agent turn and composed with the mode prompt. On OMP they load on demand through the orchestrator skill using host tools. Missing or empty files are skipped; a present-but-unusable file surfaces via notification plus a STOP banner instead of executing the request. See [Workflow Patterns](/core/workflow-patterns/) for order, precedence, and carry-over.
 
 ## See Also
 

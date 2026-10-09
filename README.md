@@ -24,8 +24,7 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 | Package | Description | README |
 | --- | --- | --- |
 | [@maestria/opencode](packages/opencode/) | maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
-| [@maestria/plugin](packages/plugin/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, and Agent Plugins clients | [README](packages/plugin/README.md) |
-| [@maestria/omp](packages/omp/) | maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
+| [@maestria/plugin](packages/plugin/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and Agent Plugins clients | [README](packages/plugin/README.md) |
 | [@maestria/pi](packages/pi/) | maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 
 Canonical agent directives and the sync pipeline live in the private `@maestria/core` package (`packages/core/agent-directives/`); `packages/shared/*` holds private host-neutral utilities. Neither is published to npm.
@@ -42,18 +41,17 @@ maestria/
 │   │   ├── core/        - Cross-cutting decisions (ADR-CORE-*)
 │   │   ├── opencode/    - @maestria/opencode decisions (ADR-OC-*)
 │   │   ├── hermes/      - @maestria/hermes decisions (ADR-HM-*)
-│   │   └── pi/          - @maestria/pi + @maestria/omp decisions (ADR-PI-*)
+│   │   └── pi/          - @maestria/pi decisions (ADR-PI-*)
 │   ├── guides/          - Development guides and conventions
 │   └── plans/           - Historical implementation plans
 ├── packages/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
 │   ├── plugin/          - Shared declarative plugin and native host resources
 │   ├── opencode/        - @maestria/opencode plugin
-│   ├── omp/             - @maestria/omp plugin
 │   ├── pi/              - @maestria/pi plugin
 │   └── shared/
 │       ├── mode/        - Shared neutral mode mechanics (private, pure-TS, no host SDK)
-│       └── pi/          - Shared pure-TS utilities for omp/pi (private)
+│       └── pi/          - Shared pure-TS utilities for pi (private)
 ├── scripts/             - Sync and CI verification scripts
 ├── VISION.md            - Project vision and principles
 ├── PATTERNS.md          - Reusable workflow patterns
@@ -129,7 +127,7 @@ For per-package uninstall instructions, see:
 
 - [@maestria/opencode uninstall](apps/docs/src/content/docs/opencode/getting-started/installation.mdx)
 - [@maestria/plugin uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
-- [@maestria/pi & @maestria/omp uninstall](apps/docs/src/content/docs/pi-omp/getting-started/installation.mdx)
+- [@maestria/pi & OMP via plugin uninstall](apps/docs/src/content/docs/pi-omp/getting-started/installation.mdx)
 - [@maestria/plugin uninstall](apps/docs/src/content/docs/cursor/getting-started/installation.mdx)
 - [@maestria/plugin uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
 - [@maestria/plugin uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)

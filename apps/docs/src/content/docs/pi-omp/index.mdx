@@ -1,6 +1,6 @@
 ---
-title: '@maestria/pi & @maestria/omp'
-description: Extend Pi or Oh My Pi with spec-driven orchestration, workflow modes, and 7 specialist subagents.
+title: '@maestria/pi & OMP via plugin'
+description: Extend Pi with spec-driven orchestration, workflow modes, and 7 specialist subagents; run the same methodology on Oh My Pi through the portable plugin skills.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -19,9 +19,9 @@ import { marks } from '@/data/marks.js';
 
   <div class="home-inner">
     <PlatformHero
-      eyebrow={'@MAESTRIA/PI & @MAESTRIA/OMP'}
+      eyebrow={'@MAESTRIA/PI & OMP VIA PLUGIN'}
       title="Spec-driven, portable workflows."
-      lead="Extend Pi or Oh My Pi with maestria workflow modes, 7 specialist subagents, and disciplined orchestration."
+      lead="Extend Pi with maestria workflow modes, 7 specialist subagents, and disciplined orchestration. Oh My Pi runs the same methodology through portable plugin skills with native task() dispatch."
       mark={marks.piOmp}
       primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/pi-omp/reference/', label: 'Reference' }}
@@ -31,17 +31,17 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="01"
       kicker="WHAT YOU GET"
-      title="Two runtimes, one discipline."
+      title="One discipline, two runtimes."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
       <FeatureGrid
         items={[
           { title: 'Same method, adapted', desc: 'The maestria methodology from OpenCode, adapted for Pi and Oh My Pi (OMP). Role names and workflow ideas carry over; runtime behavior does not.' },
-          { title: '7 specialist subagents', desc: 'Activation deploys 7 specialist agent files and auto-discovers the methodology skills.' },
-          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation. Each mode activates its subagents in sequence.' },
+          { title: '7 specialist subagents', desc: 'Pi activation deploys 7 specialist agent files and auto-discovers the methodology skills; OMP dispatches personas through its native task() tool.' },
+          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation. On OMP, invoke fein, sonar, and blitz as plugin skills.' },
           { title: 'Dispatch per runtime', desc: 'Pi dispatches through the @gotgenes/pi-subagents extension; OMP uses its built-in task() tool with no external dependency.' },
-          { title: 'Session tree tracking', desc: 'Every subagent dispatch records its parent task ID, preserving the session tree across turns.' },
-          { title: 'Honest about differences', desc: 'Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read When to Use before assuming a workflow transfers unchanged.' },
+          { title: 'Session tree tracking', desc: 'Every Pi subagent dispatch records its parent task ID, preserving the session tree across turns. OMP sessions carry handoffs in context; the host owns session state.' },
+          { title: 'Honest about differences', desc: 'Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. The retired @maestria/omp executable shipped enforcement OMP plugin skills do not claim. Read When to Use before assuming a workflow transfers unchanged.' },
         ]}
       />
     </PluginSection>

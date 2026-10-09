@@ -1,12 +1,21 @@
 ---
 title: Installation & Setup
-description: How to install @maestria/pi or @maestria/omp and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration.
+description: How to install @maestria/pi or run maestria on OMP through the portable plugin - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration.
 ---
 
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/pi` and `@maestria/omp` add the maestria methodology to the [Pi](https://pi.software) and [Oh My Pi](https://omp.sh) coding agents. Each installs as one extension and registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration.
+`@maestria/pi` adds the maestria methodology to the [Pi](https://pi.software) coding agent as one extension registering 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration. [Oh My Pi](https://omp.sh) (OMP) runs the same methodology through the portable `@maestria/plugin` skills with native `task()` dispatch: no maestria-owned executable ships for OMP.
+
+<Aside type="caution">
+  **Migrating from `@maestria/omp`?** The native OMP package is retired. Remove it first (`omp
+  plugin uninstall @maestria/omp`), then install the plugin below. Session hooks, tool interception,
+  review-mode enforcement, goal mirroring, and per-agent model files do not carry over; see the [OMP
+  integration
+  guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/plugin/integrations/omp/README.md)
+  for the exact boundary.
+</Aside>
 
 ## Prerequisites
 
@@ -14,9 +23,9 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 - **Node.js 22.19+** - Required for npm-based extension resolution
 
 <Aside type="note">
-  **Pi only:** `@maestria/pi` requires the `@gotgenes/pi-subagents` Pi extension for subagent
-  dispatch. Install with `pi install npm:@gotgenes/pi-subagents@^21.5.1`. OMP has a built-in
-  `task()` tool - no peer dependency needed.
+  `@maestria/pi` requires the `@gotgenes/pi-subagents` Pi extension for subagent dispatch. Install
+  with `pi install npm:@gotgenes/pi-subagents@^21.5.1`. OMP has a built-in `task()` tool - no peer
+  dependency needed.
 </Aside>
 
 ## Installation
@@ -31,18 +40,20 @@ The [maestria CLI](/cli/) installs the extension and its peer dependency:
   </TabItem>
   <TabItem label="OMP">
 
-```bash
-omp install @maestria/omp
-```
+The [maestria CLI](/cli/) stages the portable plugin for OMP:
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install omp" />
+
+This runs `omp plugin install @maestria/plugin`. OMP loads the portable skills from the package manifest; no slash commands or session hooks are installed.
 
   </TabItem>
 </Tabs>
 
 ## Verify Installation
 
-1. Start your platform: `pi` or `omp`. Expected: the extension loads automatically, and the agent dispatches from the first turn, decomposing tasks and delegating to specialists.
+1. Start your platform: `pi` or `omp`. Expected: on Pi the extension loads automatically and the agent dispatches from the first turn; on OMP load the `global-rules` and `orchestrator` skills in session, then ask the agent to route work through them.
 
-2. List what's installed: `pi list` (Pi) or `omp plugin list` (OMP). Expected: `@maestria/pi` or `@maestria/omp` appears in the output.
+2. List what's installed: `pi list` (Pi) or `omp plugin list` (OMP). Expected: `@maestria/pi` or `@maestria/plugin` appears in the output.
 
 ## Updating
 
@@ -66,11 +77,18 @@ pi install npm:@maestria/pi@<version>
   </TabItem>
   <TabItem label="OMP">
 
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="update omp"
+  comment="OMP (via maestria CLI)"
+/>
+
 ```bash
-omp install @maestria/omp@latest
+omp plugin install @maestria/plugin@latest
 
 # Or pin a version
-omp install @maestria/omp@<version>
+omp plugin install @maestria/plugin@<version>
 ```
 
   </TabItem>
@@ -101,8 +119,15 @@ pi uninstall npm:@gotgenes/pi-subagents
   </TabItem>
   <TabItem label="OMP">
 
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="uninstall omp"
+  comment="OMP (via maestria CLI)"
+/>
+
 ```bash
-omp plugin uninstall @maestria/omp
+omp plugin uninstall @maestria/plugin
 ```
 
   </TabItem>

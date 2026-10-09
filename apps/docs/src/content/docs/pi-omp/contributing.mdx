@@ -1,13 +1,15 @@
 ---
 title: Contributing
-description: Pi and Oh My Pi package structure, sync behavior, and validation for @maestria/pi and @maestria/omp.
+description: Pi package structure, sync behavior, and validation for @maestria/pi, plus the OMP plugin-skills path.
 ---
 
 For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
 
 ## Package Boundary
 
-Pi and Oh My Pi share the same architecture: each package pairs a runtime extension with generated agent and skill resources. The extensions own lifecycle hooks, mode state, compaction, commands, deployment, and subagent dispatch; prompts and global rules remain in `packages/core/agent-directives/`. Keep runtime changes in each package's `src/`; do not assume the two runtimes behave interchangeably.
+`@maestria/pi` pairs a runtime extension with generated agent and skill resources. The extension owns lifecycle hooks, mode state, compaction, commands, deployment, and subagent dispatch; prompts and global rules remain in `packages/core/agent-directives/`. Keep runtime changes in the package's `src/`.
+
+OMP has no runtime package: it consumes the portable `@maestria/plugin` skills. OMP methodology changes belong to the canonical directives or the [OMP integration guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/plugin/integrations/omp/README.md); OMP behavior changes are host-owned.
 
 ## Change Shared Methodology
 
@@ -17,17 +19,15 @@ Edit the canonical source, never generated files under `agents/` or `skills/`, t
 scripts/sync-all
 ```
 
-Platform transforms stay small: Pi rewrites `@agent` to `/agent`; OMP keeps the bare agent name and native `task()`. Platform-only skills need valid frontmatter and must pass the package skill validator.
+Platform transforms stay small: Pi rewrites `@agent` to `/agent`. OMP needs no transform: it loads the portable skills unchanged. Platform-only skills need valid frontmatter and must pass the package skill validator.
 
 ## Validate
 
 ```bash
 pnpm --filter @maestria/pi build
-pnpm --filter @maestria/omp build
 pnpm --filter @maestria/pi validate
-pnpm --filter @maestria/omp validate
 pnpm --filter @maestria/pi test
-pnpm --filter @maestria/omp test
+pnpm --filter @maestria/plugin test
 ```
 
 Use the [Pi and OMP reference](/pi-omp/reference/) for user-facing command, dispatch, and session behavior.

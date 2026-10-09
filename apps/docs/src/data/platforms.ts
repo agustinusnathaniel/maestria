@@ -80,13 +80,14 @@ export const platforms: Platform[] = [
     name: 'Maestria for Cursor',
   },
   {
-    blurb: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
+    blurb:
+      '7 specialist subagents with spec-driven orchestration for Pi; portable plugin skills for Oh My Pi.',
     href: '/pi-omp/',
     id: 'pi-omp',
     // CLI positional arg is `pi` (see /cli/commands/), not `pi-omp`.
     installArgs: 'install pi',
     mark: 'piOmp',
-    name: '@maestria/pi & @maestria/omp',
+    name: '@maestria/pi & OMP via plugin',
   },
   {
     blurb: 'Shared methodology skills through Hermes portable plugin support.',

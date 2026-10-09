@@ -133,7 +133,7 @@ Skill flags are validated before any change. An unmanaged skill already present 
 | `kimi-code`   | Kimi Code   | `@maestria/plugin` (npm)                                |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
 | `cursor`      | Cursor      | `@maestria/plugin` (npm)                                |
-| `omp`         | Oh My Pi    | `@maestria/omp` (npm)                                   |
+| `omp`         | Oh My Pi    | `@maestria/plugin` (npm, portable skills)               |
 | `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
 | `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
@@ -383,7 +383,7 @@ Choose the model each maestria specialist uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP loads portable plugin skills and has no per-agent model files.
 
 For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` (global) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
@@ -391,7 +391,7 @@ For Codex, the command writes native custom-agent TOML files under `~/.codex/age
 
 <AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
+Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
 
 ### Non-interactive (CI)
 
@@ -416,14 +416,14 @@ For a partial assignment, set a model for any role you want to change:
 
 ### Flags
 
-| Flag | Description |
-| --- | --- |
-| `--global` | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`, `~/.omp/agent/`) |
-| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`, `.omp/agents/`) |
-| `--set` | Set models non-interactively, e.g. `planner=<model-id>` |
-| `--json` | Output the resulting config as JSON |
-| `--quiet` | Suppress spinner output (recommended for CI) |
-| `--compact` | Minimal machine-friendly text output |
+| Flag        | Description                                                             |
+| ----------- | ----------------------------------------------------------------------- |
+| `--global`  | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`) |
+| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`)        |
+| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`                 |
+| `--json`    | Output the resulting config as JSON                                     |
+| `--quiet`   | Suppress spinner output (recommended for CI)                            |
+| `--compact` | Minimal machine-friendly text output                                    |
 
 ### JSON schema
 
@@ -448,9 +448,8 @@ An empty string means the agent inherits the session model.
 | -------- | ----------------------------------- | -------------------------- |
 | opencode | `~/.config/opencode/opencode.jsonc` | `.opencode/opencode.jsonc` |
 | pi       | `~/.pi/agent/agents/<name>.md`      | `.pi/agents/<name>.md`     |
-| omp      | `~/.omp/agent/agents/<name>.md`     | `.omp/agents/<name>.md`    |
 
-opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi and omp set the `model:` line in the agent's frontmatter. For pi/omp, a missing project agent file is created from the global one.
+opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
 
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.
