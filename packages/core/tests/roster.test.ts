@@ -9,7 +9,6 @@ import kimiCodeConfig from '../../plugin/integrations/kimi-code/sync.config.js';
 import ompConfig from '../../omp/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
-import primeAgentConfig from '../../prime-agent/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
 import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
@@ -63,7 +62,6 @@ const syncConfigs: Record<string, SyncConfig> = {
   opencode: opencodeConfig,
   pi: piConfig,
   plugin: pluginConfig,
-  'prime-agent': primeAgentConfig,
 };
 
 describe('canonical specialist roster', () => {
