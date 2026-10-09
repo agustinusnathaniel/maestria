@@ -13,6 +13,7 @@ The root `plugin.json` is an Agent Plugins v1 manifest with one portable `skills
 | Devin | `.devin-plugin/plugin.json` | Root advisory agent profiles; local CLI/Desktop only |
 | ZCode | `.zcode-plugin/plugin.json` | Explicit root advisory agent files and shared skills |
 | Hermes | `plugin.json` | Portable shared skills; host-generated qualified namespace |
+| OMP | `plugin.json` | Portable shared skills; native `task(agent, task)` dispatch, no host manifest shim |
 | Kimi Code | `kimi.plugin.json` | Isolated native skills, commands, and `SYSTEM.md`; custom-agent discovery disabled |
 
 Start with [installation](INSTALL.md) and [support boundaries](docs/support.md). The shared orchestrator skill links to each host integration guide before native delegation.

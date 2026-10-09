@@ -120,5 +120,6 @@ Before dispatching specialists, identify the active host and read only its integ
 - [ZCode](../../integrations/zcode/README.md)
 - [Kimi Code](../../integrations/kimi-code/README.md)
 - [Hermes](../../integrations/hermes/README.md)
+- [OMP](../../integrations/omp/README.md)
 
 The selected guide maps these portable role names to native agents, tools, and workflow entry points. Load the sibling global-rules skill once per session. Apply only the capabilities exposed by the active host. If the host is unknown, keep portable skills advisory and do not invent a delegation API. Kimi Code loads its dedicated native skill corpus through its manifest; use that corpus for Kimi profiles and session instructions.

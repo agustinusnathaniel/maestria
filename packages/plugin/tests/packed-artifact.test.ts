@@ -130,6 +130,7 @@ describe('published consolidated plugin', () => {
         'zcode',
         'kimi-code',
         'hermes',
+        'omp',
       ]) {
         const guide = fs.readFileSync(
           path.join(packedRoot, `integrations/${host}/README.md`),

@@ -11,6 +11,7 @@ The package ships declarative methodology and host resources. Sync and npm archi
 | Devin | Conventional root advisory agents; CLI/Desktop availability differs from cloud | [Plugin overview](https://docs.devin.ai/cli/extensibility/plugins/overview) |
 | ZCode | Explicit root advisory agents and shared skills; no host-specific command prompts | [Plugin documentation](https://zcode.z.ai/en/docs/plugin) |
 | Hermes | Portable root manifest and shared skills; discover the host-generated qualified namespace; no Python plugin or runtime parity | [Portable Agent Plugins support](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages) |
+| OMP | Portable root manifest and shared skills with native `task(agent, task)` dispatch per the integration guide; no executable extension, session hooks, enforcement, or per-agent model files | [Oh My Pi](https://omp.sh/) |
 | Kimi Code | Dedicated native skills and commands, session-start text injection, system instructions within 32 KB | [Plugin documentation](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) |
 
 Kimi's explicit empty agent list suppresses default root agent discovery, preserving its existing persona-to-built-in-profile mapping. This is verified against the [official loader source](https://github.com/MoonshotAI/kimi-code/blob/419aced0e97fa04b75f8f71b089e1667f6de6d0a/packages/agent-core-v2/src/app/plugin/manifest.ts#L110).
