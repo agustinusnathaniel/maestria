@@ -71,8 +71,8 @@ const describeRunFailure = (timeoutMs: number, error: unknown): string => {
 
 /**
  * Run a command with an optional working directory. Callers isolating a
- * command (e.g. Prime's cwd-scoped package commands) pass an empty temp dir;
- * callers driving host installers pass an explicit timeout.
+ * command from ambient project state pass an explicit dir; callers driving
+ * host installers pass an explicit timeout.
  */
 export const run = (
   cmd: string,
