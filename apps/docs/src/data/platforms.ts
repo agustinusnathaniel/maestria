@@ -34,8 +34,8 @@ export interface Platform {
 }
 
 /**
- * All nine entries in homepage grid order. Nine cells complete the 3-column
- * grid; `/ecosystem/` closes it with shared companion tooling.
+ * All eight entries in homepage grid order. `/ecosystem/` closes the grid
+ * with shared companion tooling.
  */
 export const platforms: Platform[] = [
   {
@@ -95,14 +95,6 @@ export const platforms: Platform[] = [
     installArgs: 'install hermes',
     mark: 'hermes',
     name: 'Maestria for Hermes',
-  },
-  {
-    blurb: 'Skills-first maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
-    href: '/prime-agent/',
-    id: 'prime-agent',
-    installArgs: 'install prime-agent',
-    mark: 'primeAgent',
-    name: '@maestria/prime-agent',
   },
   {
     auxiliary: true,

@@ -44,8 +44,6 @@ export const marks: Record<string, string> = {
     '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/>',
   platforms:
     '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
-  primeAgent:
-    '<path d="M12 3.75 18.5 6v5.25c0 4.06-2.72 6.63-6.5 8.25-3.78-1.62-6.5-4.19-6.5-8.25V6Z"/><polyline points="9 11.75 11.25 14 15.25 9.75"/>',
   reviewer:
     '<rect x="4.5" y="4.5" width="15" height="15"/><polyline points="8.25 12.25 11.25 15.25 16 9"/>',
   writer:

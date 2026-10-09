@@ -48,7 +48,6 @@ maestria packages do not use automatic postinstall scripts. Direct plugin instal
 | `@maestria/plugin` | Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, Agent Plugins |
 | `@maestria/omp` | Oh My Pi |
 | `@maestria/pi` | Pi |
-| `@maestria/prime-agent` | Prime Agent |
 
 Canonical agent directives live in the private `@maestria/core` package (`packages/core/agent-directives/`) and are projected into the platform packages above by the sync pipeline. `packages/shared/*` holds private host-neutral utilities. Neither is published.
 

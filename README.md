@@ -27,7 +27,6 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 | [@maestria/plugin](packages/plugin/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, and Agent Plugins clients | [README](packages/plugin/README.md) |
 | [@maestria/omp](packages/omp/) | maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
 | [@maestria/pi](packages/pi/) | maestria methodology plugin for Pi | [README](packages/pi/README.md) |
-| [@maestria/prime-agent](packages/prime-agent/) | maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
 
 Canonical agent directives and the sync pipeline live in the private `@maestria/core` package (`packages/core/agent-directives/`); `packages/shared/*` holds private host-neutral utilities. Neither is published to npm.
 
@@ -52,7 +51,6 @@ maestria/
 │   ├── opencode/        - @maestria/opencode plugin
 │   ├── omp/             - @maestria/omp plugin
 │   ├── pi/              - @maestria/pi plugin
-│   ├── prime-agent/     - @maestria/prime-agent plugin (Prime Agent skills + extension)
 │   └── shared/
 │       ├── mode/        - Shared neutral mode mechanics (private, pure-TS, no host SDK)
 │       └── pi/          - Shared pure-TS utilities for omp/pi (private)
@@ -136,4 +134,3 @@ For per-package uninstall instructions, see:
 - [@maestria/plugin uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
 - [@maestria/plugin uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)
 - [Hermes plugin uninstall](apps/docs/src/content/docs/hermes/getting-started/installation.mdx)
-- [@maestria/prime-agent uninstall](apps/docs/src/content/docs/prime-agent/getting-started/installation.mdx)

@@ -62,7 +62,7 @@ Each platform object:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
+| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
 | `label` | string | Human-readable name |
 | `available` | boolean | CLI tool detected on `$PATH` |
 | `installed` | boolean | maestria is installed for this platform |
@@ -130,7 +130,6 @@ Skill flags are validated before any change. An unmanaged skill already present 
 | ------------- | ----------- | ------------------------------------------------------- |
 | `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
 | `pi`          | Pi          | `@maestria/pi` (npm)                                    |
-| `prime-agent` | Prime Agent | `@maestria/prime-agent` (npm, native package manager)   |
 | `kimi-code`   | Kimi Code   | `@maestria/plugin` (npm)                                |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
 | `cursor`      | Cursor      | `@maestria/plugin` (npm)                                |
@@ -142,20 +141,13 @@ Skill flags are validated before any change. An unmanaged skill already present 
 
 Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
 
-**Prime Agent** uses its native package manager. maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
-
-Prime has two additional constraints:
-
-- **Global scope only.** maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh temporary directory that exposes only user settings; the directory is removed afterward.
-- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. maestria detects a pinned user-scope registration and reports an error instead of silently skipping it.
-
 ### Error handling
 
 **Input validation** - unknown platform IDs fail before any platform work:
 
 | Scenario | Error message |
 | --- | --- |
-| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex` |
+| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex` |
 
 **Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform instead of aborting the batch:
 
@@ -254,7 +246,7 @@ Use `--version` to pin a specific version instead of the latest:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
-Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
+Exact version pinning is not available for `claude-code`, `codex`, or `hermes`. The first two update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
 
 When every installed plugin is already current, `update` still reconciles methodology skills and reports the plugin step as a no-op per platform. Legacy installs without a skill record infer only `create-pull-request`, never `docs-update`.
 
@@ -265,7 +257,7 @@ When every installed plugin is already current, `update` still reconciles method
 | `maestria update opencode,pi` | Updates OpenCode and Pi in one run, one platform at a time |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically |
 | `maestria update --all` | Updates all installed platforms to latest |
-| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code, Codex CLI, and Prime Agent return a version-pinning validation result |
+| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code and Codex CLI return a version-pinning validation result |
 
 ### Version caching
 
@@ -350,7 +342,7 @@ maestria check <platform> [--json] [--quiet]
 maestria check --all [--json] [--quiet]
 ```
 
-`<platform>` is one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
+`<platform>` is one of `opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
 
 ### Flags
 
