@@ -27,6 +27,10 @@ export const registerSessionHooks = (
           return;
         }
         event.prompt.text = `${result.marker}\n\n${result.prompt}\n\n${stripKeyword(text, result)}`;
+        // Desktop/web history prefers this presentation text over canonical prompt text.
+        if (typeof event.metadata?.displayText === 'string') {
+          event.metadata.displayText = event.prompt.text;
+        }
         // Expansion shifts every mention. URI/name/id still resolves each attachment normally.
         for (const part of [
           ...(event.prompt.files ?? []),

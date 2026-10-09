@@ -38,7 +38,7 @@ Keywords are case-insensitive; when several occur, priority is `fein > sonar > b
 }
 ```
 
-Explicit slash commands remain available. Each mode expands into its marker and bundled instructions during prompt admission, then persists with the user message. Continuations and plugin reloads retain that message; a later plain prompt selects no mode. Expansion preserves file, agent, and skill attachments while removing invalid inline mention offsets. This follows [prompt admission](https://opencode.ai/v2/docs/build/plugins/#prompt-admission) and keeps no session cache.
+Explicit slash commands remain available. Each mode expands into its marker and bundled instructions during prompt admission, then persists with the user message. Continuations and plugin reloads retain that message; a later plain prompt selects no mode. Expansion also updates existing desktop/web display text so visible history shows the template. It preserves file, agent, and skill attachments while removing invalid inline mention offsets. This follows [prompt admission](https://opencode.ai/v2/docs/build/plugins/#prompt-admission) and keeps no session cache.
 
 ## Integration
 
@@ -67,3 +67,5 @@ pnpm check
 Edit shared directives in `packages/core/agent-directives/` and host projections in `sync.config.ts`; generated agents, commands, rules, and skills are not hand-authored.
 
 The E2E probe requires an OpenCode V2 CLI on `PATH` (or `OPENCODE_BIN`). It starts an isolated home/config/workspace and local fake provider, exercises real admissions and model requests without paid inference, and writes checks plus wire evidence to the selected artifact.
+
+To verify an installed npm version through the same host loader, set `MAESTRIA_V2_PLUGIN=@maestria/opencode-v2@<version>` when running the E2E probe. Its native presentation-metadata checks cover both `should it fein` and `test fein`.

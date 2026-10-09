@@ -53,6 +53,18 @@ describe('session admission', () => {
     );
   });
 
+  it('replaces desktop display text alongside the prompt and preserves other metadata', async () => {
+    const { prompt } = await captureHooks();
+    const event = admission('test fein');
+    const comments = [{ comment: 'Keep this note', path: 'README.md' }];
+    event.metadata = { attachments: [], comments, displayText: 'test fein' };
+    await Effect.runPromise(prompt(event));
+    expect(event.metadata.displayText).toBe(event.prompt.text);
+    expect(event.metadata.displayText).toContain('[MODE: fein]');
+    expect(event.metadata.comments).toBe(comments);
+    expect(event.metadata.attachments).toEqual([]);
+  });
+
   it('does not carry a mode into a later plain turn in the same session', async () => {
     const { prompt } = await captureHooks();
     await Effect.runPromise(prompt(admission('fein inspect')));

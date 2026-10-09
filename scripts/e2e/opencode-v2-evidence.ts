@@ -147,7 +147,7 @@ const config = {
   plugins: [
     {
       options: { modes: { disabledKeywords: [] as string[] } },
-      package: path.join(root, 'plugin'),
+      package: process.env.MAESTRIA_V2_PLUGIN ?? path.join(root, 'plugin'),
     },
   ],
   providers: {
@@ -392,6 +392,29 @@ try {
           !handoff.content.includes('Auto-generated from'),
       );
     }
+  }
+  for (const text of ['should it fein', 'test fein']) {
+    const session = await create();
+    const [result] = await run(`trailing-keyword-${text}`, session, {
+      metadata: { attachments: [], comments: [], displayText: text },
+      text,
+    });
+    check(
+      `trailing keyword ${text}: expanded and stripped`,
+      result !== undefined &&
+        latest(result).startsWith('[MODE: fein]') &&
+        latest(result).endsWith(text.replace(/\sfein$/u, '')),
+    );
+    const messages = rows(record(await api(`/api/session/${session}/message`)).data);
+    const user = messages.findLast((message) => message.type === 'user');
+    const metadata = record(user?.metadata);
+    check(
+      `trailing keyword ${text}: desktop display text matches expanded input`,
+      user !== undefined &&
+        metadata.displayText === user.text &&
+        typeof metadata.displayText === 'string' &&
+        metadata.displayText.startsWith('[MODE: fein]'),
+    );
   }
   config.plugins[0].options.modes.disabledKeywords.push('blitz');
   await fs.writeFile(configPath, JSON.stringify(config));
