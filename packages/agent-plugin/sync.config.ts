@@ -91,10 +91,12 @@ export default {
     'skills/handoff.md': skill(
       'handoff',
       'Concise handoff contract for passing outcome, constraints, evidence, blockers, and next steps between workflow stages.',
+      { stripFrontmatter: true },
     ),
     'skills/iteration-limits.md': skill(
       'iteration-limits',
       'Verifiable termination and bounded repair guidance for loops, reviews, and repeated implementation attempts.',
+      { stripFrontmatter: true },
     ),
     'writer.md': skill(
       'writer',

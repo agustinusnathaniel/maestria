@@ -83,4 +83,11 @@ minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro
   - effect
+  # opencode-v2 tracks young prereleases/stable minors, younger than minimumReleaseAge
+  - '@opencode-ai/*'
+  - '@opencode/*'
+  - '@opentui/*'
+  - baseline-browser-mapping
+  - electron-to-chromium
+  - update-browserslist-db
   - '@earendil-works/*'

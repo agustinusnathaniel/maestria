@@ -1,3 +1,6 @@
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 ---
 name: Handoff Aid
 description: Decide when a handoff is needed and what outcome-only context it must carry

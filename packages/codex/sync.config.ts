@@ -150,6 +150,7 @@ export default {
         name: 'handoff',
       },
       output: 'handoff/SKILL.md',
+      stripFrontmatter: true,
     },
     'skills/iteration-limits.md': {
       frontmatter: {
@@ -158,6 +159,7 @@ export default {
         name: 'iteration-limits',
       },
       output: 'iteration-limits/SKILL.md',
+      stripFrontmatter: true,
     },
     'writer.md': {
       frontmatter: {

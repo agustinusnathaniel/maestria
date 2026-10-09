@@ -183,6 +183,7 @@ the next stage in the pipeline.`,
         name: 'handoff',
       },
       output: 'handoff/SKILL.md',
+      stripFrontmatter: true,
     },
     'skills/iteration-limits.md': {
       frontmatter: {
@@ -193,6 +194,7 @@ of running too long.`,
         name: 'iteration-limits',
       },
       output: 'iteration-limits/SKILL.md',
+      stripFrontmatter: true,
     },
     'writer.md': {
       frontmatter: {

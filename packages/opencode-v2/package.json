@@ -1,0 +1,68 @@
+{
+  "name": "@maestria/opencode-v2",
+  "version": "0.1.2",
+  "description": "OpenCode V2 plugin - Maestria methodology",
+  "keywords": [
+    "agents",
+    "ai",
+    "maestria",
+    "opencode",
+    "plugin"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/opencode-v2#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/opencode-v2"
+  },
+  "files": [
+    "dist",
+    "agents",
+    "rules",
+    "skills"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp dev",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@maestria/shared-mode": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
+    "@opencode/plugin": "^2.0.26",
+    "@types/node": "catalog:",
+    "effect": "4.0.0-rc.112",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@opencode/plugin": "^2.0.26",
+    "effect": "^4.0.0-rc.112"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

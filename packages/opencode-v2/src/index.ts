@@ -1,0 +1,29 @@
+import { Effect } from 'effect';
+import { Plugin } from '@opencode/plugin/effect';
+import type { PluginContext } from '@/types.js';
+import type { MaestriaPluginOptions } from '@/modes.js';
+import { maestriaOptionsSchema } from '@/modes.js';
+import { registerAgentTransforms } from '@/transforms/agents.js';
+import { registerCommandTransforms } from '@/transforms/commands.js';
+import { registerSkillTransforms } from '@/transforms/skills.js';
+import { registerSessionHooks } from '@/hooks/session.js';
+
+export default Plugin.define({
+  effect: (ctx: PluginContext) =>
+    Effect.gen(function* initMaestriaV2() {
+      const parseResult = maestriaOptionsSchema.safeParse(ctx.options ?? {});
+      if (!parseResult.success) {
+        console.warn(
+          '[maestria-v2] Ignoring invalid plugin options, using defaults:',
+          parseResult.error.issues,
+        );
+      }
+      const options: MaestriaPluginOptions = parseResult.success ? parseResult.data : {};
+      yield* registerAgentTransforms(ctx);
+      yield* registerSessionHooks(ctx, options);
+      yield* registerCommandTransforms(ctx);
+      yield* registerSkillTransforms(ctx);
+      yield* Effect.logInfo('[maestria-v2] Plugin initialized');
+    }),
+  id: 'maestria.v2',
+});
