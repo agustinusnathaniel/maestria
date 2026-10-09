@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
     "@opencode/plugin": "^2.0.26",
     "@types/node": "catalog:",
     "effect": "4.0.0-rc.112",

@@ -5,20 +5,13 @@ import type { Scope } from 'effect';
 import { Skill } from '@opencode/plugin/effect';
 import { parse as parseYaml } from 'yaml';
 import type { SkillEditor, Transform } from '@/types.js';
-import { readSyncedMarkdown, stripAutoGenComment } from '@/markdown.js';
+import { readSyncedMarkdown, splitMarkdown } from '@/markdown.js';
 import { SKILLS_DIR } from '@/root.js';
-
-// Frontmatter block the documented skill format opens with (`name`,
-// `description`). Same shape the shared Pi/OMP validator enforces.
-const FRONTMATTER_RE = /^---\n(?<frontmatter>[\s\S]*?)\n---\n*/u;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const deriveDescription = (content: string): string | undefined => {
-  // Skill files open with an ATX heading; use it as the description when no
-  // frontmatter description exists (keeps the optional SDK field unset
-  // otherwise).
   const headingMatch = /^#\s+(?<heading>.+)$/mu.exec(content.trim());
   const heading = headingMatch?.groups?.heading?.trim() ?? '';
   return heading.length > 0 && heading.length < 120 ? heading : undefined;
@@ -31,43 +24,31 @@ interface SkillFile {
   content: string;
 }
 
-// Split a synced skill file into its frontmatter and body. The file opens
-// with the pipeline's auto-generated header, so that is lifted before the
-// block is matched. The host adds the Markdown body without frontmatter to
-// the conversation, so pushed content must never carry the block. Returns
-// null for empty bodies (caller skips).
 const parseSkillFile = (filePath: string, content: string): SkillFile | null => {
   const name = path.basename(filePath, '.md');
-  const body = stripAutoGenComment(content);
-  const match = FRONTMATTER_RE.exec(body);
-  if (!match) {
-    return { content: body, description: deriveDescription(body), name, path: filePath };
+  const { body, frontmatter: yaml } = splitMarkdown(content);
+  if (body.trim().length === 0) {
+    return null;
   }
   let frontmatter: Record<string, unknown> = {};
   try {
-    const parsed: unknown = parseYaml(match.groups?.frontmatter ?? '');
+    const parsed: unknown = parseYaml(yaml ?? '');
     frontmatter = isRecord(parsed) ? parsed : {};
   } catch {
-    // Malformed frontmatter falls through to the heading fallback below.
+    // Unusable skill metadata falls back to the Markdown heading.
   }
   const rawDescription = frontmatter.description;
-  const bodyText = body.slice(match[0].length);
-  if (bodyText.trim().length === 0) {
-    return null;
-  }
   return {
-    content: bodyText,
+    content: body,
     description:
       typeof rawDescription === 'string' && rawDescription !== ''
         ? rawDescription
-        : deriveDescription(bodyText),
+        : deriveDescription(body),
     name,
     path: filePath,
   };
 };
 
-// Bundled skills dir (see sync.config.ts). No core fallback: agents and rules
-// resolve bundled-only too, and check-sync guarantees the copy is current.
 const loadSkillFiles = (): SkillFile[] => {
   let files: string[];
   try {
@@ -98,10 +79,6 @@ const loadSkillFiles = (): SkillFile[] => {
   return out;
 };
 
-/**
- * Register skills via `skill.transform`. Skill.Info requires id, name,
- * path, content (validated through the SDK schema, not cast).
- */
 export const registerSkillTransforms = (ctx: {
   skill: { transform: Transform<SkillEditor> };
 }): Effect.Effect<void, never, Scope.Scope> =>
@@ -126,17 +103,13 @@ export const registerSkillTransforms = (ctx: {
           });
 
           const existing = draft.get(file.name);
-          if (existing) {
-            draft.update(file.name, (skill) => {
-              if (info.description !== undefined && info.description !== '') {
-                skill.description = info.description;
-              }
-              skill.content = info.content;
-              skill.path = info.path;
-            });
-          } else {
-            draft.add(info);
-          }
+          draft.add({
+            ...info,
+            ...existing,
+            content: info.content,
+            description: info.description ?? existing?.description,
+            path: info.path,
+          });
         } catch (error) {
           console.warn(`[maestria-v2] Failed to register skill "${file.name}":`, error);
         }

@@ -13,6 +13,7 @@ const captureHooks = async (options: MaestriaPluginOptions = {}) => {
       registerSessionHooks(
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fake implements only the host hook registration seam.
         {
+          location: { directory: process.cwd(), project: { directory: process.cwd() } },
           session: {
             // oxlint-disable-next-line promise/prefer-await-to-callbacks -- implements the SDK callback interface.
             hook: (name: string, callback: never) => {

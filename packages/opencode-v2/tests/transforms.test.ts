@@ -1,8 +1,10 @@
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
+import { Agent, Skill } from '@opencode/plugin/effect';
 import type { Scope } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 import type { CommandInvocation } from '@opencode/plugin/effect/command';
-import type { CommandEditor, SkillEditor } from '../src/types.js';
+import type { AgentEditor, CommandEditor, SkillEditor } from '../src/types.js';
+import { registerAgentTransforms } from '../src/transforms/agents.js';
 import { registerCommandTransforms } from '../src/transforms/commands.js';
 import { registerSkillTransforms } from '../src/transforms/skills.js';
 
@@ -111,7 +113,6 @@ describe('registerSkillTransforms', () => {
   it('registers every core skill with its file path and content, updating on re-run', async () => {
     type SkillInfo = Parameters<SkillEditor['add']>[0];
     const store = new Map<string, SkillInfo>();
-    let updated = 0;
     const draft: SkillEditor = {
       add: (skill) => {
         store.set(skill.id, skill);
@@ -120,7 +121,6 @@ describe('registerSkillTransforms', () => {
       list: () => [],
       remove: () => {},
       update: (id, update) => {
-        updated += 1;
         const current = store.get(id);
         if (current) {
           update(current);
@@ -160,8 +160,53 @@ describe('registerSkillTransforms', () => {
     );
 
     const sizeBefore = store.size;
+    const handoff = store.get('handoff');
+    if (handoff) {
+      store.set(
+        'handoff',
+        Schema.decodeSync(Skill.Info)({
+          autoinvoke: true,
+          content: handoff.content,
+          description: handoff.description,
+          id: handoff.id,
+          name: 'Configured handoff',
+          path: handoff.path,
+        }),
+      );
+    }
     captured?.(draft);
     expect(store.size).toBe(sizeBefore);
-    expect(updated).toBe(sizeBefore);
+    expect(store.get('handoff')?.name).toBe('Configured handoff');
+    expect(store.get('handoff')?.autoinvoke).toBe(true);
+  });
+});
+
+describe('agent registration', () => {
+  it('preserves an existing step limit when bundled configuration omits it', async () => {
+    const draft = Object.assign(Agent.Info.default(Agent.ID.make('builder')), { steps: 7 });
+    const editor: AgentEditor = {
+      default: () => {},
+      get: () => draft,
+      list: () => [draft],
+      remove: () => {},
+      update: (id, update) => {
+        if (id === 'builder') {
+          update(draft);
+        }
+      },
+    };
+    await runRegister(
+      registerAgentTransforms({
+        agent: {
+          /* oxlint-disable promise/prefer-await-to-callbacks -- SDK transforms require synchronous editor callbacks and return Effects. */
+          transform: (callback) => {
+            callback(editor);
+            return registered;
+          },
+          /* oxlint-enable promise/prefer-await-to-callbacks */
+        },
+      }),
+    );
+    expect(draft.steps).toBe(7);
   });
 });

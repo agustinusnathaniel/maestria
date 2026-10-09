@@ -1,6 +1,3 @@
-/** Real V2 runtime evidence. Build opencode-v2, then run with pnpm exec tsx and --out <JSON>.
- * Isolated HOME/XDG, temporary local plugin wrapper, and deterministic HTTP provider; no paid model.
- */
 /* oxlint-disable no-await-in-loop -- Admission, dispatch, and subsequent turns must run sequentially. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -48,11 +45,13 @@ const wire = (raw: unknown): RequestBody => ({
 });
 const latest = (body: RequestBody): string =>
   body.messages.findLast((message) => message.role === 'user')?.content ?? '';
+const system = (body: RequestBody): string =>
+  body.messages
+    .filter((m) => m.role === 'system')
+    .map((m) => m.content)
+    .join('\n');
 const modeInSystem = (body: RequestBody): boolean =>
-  body.messages.some(
-    (message) =>
-      message.role === 'system' && /\[MODE: (?:fein|sonar|blitz)\]/u.test(message.content),
-  );
+  /\[MODE: (?:fein|sonar|blitz)\]/u.test(system(body));
 const chunk = (delta: unknown, finish: string | null): string =>
   `data: ${JSON.stringify({
     choices: [{ delta, finish_reason: finish, index: 0 }],
@@ -81,11 +80,15 @@ const check = (name: string, pass: boolean): void => {
   checks.push({ name, pass });
 };
 await Promise.all(
-  ['home', 'config/opencode', 'data', 'cache', 'state', 'work', 'plugin'].map(async (dir) => {
-    await fs.mkdir(path.join(root, dir), { recursive: true });
-  }),
+  ['home', 'config/opencode', 'data', 'cache', 'state', 'work', 'work/.maestria', 'plugin'].map(
+    async (dir) => {
+      await fs.mkdir(path.join(root, dir), { recursive: true });
+    },
+  ),
 );
 await fs.writeFile(path.join(root, 'work/attached.txt'), 'ATTACHMENT_EVIDENCE_CONTENT\n');
+await fs.writeFile(path.join(root, 'work/.maestria/workflow.md'), 'WORKFLOW_INITIAL_EVIDENCE');
+await fs.writeFile(path.join(root, 'work/.maestria/rules.md'), 'RULES_INITIAL_EVIDENCE');
 await fs.writeFile(
   path.join(root, 'plugin/index.js'),
   `export {default} from ${JSON.stringify(path.join(packageDir, 'dist/index.js'))};\n`,
@@ -222,39 +225,43 @@ try {
     return response.status === 204 ? null : parse(await response.text());
   };
   const create = async (): Promise<string> => {
-    const result = record(
-      record(
-        await api('/api/session', {
-          location: { directory: path.join(root, 'work') },
-          model: { id: 'fake', providerID: 'evidence' },
-          title: 'Evidence',
-        }),
-      ).data,
-    );
-    if (typeof result.id !== 'string') {
+    const result = await api('/api/session', {
+      location: { directory: path.join(root, 'work') },
+      model: { id: 'fake', providerID: 'evidence' },
+      title: 'Evidence',
+    });
+    const { id } = record(record(result).data);
+    if (typeof id !== 'string') {
       throw new TypeError('Missing session ID');
     }
-    return result.id;
+    return id;
+  };
+  const waitIdle = async (
+    session: string,
+    afterRequest = -1,
+  ): Promise<Record<string, unknown>[]> => {
+    const end = Date.now() + 30_000;
+    while (Date.now() < end) {
+      const messages = rows(record(await api(`/api/session/${session}/context`)).data);
+      if (requests.length > afterRequest && messages.at(-1)?.type === 'idle') {
+        return messages;
+      }
+      await delay(50);
+    }
+    throw new Error('Session did not become idle');
   };
   const run = async (
     name: string,
     session: string,
     body: object,
-    command = false,
+    operation: 'prompt' | 'command' | 'compact' = 'prompt',
   ): Promise<RequestBody[]> => {
     const before = requests.length;
-    await api(`/api/session/${session}/${command ? 'command' : 'prompt'}`, body);
-    const end = Date.now() + 30_000;
-    while (Date.now() < end) {
-      const messages = rows(record(await api(`/api/session/${session}/context`)).data);
-      if (requests.length > before && messages.at(-1)?.type === 'idle') {
-        contexts.push({ messages, name });
-        check(`${name}: completed`, messages.at(-1)?.outcome === 'succeeded');
-        return requests.slice(before);
-      }
-      await delay(50);
-    }
-    throw new Error(`${name}: timed out`);
+    await api(`/api/session/${session}/${operation}`, body);
+    const messages = await waitIdle(session, before);
+    contexts.push({ messages, name });
+    check(`${name}: completed`, messages.at(-1)?.outcome === 'succeeded');
+    return requests.slice(before);
   };
   for (const mode of ['fein', 'sonar', 'blitz']) {
     const session = await create();
@@ -272,7 +279,7 @@ try {
       `slash-${mode}`,
       await create(),
       { name: mode, text: `EVIDENCE_${mode}` },
-      true,
+      'command',
     );
     check(
       `slash-${mode}: marker reaches provider`,
@@ -340,43 +347,21 @@ try {
       );
       check(
         'agent modes preserved',
-        agents.every((item) => item.mode === (item.id === 'orchestrator' ? 'all' : 'subagent')),
+        agents.every((a) => a.mode === (a.id === 'orchestrator' ? 'all' : 'subagent')),
       );
-      for (const id of ['builder', 'diagnose']) {
-        const agent = agents.find((item) => item.id === id);
-        const shell =
-          agent === undefined
-            ? []
-            : rows(agent.permissions).filter(
-                (rule) => rule.action === 'shell' && rule.resource === '*',
-              );
-        check(
-          `${id}: single shell fallback asks`,
-          shell.length === 1 && shell[0]?.effect === 'ask',
+      const hasRule = (id: string, action: string, effect: string, resource = '*'): boolean =>
+        rows(agents.find((a) => a.id === id)?.permissions ?? []).some(
+          (r) => r.action === action && r.resource === resource && r.effect === effect,
         );
+      for (const id of ['builder', 'diagnose']) {
+        check(`${id}: shell fallback asks`, hasRule(id, 'shell', 'ask'));
       }
-      const planner = agents.find((item) => item.id === 'planner');
-      check(
-        'planner asks on edit',
-        planner !== undefined &&
-          rows(planner.permissions).some(
-            (rule) => rule.action === 'edit' && rule.resource === '*' && rule.effect === 'ask',
-          ),
-      );
-      const orchestrator = agents.find((item) => item.id === 'orchestrator');
-      const permissions = orchestrator === undefined ? [] : rows(orchestrator.permissions);
+      check('planner asks on edit', hasRule('planner', 'edit', 'ask'));
       check(
         'orchestrator denies shell and edit, allows builder',
-        [
-          ['shell', '*', 'deny'],
-          ['edit', '*', 'deny'],
-          ['subagent', 'builder', 'allow'],
-        ].every(([action, resource, effect]) =>
-          permissions.some(
-            (rule) =>
-              rule.action === action && rule.resource === resource && rule.effect === effect,
-          ),
-        ),
+        hasRule('orchestrator', 'shell', 'deny') &&
+          hasRule('orchestrator', 'edit', 'deny') &&
+          hasRule('orchestrator', 'subagent', 'allow', 'builder'),
       );
     }
     if (route === 'skill') {
@@ -395,16 +380,10 @@ try {
   }
   for (const text of ['should it fein', 'test fein']) {
     const session = await create();
-    const [result] = await run(`trailing-keyword-${text}`, session, {
+    await run(`trailing-keyword-${text}`, session, {
       metadata: { attachments: [], comments: [], displayText: text },
       text,
     });
-    check(
-      `trailing keyword ${text}: expanded and stripped`,
-      result !== undefined &&
-        latest(result).startsWith('[MODE: fein]') &&
-        latest(result).endsWith(text.replace(/\sfein$/u, '')),
-    );
     const messages = rows(record(await api(`/api/session/${session}/message`)).data);
     const user = messages.findLast((message) => message.type === 'user');
     const metadata = record(user?.metadata);
@@ -413,9 +392,40 @@ try {
       user !== undefined &&
         metadata.displayText === user.text &&
         typeof metadata.displayText === 'string' &&
-        metadata.displayText.startsWith('[MODE: fein]'),
+        metadata.displayText.startsWith('[MODE: fein]') &&
+        metadata.displayText.endsWith(text.replace(/\sfein$/u, '')),
     );
   }
+  const projectSession = await create();
+  const [initialProject] = await run('project-customization', projectSession, {
+    text: 'PROJECT_EVIDENCE',
+  });
+  check(
+    'project workflow and rules reach model',
+    initialProject !== undefined &&
+      ['WORKFLOW_INITIAL_EVIDENCE', 'RULES_INITIAL_EVIDENCE'].every((marker) =>
+        system(initialProject).includes(marker),
+      ),
+  );
+  await fs.writeFile(path.join(root, 'work/.maestria/rules.md'), 'RULES_UPDATED_EVIDENCE');
+  const [freshProject] = await run('fresh-project-customization', projectSession, {
+    text: 'FRESH_PROJECT_EVIDENCE',
+  });
+  check(
+    'project rules reload without restarting plugin',
+    freshProject !== undefined &&
+      system(freshProject).includes('RULES_UPDATED_EVIDENCE') &&
+      !system(freshProject).includes('RULES_INITIAL_EVIDENCE'),
+  );
+  const compacted = await run('project-compaction', projectSession, {}, 'compact');
+  check(
+    'compaction receives current project constraints and continuity guidance',
+    compacted.some((r) =>
+      ['RULES_UPDATED_EVIDENCE', 'Before handoff or compaction'].every((marker) =>
+        system(r).includes(marker),
+      ),
+    ),
+  );
   config.plugins[0].options.modes.disabledKeywords.push('blitz');
   await fs.writeFile(configPath, JSON.stringify(config));
   await api(`/api/location/reload${directoryQuery}`, {});
@@ -430,7 +440,7 @@ try {
     'disabled-slash-blitz',
     await create(),
     { name: 'blitz', text: 'EXPLICIT_EVIDENCE' },
-    true,
+    'command',
   );
   check(
     'disabled keyword allows explicit command',
@@ -438,11 +448,18 @@ try {
   );
   check(
     'rules reach every provider request',
-    requests.every((body) =>
-      body.messages.some(
-        (message) => message.role === 'system' && message.content.includes('# Global Agent Rules'),
-      ),
-    ),
+    requests.every((body) => system(body).includes('# Global Agent Rules')),
+  );
+  await fs.rm(path.join(root, 'work/.maestria/rules.md'));
+  await fs.mkdir(path.join(root, 'work/.maestria/rules.md'));
+  const invalidSession = await create();
+  const beforeInvalid = requests.length;
+  await api(`/api/session/${invalidSession}/prompt`, { text: 'INVALID_PROJECT_EVIDENCE' });
+  const invalidMessages = await waitIdle(invalidSession);
+  contexts.push({ messages: invalidMessages, name: 'invalid-project-customization' });
+  check(
+    'unusable project customization blocks model dispatch',
+    invalidMessages.at(-1)?.outcome === 'failed' && requests.length === beforeInvalid,
   );
 } finally {
   if (child.exitCode === null && child.signalCode === null && spawnError === undefined) {
@@ -480,9 +497,6 @@ try {
     ),
   );
 }
-process.stdout.write(
-  `${checks.filter((item) => item.pass).length}/${checks.length} checks passed: ${out}\n`,
-);
-if (checks.some((item) => !item.pass)) {
-  process.exitCode = 1;
-}
+const passed = checks.filter((item) => item.pass).length;
+console.log(`${passed}/${checks.length} checks passed: ${out}`);
+process.exitCode = passed === checks.length ? 0 : 1;

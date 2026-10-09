@@ -11,6 +11,7 @@ const makeStubCtx = (options: unknown): PluginContext =>
   ({
     agent: { transform: () => registered },
     command: { transform: () => registered },
+    location: { directory: process.cwd(), project: { directory: process.cwd() } },
     options,
     session: { hook: () => registered, prompt: () => Effect.void },
     skill: { transform: () => registered },

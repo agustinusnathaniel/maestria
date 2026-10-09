@@ -1,22 +1,13 @@
 import { Effect } from 'effect';
 import type { Scope } from 'effect';
 import type { AgentEditor, Transform } from '@/types.js';
-import type { AgentInfo } from '@/agents.js';
-import { isAgentMode, loadAgents, loadOrchestrator } from '@/agents.js';
+import { isAgentMode, loadAgents } from '@/agents.js';
 
 export const registerAgentTransforms = (ctx: {
   agent: { transform: Transform<AgentEditor> };
 }): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerAgentTransformsEffect() {
-    const orchestrator = loadOrchestrator();
-
-    // Orchestrator first (router other agents delegate to), then specialists.
-    // Mode defaults inline: orchestrator routes everywhere, specialists stay
-    // scoped unless their frontmatter says otherwise.
-    const agents: Record<string, AgentInfo> = {
-      ...(orchestrator ? { [orchestrator.name]: orchestrator } : {}),
-      ...loadAgents(),
-    };
+    const agents = loadAgents();
 
     yield* ctx.agent.transform((registry: AgentEditor) => {
       for (const [name, config] of Object.entries(agents)) {
@@ -27,7 +18,9 @@ export const registerAgentTransforms = (ctx: {
             draft.system = config.prompt;
             draft.mode = isAgentMode(config.mode) ? config.mode : fallback;
             draft.permissions = config.permissions;
-            draft.steps = config.steps;
+            if (config.steps !== undefined) {
+              draft.steps = config.steps;
+            }
             if (config.color !== undefined && config.color !== '') {
               draft.color = config.color;
             }

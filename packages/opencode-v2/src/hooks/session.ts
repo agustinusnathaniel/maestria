@@ -6,6 +6,7 @@ import type { MaestriaPluginOptions } from '@/modes.js';
 import { detectMode } from '@/modes.js';
 import { readSyncedMarkdown } from '@/markdown.js';
 import { RULES_PATH } from '@/root.js';
+import { formatProjectSection, loadProjectSections } from '@maestria/shared-project-config';
 
 export const registerSessionHooks = (
   ctx: PluginContext,
@@ -14,6 +15,10 @@ export const registerSessionHooks = (
   Effect.gen(function* registerSessionHook() {
     const disabledKeywords = new Set(options.modes?.disabledKeywords);
     const rules = readSyncedMarkdown(RULES_PATH, 'global rules');
+    const projectRoot =
+      ctx.location.project.directory === '/'
+        ? ctx.location.directory
+        : ctx.location.project.directory;
 
     yield* ctx.session.hook('prompt', (event: SessionPrompt) =>
       Effect.sync(() => {
@@ -41,11 +46,17 @@ export const registerSessionHooks = (
         }
       }),
     );
-    yield* ctx.session.hook('context', (event) =>
-      Effect.sync(() => {
-        if (rules !== null) {
-          event.system.push({ text: rules, type: 'text' });
-        }
-      }),
-    );
+    for (const name of ['context', 'compaction'] as const) {
+      yield* ctx.session.hook(name, (event) =>
+        Effect.sync(() => {
+          if (rules !== null) {
+            event.system.push({ text: rules, type: 'text' });
+          }
+          const project = loadProjectSections(projectRoot).map(formatProjectSection);
+          if (project.length > 0) {
+            event.system.push({ text: project.join('\n\n'), type: 'text' });
+          }
+        }),
+      );
+    }
   });

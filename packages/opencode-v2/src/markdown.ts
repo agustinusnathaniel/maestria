@@ -24,3 +24,12 @@ export const readSyncedMarkdown = (filePath: string, label: string): string | nu
     return null;
   }
 };
+
+export const splitMarkdown = (content: string): { body: string; frontmatter?: string } => {
+  const body = stripAutoGenComment(content);
+  const match = /^---\r?\n(?<frontmatter>[\s\S]*?)\r?\n---(?:\r?\n)*/u.exec(body);
+  return {
+    body: match ? body.slice(match[0].length) : body,
+    frontmatter: match?.groups?.frontmatter,
+  };
+};
