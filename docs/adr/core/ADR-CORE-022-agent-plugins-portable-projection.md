@@ -48,6 +48,7 @@ The consuming client owns discovery, activation, permissions, trust, sandboxing,
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) establishes the canonical directive source and generated platform projections.
 - The [package README](../../../packages/agent-plugin/README.md) documents the consumer-facing installation and support boundary.
 - [Agent Plugins v1 specification](https://agent-plugins.org/specification) and [Agent Skills specification](https://agentskills.io/specification) define the portable formats.
+- [Compatible clients](https://agent-plugins.org/compatible-clients) lists the clients implementing the format and their supported component types.
 
 ## Date
 

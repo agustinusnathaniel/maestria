@@ -63,3 +63,5 @@ The Cursor sync config derives agents, the orchestrator skill, and the global ru
 - [ADR-CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md) - sync bridge
 - [ADR-CORE-007](../core/ADR-CORE-007-cli-package-plugin-management.md) - CLI platform handlers
 - [ADR-KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) - declarative precedent; named Cursor as candidate
+- [Cursor plugin reference](https://cursor.com/docs/reference/plugins.md) - Cursor plugin formats, manifest fields, and marketplace submission
+- [Agent Plugins v1 specification](https://agent-plugins.org/specification) - portable manifest and skills layout the Cursor Plugin format loads alongside

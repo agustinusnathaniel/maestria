@@ -74,3 +74,5 @@ codex plugin add maestria@maestria
 ```
 
 `codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation installs only the plugin and skills: it does not copy the native agent TOMLs or modify global `AGENTS.md`. Use `npx maestria install codex` for the full native-agent and automatic-orchestration setup.
+
+See the [OpenAI plugin packaging guide](https://developers.openai.com/plugins/build/plugins) for marketplace setup. This package presents through the `.codex-plugin/plugin.json` compatibility fallback with no inline `extensions.com.openai`.

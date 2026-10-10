@@ -46,6 +46,7 @@ These are dated selection reasons, not current compatibility claims about the al
 - [CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): Pi-family sharing and native host seams.
 - [CORE-033](../core/ADR-CORE-033-cli-effect-resource-boundaries.md): demonstrated-need-only Effect adoption and Pi polling history.
 - [PI-001](ADR-PI-001-rules-injection.md): static methodology and specialist registration.
+- [Oh My Pi](https://omp.sh/) (docs unverified, JS-gated): OMP consumes the portable root manifest and shared skills through the consolidated package; no OMP posture change is claimed here.
 
 ## Date
 

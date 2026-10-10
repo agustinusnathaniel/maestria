@@ -72,3 +72,4 @@ The plugin uses **git-based distribution** via `hermes plugins install agustinus
 - ADR-CORE-002 (plugin architecture - established the plugin pattern for `@maestria/opencode`)
 - ADR-CORE-005 (shared agent directives core sync - the SKILL.md files are synced from canonical core sources)
 - ADR-OC-001 (tool permission design - influenced the `PermissionRole` concept adapted for Hermes)
+- [Agent Plugins v1 specification](https://agent-plugins.org/specification) - portable manifest and skills layout Hermes consumes for the consolidated package

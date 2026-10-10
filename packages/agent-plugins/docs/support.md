@@ -5,10 +5,10 @@ The package ships declarative methodology and host resources. Sync and npm archi
 | Host | Contract | Official reference |
 | --- | --- | --- |
 | Portable | Root manifest and standard Agent Skills; no portable runtime agent declaration | [Agent Plugins specification](https://agent-plugins.org/specification) |
-| Claude Code | Shared default skills scan; explicit agent and command file lists; preserved native tool-denial fields | [Plugin reference](https://code.claude.com/docs/en/plugins-reference) |
+| Claude Code | Shared default skills scan; explicit agent and command file lists; preserved native tool-denial fields | [Plugin components](https://code.claude.com/docs/en/plugins/components) ([manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference)) |
 | Cursor | Selected host agents, commands, rules, and shared skills | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
-| Codex | Skill manifest plus companion CLI-managed native TOMLs and instructions | [Codex plugin documentation](https://developers.openai.com/codex/plugins) |
-| Devin | Conventional root advisory agents; CLI/Desktop availability differs from cloud | [Plugin overview](https://docs.devin.ai/cli/extensibility/plugins/overview) |
+| Codex | Skill manifest plus companion CLI-managed native TOMLs and instructions; OpenAI presentation via the `.codex-plugin/plugin.json` compatibility fallback, no inline `extensions.com.openai` | [Codex plugin documentation](https://developers.openai.com/codex/plugins) ([packaging guide](https://developers.openai.com/plugins/build/plugins)) |
+| Devin | Conventional root advisory agents; CLI/Desktop availability differs from cloud; no hooks or MCP servers declared | [Plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) ([Customize product guide](https://docs.devin.ai/product-guides/plugins)) |
 | ZCode | Explicit root advisory agents and shared skills; no host-specific command prompts | [Plugin documentation](https://zcode.z.ai/en/docs/plugin) |
 | Hermes | Portable root manifest and shared skills; discover the host-generated qualified namespace; no Python plugin or runtime parity | [Portable Agent Plugins support](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages) |
 | OMP | Portable root manifest and shared skills with native `task(agent, task)` dispatch per the integration guide; no executable extension, session hooks, enforcement, or per-agent model files | [Oh My Pi](https://omp.sh/) |

@@ -23,6 +23,13 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 The plugin installs to `~/.cursor/plugins/local/maestria`.
 
+<Aside type="caution" title="Enterprise local-plugin gate">
+  On Enterprise, `~/.cursor/plugins/local` loads only when an admin enables Allow Local Plugin
+  Imports; a same-name marketplace install takes precedence over the local copy. See the [Cursor
+  plugin reference](https://cursor.com/docs/reference/plugins.md) and the [plugin
+  documentation](https://cursor.com/docs/plugins).
+</Aside>
+
 <Aside type="tip" title="Restart Cursor after install">
   Restart Cursor IDE after install so Customize → Plugins picks up the plugin. For CLI, pass
   `--plugin-dir` or use the local plugins directory.

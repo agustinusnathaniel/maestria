@@ -71,15 +71,16 @@ A local checkout is useful when testing unreleased changes.
 
 Use portable skills for client-neutral guidance, and a native integration for platform-specific runtime features. The consolidated archive contains both surfaces; install it once per host.
 
-| Need                                                | Native guide                 |
-| --------------------------------------------------- | ---------------------------- |
-| OpenCode agents, rules, and compaction              | [OpenCode](/opencode/)       |
-| Claude Code agents, commands, and restrictions      | [Claude Code](/claude-code/) |
-| Codex CLI skills and native agents                  | [Codex CLI](/codex/)         |
-| Cursor agents, rules, and commands                  | [Cursor](/cursor/)           |
-| Pi or Oh My Pi dispatch and session behavior        | [Pi and OMP](/pi-omp/)       |
-| Hermes trust and lifecycle integration              | [Hermes Agent](/hermes/)     |
-| Kimi Code skills, commands, and session integration | [Kimi Code](/kimi-code/)     |
+| Need | Native guide |
+| --- | --- |
+| OpenCode agents, rules, and compaction | [OpenCode](/opencode/) |
+| Claude Code agents, commands, and restrictions | [Claude Code](/claude-code/) |
+| Codex CLI skills and native agents | [Codex CLI](/codex/) |
+| Cursor agents, rules, and commands | [Cursor](/cursor/) |
+| Pi or Oh My Pi dispatch and session behavior | [Pi and OMP](/pi-omp/) |
+| Devin skills and conventional subagents | [Devin integration guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/integrations/devin/README.md) |
+| Hermes trust and lifecycle integration | [Hermes Agent](/hermes/) |
+| Kimi Code skills, commands, and session integration | [Kimi Code](/kimi-code/) |
 
 The portable manifest exposes shared skills. Native manifests select host resources in the same archive; the portable standard itself does not provide:
 
@@ -114,6 +115,31 @@ Read-only roles are guidance, not a security boundary; the consuming client rema
     title="Agent Plugins v1 specification"
     description="Manifest, skills layout, and client-conformance rules."
     href="https://agent-plugins.org/specification"
+  />
+  <LinkCard
+    title="Claude Code plugin components"
+    description="Skills, agents, commands, and hooks in a Claude Code plugin."
+    href="https://code.claude.com/docs/en/plugins/components"
+  />
+  <LinkCard
+    title="OpenAI plugin packaging"
+    description="Portable manifest with the Codex compatibility fallback."
+    href="https://developers.openai.com/plugins/build/plugins"
+  />
+  <LinkCard
+    title="Cursor plugin reference"
+    description="Cursor plugin formats, components, and marketplace."
+    href="https://cursor.com/docs/reference/plugins.md"
+  />
+  <LinkCard
+    title="Kimi Code plugins"
+    description="Manifest fields, system-prompt budget, and plugin agents."
+    href="https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html"
+  />
+  <LinkCard
+    title="ZCode plugins"
+    description="ZCode plugin documentation."
+    href="https://zcode.z.ai/en/docs/plugin"
   />
   <LinkCard
     title="Package source"

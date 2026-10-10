@@ -145,6 +145,7 @@ With 3+ platforms, consider extracting a canonical agent schema, skill registry,
 - ADR-CORE-019 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
 - ADR-CORE-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
 - Canonical specialist directives carry prompt conventions and skill-loading guidance; `!!!` markers communicate methodology, not host enforcement.
+- The consolidated `kimi.plugin.json` additionally declares `systemPromptPath` to `integrations/kimi-code/SYSTEM.md` (within the host 32 KB per-field budget) alongside `sessionStart.skill` and `skillInstructions`; see the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) and [plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
 
 ## Date
 

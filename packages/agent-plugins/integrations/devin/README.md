@@ -4,7 +4,7 @@
 
 Devin loads the shared skills from `skills/` and the conventional root `agents/<role>.md` profiles as `maestria:<role>`. Custom plugin subagents are available in local CLI and Desktop sessions, not cloud sessions. Use the host-provided subagent controls with a complete handoff; this package does not prescribe a fabricated tool API. Workflow modes are skills: `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz`.
 
-See the [Devin plugin documentation](https://docs.devin.ai/cli/extensibility/plugins/overview).
+See the [Devin plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) and the [Customize product guide](https://docs.devin.ai/product-guides/plugins).
 
 Load global-rules once per session. Keep exploration, planning, and review read-only and retain independent maker/checker roles. The root agent profiles contain name and description frontmatter plus portable role guidance. Their restrictions are advisory; no runtime tool-denial or sandbox setting is claimed for these hosts.
 
