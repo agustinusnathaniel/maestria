@@ -1,6 +1,6 @@
 # Install the consolidated plugin
 
-Use `@maestria/agent-plugins` as the package artifact. Extract the npm archive or stage it with `maestria install agent-plugin`; staging validates and copies the package into a cache or requested destination. Activation belongs to the selected host.
+Use `@maestria/agent-plugins` as the package artifact. Extract the npm archive or stage it with `maestria plugin install`; staging validates and copies the package into a cache or requested destination. Activation belongs to the selected host.
 
 The CLI's existing host commands install from the consolidated package: `maestria install claude-code`, `maestria install cursor`, `maestria install codex`, and `maestria install kimi-code`, `maestria install hermes`, and `maestria install omp`. The Codex install also manages native agent templates and a marked global instruction block. `maestria configure codex` changes native agent model settings. Review the CLI output and host's trust controls when activating the plugin.
 

@@ -60,7 +60,7 @@ export type Target = [packageDir: string, manifests: string[]];
 
 export const TARGETS: Target[] = [
   [
-    path.join(ROOT, 'packages', 'plugin'),
+    path.join(ROOT, 'packages', 'agent-plugins'),
     [
       'plugin.json',
       '.claude-plugin/plugin.json',
