@@ -40,7 +40,8 @@ maestria/
 │   ├── adr/             - Architecture Decision Records
 │   │   ├── core/        - Cross-cutting decisions (ADR-CORE-*)
 │   │   ├── opencode/    - @maestria/opencode decisions (ADR-OC-*)
-│   │   ├── hermes/      - @maestria/hermes decisions (ADR-HM-*)
+│   │   ├── cursor/      - Cursor host boundaries (ADR-CR-*)
+│   │   ├── kimi-code/   - Kimi host boundaries (ADR-KC-*)
 │   │   └── pi/          - @maestria/pi decisions (ADR-PI-*)
 │   ├── guides/          - Development guides and conventions
 │   └── plans/           - Historical implementation plans

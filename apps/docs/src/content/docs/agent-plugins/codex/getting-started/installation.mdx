@@ -1,9 +1,9 @@
 ---
-title: Installation & Setup
-description: Install and verify @maestria/agent-plugins through the maestria CLI.
+title: Codex CLI installation
+description: Install the Maestria skills plugin and native companion agents in Codex CLI.
 ---
 
-This integration ships in the shared `@maestria/agent-plugins` package. The `codex` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
+This setup targets Codex CLI. The same package also supports a skills-only local marketplace install in the [ChatGPT desktop app](/agent-plugins/codex/getting-started/desktop/).
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
@@ -11,9 +11,11 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 `@maestria/agent-plugins` is a Codex skills plugin with a companion native custom-agent pack. The maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
 
-<Aside type="tip" title="Verified support boundary">
-  Verified against Codex CLI `0.145.0` on 2026-08-26. Codex desktop parity and runtime tool
-  enforcement remain outside this package.
+<Aside type="tip" title="CLI verification scope">
+  Package/unit tests and builds cover the consolidated companion installer and profile payload. The
+  2026-08-26 marketplace smoke used Codex CLI `0.145.0` and the former standalone package. No fresh
+  CLI host E2E covers the consolidated archive. The desktop guide follows documented
+  local-marketplace setup; desktop runtime behavior also remains unverified.
 </Aside>
 
 ## Prerequisites
@@ -64,7 +66,7 @@ The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, the
 
 Codex CLI does not expose a separate plugin update command in the supported surface. The maestria CLI refreshes the staged npm package, removes and re-adds `maestria@maestria`, then refreshes the native agent TOMLs while preserving user model settings. Exact version pinning is not supported through `npx maestria update codex --version ...`. Uninstall removes only the maestria-managed agent files and marked orchestration block; existing Codex instructions and unrelated agent files remain untouched.
 
-## Direct Codex installation
+## Direct Codex CLI plugin installation
 
 The repository also exposes a native Codex marketplace entry backed by the published npm package:
 
@@ -75,4 +77,6 @@ codex plugin add maestria@maestria
 
 `codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation installs only the plugin and skills: it does not copy the native agent TOMLs or modify global `AGENTS.md`. Use `npx maestria install codex` for the full native-agent and automatic-orchestration setup.
 
-See the [OpenAI plugin packaging guide](https://developers.openai.com/plugins/build/plugins) for marketplace setup. This package presents through the `.codex-plugin/plugin.json` compatibility fallback with no inline `extensions.com.openai`.
+This package presents its skills through `.codex-plugin/plugin.json`. Direct plugin installation does not add the native agent TOMLs or managed global instructions.
+
+See the separate [Codex desktop setup](/agent-plugins/codex/getting-started/desktop/) to install the skills through a personal npm marketplace.

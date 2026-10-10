@@ -4,9 +4,9 @@
 
 Accepted (2026-09-01), Confidence: High; consolidated 2026-10-03.
 
-## Consolidation amendment (2026-10-10)
+## Supersession
 
-[CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) supersedes the separate `@maestria/agent-plugin` package topology. The portable skill surface now ships in `@maestria/plugin`, alongside explicitly selected native host resources. The portable format still grants no runtime enforcement, delegation, or lifecycle authority. The original decision below records the earlier skills-only distribution.
+[CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) supersedes the separate package topology and its distribution choice. The portable Agent Plugins v1 skill surface now ships in `@maestria/agent-plugins` alongside explicitly selected native host resources. This record continues to own the portable format boundary and the rationale for keeping that format separate from runtime authority.
 
 ## Context
 
@@ -16,13 +16,13 @@ The format defines an artifact shape, not whether each compatible client discove
 
 ## Decision
 
-Publish `@maestria/agent-plugin` as an additive, generated projection of the canonical directives. Keep native packages independently responsible for host-specific behavior.
+The original decision published `@maestria/agent-plugin` as an additive, generated projection of the canonical directives. CORE-034 supersedes that package identity and topology; the portable projection remains generated, with host-specific behavior owned by native integrations.
 
 Limit the portable package to the v1 `plugin.json` manifest and generated Agent Skills. It does not declare MCP configuration, executable agent identities, commands, hooks, or client-specific extensions. Convert internal role references to sibling skill names and describe role or tool boundaries as advisory.
 
 Generate the projection from `packages/core/agent-directives/`; do not maintain a second hand-authored skills tree. The maestria CLI may validate a package and stage it in its cache or a chosen destination. Staging does not install, register, or activate it in a client.
 
-Do not add portable MCP configuration until there is a concrete host-neutral capability and credential story. Keep the Hermes distribution independent of this package.
+Do not add portable MCP configuration until there is a concrete host-neutral capability and credential story. Host-specific runtime behavior remains the responsibility of each consuming host and its native integration.
 
 ## Security Boundaries
 
@@ -46,7 +46,7 @@ The consuming client owns discovery, activation, permissions, trust, sandboxing,
 ## Related Decisions
 
 - [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) establishes the canonical directive source and generated platform projections.
-- The [package README](../../../packages/agent-plugin/README.md) documents the consumer-facing installation and support boundary.
+- The [consolidated package README](../../../packages/agent-plugins/README.md) documents the consumer-facing installation and support boundary.
 - [Agent Plugins v1 specification](https://agent-plugins.org/specification) and [Agent Skills specification](https://agentskills.io/specification) define the portable formats.
 - [Compatible clients](https://agent-plugins.org/compatible-clients) lists the clients implementing the format and their supported component types.
 

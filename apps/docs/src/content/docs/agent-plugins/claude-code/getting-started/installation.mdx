@@ -1,6 +1,6 @@
 ---
-title: Installation & Setup
-description: How to validate, install, and load @maestria/agent-plugins through Claude Code or the maestria CLI.
+title: Claude Code installation
+description: Install and use the Maestria plugin in Claude Code CLI or the Desktop Code tab.
 ---
 
 This integration ships in the shared `@maestria/agent-plugins` package. The `claude-code` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
@@ -13,15 +13,17 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 See the host-side model in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
 
-<Aside type="caution" title="Verified as a native candidate">
-  The package is a `Native candidate`: validation passed with the official Claude Code CLI, but
-  runtime behavior is not yet tested end to end; see the [runtime support
+<Aside type="caution" title="CLI evidence is scoped">
+  Strict plugin validation passes. An offline fixture on Claude Code `2.1.217` verifies the reviewer
+  child, preload of its role and global-rules skills, and a tool schema without Write or Edit. It
+  does not test model judgment, shell-mediated editing, every specialist, other CLI versions,
+  account plugin sync, or Desktop Code. See the [runtime support
   matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
 </Aside>
 
 ## Prerequisites
 
-- **Claude Code** with the `claude` CLI on `PATH` - required for validation and local loading.
+- **Claude Code** with the `claude` CLI on `PATH` - required for the CLI install and validation paths below.
 - **Node.js and npm** - required when installing through `maestria install claude-code`.
 - **Node.js and pnpm** - only needed to regenerate files from the canonical core directives.
 
@@ -38,6 +40,18 @@ Check, update, or remove the installation with:
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall claude-code" />
 
 Claude Code's marketplace update path selects the latest package. Exact version pinning is not available through `maestria update claude-code --version`.
+
+## Claude Code Desktop setup
+
+Claude Code Desktop shares configuration with the CLI for local sessions. For an existing CLI installation, open a **local** or **SSH** Code session in Desktop; the plugin manager can show, enable, disable, or uninstall plugins from configured marketplaces.
+
+To install from the Desktop UI, first add the Maestria marketplace in the CLI:
+
+```bash
+claude plugin marketplace add agustinusnathaniel/maestria
+```
+
+Then, in a local or SSH Code session, click **+** beside the prompt, choose **Plugins**, select **Add plugin**, and install `maestria` from the configured marketplace. Verify it in the same menu or with `/plugin` in the CLI. The Desktop plugin browser is unavailable in cloud sessions, and plugins installed from Desktop are not available there. See the [Claude Code Desktop guide](https://code.claude.com/docs/en/desktop).
 
 ## Local validation (no install)
 
@@ -78,7 +92,7 @@ claude plugin validate ./packages/agent-plugins --strict
 | Agents | `@maestria:<agent>` | 7 specialist agents: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
 | Skills | `maestria:<role>`, `/maestria:orchestrator`, `maestria:global-rules`, `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Shared role methodology, routing, universal rules, and full-pipeline, research-only, or fast implementation modes |
 
-Each specialist profile preloads its matching role skill and `maestria:global-rules`. Plugin-scoped skill preload resolution is not yet verified against a live session.
+Each specialist profile declares its matching role skill and `maestria:global-rules` in the native `skills` field. The offline fixture verified that preload for the reviewer child on Claude Code `2.1.217`; it does not establish model behavior or loading across every role and version.
 
 ## Tool Restrictions
 

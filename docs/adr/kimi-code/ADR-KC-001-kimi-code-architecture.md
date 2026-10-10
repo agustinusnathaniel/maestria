@@ -1,155 +1,38 @@
-# ADR-KC-001: Kimi Code Plugin Architecture - Declarative Skills, No Custom Subagents
+# ADR-KC-001: Kimi Code Declarative Integration
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17). Correction (2026-09-28): the historical swarm threshold and profile mapping below diverge from the then-current standalone package projection. Consolidation (2026-10-10): the separate Kimi skill corpus was removed. Kimi now selects the shared root skills, with aliases and host-routing guidance generated from canonical inputs. Use the current [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/integrations/kimi-code/sync.config.ts) for operation. The history below records the rationale and earlier package design; it is not the current resource inventory. Kimi host support for newer manifest fields remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
-
-## Supersession
-
-- **2026-06-12**: original draft accepted with the orchestrator-skill pattern and the 7-specialist to 3-subagent mapping.
-- **2026-06-17**: revised after `@maestria/opencode` shipped and Kimi Code was reverified at v0.13.1, which corrected the hooks, compaction, install URL, and permission-scope entries and added swarm integration, the revised specialist mapping, and a recommended `[[hooks]]` block.
-- **2026-10-10**: shared Kimi role skills and duplicated workflow bodies were removed during package consolidation. The current integration preloads shared skills in the parent and passes complete role and global-rule guidance into native child prompts. Historical profile and manifest details below do not describe the current package layout.
+Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects shared skills and host-specific aliases from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/integrations/kimi-code/sync.config.ts). Newer manifest-field support remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
 
 ## Context
 
-`@maestria/opencode` is a TypeScript-SDK plugin with hooks and 7 registered subagents. Kimi Code's plugin model is declarative instead:
-
-| Capability | OpenCode Plugin SDK | Kimi Code Plugin System |
-| --- | --- | --- |
-| **Entry point** | TypeScript npm package | JSON manifest only |
-| **Custom subagents** | Register via `config` hook | 3 built-in only: coder, explore, plan |
-| **Global rules injection** | `system.transform` hook | AGENTS.md files at scan dirs (not plugin-managed) |
-| **Permissions** | Programmatic per-agent | `config.toml` `[[permission.rules]]` |
-| **Session start injection** | Via `system.transform` | Built-in `sessionStart.skill` |
-| **Build step** | TypeScript compilation | None - declarative files |
-| **Installation** | npm install + config entry | `/plugins install <GitHub URL>` |
-
-This is a different philosophy, not a limitation: declarative configuration replaces SDK hooks and custom subagents, and a session-start skill teaches the orchestrator pattern. ADR-CORE-002's principles (markdown as source of truth, self-contained agents, cross-cutting global rules) carry forward, but the markdown files _are_ the plugin rather than content loaded by a TypeScript package.
+Kimi Code exposes a declarative plugin format, unlike the OpenCode runtime SDK. At the v0.13.1 version inspected for this decision, it provided three built-in child profiles (`coder`, `explore`, and `plan`) and no custom subagent registration. The host owns plugin discovery, permissions, hooks, and session behavior; manifest compatibility must be checked against the installed host version.
 
 ## Decision
 
-### Choose: Declarative Skill-Based Plugin with Session-Start Orchestrator
+Use Kimi's declarative plugin surface. The original integration mapped maestria specialists onto Kimi's built-in profiles and loaded an orchestrator skill at session start. In the consolidated package, Kimi instead selects shared root skills, host-specific aliases, and bootstrap guidance. The parent loads the full role and global contract and includes them when dispatching a built-in child; see the current integration source for routing behavior.
 
-The standalone plugin described by this decision was a set of declarative files: `kimi.plugin.json`, one skill directory per specialist, user-placed rules, commands, and `SYSTEM.md`. Those duplicate skill files were removed during consolidation. See `packages/agent-plugins/kimi.plugin.json` for the current manifest selectors.
-
-### Historical Plugin Surface (Kimi Code v0.13.1)
-
-The limits below describe the host version inspected for the original decision. Do not apply them to newer versions without checking their manifest schema. The consolidated package explicitly selects Kimi command aliases; its `systemPromptPath` points to the shared global-rules skill.
-
-A plugin could register `mcpServers`, `skills`, one `sessionStart.skill` (single text-only skill auto-loaded at session start), and a `skillInstructions` string. That version could not register a new subagent profile (types were hardcoded to `coder`, `explore`, `plan`), custom built-in tools (including `commands`, which that parser silently dropped), or change `AgentSwarm` (hardcoded in the platform).
-
-**Critical implication:** the 7 specialist identities cannot be separate subagent types; they must be encoded as persona content in prompt templates dispatched through one of the 3 built-in types.
-
-### Specialist → Subagent Profile Mapping
-
-| maestria Agent | Kimi Subagent | Rationale |
-| --- | --- | --- |
-| **Orchestrator** | Main agent (auto-loaded) | `sessionStart.skill`; teaches methodology, delegation, and swarm usage; must route heavy work to specialists |
-| **Builder** | `coder` | Write, Edit, Bash |
-| **Adventurer** | `explore` | No Write/Edit; persona must restate "Bash ONLY for read-only operations (ls, git log, git diff, find)" |
-| **Planner** | `plan` | No Bash, no write tools |
-| **Reviewer** | `coder` | **MUST forbid editing**: "Produce a structured review report only. Do not edit files." |
-| **Architect** | `coder` (revised) | `plan` lacks Bash; architecture needs validation commands (`which`, `npm view`) |
-| **Writer** | `coder` (revised) | Isolated context; the main session is the user's working context |
-| **Diagnose** | `coder` (revised) | Isolated context plus Bash for instrumentation |
-
-The non-obvious constraints are prompt-enforced, not tool-enforced: `explore`'s Bash is a full shell, and `coder`'s Write/Edit are excluded from review only by persona instruction.
-
-### Swarm Usage (AgentSwarm + SwarmMode)
-
-`AgentSwarm` fans one prompt template across N independent items (fields documented in the tool's own description); `SwarmMode` is toggled by `/swarm on|off` or `/swarm <task>` and auto-exits when the turn completes.
-
-**Exclusive-deny policy**: `AgentSwarm` must be the only tool call in its turn, so "explore first, then swarm" takes two turns.
-
-**Orchestrator's swarm design:** default to `AgentSwarm` for the same kind of work across N≥3 independent items (cheaper per item, rate-limit-aware retry, live progress); a single `Agent` call for 1-2 items or stateful work. Specialist persona content is inlined into `prompt_template` at the `{{item}}` position; `resume_agent_ids` retries only unfinished items (`completed` / `failed` / `aborted` per subagent).
-
-### Routing Table
-
-| Request type | subagent_type | Persona |
-| --- | --- | --- |
-| Reconnaissance / exploration | `explore` | @adventurer |
-| Architecture / design | `coder` | @architect |
-| Multi-phase planning | `plan` | @planner |
-| Implementation / code changes | `coder` | @builder |
-| Bug tracing / root cause | `coder` | @diagnose |
-| Code review / QA | `coder` | @reviewer (persona **MUST forbid editing**) |
-| Documentation | `coder` | @writer |
-| Swarm fan-out (≥3 independent items) | varies | inlined in `prompt_template`; no `Agent` call alongside |
-
-The table above is the historical persona-selection decision; its three-item swarm threshold and older profile details are not current operating instructions. Current Kimi routing lives in `packages/core/agent-directives/integrations/kimi-code.md` and the generated package integration guide. It loads the full role and global-rules skills in the parent and inlines them with task constraints before dispatch; explore and plan children are not assumed to have the Skill tool. Current swarm guidance uses AgentSwarm for two or more uniform independent items. The generic orchestrator skill points to this host guide rather than duplicating its routing table.
-
-### Comparison: OpenCode vs. Kimi Code Plugin
-
-| Feature | OpenCode Plugin (`@maestria/opencode`) | Kimi Code Plugin (`@maestria/kimi-code`) |
-| --- | --- | --- |
-| **Swarm fan-out** | Not used (sequential `task()`) | First-class `AgentSwarm` + `SwarmMode` |
-| **Lifecycle hooks** | Plugin SDK hooks | `[[hooks]]` in `config.toml` (user-managed, suggested in the [installation guide](https://maestria.sznm.dev/agent-plugins/kimi-code/getting-started/installation/)) |
-| **Compaction** | `session.compacting` plugin hook | `experimental.micro_compaction` plus `/compact`; `PreCompact`/`PostCompact` observe only |
-| **Package management** | npm (versioned, published) | GitHub URL; latest by default, pin via ref/tag/sha |
-| **Skill overrides** | Not supported | Built-in - users can edit SKILL.md files |
-| **Plugin capabilities** | SDK-based (hooks, programmatic) | Declarative only (manifest + markdown) |
-
-### What Carries Over from OpenCode
-
-`!!!` critical rule markers and "Related Agents" cross-references in every SKILL.md; the skill pattern adapted to bundled skills ("load and use"); Conventional Comments for review; markdown as source of truth with each SKILL.md self-contained.
-
-### What We Lose vs. OpenCode
-
-- **No custom subagent identity** - 7 specialists run under 3 built-in names, differentiated only by persona content.
-- **No plugin-injected global rules** - `rules/AGENTS.md` ships in the plugin but the user places it at `~/.kimi-code/AGENTS.md` (`$KIMI_CODE_HOME/AGENTS.md`); the platform auto-loads scan directories, the plugin cannot place the file.
-- **No programmatic per-subagent permissions** - users add `[[permission.rules]]` to `config.toml`; `scope` gives temporal granularity but not per-subagent granularity.
-- **No `system.transform` equivalent** - the surfaces are `sessionStart.skill`, `skillInstructions`, and a user-managed `UserPromptSubmit` hook documented in the installation guide as an approximation.
-- **No compaction injection** - `PreCompact`/`PostCompact` observe only; compaction summaries are plugin-inaccessible.
-- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`; the plugin documents them in the [installation guide](https://maestria.sznm.dev/agent-plugins/kimi-code/getting-started/installation/) (including the `PreToolUse` Bash guard, `UserPromptSubmit` reminder, and `PreCompact`/`PostCompact` logging), but the user copies them in.
+Do not treat specialist names or prompt text as host-enforced permission identities. Kimi's historical profile limits made some safety constraints prompt-level, and the consolidated integration still depends on host behavior for child permissions and manifest support.
 
 ## Consequences
 
-### Positive
+- The declarative integration avoids a runtime adapter and duplicate skill corpus.
+- Kimi's built-in profile model does not provide seven distinct host subagent identities. Current routing adapts to those profiles through parent-loaded guidance.
+- Permission and lifecycle guarantees remain host-owned; prompt guidance cannot establish runtime enforcement.
+- Host schema changes can affect manifest fields, so current support claims remain bounded by the runtime support matrix.
 
-- **No build step, simple installation** - declarative files; one `/plugins install <GitHub URL>` command, no npm or version management
-- **Platform-native patterns** - uses Kimi Code's skill system as designed
-- **User-editable** - every SKILL.md can be edited without rebuilding or re-publishing
-- **Fills a gap and validates the abstraction question** - the first structured agent pack for the platform, and two platforms show what a shared core would need
+## Alternatives Considered
 
-### Negative
-
-- **Manual rules placement** - `rules/AGENTS.md` must be copied to `~/.kimi-code/` by the user
-- **Manual permissions** - users hand-edit `config.toml`; `scope` gives temporal, not per-subagent, granularity
-- **No custom subagent identity** - all 7 specialists run under 3 built-in subagent names, differentiated only by persona content
-- **No auto-update on the default URL** - re-running `/plugins install` fetches the latest release; there is no npm-style semver or session-start update (the marketplace UI shows updates)
-- **No compaction injection** - compaction is automatic and plugin-inaccessible; the hooks are observation-only
-- **More install steps than OpenCode** - install the plugin, copy `rules/AGENTS.md`, add `[[permission.rules]]`, add the recommended `[[hooks]]` block
-
-### Risks
-
-- **User forgets the AGENTS.md copy** - rules are missing silently. Mitigation: INSTALL.md checklist and skills referencing AGENTS.md.
-- **User modifications are overwritten** - `/plugins install` overwrites edits to bundled skills. Mitigation: fork the plugin for customizations.
-- **User skips the recommended hooks** - destructive-command blocking and per-turn reminders are unavailable. Mitigation: the installation guide's checklist and the orchestrator's `whenToUse` reminder.
-- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split (see [ADR-CORE-019](../core/ADR-CORE-019-directive-simplification.md)). Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
-- **Architect was remapped from `plan` to `coder`** - `plan` has no Bash, blocking validation (`which`, `npm view`); `coder` restores it while making write tools technically available. Mitigation: the persona restricts Bash to read-only validation.
-- **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`.
-- **`AgentSwarm` is exclusive-deny** - it must be the only tool call in its turn, so exploration and swarm fan-out take two turns. Mitigation: the orchestrator skill documents the pattern; `resume_agent_ids` re-feeds unfinished items.
-- **Sub-skill hierarchy caps at 3 levels** - the orchestrator → persona chain is at the cap; an orchestrator-of-orchestrators pipeline needs a different solution. Revisit if the limit is raised.
-
-## What We're NOT Doing
-
-1. **Not shipping MCP servers in the manifest** - `mcpServers` is how plugin-specific tools would ship; the answer is an `mcpServers` block, not a forked subagent profile.
-2. **Not including a plugin SDK** - the plugin system is declarative-only; there is no SDK to wrap or abstract.
-3. **Not building for non-kimi-code platforms yet** - one platform at a time until 3+ justify a core abstraction. (Superseded in intent by ADR-CORE-020's hybrid topology; this entry records the original sequencing decision.)
-4. **Not extracting `packages/core/`** - each package stays independent with documented conventions that align by design. (Superseded by the `packages/core/` extraction; retained as history.)
-5. **Not publishing to npm** - Kimi Code installs from GitHub URLs; the package lives in the monorepo but is installed from its GitHub path.
-
-## Future Considerations
-
-With 3+ platforms, consider extracting a canonical agent schema, skill registry, and platform adapters (this mapping table would become the Kimi Code adapter). Each new platform gets its own ADR and mapping table before any core extraction. Speculative items deferred until the platform supports them: skill chaining / composite skills, orchestrator-of-orchestrators within the 3-level sub-skill cap, and `/swarm <task>` as a direct escape hatch converging on `AgentSwarm` (the routing table stays the single place to teach which path to use).
+- **Add a Kimi runtime adapter:** rejected because the host's declarative plugin surface is sufficient for the shared methodology and aliases, while a runtime adapter would add host-version and release maintenance.
+- **Represent every specialist as a distinct native subagent:** unavailable in the inspected Kimi version, which exposed only built-in child profiles.
+- **Duplicate role skills in the Kimi package:** rejected during consolidation because shared root skills are the canonical methodology source.
 
 ## Related Decisions
 
-- ADR-CORE-019 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
-- ADR-CORE-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
-- Canonical specialist directives carry prompt conventions and skill-loading guidance; `!!!` markers communicate methodology, not host enforcement.
-- The historical standalone manifest declared `systemPromptPath` to `SYSTEM.md`. The consolidated manifest instead points `systemPromptPath` to the shared `./skills/global-rules/SKILL.md` and selects aliases in `./integrations/kimi-code/commands/`; support for these newer fields depends on the installed host version. See the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) and [plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
+- [CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md): canonical directives and generated projections.
+- [CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): host-specific adapters and narrow sharing boundaries.
+- [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md): consolidated package topology.
 
 ## Date
 
-2026-06-12 (original); 2026-06-17 (revised)
+2026-06-12; revised 2026-06-17; consolidated 2026-10-10.

@@ -22,8 +22,8 @@ Read relevant decisions before changing architecture, package boundaries, sync b
 | OpenCode                                             | docs/adr/opencode/  |
 | Kimi Code                                            | docs/adr/kimi-code/ |
 | Cursor                                               | docs/adr/cursor/    |
-| Hermes                                               | docs/adr/hermes/    |
-| Pi and Oh My Pi                                      | docs/adr/pi/        |
+| Declarative plugin distribution and retirement       | docs/adr/core/      |
+| Pi native adapter                                    | docs/adr/pi/        |
 
 Create an ADR for a consequential architectural choice whose alternatives will matter later. Use the selection criteria and required fields in [the documentation format guide](../docs/guides/doc-format.md#new-adrs); routine dependency updates and documentation edits need no separate record.
 
@@ -57,12 +57,12 @@ Follow the commit, changeset, and pull request guidance in CONTRIBUTING.md. Spli
 
 Update documentation when behavior, architecture, or user-facing workflows change. Use the matching location:
 
-| Change                       | Documentation                                                 |
-| ---------------------------- | ------------------------------------------------------------- |
-| Core methodology or pipeline | apps/docs/src/content/docs/core/                              |
-| Platform behavior            | apps/docs/src/content/docs/<platform>/ and the package README |
-| Architecture or boundary     | docs/adr/<area>/                                              |
-| Project-wide rule or pattern | AGENTS.md, PATTERNS.md, or VISION.md                          |
+| Change | Documentation |
+| --- | --- |
+| Core methodology or pipeline | apps/docs/src/content/docs/core/ |
+| Platform behavior | apps/docs/src/content/docs/agent-plugins/<host>/ for shared plugin hosts; opencode/ or pi/ for native adapters; package README |
+| Architecture or boundary | docs/adr/<area>/ |
+| Project-wide rule or pattern | AGENTS.md, PATTERNS.md, or VISION.md |
 
 ## Precedence
 

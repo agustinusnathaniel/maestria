@@ -26,14 +26,14 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 
 The collection keeps consequential architectural choices. Procedures and documentation conventions live in the guides above; retired records remain in Git history. Numbering gaps are intentional. Use the [ADR criteria](guides/doc-format.md#new-adrs) before adding another record.
 
-| Area                                                      | Records                          |
-| --------------------------------------------------------- | -------------------------------- |
-| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/)           |
-| OpenCode permissions and workflow modes                   | [OpenCode ADRs](adr/opencode/)   |
-| Kimi Code distribution and integration                    | [Kimi Code ADRs](adr/kimi-code/) |
-| Cursor integration                                        | [Cursor ADRs](adr/cursor/)       |
-| Hermes portable integration and retired adapter history   | [Hermes ADRs](adr/hermes/)       |
-| Pi and Oh My Pi ecosystem and lifecycle                   | [Pi ADRs](adr/pi/)               |
+| Area | Records |
+| --- | --- |
+| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/) |
+| OpenCode permissions and workflow modes | [OpenCode ADRs](adr/opencode/) |
+| Kimi Code distribution and integration | [Kimi Code ADRs](adr/kimi-code/) |
+| Cursor integration | [Cursor ADRs](adr/cursor/) |
+| Hermes portable integration | [Hermes guide](hermes-maestria-plugin.md) |
+| Pi and Oh My Pi ecosystem and lifecycle | [Pi ADRs](adr/pi/) |
 
 ## Plans
 

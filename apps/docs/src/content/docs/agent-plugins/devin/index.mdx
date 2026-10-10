@@ -1,0 +1,40 @@
+---
+title: Maestria for Devin
+description: Use shared Maestria skills and local custom subagents in Devin.
+---
+
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+The Devin integration uses the `@maestria/agent-plugins` package. Devin reads its shared skills and the root specialist profiles through the package's `.devin-plugin/plugin.json` manifest.
+
+## Install
+
+Stage the package with the maestria CLI, then install the staged directory through Devin:
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
+
+Pass the staged directory printed by that command to Devin:
+
+```bash
+devin plugins install --local /path/to/staged-plugin
+```
+
+Staging does not install or activate the plugin. Devin's `--local` option links the directory on this machine only.
+
+To add the plugin to Devin's personal plugin set for cloud sessions, install the repository subdirectory directly instead:
+
+```bash
+devin plugins install agustinusnathaniel/maestria#packages/agent-plugins
+```
+
+The GitHub subdirectory form follows [Devin's plugin install format](https://docs.devin.ai/cli/extensibility/plugins/overview). Check the installed package with `devin plugins info maestria`.
+
+## Use
+
+Load `/maestria:global-rules` once in a session, then invoke `/maestria:orchestrator` or a specialist skill such as `/maestria:reviewer`. The `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` skills select the workflow depth. In local Devin CLI and Desktop sessions, the plugin's specialist profiles are available through host subagent controls as `maestria:<role>`.
+
+See the [specialist reference](/core/agents/) for role guidance and the [portable package guide](/agent-plugins/) for the shared skill set.
+
+## Limits
+
+Devin loads plugin subagents in local CLI and Desktop sessions, not cloud sessions. Skills can be available in cloud sessions when installed through the personal plugin set. Specialist profiles provide advisory instructions; they do not enforce tool denial or a sandbox. Live Devin loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/) and [official Devin plugin guide](https://docs.devin.ai/cli/extensibility/plugins/overview).

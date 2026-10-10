@@ -1,11 +1,11 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/agent-plugins - delegating to specialists and using shared role, orchestration, and workflow skills.
+description: Use the shared Maestria skills in Claude Code CLI or a local Desktop Code session.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-Once the plugin is loaded (see [Installation & Setup](/agent-plugins/claude-code/getting-started/installation/)), its components are available as namespaced identifiers in your session.
+Once the plugin is loaded (see [Claude Code installation](/agent-plugins/claude-code/getting-started/installation/)), use the same skills in the CLI or a local or SSH Code session in Desktop.
 
 <Aside type="caution" title="Choose the workflow before choosing the orchestrator">
   maestria adds coordination and review sessions. For small changes or expensive, slow models,
@@ -13,13 +13,15 @@ Once the plugin is loaded (see [Installation & Setup](/agent-plugins/claude-code
   maestria](/core/when-to-use/) first.
 </Aside>
 
-## Start a Session
+## Open Claude Code
 
-Launch Claude Code with the plugin loaded:
+For a session-only load from a repository checkout, start the CLI with:
 
 ```bash
 claude --plugin-dir ./packages/agent-plugins
 ```
+
+In Claude Code Desktop, open a local or SSH Code session and confirm `maestria` appears in the plugin manager. Cloud sessions do not load plugins installed through the Desktop UI.
 
 ## Delegate to a Specialist
 
@@ -53,7 +55,7 @@ Three namespaced workflow skills control pipeline depth:
 /maestria:fein add rate limiting to the API.
 ```
 
-The orchestrator routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles; see [Modes](/core/agents/#modes) for keyword precedence and detection. Each specialist preloads its role skill and the `maestria:global-rules` skill at startup.
+The orchestrator routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles; see [Modes](/core/agents/#modes) for keyword precedence and detection. Specialist profiles declare their role skill and `maestria:global-rules` for preload. A CLI fixture verified that behavior for the reviewer child only; see the [installation evidence](/agent-plugins/claude-code/getting-started/installation/).
 
 ## Next Steps
 

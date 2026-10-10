@@ -10,6 +10,10 @@ Codex, Claude Code, Cursor, and Kimi Code shipped separate packages even though 
 
 The owner approved consolidating these distributions and removing the old package directories, then selected the portable distribution for Hermes in place of its Python adapter. OpenCode and Pi retain separate runtime adapters. OMP and Prime Agent are not current native runtime adapters.
 
+### Hermes retirement rationale (2026-10-10)
+
+The former Hermes adapter added Python and host-version maintenance to provide tool gates, mode commands and persistence, child tracking, and an OpenCode subprocess bridge. Those capabilities could enforce behavior beyond portable skills, but duplicated host-owned lifecycle and trust mechanisms and expanded the release surface. The consolidated package accepts the loss of those adapter controls: portable methodology does not grant capabilities, while Hermes owns permissions, delegation, trust, goals, memory, and session lifecycle. Role names or delegated text are not authenticated capability grants. Hermes core owns `/goal`; the plugin does not wrap its loop or create competing persistent state. Migration disables the old adapter only after the replacement installs and leaves legacy user files intact. The retired subprocess boundary was removed with its bridge; it is not a current runtime guarantee.
+
 ## Decision
 
 Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. A portable root manifest and native host manifests identify the same versioned product. Shared skills carry canonical methodology; explicitly selected native agents, commands, rules, and integration resources preserve host contracts. Kimi maps its personas to built-in subagent profiles and adds only thin aliases and bootstrap guidance; it does not duplicate the shared role skills.
@@ -30,6 +34,7 @@ Hermes consumes the portable root manifest and discovers qualified skills throug
 - Existing users update through their host installer or the maestria CLI; package names and source layout change.
 - More resources ship in one archive, so packed-artifact validation must check containment, reachability, and metadata, not just source-tree existence.
 - Devin and ZCode start as documented candidates. Live host verification remains separate from manifest and package validation.
+- Hermes loses adapter-level enforcement and mode persistence; its host owns trust and lifecycle. The former Python package also carried host-version coupling and subprocess-boundary maintenance, now removed with the adapter.
 
 ## Alternatives Considered
 
@@ -37,6 +42,12 @@ Hermes consumes the portable root manifest and discovers qualified skills throug
 - **One universal runtime adapter:** rejected because hosts expose different execution, permission, and lifecycle contracts.
 - **A shared folder of unqualified native resources:** rejected because default and recursive discovery can load incompatible components or duplicate names.
 - **Maintain compatibility packages indefinitely:** rejected by the owner because current adoption does not justify that additional maintenance surface.
+
+## Supersession
+
+- **2026-10-10:** supersedes the separate-package topology in [CORE-022](ADR-CORE-022-agent-plugins-portable-projection.md) and the older Hermes, OMP, and Prime distribution claims in [CORE-020](ADR-CORE-020-hybrid-package-topology.md). Their portable-format and shared-code boundaries remain in force. The same consolidation supersedes the standalone package topology in [CR-001](../cursor/ADR-CR-001-cursor-plugin-architecture.md), while retaining its Cursor-specific integration decision.
+- **2026-10-10:** retires and consolidates Hermes records HM-000 through HM-004. The consequential rationale survives in the Hermes retirement passage above; the removed adapter's implementation details remain in Git history.
+- **2026-10-10:** consolidates the former Kimi distribution record KC-000. [KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) remains the owner of Kimi-specific integration boundaries. Removed identifiers are not reused.
 
 ## Related Decisions
 

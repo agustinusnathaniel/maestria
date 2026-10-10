@@ -1,6 +1,6 @@
 ---
 title: '@maestria/agent-plugins'
-description: Codex CLI integration that packages maestria's methodology as namespaced skills and native custom agents.
+description: Shared maestria skills for Codex CLI and Codex in the ChatGPT desktop app, with native agents available through the CLI installer.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -21,10 +21,10 @@ import { marks } from '@/data/marks.js';
     <div class="relative min-w-0">
       <PlatformHero
         eyebrow="@MAESTRIA/PLUGIN"
-        title="maestria skills for Codex CLI."
-        lead="Install maestria to activate the orchestrator in Codex's primary session and make seven native specialists available for delegation."
+        title="Shared maestria skills for Codex."
+        lead="Use the workflow skills in Codex CLI or Codex in the ChatGPT desktop app. The maestria CLI also installs native specialist agents and orchestration guidance for Codex CLI."
         mark={marks.codex}
-        primaryCta={{ href: '/agent-plugins/codex/getting-started/installation/', label: 'Get started' }}
+        primaryCta={{ href: '/agent-plugins/codex/getting-started/installation/', label: 'Codex CLI setup' }}
         secondaryCta={{ href: '/agent-plugins/codex/getting-started/quick-start/', label: 'Quick start' }}
         installCommand="npx maestria install codex"
       />
@@ -33,18 +33,16 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="01"
       kicker="WHAT YOU GET"
-      title="Seven specialists, as namespaced skills."
+      title="Shared skills, with CLI-specific companions."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
       <FeatureGrid
         items={[
-          { title: 'Specialist skills', desc: 'The seven-specialist roster as namespaced Codex skills.' },
-          { title: 'Native specialist agents', desc: 'Seven native maestria-* agent roles with Codex sandbox settings and configurable model inheritance.' },
-          { title: 'Automatic orchestration', desc: "A marked global instruction block makes Codex's primary agent use $maestria:orchestrator and delegate to native maestria-* roles." },
-          { title: 'Global rules', desc: '$maestria:global-rules carries the universal evidence, safety, authorization, and review contract.' },
-          { title: 'Bounded multi-stage work', desc: '$maestria:handoff and $maestria:iteration-limits keep long work units contained with explicit handoff and repair budgets.' },
-          { title: 'Workflow-mode skills', desc: '$maestria:fein, $maestria:sonar, and $maestria:blitz expose the workflow mode system as invocable skills.' },
-          { title: 'Advisory by design', desc: 'Read-only specialist boundaries are documented guidance; Codex sandbox, approvals, and hook trust model remain the runtime boundary.' },
+          { title: 'Shared workflow skills', desc: 'Namespaced specialists, global rules, orchestration, handoff, bounded iteration, and workflow modes.' },
+          { title: 'Codex CLI companions', desc: 'The maestria CLI also installs seven native agent TOMLs and a managed orchestration block in global instructions.' },
+          { title: 'Desktop app plugin', desc: 'A local marketplace installs the skills plugin in Codex in the ChatGPT desktop app.' },
+          { title: 'Different installation results', desc: 'Marketplace installation adds skills only. It does not add the CLI-managed native agents or global instruction block.' },
+          { title: 'Host-owned controls', desc: 'Codex retains permissions, approvals, sandbox settings, and hook trust. Maestria guidance does not enforce them.' },
         ]}
       />
     </PluginSection>
@@ -53,6 +51,8 @@ import { marks } from '@/data/marks.js';
       links={[
         { label: 'Specialist reference', href: '/core/agents/' },
         { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Codex CLI setup', href: '/agent-plugins/codex/getting-started/installation/' },
+        { label: 'Codex desktop setup', href: '/agent-plugins/codex/getting-started/desktop/' },
         { label: 'Changelog', href: '/agent-plugins/codex/changelog/' },
         { label: 'Contributing', href: '/agent-plugins/codex/contributing/' },
       ]}

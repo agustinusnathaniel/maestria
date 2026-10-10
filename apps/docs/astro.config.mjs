@@ -168,6 +168,10 @@ export default defineConfig({
               label: 'Cursor',
             },
             {
+              items: [{ label: 'Overview', link: '/agent-plugins/devin/' }],
+              label: 'Devin',
+            },
+            {
               items: [
                 { label: 'Overview', link: '/agent-plugins/kimi-code/' },
                 {
@@ -206,6 +210,10 @@ export default defineConfig({
                 { label: 'Contributing', link: '/agent-plugins/omp/contributing/' },
               ],
               label: 'Oh My Pi',
+            },
+            {
+              items: [{ label: 'Overview', link: '/agent-plugins/zcode/' }],
+              label: 'ZCode',
             },
           ],
           label: 'Agent Plugins',

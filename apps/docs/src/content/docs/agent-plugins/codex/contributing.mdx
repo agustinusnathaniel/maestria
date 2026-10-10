@@ -28,4 +28,4 @@ python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/agent-plugin
 pnpm --filter @maestria/agent-plugins test
 ```
 
-The verified support boundary is Codex CLI plugin skills and native CLI installation. Codex desktop parity and runtime permission enforcement remain outside this package.
+Package/unit tests and builds cover the companion installer and native profile payload. The earlier Codex CLI `0.145.0` marketplace smoke used the former standalone package; fresh CLI host loading of the consolidated archive remains unverified. Desktop marketplace setup installs the skills-only projection. The companion Maestria CLI manages native agent TOMLs and global instructions; their desktop behavior remains unverified. Codex owns runtime permissions and enforcement.

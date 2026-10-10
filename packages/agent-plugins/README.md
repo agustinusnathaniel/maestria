@@ -16,7 +16,7 @@ The root `plugin.json` is an Agent Plugins v1 manifest with one portable `skills
 | OMP | `plugin.json` | Portable shared skills and root advisory profiles; activation and delegation belong to OMP |
 | Kimi Code | `kimi.plugin.json` | Shared `skills/`, Kimi command aliases, and shared global rules as system-prompt input; custom-agent discovery disabled |
 
-Start with [installation](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/INSTALL.md) and [support boundaries](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/docs/support.md). The shared orchestrator skill links to each host integration guide before native delegation.
+See the [public integration guides](https://maestria.sznm.dev/agent-plugins/) for host-specific setup and capability differences. Start with [installation](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/INSTALL.md) and [support boundaries](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/docs/support.md). The shared orchestrator skill links to each host integration guide before native delegation.
 
 ## Content ownership
 

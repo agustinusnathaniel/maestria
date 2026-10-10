@@ -1,69 +1,38 @@
-# ADR-CR-001: Cursor Plugin Architecture - Declarative Plugin for IDE and CLI
+# ADR-CR-001: Cursor Declarative Plugin for IDE and CLI
 
 ## Status
 
-Accepted (2026-07-21)
+Accepted (2026-07-21). Package topology consolidated by [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md) on 2026-10-10; the Cursor integration decision and host boundaries remain.
 
 ## Context
 
-At the time of this decision, maestria shipped separate methodology packages for OpenCode, Kimi Code, Pi, and Hermes. Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP. Kimi Code, Cursor, and Hermes distributions later moved into `@maestria/agent-plugins`; that package consolidation does not change this record's Cursor integration decision.
-
-ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Cursor has since added first-class plugins that bundle those primitives into one installable package, used from Customize in the IDE and `agent --plugin-dir` / local plugins in the CLI. Unlike OpenCode, no TypeScript hooks apply: Cursor plugins are declarative (same class as Kimi Code) with custom agents (Task subagents), skills, rules, and slash commands.
-
-> **Consolidation note (2026-10-10):** the package paths and topology below describe the original standalone Cursor integration. [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md) supersedes that separate-package layout. Current projections live in `packages/agent-plugins/`: shared skills and isolated native profiles in `agents/cursor/`, with Cursor-specific command aliases and rules under `integrations/cursor/`. The integration decision and host boundaries remain; the paths below are historical.
+Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format for rules, skills, agents, and commands. Unlike OpenCode, this integration does not use a TypeScript runtime SDK. Cursor's native agent metadata supports a read-only setting, while hard tool denial through plugin hooks was not part of the selected design.
 
 ## Decision
 
-### Choose: Declarative Cursor plugin under `packages/cursor`
+Use Cursor's declarative plugin surface for both IDE and CLI. Generate shared methodology resources from the canonical directives and keep Cursor-specific aliases and native profiles in the Cursor integration. Current projections live in `packages/agent-plugins/agents/cursor/` and `packages/agent-plugins/integrations/cursor/`; CORE-034 supersedes the former standalone package layout.
 
-**`@maestria/cursor` is a Cursor plugin - no build step, no SDK runtime.** It consists of:
-
-1. **`.cursor-plugin/plugin.json`** - manifest; components auto-discovered from default folders.
-2. **Synced components** - global rules (`rules/maestria-global.mdc`, `alwaysApply: true`), seven specialist agents (`agents/*.md`), and the orchestrator skill (`skills/orchestrator/SKILL.md`, agent-decides / `/orchestrator`).
-3. **`commands/*.md`** - workflow modes: `fein`, `sonar`, `blitz`, `orchestrate` (hand-authored).
-
-> **Amendment (2026-09-14):** `commands/*.md` are generated from the canonical directives by `packages/cursor/sync.config.ts`; the hand-authored inputs are the manifest, sync config, and assets.
-
-4. **Install** - `maestria install cursor` copies the package into `~/.cursor/plugins/local/maestria`.
-
-### Component map
-
-Each canonical directive projects to one Cursor path: `rules.md` to the always-on global rule, `specialists/*.md` to `agents/<name>.md`, `orchestrator.md` to the orchestrator skill, and the platform workflow modes to `commands/*.md`. The projection itself is owned by the Cursor sync config, `packages/cursor/sync.config.ts`, which regenerates the output paths rather than restating them here.
-
-### Maker/checker (v1)
-
-Cursor's native plugin agent schema supports `readonly: true` in agent frontmatter; v1 enforces maker/checker with two layers:
-
-1. **Runtime enforcement** - `readonly: true` on the `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** - agent prepends and descriptions also state the read-only instruction as a backup.
-
-### IDE and CLI parity
-
-One bundle serves both: install under `~/.cursor/plugins/local/maestria` (IDE or later Marketplace); in the CLI use the same path or `agent --plugin-dir ./packages/cursor` for local development.
-
-### Sync
-
-The Cursor sync config derives agents, the orchestrator skill, and the global rule from the canonical agent directives. Canonical sources stay platform-agnostic; Cursor tool names and Task language are sync transforms only. See ADR-CORE-005.
-
-### What we are not doing (v1)
-
-1. Cursor Marketplace publish / root `marketplace.json`
-2. Hooks for hard tool denial
-3. `@cursor/sdk` programmatic agents
-4. Project-scoped `.cursor/rules` file-copy install (plugin covers IDE + CLI)
+Configure native `readonly: true` metadata for adventurer, planner, and reviewer profiles, backed by prompt guidance. This records the intended host control; package metadata does not by itself establish live runtime enforcement. The portable skills format does not enforce read-only behavior.
 
 ## Consequences
 
-- Positive: same declarative pattern as Kimi Code; the sync pipeline already supports it.
-- Positive: custom agents give specialist isolation via Task (closer to OpenCode than Kimi's 3 built-in profiles).
-- Positive: one install path for IDE and CLI.
-- Mixed: two-layer maker/checker (runtime `readonly: true` + prompt instructions) is stronger than prompt-only but short of OpenCode's hard `edit: deny`.
-- Negative: until Marketplace listing, distribution is a local-plugin copy from GitHub `main` / monorepo path.
+- One declarative integration serves Cursor IDE and CLI without a runtime adapter.
+- Native read-only metadata expresses a stronger maker/checker control than prompt guidance alone, but live enforcement must be verified against the host and is not established by this record.
+- Marketplace publication and programmatic hooks were outside the original decision; distribution and enforcement claims depend on Cursor's current host behavior.
+- Consolidation removes a separate package and release identity while preserving Cursor-specific projections.
+
+## Alternatives Considered
+
+- **Use a programmatic Cursor runtime or hooks:** rejected because the selected plugin surface is declarative and no such runtime was needed for the integration.
+- **Maintain a separate Cursor package:** superseded by CORE-034, which consolidates declarative integrations under one package.
+- **Use prompt-only maker/checker constraints:** weaker than the available native read-only metadata for the relevant profiles.
 
 ## Related Decisions
 
-- [ADR-CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md) - sync bridge
-- [ADR-CORE-007](../core/ADR-CORE-007-cli-package-plugin-management.md) - CLI platform handlers
-- [ADR-KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) - declarative precedent; named Cursor as candidate
-- [Cursor plugin reference](https://cursor.com/docs/reference/plugins.md) - Cursor plugin formats, manifest fields, and marketplace submission
-- [Agent Plugins v1 specification](https://agent-plugins.org/specification) - portable manifest and skills layout the Cursor Plugin format loads alongside
+- [CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md): canonical directives and generated projections.
+- [CORE-007](../core/ADR-CORE-007-cli-package-plugin-management.md): CLI platform handlers.
+- [KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md): declarative integration precedent.
+
+## Date
+
+2026-07-21; consolidated 2026-10-10.
