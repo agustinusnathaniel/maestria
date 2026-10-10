@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11.
+Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11. Distribution-status decision partially superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) on 2026-10-10.
 
 ## Context
 
@@ -47,6 +47,10 @@ Share demonstrated adapter surfaces directly: narrow installers accept what they
 - [CORE-006](ADR-CORE-006-project-workflow-protocol.md): Node project-loader sharing outside browser-safe core.
 - [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md): supported host surfaces and enforcement evidence.
 - [CORE-007](ADR-CORE-007-cli-package-plugin-management.md): CLI ownership and native install handlers.
+
+## Supersession
+
+[CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) supersedes this record's distribution-status claims for Hermes, OMP, and Prime Agent, and records the consolidated declarative package topology. The decisions here about narrow private code sharing and runtime boundaries remain in force.
 
 ## Date
 

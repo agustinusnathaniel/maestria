@@ -8,4 +8,4 @@ Load global-rules and orchestrator by their discovered names. Apply portable rol
 
 See [Hermes portable package support](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).
 
-Live host loading is unverified. Package and sync checks validate the shipped files, not runtime discovery or enforcement.
+Portable plugin doctor and isolated packed-skill discovery were verified during consolidation. End-to-end task behavior, delegation, and runtime enforcement remain unverified.

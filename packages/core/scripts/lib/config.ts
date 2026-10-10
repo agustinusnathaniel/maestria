@@ -28,7 +28,7 @@ export interface FileConfig {
 export interface SyncConfig {
   source: string;
   output?: string;
-  default?: FileConfig;
+  default?: Omit<FileConfig, 'source'>;
   files?: Record<string, FileConfig>;
   /** Relative paths (relative to output dir) to exclude from auto-clean */
   preserve?: string[];

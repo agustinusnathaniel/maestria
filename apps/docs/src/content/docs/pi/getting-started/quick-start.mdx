@@ -1,0 +1,50 @@
+---
+title: Quick Start
+description: Use @maestria/pi for a focused task, a staged fix, or a parallel review.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+With `@maestria/pi` installed, start Pi in your project directory:
+
+```bash
+pi
+```
+
+<Aside type="caution" title="Choose the route that fits the task">
+  Delegation adds model work and waiting time. Use [When to Use maestria](/core/when-to-use/) before
+  sending a small task or an expensive, slow model through the full pipeline.
+</Aside>
+
+## Run a Task
+
+<Steps>
+
+1. Activate a mode with your task:
+
+   ```text
+   fein Add user authentication
+   ```
+
+   Or set the mode first:
+
+   ```text
+   /fein
+   ```
+
+   Pi reports that the mode is set. Describe the task in your next message.
+
+2. Watch the pipeline. The orchestrator decomposes the work, dispatches specialists in sequence, and validates each phase before handoff.
+
+3. Check the session tree with `/maestria-status` to inspect the mode, handoff history, and each specialist's contribution.
+
+</Steps>
+
+Use `/sonar` for research that must stop before implementation. Use `/blitz` to skip optional reconnaissance and design when the territory is known, while keeping required validation and review.
+
+## Next Steps
+
+- [Reference](/pi/reference/) for commands, dispatch, and session behavior
+- [Specialist Reference](/core/agents/) for roles and boundaries
+- [Installation](/pi/getting-started/installation/)
+- [Oh My Pi portable integration](/agent-plugins/omp/)

@@ -38,4 +38,4 @@ Delegate with the Agent tool using the scoped agent names in Specialist Ownershi
 - Methodology and skills are advisory guidance, not hard security enforcement. Tool restrictions (`disallowedTools`) are enforced by Claude Code; everything else is prompt guidance.
 - Plugin agent frontmatter `permissionMode`, `hooks`, and `mcpServers` are ignored by Claude Code; do not rely on them.
 
-Live host loading is unverified. Package and sync checks validate the shipped files, not runtime discovery or enforcement.
+Claude Code 2.1.217 native reviewer dispatch, shared skill preloading, and Write/Edit tool-schema exclusion passed an offline fixture probe. This does not evaluate model judgment, every specialist, shell-mediated editing, or other host versions. See the repository host-verification record for reproduction and limits.

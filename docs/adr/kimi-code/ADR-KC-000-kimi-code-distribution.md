@@ -2,7 +2,7 @@
 
 ## Status
 
-**Superseded** by npm-based distribution on 2026-07-21. The original mechanism and its trade-offs are retained here as history; current installation is in the [Kimi Code package README](../../../packages/kimi-code/README.md).
+**Superseded** by npm-based distribution on 2026-07-21. The original mechanism and its trade-offs are retained here as history; current installation is in the [shared Agent Plugins package README](../../../packages/agent-plugins/README.md).
 
 ## Context
 
@@ -16,7 +16,7 @@ The alternatives were a root manifest (rejected because it would misidentify the
 
 ## Supersession
 
-On 2026-07-21, distribution moved to npm. The maestria CLI now installs `@maestria/kimi-code` from the registry, so the subtree-split release workflow, branch, tags, and GitHub URL forms described in the original procedure are retired. See the [current package README](../../../packages/kimi-code/README.md) for installation and [ADR-KC-001](ADR-KC-001-kimi-code-architecture.md) for plugin architecture.
+On 2026-07-21, distribution moved to npm. The maestria CLI installed `@maestria/kimi-code` from the registry, so the subtree-split release workflow, branch, tags, and GitHub URL forms described in the original procedure were retired. The current Kimi integration ships from [`@maestria/agent-plugins`](../../../packages/agent-plugins/README.md); see [ADR-KC-001](ADR-KC-001-kimi-code-architecture.md) for the original plugin architecture and its later shared-package supersession.
 
 ## Consequences
 

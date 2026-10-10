@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
+import { platforms } from '@/data/platforms.ts';
 import { RECOVERY_LINKS } from '@/lib/agent-delivery.ts';
 
 const __dirname = import.meta.dirname;
@@ -126,5 +127,48 @@ describe('portable Agent Plugin documentation', () => {
     expect(about.full).toContain('npx maestria plugin install');
     expect(decisionGuide.full).toContain('[Portable Agent Plugin](/agent-plugins/)');
     expect(howItWorks.full).toContain('[Agent Plugin package](/agent-plugins/)');
+  });
+});
+
+describe('platform guide routes', () => {
+  it('groups shared-package hosts under Agent Plugins while keeping Pi and OpenCode independent', async () => {
+    const guides = await Promise.all(
+      ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp'].map(
+        async (host) => await readDoc(`agent-plugins/${host}/index.mdx`),
+      ),
+    );
+    for (const { full } of guides) {
+      expect(full.length).toBeGreaterThan(0);
+    }
+
+    const pi = await readDoc('pi/index.mdx');
+    const openCode = await readDoc('opencode/index.mdx');
+    expect(pi.full).toContain('@maestria/pi');
+    expect(openCode.full).toContain('@maestria/opencode');
+
+    const routes = new Map(platforms.map(({ id, href }) => [id, href]));
+    expect(routes.get('claude-code')).toBe('/agent-plugins/claude-code/');
+    expect(routes.get('codex')).toBe('/agent-plugins/codex/');
+    expect(routes.get('cursor')).toBe('/agent-plugins/cursor/');
+    expect(routes.get('kimi-code')).toBe('/agent-plugins/kimi-code/');
+    expect(routes.get('hermes')).toBe('/agent-plugins/hermes/');
+    expect(routes.get('omp')).toBe('/agent-plugins/omp/');
+    expect(routes.get('pi')).toBe('/pi/');
+    expect(routes.get('opencode')).toBe('/opencode/');
+  });
+
+  it('redirects prior root host routes without redirecting the new Pi route', async () => {
+    const redirects = await readFile(
+      path.resolve(__dirname, '..', 'public', '_redirects'),
+      'utf-8',
+    );
+    const netlify = await readFile(path.resolve(__dirname, '..', 'netlify.toml'), 'utf-8');
+
+    expect(redirects).toContain('/claude-code/* /agent-plugins/claude-code/:splat 301');
+    expect(redirects).toContain('/pi-omp/* /pi/:splat 301');
+    expect(redirects).toContain('/omp/* /agent-plugins/omp/:splat 301');
+    expect(netlify).toContain('from = "/codex/*"');
+    expect(netlify).toContain('to = "/agent-plugins/codex/:splat"');
+    expect(netlify).not.toContain('from = "/pi"');
   });
 });

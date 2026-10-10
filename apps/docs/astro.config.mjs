@@ -128,6 +128,85 @@ export default defineConfig({
           items: [
             { label: 'Overview', link: '/agent-plugins/' },
             { label: 'Compatibility', link: '/agent-plugins/compatibility/' },
+            { label: 'Changelog', link: '/agent-plugins/changelog/' },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/claude-code/' },
+                {
+                  items: [
+                    { autogenerate: { directory: 'agent-plugins/claude-code/getting-started' } },
+                  ],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/claude-code/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/claude-code/contributing/' },
+              ],
+              label: 'Claude Code',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/codex/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/codex/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/codex/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/codex/contributing/' },
+              ],
+              label: 'Codex',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/cursor/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/cursor/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/cursor/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/cursor/contributing/' },
+              ],
+              label: 'Cursor',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/kimi-code/' },
+                {
+                  items: [
+                    { autogenerate: { directory: 'agent-plugins/kimi-code/getting-started' } },
+                  ],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/kimi-code/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/kimi-code/contributing/' },
+              ],
+              label: 'Kimi Code',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/hermes/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/hermes/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Commands', link: '/agent-plugins/hermes/commands/' },
+                { label: 'Changelog', link: '/agent-plugins/hermes/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/hermes/contributing/' },
+              ],
+              label: 'Hermes',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/omp/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/omp/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Reference', link: '/agent-plugins/omp/reference/' },
+                { label: 'Changelog', link: '/agent-plugins/omp/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/omp/contributing/' },
+              ],
+              label: 'Oh My Pi',
+            },
           ],
           label: 'Agent Plugins',
         },
@@ -175,82 +254,16 @@ export default defineConfig({
         {
           collapsed: true,
           items: [
-            { label: 'Overview', link: '/kimi-code/' },
+            { label: 'Overview', link: '/pi/' },
             {
-              items: [{ autogenerate: { directory: 'kimi-code/getting-started' } }],
+              items: [{ autogenerate: { directory: 'pi/getting-started' } }],
               label: 'Getting Started',
             },
-            { label: 'Changelog', link: '/kimi-code/changelog/' },
-            { label: 'Contributing', link: '/kimi-code/contributing/' },
+            { label: 'Reference', link: '/pi/reference/' },
+            { label: 'Changelog', link: '/pi/changelog/' },
+            { label: 'Contributing', link: '/pi/contributing/' },
           ],
-          label: 'Kimi Code',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/claude-code/' },
-            {
-              items: [{ autogenerate: { directory: 'claude-code/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/claude-code/changelog/' },
-            { label: 'Contributing', link: '/claude-code/contributing/' },
-          ],
-          label: 'Claude Code',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/codex/' },
-            {
-              items: [{ autogenerate: { directory: 'codex/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/codex/changelog/' },
-            { label: 'Contributing', link: '/codex/contributing/' },
-          ],
-          label: 'Codex',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/cursor/' },
-            {
-              items: [{ autogenerate: { directory: 'cursor/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/cursor/changelog/' },
-            { label: 'Contributing', link: '/cursor/contributing/' },
-          ],
-          label: 'Cursor',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/pi-omp/' },
-            {
-              items: [{ autogenerate: { directory: 'pi-omp/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Reference', link: '/pi-omp/reference/' },
-            { label: 'Changelog', link: '/pi-omp/changelog/' },
-            { label: 'Contributing', link: '/pi-omp/contributing/' },
-          ],
-          label: '@maestria/pi & OMP via plugin',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/hermes/' },
-            {
-              items: [{ autogenerate: { directory: 'hermes/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Commands', link: '/hermes/commands/' },
-            { label: 'Changelog', link: '/hermes/changelog/' },
-            { label: 'Contributing', link: '/hermes/contributing/' },
-          ],
-          label: 'Hermes',
+          label: '@maestria/pi',
         },
       ],
       social: [

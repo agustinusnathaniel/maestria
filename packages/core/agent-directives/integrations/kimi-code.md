@@ -18,7 +18,7 @@ When 2+ items are uniform (same persona, same goal, independent units), use `Age
 
 ### When to use AgentSwarm
 
-- N≥3 files need the same type of change (e.g., "add JSDoc to every model")
+- N≥2 files need the same type of change (e.g., "add JSDoc to every model")
 - Multiple independent explorations (e.g., "check 5 different approaches")
 - Bulk data extraction from known directories
 - NOT for mixed-persona work, chain-of-thought sequences, or work where results depend on each other
@@ -29,7 +29,7 @@ When 2+ items are uniform (same persona, same goal, independent units), use `Age
 AgentSwarm(
   description: "Review independent files",
   subagent_type: "plan",
-  prompt_template: "Review {{item}} for correctness and test gaps.",
+  prompt_template: "<complete global-rules content>\n<complete reviewer skill content>\nReview {{item}} for correctness and test gaps. Do not edit files.",
   items: ["src/a.ts", "src/b.ts"]
 )
 ```
@@ -50,9 +50,9 @@ You may launch `Agent(prompt: "research this", description: "Explore the questio
 
 ## How to Invoke a Specialist Persona
 
-1. `Skill(skill="adventurer")` - Load the specialist persona (defines constraints, rules, and subagent profile for that role)
-2. `Agent(prompt: "...", description: "Short task label", subagent_type: "coder")` - Delegate a unit of work to the mapped built-in profile
-3. `AgentSwarm(description: "...", subagent_type: "coder", prompt_template: "... {{item}} ...", items: [...])` - Delegate uniform items in parallel
+1. Load `global-rules` and the selected role through `Skill` in the parent. Stop before dispatch if either fails to load.
+2. Use `Agent` with the mapped built-in profile and a prompt containing both complete skill bodies, task constraints, and the assignment.
+3. For two or more uniform independent items, use `AgentSwarm` with that same complete contract in each item's `prompt_template`. Preload context before the swarm turn; make the swarm call the only tool call in that turn.
 
 ### Subagent profiles
 
@@ -61,17 +61,14 @@ The `explore` subagent has read-only search tools, the `coder` subagent has full
 ### Single-agent pattern
 
 ```
-// 1. Load the persona
-const result = await Skill(skill: "diagnose");
-if (result.status !== "ok") { AskUserQuestion("..."); return; }
-
-// 2. Dispatch the task
-const output = await Agent(
-  prompt: "Find why X fails",
+// Preload global-rules and diagnose in the parent before this dispatch.
+// Substitute both complete skill bodies, not their names or summaries.
+Agent(
+  prompt: "<complete global-rules content>\n<complete diagnose skill content>\n<task constraints>\nFind why X fails",
   description: "Diagnose failure",
   subagent_type: "coder"
 );
-if (output.result) { /* use the complete handoff */ }
+// Read the complete child handoff before continuing.
 ```
 
 ### Swarm pattern
@@ -80,7 +77,7 @@ if (output.result) { /* use the complete handoff */ }
 const results = await AgentSwarm(
   description: "Update independent files",
   subagent_type: "coder",
-  prompt_template: "Update {{item}} and run its focused checks.",
+  prompt_template: "<complete global-rules content>\n<complete builder skill content>\n<task constraints>\nUpdate {{item}} and run its focused checks.",
   items: ["src/a.ts", "src/b.ts", "src/c.ts"]
 );
 // Read the XML result envelope and handle failed items explicitly.
@@ -93,8 +90,6 @@ const results = await AgentSwarm(
 ## Skill Loading
 
 ### Pre-load before dispatch
-
-Before delegating to a specialist via `Skill`, load the skill first. If the `Skill` tool is not available to the subagent profile, inline the persona's core content directly:
 
 Child skill availability varies by Kimi version and profile. Preload global-rules and the full role skill in the parent, then inline both with the task constraints for every child; do not rely on plan or explore children having Skill.
 

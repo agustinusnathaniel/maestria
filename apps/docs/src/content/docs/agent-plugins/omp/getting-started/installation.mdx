@@ -1,0 +1,65 @@
+---
+title: Installation & Setup
+description: Install and verify the shared Agent Plugins package for Oh My Pi.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+OMP uses the shared `@maestria/agent-plugins` package. Its portable skills provide methodology and its root role profiles provide advisory specialist guidance. OMP owns plugin activation, task execution, permissions, and session behavior.
+
+## Install
+
+<Steps>
+
+1. Stage and install the package with the Maestria CLI:
+
+   <AllPackageManagers type="dlx" pkg="maestria@latest" args="install omp" />
+
+2. Confirm OMP registered the package:
+
+   ```bash
+   omp plugin list
+   ```
+
+3. In a new session, use OMP's skill discovery to load `global-rules` and `orchestrator` before routing work.
+
+</Steps>
+
+Direct installation is also available through OMP's package manager:
+
+```bash
+omp plugin install @maestria/agent-plugins@latest
+```
+
+## Verify Discovery
+
+The packaged-artifact probe verified that OMP 18.4.8 discovers 14 shared skills and seven root advisory profiles from the archive. That source-level discovery check does not test model behavior, task execution, permissions, session hooks, or other OMP versions. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
+
+## Update
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update omp" />
+
+Or use OMP's package manager:
+
+```bash
+omp plugin install @maestria/agent-plugins@latest
+```
+
+## Uninstall
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall omp" />
+
+Or remove the package from OMP:
+
+```bash
+omp plugin uninstall @maestria/agent-plugins
+```
+
+If the retired `@maestria/omp` executable package is still installed, remove that package separately. Its hooks, interception, review-mode enforcement, goal mirroring, and per-agent model configuration were not carried into the portable integration.
+
+## Next Steps
+
+- [Quick Start](/agent-plugins/omp/getting-started/quick-start/)
+- [Reference](/agent-plugins/omp/reference/)
+- [Portable package overview](/agent-plugins/)

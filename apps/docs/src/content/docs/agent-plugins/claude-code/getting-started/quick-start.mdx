@@ -1,0 +1,61 @@
+---
+title: Quick Start
+description: Your first session with @maestria/agent-plugins - delegating to specialists and using shared role, orchestration, and workflow skills.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Once the plugin is loaded (see [Installation & Setup](/agent-plugins/claude-code/getting-started/installation/)), its components are available as namespaced identifiers in your session.
+
+<Aside type="caution" title="Choose the workflow before choosing the orchestrator">
+  maestria adds coordination and review sessions. For small changes or expensive, slow models,
+  direct execution or one specialist is often the better path. Read [When to use
+  maestria](/core/when-to-use/) first.
+</Aside>
+
+## Start a Session
+
+Launch Claude Code with the plugin loaded:
+
+```bash
+claude --plugin-dir ./packages/agent-plugins
+```
+
+## Delegate to a Specialist
+
+Call any specialist directly by its namespaced name:
+
+```markdown
+@maestria:adventurer Explore the auth module and trace the login flow.
+```
+
+The specialists are `@maestria:adventurer`, `@maestria:architect`, `@maestria:builder`, `@maestria:diagnose`, `@maestria:planner`, `@maestria:reviewer`, and `@maestria:writer`. See the [Specialist Reference](/core/agents/) for role details.
+
+## Use the Orchestrator
+
+For unfamiliar, multi-file, or high-risk work, run the orchestrator skill to route the work through the right specialists:
+
+```markdown
+/maestria:orchestrator I need to add rate limiting to the API. Plan and implement it.
+```
+
+The orchestrator decomposes the task, delegates to specialists, and integrates the results. It does not implement work it has delegated.
+
+## Select a Pipeline Mode
+
+Three namespaced workflow skills control pipeline depth:
+
+- `/maestria:fein` - full pipeline: recon, design, implement, review
+- `/maestria:sonar` - research only: owning specialist, optional distinct specialist, STOP
+- `/maestria:blitz` - fast path: direct or `maestria:builder` (skip optional ceremony; required review remains)
+
+```markdown
+/maestria:fein add rate limiting to the API.
+```
+
+The orchestrator routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles; see [Modes](/core/agents/#modes) for keyword precedence and detection. Each specialist preloads its role skill and the `maestria:global-rules` skill at startup.
+
+## Next Steps
+
+- [Specialist Reference](/core/agents/) - Full docs for all 7 specialists plus the orchestrator
+- [Workflow Patterns](/core/workflow-patterns/) - Orchestration and pipeline patterns

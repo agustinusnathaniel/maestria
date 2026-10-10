@@ -1,7 +1,32 @@
-# The former /pi/ and /omp/ doc sections were consolidated into /pi-omp/.
-/pi /pi-omp/ 301
-/pi/ /pi-omp/ 301
-/omp /pi-omp/ 301
-/omp/ /pi-omp/ 301
-/pi.md /pi-omp.md 301
-/omp.md /pi-omp.md 301
+# Shared plugin host guides moved under /agent-plugins/<host>/.
+/claude-code /agent-plugins/claude-code/ 301
+/claude-code/* /agent-plugins/claude-code/:splat 301
+/claude-code.md /agent-plugins/claude-code.md 301
+/codex /agent-plugins/codex/ 301
+/codex/* /agent-plugins/codex/:splat 301
+/codex.md /agent-plugins/codex.md 301
+/cursor /agent-plugins/cursor/ 301
+/cursor/* /agent-plugins/cursor/:splat 301
+/cursor.md /agent-plugins/cursor.md 301
+/kimi-code /agent-plugins/kimi-code/ 301
+/kimi-code/* /agent-plugins/kimi-code/:splat 301
+/kimi-code.md /agent-plugins/kimi-code.md 301
+/hermes /agent-plugins/hermes/ 301
+/hermes/* /agent-plugins/hermes/:splat 301
+/hermes.md /agent-plugins/hermes.md 301
+/omp /agent-plugins/omp/ 301
+/omp/* /agent-plugins/omp/:splat 301
+/omp.md /agent-plugins/omp.md 301
+
+# The former combined Pi/OMP routes now point at Pi; OMP has its own guide.
+/pi-omp /pi/ 301
+/pi-omp/* /pi/:splat 301
+/pi-omp.md /pi.md 301
+
+# Singular portable package route retained as an alias.
+/agent-plugin /agent-plugins/ 301
+/agent-plugin/ /agent-plugins/ 301
+/agent-plugin/compatibility /agent-plugins/compatibility/ 301
+/agent-plugin/compatibility/ /agent-plugins/compatibility/ 301
+/agent-plugin.md /agent-plugins.md 301
+/agent-plugin/compatibility.md /agent-plugins/compatibility.md 301

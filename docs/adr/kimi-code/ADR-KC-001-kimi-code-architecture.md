@@ -2,12 +2,13 @@
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17). Correction (2026-09-28): the historical swarm threshold and profile mapping below diverge from the [sync config](../../../packages/kimi-code/sync.config.ts) and its [orchestrator projection](../../../packages/kimi-code/skills/orchestrator/SKILL.md). The projection routes architect/reviewer to `plan`; `Skill` is available to `plan` and `coder`, while `explore` still needs inlined persona content. Swarm guidance is internally inconsistent: the operative dispatch sentence uses two or more items, while the frontmatter/checklist still say three. Reverify those operational details at source; this record preserves the declarative-plugin and persona-mapping rationale.
+Accepted (2026-06-12; revised 2026-06-17). Correction (2026-09-28): the historical swarm threshold and profile mapping below diverge from the then-current standalone package projection. Consolidation (2026-10-10): the separate Kimi skill corpus was removed. Kimi now selects the shared root skills, with aliases and host-routing guidance generated from canonical inputs. Use the current [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/integrations/kimi-code/sync.config.ts) for operation. The history below records the rationale and earlier package design; it is not the current resource inventory. Kimi host support for newer manifest fields remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
 
 ## Supersession
 
 - **2026-06-12**: original draft accepted with the orchestrator-skill pattern and the 7-specialist to 3-subagent mapping.
 - **2026-06-17**: revised after `@maestria/opencode` shipped and Kimi Code was reverified at v0.13.1, which corrected the hooks, compaction, install URL, and permission-scope entries and added swarm integration, the revised specialist mapping, and a recommended `[[hooks]]` block.
+- **2026-10-10**: shared Kimi role skills and duplicated workflow bodies were removed during package consolidation. The current integration preloads shared skills in the parent and passes complete role and global-rule guidance into native child prompts. Historical profile and manifest details below do not describe the current package layout.
 
 ## Context
 
@@ -29,11 +30,13 @@ This is a different philosophy, not a limitation: declarative configuration repl
 
 ### Choose: Declarative Skill-Based Plugin with Session-Start Orchestrator
 
-The plugin is a set of declarative files: `kimi.plugin.json` (manifest with the skills directory and `sessionStart.skill`), `skills/` (orchestrator plus one directory per specialist), `rules/AGENTS.md` (user-placed, see below), and `README.md` / `INSTALL.md`. The current package also ships `commands/` (mode commands) and `SYSTEM.md` via `systemPromptPath`; see `packages/kimi-code/kimi.plugin.json` for the authoritative manifest shape.
+The standalone plugin described by this decision was a set of declarative files: `kimi.plugin.json`, one skill directory per specialist, user-placed rules, commands, and `SYSTEM.md`. Those duplicate skill files were removed during consolidation. See `packages/agent-plugins/kimi.plugin.json` for the current manifest selectors.
 
-### Plugin Surface (Constraints from Kimi Code Manifest)
+### Historical Plugin Surface (Kimi Code v0.13.1)
 
-A plugin may register `mcpServers`, `skills`, one `sessionStart.skill` (single text-only skill auto-loaded at session start), and a `skillInstructions` string. It cannot register a new subagent profile (types are hardcoded to `coder`, `explore`, `plan`), custom built-in tools (`tools`, `commands`, `hooks`, `apps`, `inject`, `configFile`, `bootstrap` are silently dropped by the manifest parser), or change `AgentSwarm` (hardcoded in the platform).
+The limits below describe the host version inspected for the original decision. Do not apply them to newer versions without checking their manifest schema. The consolidated package explicitly selects Kimi command aliases; its `systemPromptPath` points to the shared global-rules skill.
+
+A plugin could register `mcpServers`, `skills`, one `sessionStart.skill` (single text-only skill auto-loaded at session start), and a `skillInstructions` string. That version could not register a new subagent profile (types were hardcoded to `coder`, `explore`, `plan`), custom built-in tools (including `commands`, which that parser silently dropped), or change `AgentSwarm` (hardcoded in the platform).
 
 **Critical implication:** the 7 specialist identities cannot be separate subagent types; they must be encoded as persona content in prompt templates dispatched through one of the 3 built-in types.
 
@@ -73,14 +76,14 @@ The non-obvious constraints are prompt-enforced, not tool-enforced: `explore`'s 
 | Documentation | `coder` | @writer |
 | Swarm fan-out (≥3 independent items) | varies | inlined in `prompt_template`; no `Agent` call alongside |
 
-The table above is the persona-selection decision; the specialist mapping above it is the agent-to-profile decision. The orchestrator skill holds the current operational copy, and it is keyed by persona rather than by request type `[verified]`: its `## Specialist → Subagent Routing` table maps each of the 7 personas to a subagent type and has no swarm fan-out row, and its `## Swarm Usage (AgentSwarm)` section carries the fan-out guidance separately. That skill's current mapping has also diverged from the decision above: it routes architect and reviewer to `plan` rather than `coder`, so the reviewer's no-edit constraint is now carried by the read-only `plan` profile and by the reviewer's own persona line rather than by a persona instruction against `coder`'s write tools. The request-type-to-persona selection recorded here, including the 2026-06-17 revision that moved architect, writer, and diagnose to `coder`, is therefore the decision record and survives only in this record `[verified]`.
+The table above is the historical persona-selection decision; its three-item swarm threshold and older profile details are not current operating instructions. Current Kimi routing lives in `packages/core/agent-directives/integrations/kimi-code.md` and the generated package integration guide. It loads the full role and global-rules skills in the parent and inlines them with task constraints before dispatch; explore and plan children are not assumed to have the Skill tool. Current swarm guidance uses AgentSwarm for two or more uniform independent items. The generic orchestrator skill points to this host guide rather than duplicating its routing table.
 
 ### Comparison: OpenCode vs. Kimi Code Plugin
 
 | Feature | OpenCode Plugin (`@maestria/opencode`) | Kimi Code Plugin (`@maestria/kimi-code`) |
 | --- | --- | --- |
 | **Swarm fan-out** | Not used (sequential `task()`) | First-class `AgentSwarm` + `SwarmMode` |
-| **Lifecycle hooks** | Plugin SDK hooks | `[[hooks]]` in `config.toml` (user-managed, suggested in the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/)) |
+| **Lifecycle hooks** | Plugin SDK hooks | `[[hooks]]` in `config.toml` (user-managed, suggested in the [installation guide](https://maestria.sznm.dev/agent-plugins/kimi-code/getting-started/installation/)) |
 | **Compaction** | `session.compacting` plugin hook | `experimental.micro_compaction` plus `/compact`; `PreCompact`/`PostCompact` observe only |
 | **Package management** | npm (versioned, published) | GitHub URL; latest by default, pin via ref/tag/sha |
 | **Skill overrides** | Not supported | Built-in - users can edit SKILL.md files |
@@ -97,7 +100,7 @@ The table above is the persona-selection decision; the specialist mapping above 
 - **No programmatic per-subagent permissions** - users add `[[permission.rules]]` to `config.toml`; `scope` gives temporal granularity but not per-subagent granularity.
 - **No `system.transform` equivalent** - the surfaces are `sessionStart.skill`, `skillInstructions`, and a user-managed `UserPromptSubmit` hook documented in the installation guide as an approximation.
 - **No compaction injection** - `PreCompact`/`PostCompact` observe only; compaction summaries are plugin-inaccessible.
-- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`; the plugin documents them in the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/) (including the `PreToolUse` Bash guard, `UserPromptSubmit` reminder, and `PreCompact`/`PostCompact` logging), but the user copies them in.
+- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`; the plugin documents them in the [installation guide](https://maestria.sznm.dev/agent-plugins/kimi-code/getting-started/installation/) (including the `PreToolUse` Bash guard, `UserPromptSubmit` reminder, and `PreCompact`/`PostCompact` logging), but the user copies them in.
 
 ## Consequences
 
@@ -145,7 +148,7 @@ With 3+ platforms, consider extracting a canonical agent schema, skill registry,
 - ADR-CORE-019 (global rules scope filter) - applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
 - ADR-CORE-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
 - Canonical specialist directives carry prompt conventions and skill-loading guidance; `!!!` markers communicate methodology, not host enforcement.
-- The consolidated `kimi.plugin.json` additionally declares `systemPromptPath` to `integrations/kimi-code/SYSTEM.md` (within the host 32 KB per-field budget) alongside `sessionStart.skill` and `skillInstructions`; see the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) and [plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
+- The historical standalone manifest declared `systemPromptPath` to `SYSTEM.md`. The consolidated manifest instead points `systemPromptPath` to the shared `./skills/global-rules/SKILL.md` and selects aliases in `./integrations/kimi-code/commands/`; support for these newer fields depends on the installed host version. See the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) and [plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
 
 ## Date
 

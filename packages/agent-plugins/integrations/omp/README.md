@@ -26,4 +26,4 @@ The shared portable skills define methodology; the host owns tools, delegation, 
 
 See [Oh My Pi](https://omp.sh/).
 
-Live host loading is unverified. Package and sync checks validate the shipped files, not runtime discovery or enforcement.
+OMP 18.4.8 installed-loader and capability-provider discovery passed against a packed archive in a manually constructed npm-layout fixture. The npm installation transaction, live session/task execution, permissions, and enforcement remain unverified. See the repository host-verification record for reproduction and limits.

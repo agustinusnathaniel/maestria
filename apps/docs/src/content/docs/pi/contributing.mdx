@@ -1,0 +1,32 @@
+---
+title: Contributing
+description: Pi extension boundaries, generated resources, and validation for @maestria/pi.
+---
+
+For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
+
+## Package Boundary
+
+`@maestria/pi` pairs a runtime extension with generated agent and skill resources. The extension owns Pi lifecycle hooks, mode state, compaction, commands, deployment, and subagent dispatch. Shared prompts and global rules remain in `packages/core/agent-directives/`; runtime changes belong in `packages/pi/src/`.
+
+## Change Shared Methodology
+
+Edit the canonical source, never generated files under `agents/` or `skills/`, then regenerate and verify:
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/pi test
+```
+
+Platform transforms should stay small. Pi adapts specialist names and tool conventions at its projection boundary; it does not own a second copy of shared methodology.
+
+## Validate
+
+```bash
+pnpm --filter @maestria/pi build
+pnpm --filter @maestria/pi validate
+pnpm --filter @maestria/pi test
+```
+
+The separate OMP integration uses the portable package; see [its guide](/agent-plugins/omp/) for host-specific behavior.

@@ -1,0 +1,37 @@
+---
+title: Contributing
+description: Claude Code-specific package structure, sync behavior, and validation for @maestria/agent-plugins.
+---
+
+For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
+
+## Package Boundary
+
+Claude Code is a declarative plugin with no runtime adapter. The sync pipeline generates native agent profiles from the shared wrapper in `packages/core/agent-directives/agents/` and shared role, rule, orchestration, and workflow skills from canonical directives. The plugin manifest and `integrations/claude-code/sync.config.ts` are hand-authored. Do not duplicate methodology in the package.
+
+## Change Methodology
+
+Edit the canonical sources in `packages/core/agent-directives/`, never generated files under `agents/` or `skills/`. Then regenerate and verify:
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/agent-plugins test
+```
+
+## Validate the Package
+
+The focused checks require the Claude Code CLI:
+
+```bash
+cd packages/agent-plugins
+pnpm test
+claude plugin validate . --strict
+```
+
+The validator checks package structure and frontmatter. Runtime behavior still needs end-to-end verification; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+
+## See Also
+
+- [Installation](/agent-plugins/claude-code/getting-started/installation/)
+- [Quick Start](/agent-plugins/claude-code/getting-started/quick-start/)

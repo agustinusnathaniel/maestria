@@ -5,8 +5,8 @@ The package ships declarative methodology and host resources. Sync and npm archi
 | Host | Contract | Official reference |
 | --- | --- | --- |
 | Portable | Root manifest and standard Agent Skills; no portable runtime agent declaration | [Agent Plugins specification](https://agent-plugins.org/specification) |
-| Claude Code | Shared default skills scan; explicit agent and command file lists; preserved native tool-denial fields | [Plugin components](https://code.claude.com/docs/en/plugins/components) ([manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference)) |
-| Cursor | Root agent profiles, shared skills, and selected integration commands and rules; full role guidance remains in profiles where skill preloading is not verified | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
+| Claude Code | Shared default skills scan; explicit thin agent wrappers with role and global-rules skill preloads; preserved native tool-denial fields | [Plugin components](https://code.claude.com/docs/en/plugins/components) ([manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference)) |
+| Cursor | Isolated Cursor agent profiles, shared skills, and selected integration commands and rules; full role guidance remains in profiles where skill preloading is not verified | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
 | Codex | Skill manifest plus companion CLI-managed native TOMLs and instructions; OpenAI presentation via the `.codex-plugin/plugin.json` compatibility fallback, no inline `extensions.com.openai` | [Codex plugin documentation](https://developers.openai.com/codex/plugins) ([packaging guide](https://developers.openai.com/plugins/build/plugins)) |
 | Devin | Conventional root advisory agents; CLI/Desktop availability differs from cloud; no hooks or MCP servers declared | [Plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) ([Customize product guide](https://docs.devin.ai/product-guides/plugins)) |
 | ZCode | Explicit root advisory agents and shared skills; no host-specific command prompts | [Plugin documentation](https://zcode.z.ai/en/docs/plugin) |
@@ -18,4 +18,8 @@ Kimi's explicit empty agent list suppresses default root agent discovery, preser
 
 The root agent profiles used by Devin and ZCode carry only name and description metadata plus advisory role guidance. They do not claim native tool restrictions. Claude, Cursor, and Codex retain their native read-only metadata in isolated resource trees; actual enforcement remains the host's responsibility. Portable clients decide whether to discover the conventional root agents at all.
 
-The `cli/`, `automations/`, and `hooks/` directories contain boundary documentation only. They activate no runtime features.
+Only populated component directories ship. The standalone CLI lives in `apps/maestria-cli`; this plugin declares no automations, lifecycle hooks, or MCP servers.
+
+## Verified host loading
+
+The repository provides reproducible [host-loading probes](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). Claude Code 2.1.217 dispatched the thin reviewer wrapper, preloaded both shared skills into the child context, and omitted Write/Edit from its tool schema using an offline API fixture. OMP 18.4.8 loaded a fixture using the expected npm layout and discovered all 14 shared skills and seven root agents from the packed archive; removing `omp` metadata prevented loader registration. The probe constructs this layout directly rather than exercising installation. These checks cover loader and tool exposure behavior, not model judgment, every role, or other host versions. These checks do not establish cross-host runtime parity; Kimi's newer manifest fields and live native loading for Codex, Cursor, Devin, and ZCode still require separate verification.

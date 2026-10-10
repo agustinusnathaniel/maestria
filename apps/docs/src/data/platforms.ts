@@ -34,7 +34,7 @@ export interface Platform {
 }
 
 /**
- * All eight entries in homepage grid order. `/ecosystem/` closes the grid
+ * All nine entries in homepage grid order. `/ecosystem/` closes the grid
  * with shared companion tooling.
  */
 export const platforms: Platform[] = [
@@ -48,8 +48,8 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: 'Namespaced agents, skills, and workflow commands for Claude Code.',
-    href: '/claude-code/',
+    blurb: 'Native agent profiles with shared role and workflow skills for Claude Code.',
+    href: '/agent-plugins/claude-code/',
     id: 'claude-code',
     installArgs: 'install claude-code',
     mark: 'claudeCode',
@@ -57,41 +57,47 @@ export const platforms: Platform[] = [
   },
   {
     blurb: 'Specialist and workflow skills for Codex CLI.',
-    href: '/codex/',
+    href: '/agent-plugins/codex/',
     id: 'codex',
     installArgs: 'install codex',
     mark: 'codex',
     name: 'Maestria for Codex',
   },
   {
-    blurb: '8 specialized skills with swarm-aware orchestration and no build step.',
-    href: '/kimi-code/',
+    blurb: 'Shared role skills with Kimi-native command aliases and parent-to-child handoffs.',
+    href: '/agent-plugins/kimi-code/',
     id: 'kimi-code',
     installArgs: 'install kimi-code',
     mark: 'kimiCode',
     name: 'Maestria for Kimi Code',
   },
   {
-    blurb: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
-    href: '/cursor/',
+    blurb: 'Specialist profiles, shared skills, and workflow aliases for Cursor IDE and CLI.',
+    href: '/agent-plugins/cursor/',
     id: 'cursor',
     installArgs: 'install cursor',
     mark: 'cursorMark',
     name: 'Maestria for Cursor',
   },
   {
-    blurb:
-      '7 specialist subagents with spec-driven orchestration for Pi; portable plugin skills for Oh My Pi.',
-    href: '/pi-omp/',
-    id: 'pi-omp',
-    // CLI positional arg is `pi` (see /cli/commands/), not `pi-omp`.
+    blurb: '7 specialist subagents with native workflow modes and session tracking for Pi.',
+    href: '/pi/',
+    id: 'pi',
     installArgs: 'install pi',
     mark: 'piOmp',
-    name: '@maestria/pi & OMP via plugin',
+    name: '@maestria/pi',
+  },
+  {
+    blurb: 'Portable methodology skills and advisory profiles for Oh My Pi.',
+    href: '/agent-plugins/omp/',
+    id: 'omp',
+    installArgs: 'install omp',
+    mark: 'piOmp',
+    name: 'Maestria for Oh My Pi',
   },
   {
     blurb: 'Shared methodology skills through Hermes portable plugin support.',
-    href: '/hermes/',
+    href: '/agent-plugins/hermes/',
     id: 'hermes',
     installArgs: 'install hermes',
     mark: 'hermes',

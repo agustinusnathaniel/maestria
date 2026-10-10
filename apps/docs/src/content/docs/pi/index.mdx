@@ -1,0 +1,61 @@
+---
+title: '@maestria/pi'
+description: Pi extension for shared Maestria workflows, native subagent dispatch, and session tracking.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/PI"
+      title="Structured workflows for Pi."
+      lead="Install the Pi extension for seven specialist subagents, workflow modes, and session-aware orchestration."
+      mark={marks.piOmp}
+      primaryCta={{ href: '/pi/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/pi/reference/', label: 'Reference' }}
+      installCommand="npx maestria install pi"
+    />
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="A native Pi extension."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: '7 specialist subagents', desc: 'Pi registers the adventurer, architect, builder, diagnose, planner, reviewer, and writer roles.' },
+          { title: 'Workflow modes', desc: '/fein runs the full pipeline, /sonar stays research-only, and /blitz takes the fast path.' },
+          { title: 'Session tracking', desc: 'The extension records parent task IDs and keeps handoff state available across compaction.' },
+          { title: 'Host-owned controls', desc: 'Pi supplies the runtime and subagent tools. Read-only and lifecycle behavior follows the installed extension and host configuration.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Quick start', href: '/pi/getting-started/quick-start/' },
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Reference', href: '/pi/reference/' },
+        { label: 'Changelog', href: '/pi/changelog/' },
+        { label: 'Contributing', href: '/pi/contributing/' },
+        { label: 'Oh My Pi portable integration', href: '/agent-plugins/omp/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

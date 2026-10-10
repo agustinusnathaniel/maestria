@@ -1,0 +1,285 @@
+---
+title: Changelog
+description: Pi release history and archive of OMP's retired native package releases.
+---
+
+Entries apply to `@maestria/pi` unless otherwise noted. This page retains the former combined Pi and OMP release history. Current OMP installation and support guidance is at [Maestria for OMP](/agent-plugins/omp/).
+
+## Unreleased: OMP moves to the portable plugin
+
+- **The `@maestria/omp` native package is retired.** OMP coverage continues through the `@maestria/agent-plugins` shared skills and advisory root profiles (`maestria install omp` stages the package). OMP owns activation and task execution; the package declares no runtime extension or task wrapper.
+- **Retired with the package:** session-start agent deployment, `before_agent_start` mode injection, compaction and session-state preservation, goal mirroring, tool-call interception and review-mode enforcement, the `maestria_subagent` wrapper, the `/fein`, `/sonar`, `/blitz`, `/review`, `/restore-model`, `/review-model`, `/handoff`, and `/maestria-status` commands, and per-agent model files (`maestria configure omp`).
+- **Migrating:** run `omp plugin uninstall @maestria/omp` (and remove any maestria agent files left in `~/.omp/agent/agents/`), then `maestria install omp`. Load `fein`, `sonar`, and `blitz` as skills; use OMP's task interface when delegating, following the active host's contract.
+
+## v0.8.0 (Pi) / v0.6.0 (OMP)
+
+_October 5, 2026_
+
+- **Pi 1.0 and the Oh My Pi 18.x line are supported hosts.** `@maestria/pi` accepts Pi `^1.0.0` and `@maestria/omp` admits Oh My Pi 18.x; no adapter behavior change on either side.
+- **Fresh Pi installs no longer hit a subagent peer conflict.** The `@gotgenes/pi-subagents` peer moved to its supported 21.x range, matching what the documented install path already installs.
+- The Node.js floor for the Pi-family packages is now **22.19+**, matching the Pi host requirement.
+- Pi specialist agent files no longer name a `glob` tool that Pi does not register; Oh My Pi output, where `glob` is a real builtin, is unchanged.
+
+## v0.7.18 (Pi)
+
+_October 1, 2026_
+
+- Subagent polling and parallel result handling were simplified; timeout, abort, and sibling cleanup behavior are preserved.
+
+## v0.7.17 (Pi) / v0.5.17 (OMP)
+
+_September 30, 2026_
+
+- Agents reassess explanatory comments and redundant tests before accepting changes, and shared directive text was consolidated with no behavior change; see the [methodology changelog](/core/changelog/).
+
+## v0.7.16 (Pi) / v0.5.16 (OMP)
+
+_September 25, 2026_
+
+- Agents follow behavior-first testing guidance and deliver work as verified, reviewable slices with designs shown before implementation; see the [methodology changelog](/core/changelog/).
+- OMP only: the opt-in methodology annotation hook and mode footer middleware were removed, and mode-switch pipeline text is unified in one table.
+
+## v0.7.15 (Pi) / v0.5.15 (OMP)
+
+_September 24, 2026_
+
+- Project customization (`.maestria/workflow.md`, `.maestria/rules.md`) now loads through one shared loader across integrations; ordering, live reloads, and error reporting are unchanged.
+
+## v0.7.14 (Pi) / v0.5.14 (OMP)
+
+_September 23, 2026_
+
+- Project customization (`.maestria/workflow.md` then `.maestria/rules.md`) loads as subordinate guidance; see the [methodology changelog](/core/changelog/).
+- `create-pull-request` and `docs-update` skills install through the skills CLI with per-skill selection; see the [CLI changelog](/cli/changelog/).
+- Delegation wording clarified as contract-driven delegation; docs only, no behavior change. See the [methodology changelog](/core/changelog/).
+
+## v0.7.13 (Pi) / v0.5.13 (OMP)
+
+_September 18, 2026_
+
+- Consistent PR delivery contract with proportional documentation assessment; see the [methodology changelog](/core/changelog/).
+
+## v0.7.12 (Pi) / v0.5.12 (OMP)
+
+_September 17, 2026_
+
+- Stricter visual delivery evidence contract, with capture, PR-body publication, and readback as distinct stages; see the [methodology changelog](/core/changelog/).
+
+## v0.7.11 (Pi) / v0.5.11 (OMP)
+
+_September 16, 2026_
+
+- Defined when Sonar research is complete, with Blitz reusing valid context and switching routes for investigation or design work; see the [methodology changelog](/core/changelog/).
+
+## v0.7.10 (Pi) / v0.5.10 (OMP)
+
+_September 15, 2026_
+
+- Clarified rendered verification and visual delivery evidence, keeping required artifacts and verification gaps in handoffs; see the [methodology changelog](/core/changelog/).
+
+## v0.7.9 (Pi) / v0.5.9 (OMP)
+
+_September 15, 2026_
+
+- Internal consolidation; no user-facing behavior change and generated agent and skill output is unchanged.
+
+## v0.7.8 (Pi) / v0.5.8 (OMP)
+
+_September 11, 2026_
+
+- Internal consolidation; no user-facing behavior change and generated agent and skill output is unchanged.
+
+## v0.7.7 (Pi) / v0.5.7 (OMP)
+
+_September 8, 2026_
+
+- Stopped publishing generated JavaScript sourcemaps to reduce published package sizes; compiled runtime artifacts are unchanged.
+
+## v0.7.6 (Pi) / v0.5.6 (OMP)
+
+_September 6, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.5 (Pi) / v0.5.5 (OMP)
+
+_September 4, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.4 (Pi) / v0.5.4 (OMP)
+
+_September 3, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.3 (Pi) / v0.5.3 (OMP)
+
+_August 27, 2026_
+
+- Shared neutral mode and skill validation logic through the hybrid package topology.
+
+## v0.7.2 (Pi) / v0.5.2 (OMP)
+
+_August 25, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.1 (Pi) / v0.5.1 (OMP)
+
+_August 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.0 (Pi) / v0.5.0 (OMP)
+
+_August 22, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.6.8 (Pi)
+
+_August 13, 2026_
+
+- Fix chain-mode `{previous}` substitution so previous results containing `$` sequences are inserted literally, and abort already-spawned subagents when a later parallel spawn fails so none are orphaned.
+
+## v0.6.7 (Pi)
+
+_August 13, 2026_
+
+### Effect v4 polling
+
+- Use Effect v4 RC for cancellable subagent polling and structured parallel dispatch, so aborted or failed polls no longer leave sibling polling work running ([historical Effect adoption](https://github.com/agustinusnathaniel/maestria/blob/00f21377f7f84c9c6e1919ca7a10812b6e7f9634/docs/adr/core/ADR-CORE-017-selective-effect-v4-adoption.md)).
+
+## v0.6.6 (Pi) / v0.4.3 (OMP)
+
+_August 13, 2026_
+
+- **Pi:** parallel subagent dispatch preserves successful results and aborts orphaned subagents on a partial failure.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.5.6 (Pi) / v0.2.0 (OMP)
+
+_July 21-22, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.5.5 (Pi)
+
+_July 21, 2026_
+
+### Compact agent directives
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.5.4 (Pi)
+
+_July 14, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.5.3 (Pi)
+
+_July 14, 2026_
+
+### Mandatory PR description structure
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.5.2 (Pi)
+
+_July 14, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.5.1 (Pi)
+
+_July 14, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.4.1 (Pi)
+
+_July 11, 2026_
+
+### Standard Pi/OMP skill mechanism for agent content
+
+The orchestrator dispatcher prompt and global agent rules now load as platform skills (`.md` files in `skills/`). The old custom file-loading approach is removed.
+
+### Specialist agents registered with subagent system
+
+All 7 specialist agent types (adventurer, architect, builder, diagnose, planner, reviewer, writer) are now registered as proper agent types. Each specialist has the right tool permissions - read-only specialists (adventurer, architect, planner, reviewer, diagnose) can't write files; builder and writer can.
+
+## v0.4.0 (Pi)
+
+_July 10, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.7 (Pi)
+
+_July 1, 2026_
+
+### Code intelligence tool preference
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.1 (Pi)
+
+_June 27, 2026_
+
+### Two new design principles
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.0 (Pi)
+
+_June 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.2.1 (Pi)
+
+_June 24, 2026_
+
+### Single source of truth for agent directives
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.2.0 - Initial release
+
+_June 23-24, 2026 (Pi) / July 22, 2026 (OMP)_
+
+### Features
+
+Initial release of `@maestria/pi` and `@maestria/omp` - portable extensions that bring maestria's spec-driven orchestration, workflow modes, and specialist subagents to the Pi and OMP coding agents.
+
+- **7 specialist agent types** - adventurer, architect, builder, diagnose, planner, reviewer, writer with structured role definitions and tool permission boundaries
+- **3 workflow modes** - `fein` (full pipeline with gates), `sonar` (research only), `blitz` (fast implementation), each routing to the appropriate subagent pipeline
+- **Global rules injection** - cross-cutting orchestration, delegation, and context-management rules injected into every session
+- **Session compaction preservation** - structured state summaries survive compaction events, keeping task tracking and work-in-progress intact across turns
+- **Subagent dispatch** - via `@gotgenes/pi-subagents` (Pi) or native `task()` tool (OMP), with 6-field handoff validation
+- **`/orchestrate`, `/review`, `/maestria-status` commands** - slash commands for dispatching work, requesting reviews, and inspecting extension state
+- **Maker/checker enforcement** - tool-level restriction prevents the orchestrator from implementing its own tasks
+- **4 methodology skills** - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits
+
+### OMP-specific
+
+- **Built-in `task()` dispatch** - uses OMP's native `task()` tool, no separate subagent package needed
+
+## v0.1.0 (Pi)
+
+_June 22, 2026_
+
+### Features
+
+Initial release of `@maestria/pi` - a portable Pi extension bringing spec-driven orchestration, workflow modes, and specialist subagents to the Pi coding agent.
+
+- **8 specialist prompt templates** - one orchestrator plus seven specialist subagents
+- **3 workflow modes** - `fein`, `sonar`, `blitz`
+- **Global rules injection** via `before_agent_start` event
+- **Session compaction preservation**
+- **Subagent dispatch via `@gotgenes/pi-subagents`** with 6-field handoff validation
+- **`/orchestrate`, `/review`, `/maestria-status` commands**
+- **Maker/checker enforcement** via tool-call interception
+- **2 methodology skills** - handoff contract and iteration limits

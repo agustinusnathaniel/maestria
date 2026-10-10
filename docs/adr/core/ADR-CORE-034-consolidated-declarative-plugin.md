@@ -18,7 +18,7 @@ Canonical shared methodology remains in `packages/core/agent-directives/`. Host-
 
 Start the consolidated version line above every retired package version so ordinary updates are not rejected as downgrades. Keep the existing maestria CLI platform identifiers. Their installers consume the consolidated package while retaining host-native installation and managed-file ownership behavior. Remove the old source package directories and version targets; previously published packages and installed user content are not deleted by this repository migration.
 
-Within the package, shared skill bodies express methodology; host agent profiles and integration resources adapt that methodology to each host; commands are entry points that select workflow modes; rules describe activation or operational boundaries. These projections and package resources do not become a second methodology source. Directories such as `automations`, `cli`, and `hooks` may carry boundary documentation without activating schedules, commands, or lifecycle scripts. The standalone CLI remains in `apps/maestria-cli`.
+Within the package, shared skill bodies express methodology; host agent profiles and integration resources adapt it to each host; aliases select shared workflow modes; rules describe host activation or operational boundaries. These projections do not become a second methodology source. Describing a future hook, automation, or command in documentation does not implement or activate it; runtime behavior requires an explicit package resource and host configuration. The standalone CLI remains in `apps/maestria-cli`.
 
 Hermes consumes the portable root manifest and discovers qualified skills through its host tools. Retire the Hermes Python adapter, its role gating, mode commands, subprocess bridge, and lifecycle hooks. On migration, disable the old adapter only after the replacement installs successfully; keep legacy files and user data intact.
 
@@ -42,7 +42,7 @@ Hermes consumes the portable root manifest and discovers qualified skills throug
 
 - [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): canonical methodology and generated projections.
 - [CORE-022](ADR-CORE-022-agent-plugins-portable-projection.md): portable format and host-owned runtime boundaries. This decision supersedes its separate-package topology while preserving those boundaries.
-- [CORE-020](ADR-CORE-020-hybrid-package-topology.md): native adapters and neutral shared utilities.
+- [CORE-020](ADR-CORE-020-hybrid-package-topology.md): narrow sharing boundaries remain in force; CORE-034 supersedes its older Hermes, OMP, and Prime Agent distribution-status claims.
 - Host plugin references: [Claude Code components](https://code.claude.com/docs/en/plugins/components), [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins), [Cursor plugins](https://cursor.com/docs/reference/plugins.md), [Kimi Code plugins](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) ([plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents)), [ZCode plugins](https://zcode.z.ai/en/docs/plugin), [Oh My Pi](https://omp.sh/) (docs unverified, JS-gated), [Devin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) ([Customize product guide](https://docs.devin.ai/product-guides/plugins)).
 
 ## Date

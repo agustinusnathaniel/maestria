@@ -1,0 +1,30 @@
+---
+title: Quick Start
+description: Route work through shared Maestria skills in an Oh My Pi session.
+---
+
+Start OMP and load the `global-rules` and `orchestrator` skills through OMP's skill interface. Portable skills do not execute at session start or change host permissions.
+
+## Run a Workflow
+
+Choose one of the shared workflow skills and give it your task:
+
+| Skill   | Use                                          |
+| ------- | -------------------------------------------- |
+| `fein`  | Full pipeline for substantial work           |
+| `sonar` | Research and stop before implementation      |
+| `blitz` | Fast implementation with required safeguards |
+
+For example, ask OMP to use the `fein` skill to add rate limiting to an API. The skill provides Maestria's workflow; OMP controls how and when it loads.
+
+## Delegate to a Specialist
+
+The package includes advisory root profiles for adventurer, architect, builder, diagnose, planner, reviewer, and writer. When you delegate, include the role guidance, global rules, task constraints, and acceptance evidence in the child task. Loading a skill in the parent does not automatically add its contents to a child context.
+
+OMP provides the native `task` tool. The package declares no task wrapper or enforcement layer, and the exact task interface and context inheritance depend on the active OMP version.
+
+## Next Steps
+
+- [Installation](/agent-plugins/omp/getting-started/installation/)
+- [Reference](/agent-plugins/omp/reference/)
+- [When to Use maestria](/core/when-to-use/)

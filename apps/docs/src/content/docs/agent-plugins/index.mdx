@@ -74,13 +74,14 @@ Use portable skills for client-neutral guidance, and a native integration for pl
 | Need | Native guide |
 | --- | --- |
 | OpenCode agents, rules, and compaction | [OpenCode](/opencode/) |
-| Claude Code agents, commands, and restrictions | [Claude Code](/claude-code/) |
-| Codex CLI skills and native agents | [Codex CLI](/codex/) |
-| Cursor agents, rules, and commands | [Cursor](/cursor/) |
-| Pi or Oh My Pi dispatch and session behavior | [Pi and OMP](/pi-omp/) |
+| Claude Code agents, commands, and restrictions | [Claude Code](/agent-plugins/claude-code/) |
+| Codex CLI skills and native agents | [Codex CLI](/agent-plugins/codex/) |
+| Cursor agents, rules, and commands | [Cursor](/agent-plugins/cursor/) |
+| Pi runtime extension and session behavior | [Pi](/pi/) |
+| OMP portable skills and advisory profiles | [Oh My Pi](/agent-plugins/omp/) |
 | Devin skills and conventional subagents | [Devin integration guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/integrations/devin/README.md) |
-| Hermes trust and lifecycle integration | [Hermes Agent](/hermes/) |
-| Kimi Code skills, commands, and session integration | [Kimi Code](/kimi-code/) |
+| Hermes trust and lifecycle integration | [Hermes Agent](/agent-plugins/hermes/) |
+| Kimi Code skills, commands, and session integration | [Kimi Code](/agent-plugins/kimi-code/) |
 
 The portable manifest exposes shared skills. Native manifests select host resources in the same archive; the portable standard itself does not provide:
 
@@ -99,6 +100,8 @@ Read-only roles are guidance, not a security boundary; the consuming client rema
 - Check the client's supported Agent Plugins components and trust settings.
 
 ## Resources
+
+See the [Agent Plugins changelog](/agent-plugins/changelog/) for shared package and integration changes.
 
 <CardGrid>
   <LinkCard

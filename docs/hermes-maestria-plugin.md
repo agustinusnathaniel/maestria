@@ -22,4 +22,4 @@ The former Python adapter's mode commands, permission gates, lifecycle hooks, st
 
 ## Next step
 
-Use the [installation guide](../apps/docs/src/content/docs/hermes/getting-started/installation.mdx) to migrate and verify discovery.
+Use the [installation guide](../apps/docs/src/content/docs/agent-plugins/hermes/getting-started/installation.mdx) to migrate and verify discovery.

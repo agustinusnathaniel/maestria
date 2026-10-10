@@ -1,3 +1,4 @@
+---
 "maestria": major
 ---
 

@@ -1,0 +1,60 @@
+---
+title: 'Maestria for Hermes'
+description: Hermes Agent plugin that brings the maestria methodology - portable specialist and workflow skills - to any domain.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/PLUGIN"
+      title="Methodology for any agent."
+      lead="Install shared specialist and workflow skills through Hermes portable plugin support."
+      mark={marks.hermes}
+      primaryCta={{ href: '/agent-plugins/hermes/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/agent-plugins/hermes/commands/', label: 'Commands' }}
+    />
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Shared methodology, native Hermes tools."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Shared skills', desc: 'One portable skill corpus for specialists, coordination, and workflow modes.' },
+          { title: 'Workflow selection', desc: 'Load fein, sonar, or blitz to choose a proportionate route.' },
+          { title: 'Host-owned permissions', desc: 'Hermes controls trust and tool authority; skills provide advisory methodology.' },
+          { title: 'Native delegation', desc: 'Use the delegation tools available in your Hermes session.' },
+          { title: 'One plugin archive', desc: 'The same consolidated distribution serves Hermes and other compatible clients.' },
+          { title: 'Explicit review', desc: 'Keep maker and checker separate, and report unavailable independent review.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/agent-plugins/hermes/changelog/' },
+        { label: 'Contributing', href: '/agent-plugins/hermes/contributing/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

@@ -1,0 +1,61 @@
+---
+title: Oh My Pi
+description: Use the shared Agent Plugins skills and advisory profiles in Oh My Pi.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/AGENT-PLUGINS"
+      title="Shared workflows for Oh My Pi."
+      lead="Use the portable skill corpus and advisory specialist profiles in OMP. Activation, tools, and task execution remain host-owned."
+      mark={marks.piOmp}
+      primaryCta={{ href: '/agent-plugins/omp/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/agent-plugins/omp/reference/', label: 'Reference' }}
+      installCommand="npx maestria install omp"
+    />
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Portable methodology, host-owned runtime."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Shared skills', desc: 'OMP discovers the shared methodology skills from the Agent Plugins package.' },
+          { title: 'Advisory profiles', desc: 'Seven root role profiles carry complete role guidance for clients without a guaranteed child skill-preload contract.' },
+          { title: 'Native task execution', desc: 'OMP provides its task tool. Maestria ships no task wrapper, runtime extension, commands, or rules for OMP.' },
+          { title: 'No runtime parity claim', desc: 'Permissions, session lifecycle, context inheritance, and enforcement follow the OMP version and configuration.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Installation', href: '/agent-plugins/omp/getting-started/installation/' },
+        { label: 'Quick Start', href: '/agent-plugins/omp/getting-started/quick-start/' },
+        { label: 'Reference', href: '/agent-plugins/omp/reference/' },
+        { label: 'Changelog', href: '/agent-plugins/omp/changelog/' },
+        { label: 'Portable package', href: '/agent-plugins/' },
+        { label: 'Pi extension', href: '/pi/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

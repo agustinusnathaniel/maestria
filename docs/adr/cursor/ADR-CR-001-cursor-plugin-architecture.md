@@ -6,9 +6,11 @@ Accepted (2026-07-21)
 
 ## Context
 
-maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
+At the time of this decision, maestria shipped separate methodology packages for OpenCode, Kimi Code, Pi, and Hermes. Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP. Kimi Code, Cursor, and Hermes distributions later moved into `@maestria/agent-plugins`; that package consolidation does not change this record's Cursor integration decision.
 
 ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Cursor has since added first-class plugins that bundle those primitives into one installable package, used from Customize in the IDE and `agent --plugin-dir` / local plugins in the CLI. Unlike OpenCode, no TypeScript hooks apply: Cursor plugins are declarative (same class as Kimi Code) with custom agents (Task subagents), skills, rules, and slash commands.
+
+> **Consolidation note (2026-10-10):** the package paths and topology below describe the original standalone Cursor integration. [CORE-034](../core/ADR-CORE-034-consolidated-declarative-plugin.md) supersedes that separate-package layout. Current projections live in `packages/agent-plugins/`: shared skills and isolated native profiles in `agents/cursor/`, with Cursor-specific command aliases and rules under `integrations/cursor/`. The integration decision and host boundaries remain; the paths below are historical.
 
 ## Decision
 

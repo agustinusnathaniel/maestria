@@ -1,0 +1,61 @@
+---
+title: '@maestria/agent-plugins'
+description: Kimi Code integration that reuses Maestria's shared skills with native workflow aliases and parent-to-child specialist handoffs.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/PLUGIN"
+      title="Shared skills, Kimi-native routing."
+      lead="Install one plugin. Reuse the shared role and workflow skills, with Kimi command aliases and parent-to-child specialist handoffs."
+      mark={marks.kimiCode}
+      primaryCta={{ href: '/agent-plugins/kimi-code/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/agent-plugins/kimi-code/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install kimi-code"
+    />
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="One source, Kimi-native handoffs."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Shared role skills', desc: 'Kimi uses the same seven specialist skills as the other integrations; it does not ship a second copy.' },
+          { title: 'Explicit parent-to-child handoff', desc: 'Load global rules before work and inline the full role skill, global rules, and task constraints into each native child prompt.' },
+          { title: 'Host-native workflow aliases', desc: 'Three thin command aliases select the shared fein, sonar, and blitz workflow skills.' },
+          { title: 'Version-sensitive manifest fields', desc: 'Session-start loading and the global-rules system-prompt contribution require Kimi host support; the repository\'s local 0.18 source does not verify those newer fields.' },
+          { title: 'Host-level controls', desc: 'User-configured hooks or permission rules can affect a whole session; they do not isolate reviewer permissions from builder or writer work.' },
+          { title: 'No duplicated methodology', desc: 'Only aliases and short bootstrap instructions are Kimi-specific; shared role and workflow bodies remain canonical.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/agent-plugins/kimi-code/changelog/' },
+        { label: 'Contributing', href: '/agent-plugins/kimi-code/contributing/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

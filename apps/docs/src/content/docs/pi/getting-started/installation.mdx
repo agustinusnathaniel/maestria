@@ -1,0 +1,58 @@
+---
+title: Installation & Setup
+description: Install, verify, update, and remove the @maestria/pi extension.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+`@maestria/pi` adds Maestria's shared methodology to the Pi coding agent as a runtime extension. It registers seven specialist subagents and three workflow mode commands.
+
+## Prerequisites
+
+- **Pi** CLI
+- **Node.js 22.19+** for npm-based extension resolution
+- **`@gotgenes/pi-subagents`** for subagent dispatch
+
+<Aside type="note">
+  The CLI installs the supported `@gotgenes/pi-subagents` peer dependency with the extension. Oh My
+  Pi uses a different integration through the shared Agent Plugins package; see the [OMP
+  guide](/agent-plugins/omp/).
+</Aside>
+
+## Install
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
+
+## Verify Installation
+
+Run `pi list` and confirm `@maestria/pi` appears. Start a new Pi session and check that the extension loads and exposes the `/fein`, `/sonar`, and `/blitz` commands.
+
+## Update
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update pi" />
+
+You can also install a specific published version:
+
+```bash
+pi install npm:@maestria/pi@<version>
+```
+
+## Uninstall
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall pi" />
+
+If you uninstall manually, the `@gotgenes/pi-subagents` peer dependency stays installed for other extensions:
+
+```bash
+pi uninstall npm:@maestria/pi
+```
+
+Remove the peer dependency separately only if no other extension uses it.
+
+## Next Steps
+
+- [Quick Start](/pi/getting-started/quick-start/)
+- [Reference](/pi/reference/)
+- [Contributing](/pi/contributing/)
+- [Run Maestria on Oh My Pi](/agent-plugins/omp/)

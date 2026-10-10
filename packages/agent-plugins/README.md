@@ -8,7 +8,7 @@ The root `plugin.json` is an Agent Plugins v1 manifest with one portable `skills
 | --- | --- | --- |
 | Portable clients | `plugin.json` | Shared skills; client owns activation |
 | Claude Code | `.claude-plugin/plugin.json` | Explicit thin agent wrappers; shared `skills/`; no duplicate workflow commands |
-| Cursor | `.cursor-plugin/plugin.json` | Root `agents/`, shared `skills/`, and selected integration commands and rules |
+| Cursor | `.cursor-plugin/plugin.json` | Native `agents/cursor/`, shared `skills/`, and selected integration commands and rules |
 | Codex | `.codex-plugin/plugin.json` | Shared skills; companion CLI installs `agents/codex/` and the instruction template |
 | Devin | `.devin-plugin/plugin.json` | Root advisory agent profiles; local CLI/Desktop only |
 | ZCode | `.zcode-plugin/plugin.json` | Explicit root advisory agent files and shared skills |
@@ -18,8 +18,21 @@ The root `plugin.json` is an Agent Plugins v1 manifest with one portable `skills
 
 Start with [installation](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/INSTALL.md) and [support boundaries](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/docs/support.md). The shared orchestrator skill links to each host integration guide before native delegation.
 
+## Content ownership
+
+| Path | Responsibility |
+| --- | --- |
+| `skills/` | Shared methodology: role instructions, global rules, orchestrator, workflow modes, and handoff contracts |
+| `agents/<role>.md` | Generated advisory profiles for conventional discovery; full role fallback where child skill preloading is not established |
+| `agents/{claude-code,codex,cursor}/` | Native profile schemas, model/tool metadata, and skill-loading wrappers or generated role fallbacks |
+| `integrations/<host>/` | Host loading/delegation guidance, selected aliases and activation rules, plus development-only projection configs |
+| `docs/`, `INSTALL.md`, `README.md` | User-facing package usage and support boundaries |
+| `assets/` and host manifests | Presentation resources and explicit component discovery paths |
+
+Shared procedures belong in skills. Native agents adapt execution and permissions; aliases select a mode; activation rules tell the host when to load guidance. These are generated from core rather than independently authored copies. Only populated surfaces ship: the plugin has no executable hooks, automations, CLI, or MCP integration.
+
 ## Development
 
 Run `scripts/sync-all`, then `scripts/check-sync` from the repository root. Sync configs project canonical methodology from core into host-specific skills, profiles, rules, and workflow entry points. `scripts/sync-consolidated-plugin.ts` assembles selected package resources and integration guides after projections are generated. It never installs into host directories.
 
-Run `pnpm --filter @maestria/agent-plugins test` for assembly, native Kimi behavior, and packed payload checks. The packed test writes `artifacts/plugin-pack-evidence.json` with the shipped entries, manifest checks, preserved read-only metadata, and reproduction command. Live host loading remains unverified.
+Run `pnpm --filter @maestria/agent-plugins test` for assembly, native Kimi behavior, and packed payload checks. The packed test writes `artifacts/plugin-pack-evidence.json` with the shipped entries, manifest checks, preserved read-only metadata, and reproduction command. See [host-loading verification](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) for the Claude native-child and OMP packed-discovery probes, their reproduction commands, and their limits.
