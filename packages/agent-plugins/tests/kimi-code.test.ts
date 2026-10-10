@@ -2,7 +2,8 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-const root = path.resolve(import.meta.dirname, '..');
+const packageRoot = path.resolve(import.meta.dirname, '..');
+const root = path.join(packageRoot, 'plugin');
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 

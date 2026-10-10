@@ -14,7 +14,7 @@ node --experimental-strip-types scripts/e2e/claude-skill-preload.ts --out artifa
 
 The probe launches the real CLI with a temporary config and working directory, disables session persistence and nonessential traffic, and supplies a local Anthropic-compatible fixture with a dummy credential. The fixture requests the plugin's reviewer agent and observes its child request and return. It records checks and content digests rather than prompts, credentials, or headers. No paid inference is involved.
 
-On Claude Code 2.1.217, all ten checks passed: the native dispatch tool was exposed, the reviewer wrapper loaded, both reviewer and global-rules skills reached the child context, the child had tools but no Write/Edit, and its result returned to the parent. This establishes native loading and tool-schema restrictions for this role. The deterministic fixture does not evaluate model judgment, shell-mediated editing, every specialist, or other CLI versions. The plugin loads from the source directory; the separate packed-artifact test covers archive inclusion.
+On Claude Code 2.1.217, all ten checks passed: the native dispatch tool was exposed, the reviewer wrapper loaded, both reviewer and global-rules skills reached the child context, the child had tools but no Write/Edit, and its result returned to the parent. This establishes native loading and tool-schema restrictions for this role. The deterministic fixture does not evaluate model judgment, shell-mediated editing, every specialist, or other CLI versions. The plugin loads from the generated `packages/agent-plugins/plugin/` installation directory; the separate packed-artifact test covers archive inclusion.
 
 ## OMP packed discovery
 

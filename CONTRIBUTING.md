@@ -36,7 +36,7 @@ The important ownership rule is:
 | User-facing documentation | `apps/docs/` or the relevant package README | Generated agent files |
 | Architecture decisions | `docs/adr/<area>/` | A duplicate explanation in a package README |
 
-Package manifests, sync configs, package READMEs, integration guides, runtime code, and the docs site are hand-authored. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
+Release metadata, projection configs and manifest inputs under `generation/`, package READMEs, runtime code, and the docs site are hand-authored. The shared plugin's component views, runtime integration guides, and complete `plugin/` installation tree are generated. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
 
 ## The Sync Pipeline
 
@@ -48,7 +48,7 @@ packages/core/agent-directives/
 packages/<platform>/ generated agents, skills, commands, and rules
 ```
 
-Each platform's `sync.config.ts` declares its output path and the transformations needed for that host, such as tool names, frontmatter, and routing syntax. The pipeline also removes stale generated files.
+Native adapters use `sync.config.ts`; the shared plugin keeps its projection configs under `generation/`. These configs declare output paths and host-specific transformations such as tool names, frontmatter, and routing syntax. The pipeline also removes stale generated files.
 
 Never edit a generated file. Edit the canonical source, then regenerate and verify:
 
@@ -92,7 +92,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `agent-plugins` | Host manifests, integration configs, Codex metadata, and guides | Shared `skills/`, native agents/commands/rules, and Kimi personas | `pnpm --filter @maestria/agent-plugins test` |
+| `agent-plugins` | `generation/` configs and manifest inputs; package usage docs | Semantic `agents/`, `commands/`, `rules/`, utility `skills/`, and the installable `plugin/` bundle | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.

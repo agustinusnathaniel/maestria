@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "maestria",
-      "source": "./packages/agent-plugins",
+      "source": "./packages/agent-plugins/plugin",
       "description": "maestria methodology plugin for Cursor - 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer), orchestrator skill with Task-based routing, global rules, and workflow commands (/fein, /sonar, /blitz)"
     }
   ]

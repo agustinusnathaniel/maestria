@@ -10,7 +10,7 @@ Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format for rules,
 
 ## Decision
 
-Use Cursor's declarative plugin surface for both IDE and CLI. Generate shared methodology resources from the canonical directives and keep Cursor-specific aliases and native profiles in the Cursor integration. Current projections live in `packages/agent-plugins/agents/cursor/` and `packages/agent-plugins/integrations/cursor/`; CORE-034 supersedes the former standalone package layout.
+Use Cursor's declarative plugin surface for both IDE and CLI. Generate shared methodology resources from the canonical directives and keep Cursor-specific aliases and native profiles in the Cursor integration. Current projections live in `packages/agent-plugins/plugin/agents/cursor/` and `packages/agent-plugins/plugin/integrations/cursor/`; CORE-034 supersedes the former standalone package layout.
 
 Configure native `readonly: true` metadata for adventurer, planner, and reviewer profiles, backed by prompt guidance. This records the intended host control; package metadata does not by itself establish live runtime enforcement. The portable skills format does not enforce read-only behavior.
 

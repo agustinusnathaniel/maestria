@@ -236,7 +236,7 @@ describe('hermes portable plugin commands', () => {
     expect(calls).toContainEqual([
       'plugins',
       'install',
-      'agustinusnathaniel/maestria/packages/agent-plugins',
+      'agustinusnathaniel/maestria/packages/agent-plugins/plugin',
       '--enable',
       120_000,
     ]);

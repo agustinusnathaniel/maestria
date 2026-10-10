@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vite-plus/test';
 import { parse } from 'yaml';
 
 const packageRoot = path.resolve(import.meta.dirname, '..');
-const manifestPath = path.join(packageRoot, '.claude-plugin/plugin.json');
+const pluginRoot = path.join(packageRoot, 'plugin');
+const manifestPath = path.join(pluginRoot, '.claude-plugin/plugin.json');
 const roles = [
   'adventurer',
   'architect',
@@ -51,7 +52,7 @@ describe('Claude Code native plugin loading', () => {
     expect(agentPaths).toEqual(roles.map((role) => `./agents/claude-code/${role}.md`));
 
     for (const role of roles) {
-      const agentPath = path.join(packageRoot, `agents/claude-code/${role}.md`);
+      const agentPath = path.join(pluginRoot, `agents/claude-code/${role}.md`);
       const { body, metadata } = parseFrontmatter(fs.readFileSync(agentPath, 'utf-8'), agentPath);
       const expectedDisallowedTools = ['adventurer', 'planner', 'reviewer'].includes(role)
         ? 'Write, Edit'
@@ -66,7 +67,7 @@ describe('Claude Code native plugin loading', () => {
       expect(body).toMatch(/if either[\s\S]*missing[\s\S]*stop/iu);
 
       for (const skill of [`global-rules`, role]) {
-        const skillPath = path.join(packageRoot, `skills/${skill}/SKILL.md`);
+        const skillPath = path.join(pluginRoot, `skills/${skill}/SKILL.md`);
         expect(fs.existsSync(skillPath)).toBe(true);
         const { metadata: skillMetadata } = parseFrontmatter(
           fs.readFileSync(skillPath, 'utf-8'),
@@ -85,14 +86,16 @@ describe('Claude Code native plugin loading', () => {
     expect(manifest.commands).toEqual([]);
 
     for (const mode of modes) {
-      const skillPath = path.join(packageRoot, `skills/${mode}/SKILL.md`);
+      const skillPath = path.join(pluginRoot, `skills/${mode}/SKILL.md`);
       const { metadata } = parseFrontmatter(fs.readFileSync(skillPath, 'utf-8'), skillPath);
 
       const skillName = typeof metadata.name === 'string' ? metadata.name : '';
       expect(skillName).toBe(mode);
       expect(metadata['user-invocable']).not.toBe(false);
       expect(`/${pluginName}:${skillName}`).toBe(`/maestria:${mode}`);
-      expect(fs.existsSync(path.join(packageRoot, `commands/claude-code/${mode}.md`))).toBe(false);
+      expect(
+        fs.existsSync(path.join(pluginRoot, `integrations/claude-code/commands/${mode}.md`)),
+      ).toBe(false);
     }
   });
 });

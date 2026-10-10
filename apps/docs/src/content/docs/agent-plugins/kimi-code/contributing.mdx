@@ -7,7 +7,7 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 ## Package Boundary
 
-Kimi Code is a declarative package with no runtime SDK or build step. The manifest (`kimi.plugin.json`), `integrations/kimi-code/sync.config.ts`, and tests are hand-authored. The manifest selects the shared root `skills/` corpus; only Kimi command aliases and its short orchestration guide are generated from canonical workflow and integration sources. Do not add duplicate specialist skill bodies or a second global-rules file for Kimi.
+Kimi Code is a declarative package with no runtime SDK or build step. Manifest inputs, `generation/kimi-code.sync.config.ts`, and tests are hand-authored; the emitted `plugin/kimi.plugin.json` is generated. The manifest selects the shared root `skills/` corpus; only Kimi command aliases and its short orchestration guide are generated from canonical workflow and integration sources. Do not add duplicate specialist skill bodies or a second global-rules file for Kimi.
 
 ## Manifest Contract
 
@@ -21,7 +21,7 @@ The manifest owns the Kimi-native entry points:
 
 ## Change Shared Methodology
 
-Edit `packages/core/agent-directives/` for shared methodology. Use `packages/core/agent-directives/integrations/kimi-code.md` for Kimi-specific dispatch guidance and `aliases/workflow.md` for shared workflow command wrappers. Generated aliases and `integrations/kimi-code/context.md` are outputs; do not edit them directly. Regenerate and verify from the repository root:
+Edit `packages/core/agent-directives/` for shared methodology. Use `packages/core/agent-directives/integrations/kimi-code.md` for Kimi-specific dispatch guidance and `aliases/workflow.md` for shared workflow command wrappers. Generated source components and the installable `plugin/` resources are outputs; do not edit them directly. Regenerate and verify from the repository root:
 
 ```bash
 scripts/sync-all
@@ -29,11 +29,11 @@ scripts/check-sync
 pnpm --filter @maestria/agent-plugins test
 ```
 
-Kimi-specific projection changes belong in `integrations/kimi-code/sync.config.ts` or the manifest. Do not copy canonical prompt text into the package. The local Kimi Code v0.18 source is older than the manifest features documented here, so sync validation does not establish live host support.
+Kimi-specific projection changes belong in `generation/kimi-code.sync.config.ts` or the manifest. Do not copy canonical prompt text into the package. The local Kimi Code v0.18 source is older than the manifest features documented here, so sync validation does not establish live host support.
 
 ## Add a Skill
 
-Add shared methodology under `packages/core/agent-directives/`. Add its host adaptation in `integrations/kimi-code/sync.config.ts` only when needed, update the orchestrator routing table for new specialists, and update manifest and safety assertions in `packages/agent-plugins/tests/`. Keep Kimi aliases and dispatch guidance thin; do not create a second copy of a shared role or workflow skill. Then run the commands above.
+Add shared methodology under `packages/core/agent-directives/`. Add its host adaptation in `generation/kimi-code.sync.config.ts` only when needed, update the orchestrator routing table for new specialists, and update manifest and safety assertions in `packages/agent-plugins/tests/`. Keep Kimi aliases and dispatch guidance thin; do not create a second copy of a shared role or workflow skill. Then run the commands above.
 
 Read-only roles are advisory: Kimi permission rules apply to the session, not to an individual persona. The seven-specialist roster is part of the current routing contract; update the routing table and tests together when it changes.
 

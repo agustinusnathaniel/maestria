@@ -6,7 +6,7 @@ import { AGENT_PLUGIN_PACKAGE, stageAgentPlugin } from '@/lib/agent-plugin-stagi
 import { validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
-const PORTABLE_PACKAGE = path.join(REPO_ROOT, 'packages/agent-plugins');
+const PORTABLE_PACKAGE = path.join(REPO_ROOT, 'packages/agent-plugins/plugin');
 const PLUGIN_DATA_PLACEHOLDER = ['$', '{PLUGIN_DATA}'].join('');
 const tempDirectories: string[] = [];
 

@@ -16,15 +16,21 @@ The former Hermes adapter added Python and host-version maintenance to provide t
 
 ## Decision
 
-Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. A portable root manifest and native host manifests identify the same versioned product. Shared skills carry canonical methodology; explicitly selected native agents, commands, rules, and integration resources preserve host contracts. Kimi maps its personas to built-in subagent profiles and adds only thin aliases and bootstrap guidance; it does not duplicate the shared role skills.
+Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. The source tree separates semantic components from the generated `plugin/` installation root. Its portable root manifest and native host manifests identify the same versioned product. Shared skills carry canonical methodology; explicitly selected native agents, commands, rules, and integration resources preserve host contracts. Kimi maps its personas to built-in subagent profiles and adds only thin aliases and bootstrap guidance; it does not duplicate the shared role skills.
 
-Canonical shared methodology remains in `packages/core/agent-directives/`. Host-specific projection configs live with the consolidated integration resources. Sync checks cover both projections and derived bundle resources. No host-specific directory becomes a second methodology source.
+Canonical shared methodology remains in `packages/core/agent-directives/`. Host-specific projection configs and manifest inputs live in the development-only `generation/` directory. Source host guidance stays in core and generated integration guides live only in the installation bundle; source integration directories are omitted when they have no distinct responsibility. Sync checks cover both projections and derived bundle resources. No host-specific directory becomes a second methodology source.
 
 Start the consolidated version line above every retired package version so ordinary updates are not rejected as downgrades. Keep the existing maestria CLI platform identifiers. Their installers consume the consolidated package while retaining host-native installation and managed-file ownership behavior. Remove the old source package directories and version targets; previously published packages and installed user content are not deleted by this repository migration.
 
-Within the package, shared skill bodies express methodology; host agent profiles and integration resources adapt it to each host; aliases select shared workflow modes; rules describe host activation or operational boundaries. These projections do not become a second methodology source. Describing a future hook, automation, or command in documentation does not implement or activate it; runtime behavior requires an explicit package resource and host configuration. The standalone CLI remains in `apps/maestria-cli`.
+In the source component tree, agents own role definitions, commands own workflow entry points, rules own the shared contract and host activation, and skills own reusable utility guidance. All are generated from core. The installable `plugin/` bundle retains host-required role and mode skill exports with their complete instructions; they are compatibility representations, not additional semantic source components. These projections do not become a second methodology source. Describing a future hook, automation, or command in documentation does not implement or activate it; runtime behavior requires an explicit package resource and host configuration. The standalone CLI remains in `apps/maestria-cli`.
 
 Hermes consumes the portable root manifest and discovers qualified skills through its host tools. Retire the Hermes Python adapter, its role gating, mode commands, subprocess bridge, and lifecycle hooks. On migration, disable the old adapter only after the replacement installs successfully; keep legacy files and user data intact.
+
+### Source and bundle separation (2026-10-11)
+
+Publish `plugin/` as the npm archive root through `publishConfig.directory`; the emitted package manifest does not recursively specify another publication directory. Track the generated bundle because Git marketplace consumers do not run the repository generator. Git installation paths point at `packages/agent-plugins/plugin`; npm consumers retain the existing root paths and component names. This is one product and release version, not separate host packages.
+
+The separation adds generated files to the repository, but makes source ownership explicit without dropping portable or Codex entry points. Host-specific installation selectors and full preload/handoff contracts remain intact. Do not move or shorten runtime exports merely to make the published bundle resemble the source tree; validate the actual host discovery contract first.
 
 ## Consequences
 

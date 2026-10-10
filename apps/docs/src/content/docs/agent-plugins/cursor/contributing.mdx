@@ -7,11 +7,11 @@ For general setup and PR workflow, see the [Contributing Guide](/core/contributi
 
 ## Package Boundary
 
-`@maestria/agent-plugins` generates Cursor's root agent profiles from the canonical specialist prompts, shared skills from the shared skill sources, and thin mode aliases from `packages/core/agent-directives/aliases/workflow.md`. Cursor's aliases and rules live under `integrations/cursor/`; the plugin manifest and sync config are hand-authored. Keep the complete role prompts in the root profiles because reliable skill preloading is not verified for Cursor agents.
+`@maestria/agent-plugins` generates Cursor's root agent profiles from the canonical specialist prompts, shared skills from the shared skill sources, and thin mode aliases from `packages/core/agent-directives/aliases/workflow.md`. Source aliases and activation rules belong in `commands/` and `rules/`. The generated `plugin/` bundle retains Cursor's selected runtime paths. Projection configs and manifest inputs live under `generation/`. Keep the complete role prompts in the root profiles because reliable skill preloading is not verified for Cursor agents.
 
 ## Editing Methodology
 
-Edit `packages/core/agent-directives/`, never generated files under `agents/`, `skills/`, `integrations/cursor/commands/`, or `integrations/cursor/rules/`, and keep Cursor-specific transforms in `integrations/cursor/sync.config.ts`. Then sync and verify:
+Edit `packages/core/agent-directives/`, never generated component views or files under `plugin/`, and keep Cursor-specific transforms in `generation/cursor.sync.config.ts`. Then sync and verify:
 
 ```bash
 ./scripts/sync-all

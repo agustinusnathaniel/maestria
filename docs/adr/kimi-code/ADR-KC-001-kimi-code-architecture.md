@@ -2,11 +2,11 @@
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects shared skills and host-specific aliases from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/integrations/kimi-code/sync.config.ts). Newer manifest-field support remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
+Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects shared skills and host-specific aliases from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/plugin/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/generation/kimi-code.sync.config.ts). Newer manifest-field support remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
 
 ## Context
 
-Kimi Code exposes a declarative plugin format, unlike the OpenCode runtime SDK. At the v0.13.1 version inspected for this decision, it provided three built-in child profiles (`coder`, `explore`, and `plan`) and no custom subagent registration. The host owns plugin discovery, permissions, hooks, and session behavior; manifest compatibility must be checked against the installed host version.
+Kimi Code exposes a declarative plugin format, unlike the OpenCode runtime SDK. At the v0.13.1 version inspected for this decision, it provided three built-in child profiles (`coder`, `explore`, and `plan`) and no custom subagent registration. The host owns plugin discovery, permissions, hooks, and session behavior; manifest compatibility must be checked against the installed host version. Current [Kimi plugin documentation](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents) supports native plugin agents. The retained built-in-profile mapping is this integration's compatibility policy, not a universal host limitation.
 
 ## Decision
 

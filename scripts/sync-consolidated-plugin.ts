@@ -24,18 +24,55 @@ const VERIFIED_HOST_LIMITS: Record<string, string> = {
     'Portable plugin doctor and isolated packed-skill discovery were verified during consolidation. End-to-end task behavior, delegation, and runtime enforcement remain unverified.',
   omp: 'OMP 18.4.8 installed-loader and capability-provider discovery passed against a packed archive in a manually constructed npm-layout fixture. The npm installation transaction, live session/task execution, permissions, and enforcement remain unverified. See the repository host-verification record for reproduction and limits.',
 };
-const hostLimit = (host: string): string => VERIFIED_HOST_LIMITS[host] ?? HOST_LIMIT;
-const NATIVE_CONTEXTS = [
-  ['claude-code', 'integrations/claude-code/context.md', '## Claude Code Integration'],
-  ['cursor', 'integrations/cursor/context.md', '## Specialist Agents (Cursor)'],
-  ['codex', 'integrations/codex/context.md', '## Codex CLI Integration'],
-  ['kimi-code', 'integrations/kimi-code/context.md', '## Specialist → Subagent Routing'],
+const CORE_CONTEXTS = [
+  ['claude-code', 'integrations/claude-code.md', '## Claude Code Integration'],
+  ['cursor', 'integrations/cursor.md', '## Specialist Agents (Cursor)'],
+  ['codex', 'integrations/codex.md', '## Codex CLI Integration'],
+  ['kimi-code', 'integrations/kimi-code.md', '## Specialist → Subagent Routing'],
 ] as const;
+const MANIFESTS = [
+  ['generation/manifests/plugin.json', 'plugin/plugin.json'],
+  ['generation/manifests/claude-code.json', 'plugin/.claude-plugin/plugin.json'],
+  ['generation/manifests/codex.json', 'plugin/.codex-plugin/plugin.json'],
+  ['generation/manifests/cursor.json', 'plugin/.cursor-plugin/plugin.json'],
+  ['generation/manifests/devin.json', 'plugin/.devin-plugin/plugin.json'],
+  ['generation/manifests/zcode.json', 'plugin/.zcode-plugin/plugin.json'],
+  ['generation/manifests/kimi.plugin.json', 'plugin/kimi.plugin.json'],
+] as const;
+const PACKAGE_DOCUMENTS = [
+  ['README.md', 'plugin/README.md'],
+  ['INSTALL.md', 'plugin/INSTALL.md'],
+  ['LICENSE', 'plugin/LICENSE'],
+  ['docs/support.md', 'plugin/docs/support.md'],
+  ['assets/cursor/logo.svg', 'plugin/assets/cursor/logo.svg'],
+] as const;
+const LEGACY_INTEGRATION_OUTPUTS = new Set<string>([
+  'integrations/claude-code/README.md',
+  'integrations/claude-code/context.md',
+  'integrations/codex/README.md',
+  'integrations/codex/context.md',
+  'integrations/codex/instructions/AGENTS.md',
+  'integrations/cursor/README.md',
+  'integrations/cursor/context.md',
+  'integrations/cursor/commands/blitz.md',
+  'integrations/cursor/commands/fein.md',
+  'integrations/cursor/commands/sonar.md',
+  'integrations/cursor/rules/maestria-global.mdc',
+  'integrations/devin/README.md',
+  'integrations/hermes/README.md',
+  'integrations/kimi-code/README.md',
+  'integrations/kimi-code/context.md',
+  'integrations/kimi-code/commands/blitz.md',
+  'integrations/kimi-code/commands/fein.md',
+  'integrations/kimi-code/commands/sonar.md',
+  'integrations/omp/README.md',
+  'integrations/zcode/README.md',
+]);
 
-const assertContainedFile = (packageRoot: string, relative: string): string => {
-  const absolute = path.resolve(packageRoot, relative);
-  if (!absolute.startsWith(`${packageRoot}${path.sep}`)) {
-    throw new Error(`Resource escapes plugin root: ${relative}`);
+const assertContainedFile = (root: string, relative: string): string => {
+  const absolute = path.resolve(root, relative);
+  if (!absolute.startsWith(`${root}${path.sep}`)) {
+    throw new Error(`Resource escapes package root: ${relative}`);
   }
   let current = path.parse(absolute).root;
   for (const part of absolute.slice(current.length).split(path.sep)) {
@@ -55,8 +92,8 @@ const assertContainedFile = (packageRoot: string, relative: string): string => {
   return absolute;
 };
 
-const readInput = (packageRoot: string, relative: string): string => {
-  const absolute = assertContainedFile(packageRoot, relative);
+const readInput = (root: string, relative: string): string => {
+  const absolute = assertContainedFile(root, relative);
   if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) {
     throw new Error(`Required plugin input is missing or not a file: ${relative}`);
   }
@@ -66,43 +103,78 @@ const readInput = (packageRoot: string, relative: string): string => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const nativeInputs = (): string[] => [
-  ...ROLES.flatMap((role) => [
-    `agents/claude-code/${role}.md`,
-    `agents/cursor/${role}.md`,
-    `agents/codex/maestria-${role}.toml`,
-  ]),
-  ...MODES.flatMap((mode) => [
-    `integrations/cursor/commands/${mode}.md`,
-    `integrations/kimi-code/commands/${mode}.md`,
-  ]),
-  'integrations/cursor/rules/maestria-global.mdc',
-  'integrations/codex/instructions/AGENTS.md',
-];
+const filesUnder = (root: string, relative: string): string[] => {
+  const absolute = assertContainedFile(root, relative);
+  if (!fs.existsSync(absolute)) {
+    return [];
+  }
+  if (!fs.statSync(absolute).isDirectory()) {
+    throw new Error(`Expected a directory: ${relative}`);
+  }
+  const files: string[] = [];
+  const walk = (directory: string): void => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const child = path.join(directory, entry.name);
+      const childRelative = path.relative(root, child).split(path.sep).join('/');
+      assertContainedFile(root, childRelative);
+      if (entry.isDirectory()) {
+        walk(child);
+      } else if (entry.isFile()) {
+        files.push(childRelative);
+      } else {
+        throw new Error(`Unsupported plugin filesystem entry: ${childRelative}`);
+      }
+    }
+  };
+  walk(absolute);
+  return files.toSorted();
+};
+
+const removeEmptyDirectories = (absolute: string): void => {
+  if (!fs.existsSync(absolute) || !fs.statSync(absolute).isDirectory()) {
+    return;
+  }
+  for (const entry of fs.readdirSync(absolute, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      removeEmptyDirectories(path.join(absolute, entry.name));
+    }
+  }
+  if (fs.readdirSync(absolute).length === 0) {
+    fs.rmdirSync(absolute);
+  }
+};
 
 const roleAgent = (text: string, role: string): string => {
   const match = /^---\n(?<frontmatter>[\s\S]*?)\n---\n(?<body>[\s\S]*)$/u.exec(text);
   if (!match?.groups) {
-    throw new Error(`Missing skill frontmatter: ${role}`);
+    throw new Error(`Missing agent frontmatter: ${role}`);
   }
   const metadata: unknown = parse(match.groups.frontmatter);
   if (!isRecord(metadata)) {
-    throw new Error(`Invalid skill frontmatter: ${role}`);
+    throw new Error(`Invalid agent frontmatter: ${role}`);
   }
   const { name, description } = metadata;
   if (name !== role || typeof description !== 'string' || description.trim() === '') {
-    throw new Error(`Invalid name or description in skill frontmatter: ${role}`);
+    throw new Error(`Invalid name or description in agent frontmatter: ${role}`);
   }
   return `---\n${stringify({ description, name }, { lineWidth: 0 })}---\n\n${NOTICE}\n\n${match.groups.body.trim()}\n`;
 };
 
+const hostLimit = (host: string): string => VERIFIED_HOST_LIMITS[host] ?? HOST_LIMIT;
+
 const nativeGuide = (host: string, context: string): string => {
   const prefixes: Record<string, string> = { 'claude-code': 'maestria:', codex: 'maestria-' };
   const prefix = prefixes[host] ?? '';
-  const roles = ROLES.map((role) => `| ${role} | \`${prefix}${role}\` |`).join('\n');
+  const agents = ROLES.map((role) => ({ agent: `\`${prefix}${role}\``, role }));
+  const roleWidth = Math.max('Portable role'.length, ...agents.map(({ role }) => role.length));
+  const agentWidth = Math.max('Native agent'.length, ...agents.map(({ agent }) => agent.length));
   const mapping =
-    host === 'kimi-code' ? '' : `\n| Portable role | Native agent |\n| --- | --- |\n${roles}\n`;
-  return `${NOTICE}\n\n# ${host} Integration\n\nRead this guide only when ${host} is the active host. The shared portable skills define methodology; the host owns tools, delegation, permissions, and lifecycle.${mapping}\n${context.trim()}\n\n${hostLimit(host)}\n`;
+    host === 'kimi-code'
+      ? ''
+      : `| ${'Portable role'.padEnd(roleWidth)} | ${'Native agent'.padEnd(agentWidth)} |\n| ${'-'.repeat(roleWidth)} | ${'-'.repeat(agentWidth)} |\n${agents
+          .map(({ agent, role }) => `| ${role.padEnd(roleWidth)} | ${agent.padEnd(agentWidth)} |`)
+          .join('\n')}\n\n`;
+  return `${NOTICE}\n\n# ${host} Integration\n\nRead this guide only when ${host} is the active host. The shared portable skills define methodology; the host owns tools, delegation, permissions, and lifecycle.\n\n${mapping}${context.trim()}\n\n${hostLimit(host)}\n`;
 };
 
 const advisoryGuide = (host: 'devin' | 'zcode'): string => {
@@ -143,7 +215,7 @@ Dispatch each persona through OMP's native \`task(agent, task)\` tool. The root 
 | builder | \`task(agent: "builder", task: "...")\` | When the design is locked |
 | diagnose | \`task(agent: "diagnose", task: "...")\` | When something is broken |
 | planner | \`task(agent: "planner", task: "...")\` | Before multi-step work |
-| reviewer | \`task(agent: "reviewer", task: "...")\` | After the integrated batch is reconciled |
+| reviewer | \`task(agent: "reviewer", task: "...")\` | After the integrated builder batch is reconciled |
 | writer | \`task(agent: "writer", task: "...")\` | When code needs human-facing docs |
 
 ## Session-Start Behavior
@@ -157,66 +229,190 @@ See [Oh My Pi](https://omp.sh/).
 ${hostLimit('omp')}
 `;
 
-const RETIRED_OUTPUTS = [
-  ...MODES.flatMap((mode) =>
-    ['claude-code', 'cursor', 'kimi-code'].map((host) => `commands/${host}/${mode}.md`),
-  ),
-  ...[...ROLES, 'orchestrator'].map((role) => `integrations/kimi-code/skills/${role}/SKILL.md`),
-  'rules/cursor/maestria-global.mdc',
-  'integrations/kimi-code/SYSTEM.md',
-  'integrations/claude-code/orchestrator.md',
-  'integrations/claude-code/global-rules.md',
-  'integrations/cursor/orchestrator.md',
-];
-
-const outputPlan = (packageRoot: string): Map<string, string> => {
-  const plan = new Map<string, string>();
-  for (const skill of SHARED_SKILLS) {
-    const text = readInput(packageRoot, `skills/${skill}/SKILL.md`);
-    if (ROLES.includes(skill)) {
-      plan.set(`agents/${skill}.md`, roleAgent(text, skill));
+const packageManifest = (packageRoot: string): string => {
+  const source: unknown = JSON.parse(readInput(packageRoot, 'package.json'));
+  if (!isRecord(source)) {
+    throw new Error('Expected package.json object');
+  }
+  const leadingFields = [
+    'name',
+    'version',
+    'private',
+    'description',
+    'keywords',
+    'homepage',
+    'bugs',
+    'license',
+    'author',
+  ];
+  const result: Record<string, unknown> = {};
+  for (const field of leadingFields) {
+    if (source[field] !== undefined) {
+      result[field] = source[field];
     }
   }
-  for (const relative of nativeInputs()) {
-    readInput(packageRoot, relative);
+  if (typeof result.name !== 'string' || typeof result.version !== 'string') {
+    throw new TypeError('package.json requires string name and version fields');
   }
-  for (const [host, source, heading] of NATIVE_CONTEXTS) {
-    const text = readInput(packageRoot, source);
+  if (isRecord(source.repository)) {
+    result.repository = { ...source.repository, directory: 'packages/agent-plugins/plugin' };
+  }
+  for (const field of ['files', 'type']) {
+    if (source[field] !== undefined) {
+      result[field] = source[field];
+    }
+  }
+  const publishConfig = isRecord(source.publishConfig) ? source.publishConfig : {};
+  result.publishConfig = {
+    access: publishConfig.access,
+    provenance: publishConfig.provenance,
+  };
+  if (source.engines !== undefined) {
+    result.engines = source.engines;
+  }
+  result.omp = {};
+  return `${JSON.stringify(result, null, 2)}\n`;
+};
+
+const addOutput = (plan: Map<string, string>, relative: string, content: string): void => {
+  if (plan.has(relative)) {
+    throw new Error(`Duplicate plugin output path: ${relative}`);
+  }
+  plan.set(relative, content);
+};
+
+const addSourceComponents = (plan: Map<string, string>, packageRoot: string): void => {
+  for (const role of ROLES) {
+    addOutput(
+      plan,
+      `plugin/agents/${role}.md`,
+      roleAgent(readInput(packageRoot, `agents/${role}.md`), role),
+    );
+  }
+  for (const mode of MODES) {
+    readInput(packageRoot, `commands/modes/${mode}.md`);
+  }
+  for (const source of [
+    'rules/global/global-rules.md',
+    'rules/cursor/maestria-global.mdc',
+    'rules/codex/instructions/AGENTS.md',
+    'skills/handoff.md',
+    'skills/iteration-limits.md',
+  ]) {
+    readInput(packageRoot, source);
+  }
+};
+
+const addPackageMetadata = (plan: Map<string, string>, packageRoot: string): void => {
+  for (const [source, output] of MANIFESTS) {
+    addOutput(plan, output, readInput(packageRoot, source));
+  }
+  addOutput(plan, 'plugin/package.json', packageManifest(packageRoot));
+
+  for (const [source, output] of PACKAGE_DOCUMENTS) {
+    addOutput(plan, output, readInput(packageRoot, source));
+  }
+};
+
+const addNativeProfiles = (plan: Map<string, string>, packageRoot: string): void => {
+  for (const role of ROLES) {
+    for (const host of ['claude-code', 'cursor'] as const) {
+      const relative = `plugin/agents/${host}/${role}.md`;
+      addOutput(plan, relative, readInput(packageRoot, relative));
+    }
+    const codexSource = `generation/codex/maestria-${role}.toml`;
+    addOutput(
+      plan,
+      `plugin/agents/codex/maestria-${role}.toml`,
+      readInput(packageRoot, codexSource),
+    );
+  }
+};
+
+const addSkillFacades = (plan: Map<string, string>, packageRoot: string): void => {
+  for (const skill of SHARED_SKILLS) {
+    const relative = `plugin/skills/${skill}/SKILL.md`;
+    addOutput(plan, relative, readInput(packageRoot, relative));
+  }
+};
+
+const addRuntimeIntegrationComponents = (plan: Map<string, string>, packageRoot: string): void => {
+  for (const mode of MODES) {
+    addOutput(
+      plan,
+      `plugin/integrations/cursor/commands/${mode}.md`,
+      readInput(packageRoot, `commands/cursor/${mode}.md`),
+    );
+    addOutput(
+      plan,
+      `plugin/integrations/kimi-code/commands/${mode}.md`,
+      readInput(packageRoot, `commands/kimi-code/${mode}.md`),
+    );
+  }
+  addOutput(
+    plan,
+    'plugin/integrations/cursor/rules/maestria-global.mdc',
+    readInput(packageRoot, 'rules/cursor/maestria-global.mdc'),
+  );
+  addOutput(
+    plan,
+    'plugin/integrations/codex/instructions/AGENTS.md',
+    readInput(packageRoot, 'rules/codex/instructions/AGENTS.md'),
+  );
+};
+
+const addIntegrationGuides = (plan: Map<string, string>, repoRoot: string): void => {
+  const coreRoot = path.resolve(repoRoot, 'packages/core/agent-directives');
+  for (const [host, source, heading] of CORE_CONTEXTS) {
+    const text = readInput(coreRoot, source);
     const start = text.indexOf(heading);
     if (start === -1) {
       throw new Error(`Missing native integration heading ${heading}: ${source}`);
     }
-    plan.set(`integrations/${host}/README.md`, nativeGuide(host, text.slice(start)));
+    addOutput(plan, `plugin/integrations/${host}/README.md`, nativeGuide(host, text.slice(start)));
   }
   for (const host of ['devin', 'zcode'] as const) {
-    plan.set(`integrations/${host}/README.md`, advisoryGuide(host));
+    addOutput(plan, `plugin/integrations/${host}/README.md`, advisoryGuide(host));
   }
-  plan.set('integrations/hermes/README.md', hermesGuide());
-  plan.set('integrations/omp/README.md', ompGuide());
+  addOutput(plan, 'plugin/integrations/hermes/README.md', hermesGuide());
+  addOutput(plan, 'plugin/integrations/omp/README.md', ompGuide());
+};
+
+const outputPlan = (repoRoot: string, packageRoot: string): Map<string, string> => {
+  const plan = new Map<string, string>();
+  addSourceComponents(plan, packageRoot);
+  addPackageMetadata(plan, packageRoot);
+  addNativeProfiles(plan, packageRoot);
+  addSkillFacades(plan, packageRoot);
+  addRuntimeIntegrationComponents(plan, packageRoot);
+  addIntegrationGuides(plan, repoRoot);
   return plan;
 };
 
-const staleAgents = (packageRoot: string, plan: Map<string, string>): string[] => {
-  const agentsRoot = assertContainedFile(packageRoot, 'agents');
-  if (!fs.existsSync(agentsRoot)) {
-    return [];
-  }
-  return fs
-    .readdirSync(agentsRoot, { withFileTypes: true })
-    .filter((entry) => !entry.isDirectory() && entry.name.endsWith('.md'))
-    .map((entry) => `agents/${entry.name}`)
-    .filter((relative) => !plan.has(relative))
-    .toSorted();
+const pruneEmptyDirectories = (root: string, relative: string): void => {
+  const absolute = assertContainedFile(root, relative);
+  removeEmptyDirectories(absolute);
 };
 
 export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[] => {
   const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
-  const plan = outputPlan(packageRoot);
+  const plan = outputPlan(repoRoot, packageRoot);
+  const existingPluginFiles = filesUnder(packageRoot, 'plugin');
+  const legacyIntegrationFiles = filesUnder(packageRoot, 'integrations');
+  const unownedIntegrationFiles = legacyIntegrationFiles.filter(
+    (relative) => !LEGACY_INTEGRATION_OUTPUTS.has(relative),
+  );
+  if (unownedIntegrationFiles.length > 0) {
+    throw new Error(
+      `Unowned source integration file(s); refusing to delete: ${unownedIntegrationFiles.join(', ')}`,
+    );
+  }
   const stale = [
-    ...staleAgents(packageRoot, plan),
-    ...RETIRED_OUTPUTS.filter((relative) => fs.existsSync(path.join(packageRoot, relative))),
+    ...existingPluginFiles.filter((relative) => !plan.has(relative)),
+    ...legacyIntegrationFiles,
   ];
   const changed: string[] = [];
+
   for (const [relative, content] of plan) {
     const absolute = assertContainedFile(packageRoot, relative);
     if (!fs.existsSync(absolute) || fs.readFileSync(absolute, 'utf-8') !== content) {
@@ -229,6 +425,7 @@ export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[
       throw new Error(`Retired output is not a file: ${relative}`);
     }
   }
+
   if (!check) {
     for (const relative of changed) {
       const absolute = path.join(packageRoot, relative);
@@ -238,6 +435,8 @@ export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[
     for (const relative of stale) {
       fs.unlinkSync(path.join(packageRoot, relative));
     }
+    pruneEmptyDirectories(packageRoot, 'plugin');
+    pruneEmptyDirectories(packageRoot, 'integrations');
   }
   return [...changed, ...stale].toSorted();
 };

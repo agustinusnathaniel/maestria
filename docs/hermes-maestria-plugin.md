@@ -10,7 +10,7 @@ Contributors and users migrating from the Python adapter.
 
 ## Architecture
 
-Hermes loads root `plugin.json` and the shared `skills/` corpus from `packages/agent-plugins/`. Discover actual qualified names with `skills_list`, then load a skill with `skill_view`. Maestria's role names are methodology identities; they do not grant or deny tools.
+Hermes loads root `plugin.json` and the shared `skills/` corpus from `packages/agent-plugins/plugin/`. Discover actual qualified names with `skills_list`, then load a skill with `skill_view`. Maestria's role names are methodology identities; they do not grant or deny tools.
 
 The former Python adapter's mode commands, permission gates, lifecycle hooks, state tracking, and OpenCode subprocess bridge have been removed. Hermes owns native delegation, trust, memory, goals, and session lifecycle. [CORE-034](adr/core/ADR-CORE-034-consolidated-declarative-plugin.md) records the owner's choice and the consequential adapter trade-offs; portable skills do not grant runtime capabilities.
 

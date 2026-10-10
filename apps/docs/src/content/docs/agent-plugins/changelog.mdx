@@ -3,6 +3,12 @@ title: Agent Plugins Changelog
 description: Curated changes to the shared Agent Plugins package and host documentation.
 ---
 
+## 2026-10-11
+
+- Separated semantic source components from the generated installable bundle: roles in agents, modes in commands, policy in rules, reusable utilities in skills, and development inputs in generation.
+- Local and Git installation now select `packages/agent-plugins/plugin/`. Published npm archives keep the same root layout and complete host-compatible skill exports.
+- Removed source integration context/config clutter and retained runtime guides and compatibility paths in the generated bundle.
+
 ## 2026-10-10
 
 - Added concise Devin and ZCode guides, separated Codex CLI and desktop-app setup, and documented Claude Code Desktop and Claude account plugin surfaces with their current evidence limits.

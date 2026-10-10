@@ -1,0 +1,35 @@
+{
+  "name": "maestria",
+  "version": "0.7.0",
+  "description": "Shared methodology skills with Kimi-native profile mapping and session-start orchestration",
+  "keywords": [
+    "maestria",
+    "kimi-code",
+    "skills",
+    "orchestration",
+    "engineering",
+    "workflow",
+    "swarm"
+  ],
+  "author": {
+    "name": "Agustinus Nathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "skills": "./skills/",
+  "commands": "./integrations/kimi-code/commands/",
+  "systemPromptPath": "./skills/global-rules/SKILL.md",
+  "sessionStart": {
+    "skill": "orchestrator"
+  },
+  "skillInstructions": "Before any work load global-rules. Before native Agent or AgentSwarm dispatch, load the full role skill in the parent and inline the complete role methodology, global-rules contract, and task constraints into the child prompt. Stop before dispatch if either skill is unavailable. Builder, diagnose, writer map to coder; adventurer maps to explore; architect, planner, reviewer map to plan. Do not assume explore or plan children have Skill. Read the Kimi integration guide for invocation details.",
+  "interface": {
+    "displayName": "maestria Agent Pack",
+    "shortDescription": "Specialized engineering workflow skills for Kimi Code",
+    "longDescription": "Shared Maestria methodology skills with Kimi session-start orchestration and parent-to-child persona handoffs. Native profiles and permissions remain Kimi-owned.",
+    "developerName": "Agustinus Nathaniel",
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria"
+  },
+  "agents": [],
+  "systemPrompt": "Use the seven specialist personas through the native profiles documented in the Kimi integration guide. Load global-rules before any work and preserve independent maker/checker roles."
+}

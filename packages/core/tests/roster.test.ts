@@ -2,9 +2,10 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import pluginConfig from '../../agent-plugins/sync.config.js';
-import claudeCodeConfig from '../../agent-plugins/integrations/claude-code/sync.config.js';
-import cursorConfig from '../../agent-plugins/integrations/cursor/sync.config.js';
+import componentConfig from '../../agent-plugins/generation/agents.sync.config.js';
+import pluginConfig from '../../agent-plugins/generation/skills.sync.config.js';
+import claudeCodeConfig from '../../agent-plugins/generation/claude-code.sync.config.js';
+import cursorConfig from '../../agent-plugins/generation/cursor.sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
@@ -54,6 +55,7 @@ const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
 
 const syncConfigs: Record<string, SyncConfig> = {
   'claude-code': claudeCodeConfig,
+  components: componentConfig,
   cursor: cursorConfig,
   opencode: opencodeConfig,
   pi: piConfig,
@@ -72,8 +74,11 @@ describe('canonical specialist roster', () => {
 
   for (const [platform, config] of Object.entries(syncConfigs)) {
     describe(platform, () => {
-      it('registers every canonical specialist file', () => {
-        const { missing } = findViolations(canonicalFiles, Object.keys(config.files ?? {}));
+      it('registers the expected canonical specialist roster', () => {
+        const expected = ['claude-code', 'cursor'].includes(platform)
+          ? canonicalFiles.filter((file) => file !== `${ORCHESTRATOR}.md`)
+          : canonicalFiles;
+        const { missing } = findViolations(expected, Object.keys(config.files ?? {}));
         expect(missing).toEqual([]);
       });
     });

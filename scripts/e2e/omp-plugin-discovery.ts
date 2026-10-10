@@ -3,11 +3,11 @@
 // Run with: pnpm exec bun scripts/e2e/omp-plugin-discovery.ts
 // Optional: --host-root <installed OMP package directory> --out <artifact path>
 
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { loadPackedPlugin } from './omp-plugin-package.ts';
 
 const EXPECTED_HOST_VERSION = '18.4.8';
 const PLUGIN_NAME = '@maestria/agent-plugins';
@@ -152,20 +152,6 @@ const isWithin = (candidate: string | undefined, parent: string): boolean => {
 const sameNames = (actual: string[], expected: string[]): boolean =>
   actual.length === expected.length && expected.every((name) => actual.includes(name));
 
-const run = (command: string, args: string[], env: NodeJS.ProcessEnv): string => {
-  const result = spawnSync(command, args, { cwd: repoRoot, encoding: 'utf-8', env });
-  if (result.error) {
-    throw new Error(`${command} could not run: ${result.error.message}`);
-  }
-  if (result.status !== 0) {
-    const output = `${result.stderr}\n${result.stdout}`.trim();
-    throw new Error(
-      `${command} exited ${result.status ?? 'without a status'}: ${output.slice(-3000)}`,
-    );
-  }
-  return result.stdout;
-};
-
 const importHostModule = async (
   hostRoot: string,
   relativePath: string,
@@ -245,63 +231,6 @@ const installFixturePackage = (
     `${JSON.stringify(manifest, null, 2)}\n`,
   );
   return installedPackageRoot;
-};
-
-const loadPackedPlugin = (
-  fixtureRoot: string,
-): { manifest: PluginManifestFile; packageRoot: string } => {
-  const sourcePackageRoot = path.join(repoRoot, 'packages/agent-plugins');
-  const sourceManifest = readPluginManifest(path.join(sourcePackageRoot, 'package.json'));
-  const packDirectory = path.join(fixtureRoot, 'pack');
-  const npmHome = path.join(fixtureRoot, 'npm-home');
-  fs.mkdirSync(packDirectory, { recursive: true });
-  fs.mkdirSync(npmHome, { recursive: true });
-  run(
-    'npm',
-    ['pack', sourcePackageRoot, '--ignore-scripts', '--json', '--pack-destination', packDirectory],
-    {
-      ...process.env,
-      HOME: npmHome,
-      USERPROFILE: npmHome,
-      npm_config_cache: path.join(fixtureRoot, 'npm-cache'),
-      npm_config_update_notifier: 'false',
-      npm_config_userconfig: path.join(fixtureRoot, 'npmrc'),
-    },
-  );
-  const archiveName = fs.readdirSync(packDirectory).find((name) => name.endsWith('.tgz'));
-  recordCheck(
-    'npm pack produced a real archive',
-    archiveName !== undefined,
-    archiveName ?? 'archive missing',
-  );
-  if (archiveName === undefined) {
-    throw new Error('npm pack did not leave an archive to extract');
-  }
-
-  const extractedRoot = path.join(fixtureRoot, 'extracted');
-  fs.mkdirSync(extractedRoot, { recursive: true });
-  run('tar', ['-xzf', path.join(packDirectory, archiveName), '-C', extractedRoot], {
-    ...process.env,
-    HOME: npmHome,
-    USERPROFILE: npmHome,
-  });
-  const packageRoot = path.join(extractedRoot, 'package');
-  const manifest = readPluginManifest(path.join(packageRoot, 'package.json'));
-  pluginVersion = manifest.version;
-  recordCheck(
-    'archive contains the intended plugin manifest',
-    manifest.name === PLUGIN_NAME &&
-      manifest.version === sourceManifest.version &&
-      typeof manifest.omp === 'object' &&
-      manifest.omp !== null,
-    `${manifest.name} ${manifest.version}; package.json must include an omp manifest`,
-  );
-  recordCheck(
-    'negative fixture has no alternate OMP manifest',
-    manifest.pi === undefined,
-    'the negative fixture removes omp and must not retain a pi fallback',
-  );
-  return { manifest, packageRoot };
 };
 
 const checkPluginRegistration = async (
@@ -494,7 +423,8 @@ const probe = async (): Promise<void> => {
     );
   }
 
-  const packed = loadPackedPlugin(tempRoot);
+  const packed = loadPackedPlugin(repoRoot, tempRoot, recordCheck);
+  pluginVersion = packed.manifest.version;
   const fixture = await checkPluginRegistration(
     tempRoot,
     host.getEnabledPlugins,

@@ -31,16 +31,26 @@ const readManifest = (root: string, relative: string): Manifest => {
   return value;
 };
 
-const archiveFilename = (output: string): string => {
+const packedArtifact = (output: string): { filename: string; files: string[] } => {
   const value: unknown = JSON.parse(output);
-  if (!Array.isArray(value)) {
-    throw new TypeError('Expected npm pack result array');
+  if (!isRecord(value) || typeof value.filename !== 'string' || !Array.isArray(value.files)) {
+    throw new TypeError('Expected pnpm pack result object');
   }
-  const first: unknown = value[0];
-  if (!isRecord(first) || typeof first.filename !== 'string') {
-    throw new Error('Expected npm pack archive filename');
-  }
-  return first.filename;
+  return {
+    filename: value.filename,
+    files: value.files.flatMap((file: unknown) =>
+      isRecord(file) && typeof file.path === 'string' ? [file.path] : [],
+    ),
+  };
+};
+
+const packageFixture = (destination: string): string => {
+  const fixtureRoot = path.join(destination, 'source-package');
+  fs.cpSync(packageRoot, fixtureRoot, {
+    filter: (source) => !source.split(path.sep).includes('node_modules'),
+    recursive: true,
+  });
+  return fixtureRoot;
 };
 
 const assertResourcePaths = (manifest: Manifest, packedRoot: string): void => {
@@ -79,40 +89,51 @@ const assertNativeMetadata = (packedRoot: string): void => {
 };
 
 describe('published consolidated plugin', () => {
-  it('packs complete contained manifests and one shared skills corpus with native role metadata', () => {
+  it('packs the flattened install root with complete skills, native paths, and runtime metadata', () => {
     const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'maestria-plugin-pack-'));
     try {
-      const output = execFileSync(
-        'npm',
-        ['pack', '--json', '--ignore-scripts', '--pack-destination', temporary],
-        { cwd: packageRoot, encoding: 'utf-8' },
+      const fixtureRoot = packageFixture(temporary);
+      const packed = packedArtifact(
+        execFileSync('pnpm', ['pack', '--json', '--pack-destination', temporary], {
+          cwd: fixtureRoot,
+          encoding: 'utf-8',
+        }),
       );
-      const archive = path.join(temporary, archiveFilename(output));
+      const archive = packed.filename;
       const entries = execFileSync('tar', ['-tzf', archive], { encoding: 'utf-8' })
         .trim()
         .split('\n');
       execFileSync('tar', ['-xzf', archive, '-C', temporary]);
       const packedRoot = path.join(temporary, 'package');
+      const packageManifest = readManifest(packedRoot, 'package.json');
       const manifests = manifestPaths.map((relative) => readManifest(packedRoot, relative));
       for (const manifest of manifests) {
         expect(manifest.name).toBe('maestria');
-        expect(manifest.version).toBe(readManifest(packedRoot, 'package.json').version);
+        expect(manifest.version).toBe(packageManifest.version);
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      const nativeKimiSkills = entries.filter((entry) =>
-        /^package\/integrations\/kimi-code\/skills\/[^/]+\/SKILL\.md$/u.test(entry),
-      );
       expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(14);
-      expect(nativeKimiSkills).toHaveLength(0);
       expect(skills).toHaveLength(14);
       expect(skills.every((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry))).toBe(
         true,
       );
       expect(new Set(skills.map((entry) => entry.split('/')[2])).size).toBe(14);
+      const rootAgents = entries.filter((entry) => /^package\/agents\/[^/]+\.md$/u.test(entry));
+      expect(rootAgents).toHaveLength(roles.length);
       expect(
-        entries.some((entry) => /(?:sync\.config|\.test\.ts|vite\.config|tsconfig)/u.test(entry)),
+        entries.some((entry) =>
+          /(?:generation\/|sync\.config|\.test\.ts|vite\.config|tsconfig)/u.test(entry),
+        ),
       ).toBe(false);
+      expect(entries.some((entry) => /^package\/(?:commands|rules)\//u.test(entry))).toBe(false);
+      expect(packageManifest.private).toBe(false);
+      expect(packageManifest.publishConfig).toEqual({ access: 'public', provenance: true });
+      expect(packageManifest.devDependencies).toBeUndefined();
+      expect(packageManifest.scripts).toBeUndefined();
+      expect(packageManifest.pnpm).toBeUndefined();
+      expect(packageManifest.packageManager).toBeUndefined();
+      expect(packageManifest.omp).toEqual({});
       expect(manifests[1].skills).toBeUndefined();
       expect(manifests[1].agents).toEqual(roles.map((role) => `./agents/claude-code/${role}.md`));
       expect(manifests[5].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
@@ -124,7 +145,13 @@ describe('published consolidated plugin', () => {
       expect(manifests[1].commands).toEqual([]);
       expect(manifests[2].commands).toBe('./integrations/cursor/commands/');
       expect(manifests[2].rules).toBe('./integrations/cursor/rules/');
-      expect(entries.some((entry) => /^package\/(?:commands|rules)\//u.test(entry))).toBe(false);
+      for (const role of roles) {
+        expect(entries).toContain(`package/agents/${role}.md`);
+      }
+      expect(entries).toContain('package/integrations/cursor/commands/fein.md');
+      expect(entries).toContain('package/integrations/cursor/rules/maestria-global.mdc');
+      expect(entries).toContain('package/integrations/codex/instructions/AGENTS.md');
+      expect(entries).toContain('package/integrations/kimi-code/commands/fein.md');
       assertNativeMetadata(packedRoot);
       for (const host of [
         'claude-code',
@@ -152,7 +179,6 @@ describe('published consolidated plugin', () => {
             entries,
             liveHostLoading: 'unverified',
             manifests: manifestPaths,
-            nativeKimiSkills,
             nativeReadOnlyRoles: readOnlyRoles,
             reproduction: 'pnpm --filter @maestria/agent-plugins test',
             result: 'passed',
