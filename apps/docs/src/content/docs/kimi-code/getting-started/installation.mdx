@@ -1,6 +1,6 @@
 ---
 title: Installation & Setup
-description: Install @maestria/agent-plugins in Kimi Code. The package is a declarative plugin with generated skills, native commands, and a system-prompt contribution.
+description: Install @maestria/agent-plugins in Kimi Code. The package reuses shared skills and adds Kimi workflow aliases and host-specific bootstrap instructions.
 ---
 
 This integration ships in the shared `@maestria/agent-plugins` package. The `kimi-code` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
@@ -12,8 +12,10 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 ## Prerequisites
 
-- Kimi Code v0.38.0 or later for the verified plugin registry, systemPromptPath, and AgentSwarm behavior.
+- Kimi Code with support for the manifest's `skills`, `commands`, `sessionStart`, `skillInstructions`, and `systemPromptPath` fields. The documented v0.38.0 baseline is not verified end to end by this repository.
 - Node.js 22.12 or later and npm when using the maestria CLI.
+
+The locally inspected Kimi Code v0.18 sources do not support the newer command and `systemPromptPath` fields used here. Do not expect those features on v0.18, and do not treat package or sync checks as proof of native runtime compatibility.
 
 Host reference: the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) and [plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
 
@@ -34,7 +36,7 @@ Host reference: the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kim
 
    <AllPackageManagers type="dlx" pkg="maestria" args="status" comment="Check installation" />
 
-3. Start a new session so the session-start skill and system prompt load:
+3. Start a new session so the configured session-start skill and system-prompt contribution can load on a compatible host:
 
    ```text
    /reload
@@ -70,7 +72,7 @@ In Kimi Code, run:
 /plugins info maestria
 ```
 
-Confirm that the plugin is enabled and its session-start skill is orchestrator. In a new session, ask the orchestrator to list its available specialists. Kimi limits each plugin system-prompt file to 32 KB; the packaged `SYSTEM.md` is tested against that budget.
+Confirm that the plugin is enabled. On a host that supports the manifest fields above, start a new session and ask the orchestrator to list the specialist routes. Full native loading remains unverified.
 
 ## Troubleshooting
 
@@ -80,7 +82,7 @@ Confirm that the plugin is enabled and its session-start skill is orchestrator. 
 | Orchestrator does not load | Confirm sessionStart.skill is orchestrator and start a new session |
 | Plugin changes do not appear | Run /reload, then /new |
 | Reviewer can edit | Configure session-wide permission rules; the persona prompt is not enforcement |
-| AgentSwarm is unavailable | Verify Kimi Code v0.38.0 or later |
+| AgentSwarm is unavailable | Check the host's current AgentSwarm support; v0.38.0 is the documented baseline, not an end-to-end verified version |
 
 ## Update
 

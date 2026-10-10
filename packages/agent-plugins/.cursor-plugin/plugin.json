@@ -11,7 +11,7 @@
   "keywords": ["maestria", "orchestration", "pipeline", "specialists"],
   "logo": "assets/cursor/logo.svg",
   "agents": "./agents/cursor/",
-  "commands": "./commands/cursor/",
-  "rules": "./rules/cursor/",
+  "commands": "./integrations/cursor/commands/",
+  "rules": "./integrations/cursor/rules/",
   "skills": "./skills/"
 }

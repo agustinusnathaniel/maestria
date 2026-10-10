@@ -8,23 +8,23 @@ Accepted, Confidence: Medium.
 
 Codex, Claude Code, Cursor, and Kimi Code shipped separate packages even though their workflow methodology comes from the same canonical directives. Agent Plugins adds a portable distribution, while Devin and ZCode expose additional declarative plugin surfaces. Maintaining separate product identities and releases obscures which package users should install.
 
-The owner approved consolidating these distributions and removing the old package directories, then explicitly selected the portable distribution for Hermes in place of its Python adapter. Native runtime adapters for OpenCode, Pi, OMP, and Prime Agent remain separate.
+The owner approved consolidating these distributions and removing the old package directories, then selected the portable distribution for Hermes in place of its Python adapter. OpenCode and Pi retain separate runtime adapters. OMP and Prime Agent are not current native runtime adapters.
 
 ## Decision
 
-Publish one `@maestria/plugin` package from `packages/plugin/`. A portable root manifest and native host manifests identify the same versioned product. Root skills carry shared methodology; explicitly selected native agents, commands, rules, and integration resources preserve host contracts. Kimi keeps a separately selected persona projection where its dispatch and session-start behavior requires it.
+Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. A portable root manifest and native host manifests identify the same versioned product. Shared skills carry canonical methodology; explicitly selected native agents, commands, rules, and integration resources preserve host contracts. Kimi maps its personas to built-in subagent profiles and adds only thin aliases and bootstrap guidance; it does not duplicate the shared role skills.
 
 Canonical shared methodology remains in `packages/core/agent-directives/`. Host-specific projection configs live with the consolidated integration resources. Sync checks cover both projections and derived bundle resources. No host-specific directory becomes a second methodology source.
 
 Start the consolidated version line above every retired package version so ordinary updates are not rejected as downgrades. Keep the existing maestria CLI platform identifiers. Their installers consume the consolidated package while retaining host-native installation and managed-file ownership behavior. Remove the old source package directories and version targets; previously published packages and installed user content are not deleted by this repository migration.
 
-The directories `skills`, `agents`, `automations`, `cli`, `rules`, `hooks`, `commands`, `integrations`, and `docs` have distinct ownership. Automation and hook documentation does not activate schedules or lifecycle scripts. The standalone CLI remains in `apps/maestria-cli`.
+Within the package, shared skill bodies express methodology; host agent profiles and integration resources adapt that methodology to each host; commands are entry points that select workflow modes; rules describe activation or operational boundaries. These projections and package resources do not become a second methodology source. Directories such as `automations`, `cli`, and `hooks` may carry boundary documentation without activating schedules, commands, or lifecycle scripts. The standalone CLI remains in `apps/maestria-cli`.
 
 Hermes consumes the portable root manifest and discovers qualified skills through its host tools. Retire the Hermes Python adapter, its role gating, mode commands, subprocess bridge, and lifecycle hooks. On migration, disable the old adapter only after the replacement installs successfully; keep legacy files and user data intact.
 
 ## Consequences
 
-- Users and maintainers share one declarative plugin identity and release lifecycle.
+- Users and maintainers share one declarative plugin identity and release lifecycle: `@maestria/agent-plugins`.
 - Explicit host paths prevent duplicate skill discovery and accidental loading of another host's agents or commands.
 - Native dispatch, permissions, persistence, and trust remain host-owned; a portable package does not establish runtime parity.
 - Existing users update through their host installer or the maestria CLI; package names and source layout change.

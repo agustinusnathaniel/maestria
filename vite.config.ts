@@ -21,6 +21,7 @@ export default defineConfig({
         'packages/*/prompts/**',
         'packages/*/rules/**',
         'packages/agent-plugins/integrations/*/orchestrator.md',
+        'packages/agent-plugins/integrations/*/context.md',
         'packages/agent-plugins/integrations/*/README.md',
         'packages/**/skills/**',
         'packages/*/SYSTEM.md',
@@ -170,6 +171,9 @@ export default defineConfig({
           'packages/*/sync.config.ts',
           'packages/agent-plugins/integrations/*/sync.config.ts',
           'packages/agent-plugins/integrations/codex/context.md',
+          'packages/core/agent-directives/agents/**/*.md',
+          'packages/core/agent-directives/aliases/**/*.md',
+          'packages/core/agent-directives/integrations/**/*.md',
         ],
         output: [
           'packages/*/agents/**',

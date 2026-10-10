@@ -2,11 +2,11 @@
 
 # OMP Integration
 
-OMP (Oh My Pi) consumes the root Agent Plugins v1 manifest and shared skills. No OMP-specific manifest applies: OMP parses the standard `plugin.json` and validates skill frontmatter natively, so this package ships no host manifest shim. Install the staged package through the host plugin flow (`maestria install omp` stages `@maestria/agent-plugins` via `omp plugin install`), then load the `global-rules` and `orchestrator` skills in session. If the retired `@maestria/omp` native package is still installed, remove it first (`omp plugin uninstall @maestria/omp`) so its executable hooks do not shadow the portable skills.
+OMP (Oh My Pi) uses `package.json#omp` for npm registration and the root Agent Plugins manifest for shared skill discovery. The empty `omp` object registers the package without an executable extension. Root `agents/*.md` are advisory profiles; host-specific commands and rules live under explicit integration paths and are not conventional OMP resources. Install the staged package through the host plugin flow (`maestria install omp` stages `@maestria/agent-plugins` via `omp plugin install`), then load the `global-rules` and `orchestrator` skills in session. If the retired `@maestria/omp` native package is still installed, remove it first (`omp plugin uninstall @maestria/omp`) so its executable hooks do not shadow the portable skills.
 
 ## Specialist → task() Routing
 
-Dispatch each persona through OMP's native `task(agent, task)` tool. Load the persona skill first so its methodology is in context, then delegate one coherent outcome per call.
+Dispatch each persona through OMP's native `task(agent, task)` tool. The root advisory profiles carry embedded role methodology because their consumers do not share a guaranteed skill-preload contract. Dispatch through the native tools actually available in the session, and carry the global-rules contract and task constraints into each child. Skill loading in the parent does not automatically populate child context.
 
 | Persona | Native dispatch | When |
 | --- | --- | --- |

@@ -103,8 +103,8 @@ describe('published consolidated plugin', () => {
       const nativeKimiSkills = entries.filter((entry) =>
         /^package\/integrations\/kimi-code\/skills\/[^/]+\/SKILL\.md$/u.test(entry),
       );
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(22);
-      expect(nativeKimiSkills).toHaveLength(8);
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(14);
+      expect(nativeKimiSkills).toHaveLength(0);
       expect(skills).toHaveLength(14);
       expect(skills.every((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry))).toBe(
         true,
@@ -118,9 +118,13 @@ describe('published consolidated plugin', () => {
       expect(manifests[5].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
       expect(manifests[5].commands).toEqual([]);
       expect(manifests[6].agents).toEqual([]);
-      expect(manifests[6].skills).toBe('./integrations/kimi-code/skills/');
-      expect(manifests[6].commands).toBe('./commands/kimi-code/');
-      expect(manifests[6].systemPromptPath).toBe('./integrations/kimi-code/SYSTEM.md');
+      expect(manifests[6].skills).toBe('./skills/');
+      expect(manifests[6].commands).toBe('./integrations/kimi-code/commands/');
+      expect(manifests[6].systemPromptPath).toBe('./skills/global-rules/SKILL.md');
+      expect(manifests[1].commands).toEqual([]);
+      expect(manifests[2].commands).toBe('./integrations/cursor/commands/');
+      expect(manifests[2].rules).toBe('./integrations/cursor/rules/');
+      expect(entries.some((entry) => /^package\/(?:commands|rules)\//u.test(entry))).toBe(false);
       assertNativeMetadata(packedRoot);
       for (const host of [
         'claude-code',

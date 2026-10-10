@@ -36,7 +36,7 @@ The important ownership rule is:
 | User-facing documentation | `apps/docs/` or the relevant package README | Generated agent files |
 | Architecture decisions | `docs/adr/<area>/` | A duplicate explanation in a package README |
 
-Package manifests, runtime code, package READMEs, and the docs site are hand-authored. Agent files and skills produced by the sync pipeline are generated.
+Package manifests, sync configs, package READMEs, integration guides, runtime code, and the docs site are hand-authored. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
 
 ## The Sync Pipeline
 
@@ -92,7 +92,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `plugin` | Host manifests, integration configs, Codex metadata, and guides | Shared `skills/`, native agents/commands/rules, and Kimi personas | `pnpm --filter @maestria/agent-plugins test` |
+| `agent-plugins` | Host manifests, integration configs, Codex metadata, and guides | Shared `skills/`, native agents/commands/rules, and Kimi personas | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.

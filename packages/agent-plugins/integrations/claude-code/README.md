@@ -17,7 +17,7 @@ Read this guide only when claude-code is the active host. The shared portable sk
 
 ### Global rules
 
-The universal contracts live in the `maestria:global-rules` skill, which every specialist agent preloads. Load it once per session via the Skill tool when you need the full contract text.
+Each specialist agent preloads its role skill and the universal `maestria:global-rules` skill. If either is missing from context, stop and report the missing skill before proceeding.
 
 ### Specialist agents
 
@@ -25,9 +25,9 @@ Delegate with the Agent tool using the scoped agent names in Specialist Ownershi
 
 `maestria:adventurer`, `maestria:planner`, and `maestria:reviewer` deny the `Write` and `Edit` tools at the runtime level (read-only research and review roles).
 
-### Workflow commands
+### Workflow mode skills
 
-| Command | Pipeline |
+| Invocation | Pipeline |
 | --- | --- |
 | `/maestria:fein` | Full pipeline: recon -> design -> implement -> review |
 | `/maestria:sonar` | Research only: owning specialist -> optional distinct specialist -> STOP |

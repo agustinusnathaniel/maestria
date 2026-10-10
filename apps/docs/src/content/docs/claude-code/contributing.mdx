@@ -7,11 +7,11 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 ## Package Boundary
 
-Claude Code is a declarative plugin with no runtime adapter. The sync pipeline generates its agents, skills, and commands from `packages/core/agent-directives/`; only the plugin manifest (`.claude-plugin/plugin.json`) and `integrations/claude-code/sync.config.ts` are hand-authored. Do not duplicate canonical prompt text in the package.
+Claude Code is a declarative plugin with no runtime adapter. The sync pipeline generates native agent profiles from the shared wrapper in `packages/core/agent-directives/agents/` and shared role, rule, orchestration, and workflow skills from canonical directives. The plugin manifest and `integrations/claude-code/sync.config.ts` are hand-authored. Do not duplicate methodology in the package.
 
 ## Change Methodology
 
-Edit `packages/core/agent-directives/`, never generated files under `agents/`, `skills/`, or `commands/`. Then regenerate and verify:
+Edit the canonical sources in `packages/core/agent-directives/`, never generated files under `agents/` or `skills/`. Then regenerate and verify:
 
 ```bash
 scripts/sync-all

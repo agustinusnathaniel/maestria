@@ -46,7 +46,7 @@ maestria/
 │   └── plans/           - Historical implementation plans
 ├── packages/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
-│   ├── plugin/          - Shared declarative plugin and native host resources
+│   ├── agent-plugins/   - Shared declarative plugin and native host resources
 │   ├── opencode/        - @maestria/opencode plugin
 │   ├── pi/              - @maestria/pi plugin
 │   └── shared/

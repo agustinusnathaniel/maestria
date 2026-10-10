@@ -9,7 +9,7 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/agent-plugins` is a declarative, self-contained Claude Code plugin: a `.claude-plugin/plugin.json` manifest plus agent, skill, and command files. No npm install, no build step, no runtime code.
+`@maestria/agent-plugins` is a declarative Claude Code plugin: a `.claude-plugin/plugin.json` manifest, native agent profiles, and shared skills for roles, global rules, orchestration, and workflow modes. No build step or runtime code is required.
 
 See the host-side model in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
 
@@ -76,10 +76,9 @@ claude plugin validate ./packages/agent-plugins --strict
 | Component | Namespaced identifier | Purpose |
 | --- | --- | --- |
 | Agents | `@maestria:<agent>` | 7 specialist agents: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
-| Skills | `/maestria:orchestrator`, `maestria:global-rules` | Routing methodology (user-invocable) and universal rules contract (preload-only) |
-| Commands | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Full pipeline, research-only, and fast implementation modes |
+| Skills | `maestria:<role>`, `/maestria:orchestrator`, `maestria:global-rules`, `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Shared role methodology, routing, universal rules, and full-pipeline, research-only, or fast implementation modes |
 
-Plugin-scoped skill preload resolution is not yet verified against a live session.
+Each specialist profile preloads its matching role skill and `maestria:global-rules`. Plugin-scoped skill preload resolution is not yet verified against a live session.
 
 ## Tool Restrictions
 

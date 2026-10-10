@@ -5,8 +5,10 @@
 Read this guide only when kimi-code is the active host. The shared portable skills define methodology; the host owns tools, delegation, permissions, and lifecycle.
 ## Specialist → Subagent Routing
 
+Before any work, load the shared global-rules skill. Before each child dispatch, load the full role skill in the parent and inline the complete role methodology, global-rules contract, and task constraints into the child prompt. If either required skill is unavailable, report it and stop before dispatch. Do not rely on explore or plan children having the Skill tool.
+
 | Persona | Subagent Type | Role | When |
-|---------|--------------|------|------|
+| --- | --- | --- | --- |
 | adventurer | `explore` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
 | architect | `plan` | Evaluate options; document decisions | When multiple approaches exist |
 | builder | `coder` | Implement; test; refactor | When the design is locked |
@@ -31,7 +33,7 @@ When 2+ items are uniform (same persona, same goal, independent units), use `Age
 ```
 AgentSwarm(
   description: "Review independent files",
-  subagent_type: "coder",
+  subagent_type: "plan",
   prompt_template: "Review {{item}} for correctness and test gaps.",
   items: ["src/a.ts", "src/b.ts"]
 )
@@ -99,7 +101,7 @@ const results = await AgentSwarm(
 
 Before delegating to a specialist via `Skill`, load the skill first. If the `Skill` tool is not available to the subagent profile, inline the persona's core content directly:
 
-The `Skill` tool is only available to `plan` and `coder` profiles. For `explore` subagents, pre-load the persona content before dispatch.
+Child skill availability varies by Kimi version and profile. Preload global-rules and the full role skill in the parent, then inline both with the task constraints for every child; do not rely on plan or explore children having Skill.
 
 ### Miss handling
 

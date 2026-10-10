@@ -5,7 +5,13 @@ description: Use @maestria/agent-plugins for a focused delegation, a staged fix,
 
 import { Aside } from '@astrojs/starlight/components';
 
-Start a new Kimi Code session after installing, so the orchestrator skill and system prompt load.
+Start a new Kimi Code session after installing. On a compatible host, the session-start configuration loads the orchestrator and the manifest adds global rules as system-prompt input.
+
+<Aside type="caution" title="Check host-version support">
+  The locally inspected Kimi Code v0.18 sources do not support the newer command and
+  `systemPromptPath` fields. The documented v0.38.0 baseline is a candidate, not an end-to-end
+  verification result; see [Installation](/kimi-code/getting-started/installation/).
+</Aside>
 
 <Aside type="caution" title="Choose the route that fits the task">
   Delegation adds model work and waiting time. Use [When to Use maestria](/core/when-to-use/) before
@@ -48,9 +54,9 @@ Ask planner for ordered milestones before implementation:
 
 The plan should contain phases, success criteria, and rollback points. Give it to the orchestrator for execution, or to builder one phase at a time.
 
-## Native Workflow Commands
+## Workflow Aliases
 
-Use a namespaced command when you want an explicit route:
+Use a plugin command alias when you want an explicit route:
 
 ```text
 /maestria:fein

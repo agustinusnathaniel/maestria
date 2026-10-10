@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/agent-plugins - delegating to specialist agents, using the orchestrator skill, and running workflow commands.
+description: Your first session with @maestria/agent-plugins - delegating to specialists and using shared role, orchestration, and workflow skills.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -43,7 +43,7 @@ The orchestrator decomposes the task, delegates to specialists, and integrates t
 
 ## Select a Pipeline Mode
 
-Three namespaced workflow commands control pipeline depth:
+Three namespaced workflow skills control pipeline depth:
 
 - `/maestria:fein` - full pipeline: recon, design, implement, review
 - `/maestria:sonar` - research only: owning specialist, optional distinct specialist, STOP
@@ -53,7 +53,7 @@ Three namespaced workflow commands control pipeline depth:
 /maestria:fein add rate limiting to the API.
 ```
 
-The orchestrator routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles; see [Modes](/core/agents/#modes) for keyword precedence and detection. The `maestria:global-rules` skill preloads into every specialist at startup.
+The orchestrator routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles; see [Modes](/core/agents/#modes) for keyword precedence and detection. Each specialist preloads its role skill and the `maestria:global-rules` skill at startup.
 
 ## Next Steps
 

@@ -15,6 +15,8 @@ Read this guide only when cursor is the active host. The shared portable skills 
 
 ## Specialist Agents (Cursor)
 
+Use the adventurer, architect, builder, diagnose, planner, reviewer, and writer native profiles for these role identities.
+
 Delegate via the `Task` tool to the plugin's custom agents (`agents/`). Pass a complete handoff contract in the prompt.
 
 ### How to invoke

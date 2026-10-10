@@ -14,6 +14,9 @@ This directory holds the shared methodology, rules, workflow modes, and skill pr
 agent-directives/
   README.md          - This file
   COMPOSITION.md     - Human-facing composition guidance
+  agents/            - Host-native wrappers that load shared role skills
+  aliases/           - Thin entry-point templates for shared workflow modes
+  integrations/      - Host-specific notes that explain native adapter behavior
   specialists/       - Role definitions for the 8 pipeline agents (orchestrator + 7 specialists)
     adventurer.md    - Codebase reconnaissance
     architect.md     - Architecture decisions and ADRs
@@ -28,9 +31,19 @@ agent-directives/
   skills/            - Shared handoff and iteration-limit sources
 ```
 
-The consolidated plugin lives at `packages/agent-plugins/`. Its root projection maps shared methodology to `skills/<name>/SKILL.md`; configs under `integrations/` preserve native host agents, commands, rules, and Kimi personas. Host manifests select native resources without adding duplicate skill roots. `scripts/sync-all` regenerates projections and bundle resources; `scripts/check-sync` verifies both. Canonical methodology stays here. Hooks and automations are inactive unless explicitly implemented and configured.
+The consolidated `@maestria/agent-plugins` package lives at `packages/agent-plugins/`. Canonical methodology is authored here, then projected into generated skill, agent, rule, and workflow entry-point files. Package configs and integration guides are hand-authored; host-specific agent profiles, commands, rules, and related generated payloads are derived artifacts. `scripts/sync-all` regenerates projections and assembled bundle resources; `scripts/check-sync` verifies both. A projected file is not another source of methodology. Hook and automation directories describe boundaries only unless executable features are explicitly implemented and configured.
 
 Methodology skills distributed as standalone skills (for example `create-pull-request`, `docs-update`) live once at the repository root under `skills/` and are not generated from this directory: the CLI invokes the official `skills` CLI to install them, and core keeps only the routing pointer. Do not copy skill bodies into plugin packages. The Claude Code plugin manifest for these standalone skills lives at `skills/.claude-plugin/plugin.json`.
+
+Host-native agent wrappers live under `agents/` when a platform can preload the shared role skill directly. Keep them limited to host-specific loading behavior; the `specialists/` files and projected skills remain the methodology source of truth. Workflow aliases live under `aliases/` and select a shared mode skill without copying its procedure. Host notes live under `integrations/`; they document how a projection loads and delegates without duplicating the shared router.
+
+## Reuse a Canonical Input in a Projection
+
+Sync configs use a top-level `source` for the default canonical input. A file entry can set its own `source` path, relative to that sync config, when one generated output should reuse a different canonical input. The `source` override changes which input is rendered; it does not create another methodology source.
+
+Use a per-file source override when an adapter needs a thin native wrapper or alias instead of copying a full specialist or mode body. For example, Claude Code's seven native agent profiles are generated from one wrapper in `agents/claude-wrapper.md`; each profile names its role skill and the shared global-rules skill in native frontmatter. Cursor and Kimi workflow aliases reuse `aliases/workflow.md` and substitute the selected mode name. Their behavior remains in the shared mode skills.
+
+Keep the adapter-specific content in frontmatter, replacements, or integration notes. If the host cannot reliably preload the shared skill, retain the complete role guidance in that host's canonical specialist projection instead of using an empty wrapper. After changing an input or sync config, run `scripts/sync-all` and `scripts/check-sync` from the repository root.
 
 ## How to Add a New Specialist
 

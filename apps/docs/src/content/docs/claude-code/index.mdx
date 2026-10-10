@@ -1,6 +1,6 @@
 ---
 title: '@maestria/agent-plugins'
-description: Declarative Claude Code plugin that ships 7 specialist agents, an orchestrator skill, global rules, and workflow commands - no build step, no runtime code.
+description: Declarative Claude Code plugin that ships 7 specialist agents and shared methodology skills for roles, orchestration, and workflow modes.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -21,7 +21,7 @@ import { marks } from '@/data/marks.js';
     <PlatformHero
       eyebrow="@MAESTRIA/PLUGIN"
       title="Seven specialists behind Claude Code."
-      lead="Install one plugin. Get 7 specialist agents, the orchestrator methodology, global rules, and fein/sonar/blitz workflow commands."
+      lead="Install one plugin. Get 7 specialist agents, shared role guidance, global rules, and fein/sonar/blitz workflow skills."
       mark={marks.claudeCode}
       primaryCta={{ href: '/claude-code/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/claude-code/getting-started/quick-start/', label: 'Quick start' }}
@@ -42,17 +42,17 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="01"
       kicker="WHAT YOU GET"
-      title="Namespaced agents, native commands."
+      title="Native agents, shared skills."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
       <FeatureGrid
         items={[
           { title: '7 specialist agents', desc: 'All seven specialists, available as namespaced @maestria:<agent> mentions in every session.' },
           { title: 'Orchestrator skill', desc: '/maestria:orchestrator routes work to the right specialist.' },
-          { title: 'Workflow mode commands', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the pipeline depth for each task.' },
-          { title: 'Global rules preloaded', desc: 'Every specialist preloads the maestria:global-rules skill via its frontmatter.' },
+          { title: 'Workflow mode skills', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the pipeline depth for each task.' },
+          { title: 'Role and global rules preloaded', desc: 'Each specialist preloads its matching role skill and the maestria:global-rules skill.' },
           { title: 'Read-only roles enforced', desc: 'adventurer, planner, and reviewer deny Write and Edit via disallowedTools.' },
-          { title: 'Declarative projection', desc: 'A .claude-plugin/plugin.json manifest plus agent files, two skills, and three commands - no build step, no runtime code.' },
+          { title: 'Declarative projection', desc: 'A .claude-plugin/plugin.json manifest, native agent profiles, and shared skills - no build step or runtime code.' },
         ]}
       />
     </PluginSection>

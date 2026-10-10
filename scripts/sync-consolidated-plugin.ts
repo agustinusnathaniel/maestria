@@ -18,14 +18,10 @@ const NOTICE =
 const HOST_LIMIT =
   'Live host loading is unverified. Package and sync checks validate the shipped files, not runtime discovery or enforcement.';
 const NATIVE_CONTEXTS = [
-  ['claude-code', 'integrations/claude-code/orchestrator.md', '## Claude Code Integration'],
-  ['cursor', 'integrations/cursor/orchestrator.md', '## Specialist Agents (Cursor)'],
+  ['claude-code', 'integrations/claude-code/context.md', '## Claude Code Integration'],
+  ['cursor', 'integrations/cursor/context.md', '## Specialist Agents (Cursor)'],
   ['codex', 'integrations/codex/context.md', '## Codex CLI Integration'],
-  [
-    'kimi-code',
-    'integrations/kimi-code/skills/orchestrator/SKILL.md',
-    '## Specialist → Subagent Routing',
-  ],
+  ['kimi-code', 'integrations/kimi-code/context.md', '## Specialist → Subagent Routing'],
 ] as const;
 
 const assertContainedFile = (packageRoot: string, relative: string): string => {
@@ -67,17 +63,13 @@ const nativeInputs = (): string[] => [
     `agents/claude-code/${role}.md`,
     `agents/cursor/${role}.md`,
     `agents/codex/maestria-${role}.toml`,
-    `integrations/kimi-code/skills/${role}/SKILL.md`,
   ]),
   ...MODES.flatMap((mode) => [
-    `commands/claude-code/${mode}.md`,
-    `commands/cursor/${mode}.md`,
-    `commands/kimi-code/${mode}.md`,
+    `integrations/cursor/commands/${mode}.md`,
+    `integrations/kimi-code/commands/${mode}.md`,
   ]),
-  'rules/cursor/maestria-global.mdc',
-  'integrations/claude-code/global-rules.md',
+  'integrations/cursor/rules/maestria-global.mdc',
   'integrations/codex/instructions/AGENTS.md',
-  'integrations/kimi-code/SYSTEM.md',
 ];
 
 const roleAgent = (text: string, role: string): string => {
@@ -130,11 +122,11 @@ const ompGuide = (): string => `${NOTICE}
 
 # OMP Integration
 
-OMP (Oh My Pi) consumes the root Agent Plugins v1 manifest and shared skills. No OMP-specific manifest applies: OMP parses the standard \`plugin.json\` and validates skill frontmatter natively, so this package ships no host manifest shim. Install the staged package through the host plugin flow (\`maestria install omp\` stages \`@maestria/agent-plugins\` via \`omp plugin install\`), then load the \`global-rules\` and \`orchestrator\` skills in session. If the retired \`@maestria/omp\` native package is still installed, remove it first (\`omp plugin uninstall @maestria/omp\`) so its executable hooks do not shadow the portable skills.
+OMP (Oh My Pi) uses \`package.json#omp\` for npm registration and the root Agent Plugins manifest for shared skill discovery. The empty \`omp\` object registers the package without an executable extension. Root \`agents/*.md\` are advisory profiles; host-specific commands and rules live under explicit integration paths and are not conventional OMP resources. Install the staged package through the host plugin flow (\`maestria install omp\` stages \`@maestria/agent-plugins\` via \`omp plugin install\`), then load the \`global-rules\` and \`orchestrator\` skills in session. If the retired \`@maestria/omp\` native package is still installed, remove it first (\`omp plugin uninstall @maestria/omp\`) so its executable hooks do not shadow the portable skills.
 
 ## Specialist → task() Routing
 
-Dispatch each persona through OMP's native \`task(agent, task)\` tool. Load the persona skill first so its methodology is in context, then delegate one coherent outcome per call.
+Dispatch each persona through OMP's native \`task(agent, task)\` tool. The root advisory profiles carry embedded role methodology because their consumers do not share a guaranteed skill-preload contract. Dispatch through the native tools actually available in the session, and carry the global-rules contract and task constraints into each child. Skill loading in the parent does not automatically populate child context.
 
 | Persona | Native dispatch | When |
 | --- | --- | --- |
@@ -156,6 +148,18 @@ See [Oh My Pi](https://omp.sh/).
 
 ${HOST_LIMIT}
 `;
+
+const RETIRED_OUTPUTS = [
+  ...MODES.flatMap((mode) =>
+    ['claude-code', 'cursor', 'kimi-code'].map((host) => `commands/${host}/${mode}.md`),
+  ),
+  ...[...ROLES, 'orchestrator'].map((role) => `integrations/kimi-code/skills/${role}/SKILL.md`),
+  'rules/cursor/maestria-global.mdc',
+  'integrations/kimi-code/SYSTEM.md',
+  'integrations/claude-code/orchestrator.md',
+  'integrations/claude-code/global-rules.md',
+  'integrations/cursor/orchestrator.md',
+];
 
 const outputPlan = (packageRoot: string): Map<string, string> => {
   const plan = new Map<string, string>();
@@ -200,7 +204,10 @@ const staleAgents = (packageRoot: string, plan: Map<string, string>): string[] =
 export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[] => {
   const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
   const plan = outputPlan(packageRoot);
-  const stale = staleAgents(packageRoot, plan);
+  const stale = [
+    ...staleAgents(packageRoot, plan),
+    ...RETIRED_OUTPUTS.filter((relative) => fs.existsSync(path.join(packageRoot, relative))),
+  ];
   const changed: string[] = [];
   for (const [relative, content] of plan) {
     const absolute = assertContainedFile(packageRoot, relative);
@@ -209,7 +216,10 @@ export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[
     }
   }
   for (const relative of stale) {
-    assertContainedFile(packageRoot, relative);
+    const absolute = assertContainedFile(packageRoot, relative);
+    if (!fs.statSync(absolute).isFile()) {
+      throw new Error(`Retired output is not a file: ${relative}`);
+    }
   }
   if (!check) {
     for (const relative of changed) {

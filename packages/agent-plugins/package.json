@@ -32,20 +32,16 @@
     "kimi.plugin.json",
     "skills",
     "agents",
-    "commands",
-    "rules",
     "assets",
     "integrations/*/README.md",
     "integrations/codex/instructions",
-    "integrations/kimi-code/skills",
-    "integrations/kimi-code/SYSTEM.md",
-    "cli/README.md",
-    "automations/README.md",
-    "hooks/README.md",
     "docs",
     "INSTALL.md",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "integrations/cursor/commands",
+    "integrations/cursor/rules",
+    "integrations/kimi-code/commands"
   ],
   "type": "module",
   "publishConfig": {
@@ -63,5 +59,6 @@
   },
   "engines": {
     "node": ">=22.12.0"
-  }
+  },
+  "omp": {}
 }

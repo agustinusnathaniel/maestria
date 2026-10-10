@@ -9,7 +9,7 @@ maestria packages a shared agent methodology as platform-specific integrations. 
 
 - `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
 - Platform adapters belong in their own `packages/<platform>/`. Shared code belongs in the appropriate neutral package, not in another platform's package.
-- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The portable `agent-plugin` package declares skills only, with no runtime adapter, commands, hooks, or MCP component.
+- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The consolidated `@maestria/agent-plugins` package combines shared methodology skills with explicitly selected native host resources. It declares no executable runtime adapter, hooks, or MCP component.
 - Pi is a runtime extension and may use Node.js APIs. Keep host-neutral shared utilities separate from its runtime adapter.
 - Prefer small, reviewable changes. Preserve canonical ownership, package boundaries, and sync correctness when choosing between approaches.
 

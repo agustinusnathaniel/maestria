@@ -14,7 +14,7 @@ maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 ## Goals
 
-- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets declarative agents, skills, and commands. Codex gets skills plus CLI-managed native agents and instructions.
+- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets native agent profiles that preload shared role and global-rule skills, alongside shared workflow-mode skills. Codex gets skills plus CLI-managed native agents and instructions.
 
 - **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 

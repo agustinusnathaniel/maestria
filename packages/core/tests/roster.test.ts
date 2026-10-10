@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vite-plus/test';
 import pluginConfig from '../../agent-plugins/sync.config.js';
 import claudeCodeConfig from '../../agent-plugins/integrations/claude-code/sync.config.js';
 import cursorConfig from '../../agent-plugins/integrations/cursor/sync.config.js';
-import kimiCodeConfig from '../../agent-plugins/integrations/kimi-code/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
@@ -56,7 +55,6 @@ const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
 const syncConfigs: Record<string, SyncConfig> = {
   'claude-code': claudeCodeConfig,
   cursor: cursorConfig,
-  'kimi-code': kimiCodeConfig,
   opencode: opencodeConfig,
   pi: piConfig,
   plugin: pluginConfig,

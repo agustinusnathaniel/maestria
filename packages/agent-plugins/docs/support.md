@@ -6,13 +6,13 @@ The package ships declarative methodology and host resources. Sync and npm archi
 | --- | --- | --- |
 | Portable | Root manifest and standard Agent Skills; no portable runtime agent declaration | [Agent Plugins specification](https://agent-plugins.org/specification) |
 | Claude Code | Shared default skills scan; explicit agent and command file lists; preserved native tool-denial fields | [Plugin components](https://code.claude.com/docs/en/plugins/components) ([manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference)) |
-| Cursor | Selected host agents, commands, rules, and shared skills | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
+| Cursor | Root agent profiles, shared skills, and selected integration commands and rules; full role guidance remains in profiles where skill preloading is not verified | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
 | Codex | Skill manifest plus companion CLI-managed native TOMLs and instructions; OpenAI presentation via the `.codex-plugin/plugin.json` compatibility fallback, no inline `extensions.com.openai` | [Codex plugin documentation](https://developers.openai.com/codex/plugins) ([packaging guide](https://developers.openai.com/plugins/build/plugins)) |
 | Devin | Conventional root advisory agents; CLI/Desktop availability differs from cloud; no hooks or MCP servers declared | [Plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) ([Customize product guide](https://docs.devin.ai/product-guides/plugins)) |
 | ZCode | Explicit root advisory agents and shared skills; no host-specific command prompts | [Plugin documentation](https://zcode.z.ai/en/docs/plugin) |
 | Hermes | Portable root manifest and shared skills; discover the host-generated qualified namespace; no Python plugin or runtime parity | [Portable Agent Plugins support](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages) |
-| OMP | Portable root manifest and shared skills with native `task(agent, task)` dispatch per the integration guide; no executable extension, session hooks, enforcement, or per-agent model files | [Oh My Pi](https://omp.sh/) |
-| Kimi Code | Dedicated native skills and commands, session-start text injection, system instructions within 32 KB | [Plugin documentation](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) |
+| OMP | Portable root manifest and shared skills; dispatch, permissions, and lifecycle remain host-owned; no Maestria executable extension or session hooks | [Oh My Pi](https://omp.sh/) |
+| Kimi Code | Shared skill corpus, Kimi-specific command aliases, session-start orchestrator, and global-rules system prompt; host-version support for these manifest fields requires separate verification | [Plugin documentation](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) |
 
 Kimi's explicit empty agent list suppresses default root agent discovery, preserving its existing persona-to-built-in-profile mapping. This is verified against the [official loader source](https://github.com/MoonshotAI/kimi-code/blob/419aced0e97fa04b75f8f71b089e1667f6de6d0a/packages/agent-core-v2/src/app/plugin/manifest.ts#L110).
 

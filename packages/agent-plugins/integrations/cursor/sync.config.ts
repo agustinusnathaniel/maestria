@@ -1,49 +1,41 @@
-// Native cursor resources in the consolidated plugin.
-// Sync config: derives Cursor plugin agents/skills/rules from canonical core directives
-
-import { specialistReferenceReplacements } from '../../../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../../../core/scripts/lib/config.js';
-
-const CURSOR_TOOL_REPLACES = [
-  ...specialistReferenceReplacements(),
-  { from: 'run in parallel', to: 'run in parallel via multiple `Task` calls' },
-] as const;
-
-const ORCHESTRATOR_APPEND = `
-
-## Specialist Agents (Cursor)
-
-Delegate via the \`Task\` tool to the plugin's custom agents (\`agents/\`). Pass a complete handoff contract in the prompt.
-
-### How to invoke
-
-1. Load this orchestrator skill for methodology (already in context when relevant).
-2. Call \`Task\` with the specialist agent name and a full handoff: Goal, Context, Requirements, Known problems, Assumptions, Success criteria, Next step.
-3. For parallel independent work, launch multiple \`Task\` calls in one turn.
-
-### Maker/checker (two-layer enforcement)
-
-Cursor agents use a two-layer maker/checker split:
-
-1. **Runtime enforcement** - \`readonly: true\` flag on \`adventurer\`, \`planner\`, and \`reviewer\` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** - Agent prompts also include explicit read-only instructions as a backup.
-
-Enforce the split: never send review work to the same agent that implemented; \`reviewer\` / \`adventurer\` / \`planner\` must not edit files.
-
-## Workflow Commands
-
-Users can trigger modes with slash commands from this plugin:
-
-| Command | Pipeline |
-| --- | --- |
-| \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
-| \`/sonar\` | Research only: adventurer → architect/planner → STOP |
-| \`/blitz\` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
-`;
 
 export default {
   default: {
-    replace: [...CURSOR_TOOL_REPLACES],
+    replace: [
+      {
+        from: '@adventurer',
+        to: 'adventurer',
+      },
+      {
+        from: '@architect',
+        to: 'architect',
+      },
+      {
+        from: '@builder',
+        to: 'builder',
+      },
+      {
+        from: '@diagnose',
+        to: 'diagnose',
+      },
+      {
+        from: '@planner',
+        to: 'planner',
+      },
+      {
+        from: '@reviewer',
+        to: 'reviewer',
+      },
+      {
+        from: '@writer',
+        to: 'writer',
+      },
+      {
+        from: 'run in parallel',
+        to: 'run in parallel via multiple `Task` calls',
+      },
+    ],
   },
   files: {
     'adventurer.md': {
@@ -74,54 +66,45 @@ export default {
       output: 'builder.md',
     },
     'commands/blitz.md': {
-      append: [
-        '',
-        'Load the `orchestrator` skill if coordination is needed. Prefer a single `Task` to `builder` with a clear handoff.',
-        '',
-        'If the user provided a goal after `/blitz`, implement that goal now.',
-      ].join('\n'),
-      output: '../../commands/cursor/blitz.md',
-      prepend: [
-        '---',
-        'name: blitz',
-        'description: Fast maestria implementation via builder (skip optional recon/design unless unknown; required review remains)',
-        '---',
-        '',
-      ].join('\n'),
+      append: '',
+      output: '../../integrations/cursor/commands/blitz.md',
+      prepend:
+        '---\nname: blitz\ndescription: Fast maestria implementation via builder (skip optional recon/design unless unknown; required review remains)\n---\n',
+      replace: [
+        {
+          from: '@@MODE@@',
+          to: 'blitz',
+        },
+      ],
+      source: '../../../core/agent-directives/aliases/workflow.md',
       stripFrontmatter: true,
     },
     'commands/fein.md': {
-      append: [
-        '',
-        'Load the `orchestrator` skill for delegation methodology. Use the `Task` tool to spawn each specialist agent with a complete handoff contract.',
-        '',
-        'If the user provided a goal after `/fein`, run the pipeline on that goal now.',
-      ].join('\n'),
-      output: '../../commands/cursor/fein.md',
-      prepend: [
-        '---',
-        'name: fein',
-        'description: Run the full maestria pipeline (recon -> design -> implement -> review)',
-        '---',
-        '',
-      ].join('\n'),
+      append: '',
+      output: '../../integrations/cursor/commands/fein.md',
+      prepend:
+        '---\nname: fein\ndescription: Run the full maestria pipeline (recon -> design -> implement -> review)\n---\n',
+      replace: [
+        {
+          from: '@@MODE@@',
+          to: 'fein',
+        },
+      ],
+      source: '../../../core/agent-directives/aliases/workflow.md',
       stripFrontmatter: true,
     },
     'commands/sonar.md': {
-      append: [
-        '',
-        'Load the `orchestrator` skill for delegation methodology. Use the `Task` tool to spawn specialists with a complete handoff contract.',
-        '',
-        'If the user provided a goal after `/sonar`, research that goal now.',
-      ].join('\n'),
-      output: '../../commands/cursor/sonar.md',
-      prepend: [
-        '---',
-        'name: sonar',
-        'description: Research-only maestria mode (recon -> design, no implementation)',
-        '---',
-        '',
-      ].join('\n'),
+      append: '',
+      output: '../../integrations/cursor/commands/sonar.md',
+      prepend:
+        '---\nname: sonar\ndescription: Research-only maestria mode (recon -> design, no implementation)\n---\n',
+      replace: [
+        {
+          from: '@@MODE@@',
+          to: 'sonar',
+        },
+      ],
+      source: '../../../core/agent-directives/aliases/workflow.md',
       stripFrontmatter: true,
     },
     'diagnose.md': {
@@ -133,13 +116,8 @@ export default {
       output: 'diagnose.md',
     },
     'orchestrator.md': {
-      append: ORCHESTRATOR_APPEND,
-      frontmatter: {
-        description:
-          'maestria workflow dispatcher for Cursor routing, handoffs, and independent review.',
-        name: 'orchestrator',
-      },
-      output: '../../integrations/cursor/orchestrator.md',
+      output: '../../integrations/cursor/context.md',
+      source: '../../../core/agent-directives/integrations/cursor.md',
     },
     'planner.md': {
       frontmatter: {
@@ -169,11 +147,12 @@ export default {
         description:
           'maestria global agent rules - always apply for Cursor sessions using the maestria plugin',
       },
-      output: '../../rules/cursor/maestria-global.mdc',
+      output: '../../integrations/cursor/rules/maestria-global.mdc',
       replace: [
-        { from: '# Global Agent Rules', to: '# Global Agent Rules - maestria for Cursor' },
-        // The revised canonical rules body no longer carries the specialist
-        // roster; keep the delegation section self-contained for Cursor rules.
+        {
+          from: '# Global Agent Rules',
+          to: '# Global Agent Rules - maestria for Cursor',
+        },
         {
           from: '## Delegation and Context\n',
           to: '## Delegation and Context\n\nDelegate only to the seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, writer.\n',
