@@ -9,7 +9,7 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 `@maestria/pi` pairs a runtime extension with generated agent and skill resources. The extension owns lifecycle hooks, mode state, compaction, commands, deployment, and subagent dispatch; prompts and global rules remain in `packages/core/agent-directives/`. Keep runtime changes in the package's `src/`.
 
-OMP has no runtime package: it consumes the portable `@maestria/plugin` skills. OMP methodology changes belong to the canonical directives or the [OMP integration guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/plugin/integrations/omp/README.md); OMP behavior changes are host-owned.
+OMP has no runtime package: it consumes the portable `@maestria/agent-plugins` skills. OMP methodology changes belong to the canonical directives or the [OMP integration guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/integrations/omp/README.md); OMP behavior changes are host-owned.
 
 ## Change Shared Methodology
 
@@ -27,7 +27,7 @@ Platform transforms stay small: Pi rewrites `@agent` to `/agent`. OMP needs no t
 pnpm --filter @maestria/pi build
 pnpm --filter @maestria/pi validate
 pnpm --filter @maestria/pi test
-pnpm --filter @maestria/plugin test
+pnpm --filter @maestria/agent-plugins test
 ```
 
 Use the [Pi and OMP reference](/pi-omp/reference/) for user-facing command, dispatch, and session behavior.

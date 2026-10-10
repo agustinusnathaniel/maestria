@@ -7,7 +7,7 @@ Entries apply to `@maestria/pi` unless otherwise noted. OMP history below the mi
 
 ## Unreleased: OMP moves to the portable plugin
 
-- **The `@maestria/omp` native package is retired.** OMP coverage continues through the `@maestria/plugin` portable skills with native `task()` dispatch (`maestria install omp` stages `@maestria/plugin`). The plugin supplies methodology plus dispatch guidance; the host owns tools and lifecycle.
+- **The `@maestria/omp` native package is retired.** OMP coverage continues through the `@maestria/agent-plugins` portable skills with native `task()` dispatch (`maestria install omp` stages `@maestria/agent-plugins`). The plugin supplies methodology plus dispatch guidance; the host owns tools and lifecycle.
 - **Retired with the package:** session-start agent deployment, `before_agent_start` mode injection, compaction and session-state preservation, goal mirroring, tool-call interception and review-mode enforcement, the `maestria_subagent` wrapper, the `/fein`, `/sonar`, `/blitz`, `/review`, `/restore-model`, `/review-model`, `/handoff`, and `/maestria-status` commands, and per-agent model files (`maestria configure omp`).
 - **Migrating:** run `omp plugin uninstall @maestria/omp` (and remove any maestria agent files left in `~/.omp/agent/agents/`), then `maestria install omp`. Invoke `fein`, `sonar`, and `blitz` as skills and dispatch personas through `task(agent, task)` directly.
 

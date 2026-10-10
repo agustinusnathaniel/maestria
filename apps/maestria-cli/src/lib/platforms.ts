@@ -718,7 +718,7 @@ const hermes: PlatformDefinition = {
   install: Effect.gen(function* install() {
     yield* run(
       'hermes',
-      ['plugins', 'install', 'agustinusnathaniel/maestria/packages/plugin', '--enable'],
+      ['plugins', 'install', 'agustinusnathaniel/maestria/packages/agent-plugins', '--enable'],
       120_000,
     );
     const legacy = yield* fileExists(`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`);
@@ -879,8 +879,8 @@ const cursor: PlatformDefinition = {
 };
 
 // OMP consumes the consolidated portable plugin: `omp plugin install`
-// stages `@maestria/plugin`, whose root manifest and shared skills OMP loads
-// natively (see packages/plugin/integrations/omp/README.md). No
+// stages `@maestria/agent-plugins`, whose root manifest and shared skills OMP loads
+// natively (see packages/agent-plugins/integrations/omp/README.md). No
 // maestria-owned executable ships for OMP: no session hooks, no tool
 // interception, and no per-agent model files, so OMP has no model-config
 // handler. The retired `@maestria/omp` payload is not removed automatically;
@@ -889,7 +889,7 @@ const omp: PlatformDefinition = piStylePlatform({
   binary: 'omp',
   commandPrefix: ['plugin'],
   id: 'omp',
-  installedPackageJsonPath: `${homedir()}/.omp/plugins/node_modules/@maestria/plugin/package.json`,
+  installedPackageJsonPath: `${homedir()}/.omp/plugins/node_modules/@maestria/agent-plugins/package.json`,
   label: 'Oh My Pi',
   npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   referencePrefix: '',

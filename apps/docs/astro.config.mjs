@@ -44,7 +44,7 @@ export default defineConfig({
         }),
         starlightLlmsTxt({
           description:
-            'Portable AI engineering workflows. @maestria/plugin bundles Codex, Claude Code, ' +
+            'Portable AI engineering workflows. @maestria/agent-plugins bundles Codex, Claude Code, ' +
             'Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and portable Agent Plugins resources. ' +
             'Native runtime adapters remain available as @maestria/opencode and @maestria/pi.',
           details:
@@ -61,12 +61,12 @@ export default defineConfig({
             {
               description: 'Installable Agent Plugins v1 package with the standard skills layout.',
               label: 'maestria portable Agent Plugin',
-              url: 'https://maestria.sznm.dev/agent-plugin/',
+              url: 'https://maestria.sznm.dev/agent-plugins/',
             },
             {
               description: 'Live smoke results and manual activation checks by client.',
               label: 'maestria Agent Plugin compatibility',
-              url: 'https://maestria.sznm.dev/agent-plugin/compatibility/',
+              url: 'https://maestria.sznm.dev/agent-plugins/compatibility/',
             },
             {
               description: 'Install with `npx maestria install <platform>`.',
@@ -126,8 +126,8 @@ export default defineConfig({
         {
           collapsed: true,
           items: [
-            { label: 'Overview', link: '/agent-plugin/' },
-            { label: 'Compatibility', link: '/agent-plugin/compatibility/' },
+            { label: 'Overview', link: '/agent-plugins/' },
+            { label: 'Compatibility', link: '/agent-plugins/compatibility/' },
           ],
           label: 'Agent Plugins',
         },

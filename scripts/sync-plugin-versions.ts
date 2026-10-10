@@ -29,7 +29,7 @@
  *   previous release helper did.
  *
  * Targets:
- * - @maestria/plugin -> portable and native declarative manifests
+ * - @maestria/agent-plugins -> portable and native declarative manifests
  */
 
 import {

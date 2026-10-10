@@ -33,6 +33,37 @@ from = "/omp.md"
 to = "/pi-omp.md"
 status = 301
 
+# The former /agent-plugin/ doc section was renamed to /agent-plugins/.
+[[redirects]]
+from = "/agent-plugin"
+to = "/agent-plugins/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/"
+to = "/agent-plugins/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/compatibility"
+to = "/agent-plugins/compatibility/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/compatibility/"
+to = "/agent-plugins/compatibility/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin.md"
+to = "/agent-plugins.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/compatibility.md"
+to = "/agent-plugins/compatibility.md"
+status = 301
+
 [build.environment]
 NODE_VERSION = "24"
 COREPACK_INTEGRITY_KEYS = "0"

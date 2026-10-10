@@ -130,7 +130,7 @@ const ompGuide = (): string => `${NOTICE}
 
 # OMP Integration
 
-OMP (Oh My Pi) consumes the root Agent Plugins v1 manifest and shared skills. No OMP-specific manifest applies: OMP parses the standard \`plugin.json\` and validates skill frontmatter natively, so this package ships no host manifest shim. Install the staged package through the host plugin flow (\`maestria install omp\` stages \`@maestria/plugin\` via \`omp plugin install\`), then load the \`global-rules\` and \`orchestrator\` skills in session. If the retired \`@maestria/omp\` native package is still installed, remove it first (\`omp plugin uninstall @maestria/omp\`) so its executable hooks do not shadow the portable skills.
+OMP (Oh My Pi) consumes the root Agent Plugins v1 manifest and shared skills. No OMP-specific manifest applies: OMP parses the standard \`plugin.json\` and validates skill frontmatter natively, so this package ships no host manifest shim. Install the staged package through the host plugin flow (\`maestria install omp\` stages \`@maestria/agent-plugins\` via \`omp plugin install\`), then load the \`global-rules\` and \`orchestrator\` skills in session. If the retired \`@maestria/omp\` native package is still installed, remove it first (\`omp plugin uninstall @maestria/omp\`) so its executable hooks do not shadow the portable skills.
 
 ## Specialist → task() Routing
 
@@ -198,7 +198,7 @@ const staleAgents = (packageRoot: string, plan: Map<string, string>): string[] =
 };
 
 export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[] => {
-  const packageRoot = path.resolve(repoRoot, 'packages/plugin');
+  const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
   const plan = outputPlan(packageRoot);
   const stale = staleAgents(packageRoot, plan);
   const changed: string[] = [];
@@ -236,7 +236,7 @@ export const main = (
     const check = args[0] === '--check';
     const changes = syncConsolidatedPlugin(repoRoot, check);
     for (const relative of changes) {
-      console.log(`${check ? 'DRIFT' : 'SYNC'}: packages/plugin/${relative}`);
+      console.log(`${check ? 'DRIFT' : 'SYNC'}: packages/agent-plugins/${relative}`);
     }
     return check && changes.length > 0 ? 1 : 0;
   } catch (error) {

@@ -1,6 +1,6 @@
 ---
 title: Contributing
-description: Claude Code-specific package structure, sync behavior, and validation for @maestria/plugin.
+description: Claude Code-specific package structure, sync behavior, and validation for @maestria/agent-plugins.
 ---
 
 For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
@@ -16,7 +16,7 @@ Edit `packages/core/agent-directives/`, never generated files under `agents/`, `
 ```bash
 scripts/sync-all
 scripts/check-sync
-pnpm --filter @maestria/plugin test
+pnpm --filter @maestria/agent-plugins test
 ```
 
 ## Validate the Package
@@ -24,7 +24,7 @@ pnpm --filter @maestria/plugin test
 The focused checks require the Claude Code CLI:
 
 ```bash
-cd packages/plugin
+cd packages/agent-plugins
 pnpm test
 claude plugin validate . --strict
 ```

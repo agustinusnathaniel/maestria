@@ -2,10 +2,10 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import pluginConfig from '../../plugin/sync.config.js';
-import claudeCodeConfig from '../../plugin/integrations/claude-code/sync.config.js';
-import cursorConfig from '../../plugin/integrations/cursor/sync.config.js';
-import kimiCodeConfig from '../../plugin/integrations/kimi-code/sync.config.js';
+import pluginConfig from '../../agent-plugins/sync.config.js';
+import claudeCodeConfig from '../../agent-plugins/integrations/claude-code/sync.config.js';
+import cursorConfig from '../../agent-plugins/integrations/cursor/sync.config.js';
+import kimiCodeConfig from '../../agent-plugins/integrations/kimi-code/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';

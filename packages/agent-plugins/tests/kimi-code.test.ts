@@ -325,7 +325,7 @@ describe('SYSTEM.md plugin instructions', () => {
 describe('package.json', () => {
   it('has the expected name, private flag, and files', async () => {
     const pkg = await readJson('package.json');
-    expect(pkg.name).toBe('@maestria/plugin');
+    expect(pkg.name).toBe('@maestria/agent-plugins');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
   });

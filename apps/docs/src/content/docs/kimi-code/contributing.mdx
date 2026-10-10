@@ -1,6 +1,6 @@
 ---
 title: Contributing
-description: Kimi Code-specific package structure, sync behavior, and validation for @maestria/plugin.
+description: Kimi Code-specific package structure, sync behavior, and validation for @maestria/agent-plugins.
 ---
 
 For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For the shared source workflow, see [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
@@ -20,19 +20,19 @@ The manifest owns the Kimi-native entry points:
 
 ## Change Shared Methodology
 
-Edit `packages/core/agent-directives/`, never `packages/plugin/integrations/kimi-code/skills/`, `commands/`, or `SYSTEM.md`. Regenerate and verify from the repository root:
+Edit `packages/core/agent-directives/`, never `packages/agent-plugins/integrations/kimi-code/skills/`, `commands/`, or `SYSTEM.md`. Regenerate and verify from the repository root:
 
 ```bash
 scripts/sync-all
 scripts/check-sync
-pnpm --filter @maestria/plugin test
+pnpm --filter @maestria/agent-plugins test
 ```
 
 Kimi-specific changes belong in `integrations/kimi-code/sync.config.ts` or the manifest. Do not copy canonical prompt text into the package.
 
 ## Add a Skill
 
-Add the canonical prompt under `packages/core/agent-directives/` (or a Kimi-only addition when the behavior does not belong in core). Add its transform and subagent profile in `integrations/kimi-code/sync.config.ts`, its entry in the orchestrator routing table when it is a specialist, and manifest and safety assertions in `packages/plugin/tests/`. Then run the commands above.
+Add the canonical prompt under `packages/core/agent-directives/` (or a Kimi-only addition when the behavior does not belong in core). Add its transform and subagent profile in `integrations/kimi-code/sync.config.ts`, its entry in the orchestrator routing table when it is a specialist, and manifest and safety assertions in `packages/agent-plugins/tests/`. Then run the commands above.
 
 Read-only roles are advisory: Kimi permission rules apply to the session, not to an individual persona. The seven-specialist roster is part of the current routing contract; update the routing table and tests together when it changes.
 
@@ -40,4 +40,4 @@ Read-only roles are advisory: Kimi permission rules apply to the session, not to
 
 - [Installation](/kimi-code/getting-started/installation/)
 - [Quick Start](/kimi-code/getting-started/quick-start/)
-- [Kimi Code README](https://github.com/agustinusnathaniel/maestria/blob/main/packages/plugin/README.md)
+- [Kimi Code README](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/README.md)

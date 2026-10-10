@@ -5,7 +5,7 @@
   "author": {
     "name": "agustinusnathaniel"
   },
-  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/plugin",
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
   "repository": "https://github.com/agustinusnathaniel/maestria",
   "license": "MIT",
   "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
@@ -16,7 +16,7 @@
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],
-    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/plugin",
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
     "defaultPrompt": [
       "Route this task through the maestria specialists.",
       "Review this change independently before implementation.",

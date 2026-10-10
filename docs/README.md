@@ -37,7 +37,7 @@ The collection keeps consequential architectural choices. Procedures and documen
 
 ## Plans
 
-[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [consolidated package README](../packages/plugin/README.md) for installation and current user guidance.
+[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [consolidated package README](../packages/agent-plugins/README.md) for installation and current user guidance.
 
 ## Next Step
 

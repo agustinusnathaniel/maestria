@@ -24,7 +24,7 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 | Package | Description | README |
 | --- | --- | --- |
 | [@maestria/opencode](packages/opencode/) | maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
-| [@maestria/plugin](packages/plugin/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and Agent Plugins clients | [README](packages/plugin/README.md) |
+| [@maestria/agent-plugins](packages/agent-plugins/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and Agent Plugins clients | [README](packages/agent-plugins/README.md) |
 | [@maestria/pi](packages/pi/) | maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 
 Canonical agent directives and the sync pipeline live in the private `@maestria/core` package (`packages/core/agent-directives/`); `packages/shared/*` holds private host-neutral utilities. Neither is published to npm.
@@ -126,9 +126,9 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 For per-package uninstall instructions, see:
 
 - [@maestria/opencode uninstall](apps/docs/src/content/docs/opencode/getting-started/installation.mdx)
-- [@maestria/plugin uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
+- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
 - [@maestria/pi & OMP via plugin uninstall](apps/docs/src/content/docs/pi-omp/getting-started/installation.mdx)
-- [@maestria/plugin uninstall](apps/docs/src/content/docs/cursor/getting-started/installation.mdx)
-- [@maestria/plugin uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
-- [@maestria/plugin uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)
+- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/cursor/getting-started/installation.mdx)
+- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
+- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)
 - [Hermes plugin uninstall](apps/docs/src/content/docs/hermes/getting-started/installation.mdx)

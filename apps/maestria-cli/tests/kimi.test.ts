@@ -41,7 +41,7 @@ describe('Kimi Code plugin registration', () => {
       expect(plugin).toMatchObject({
         enabled: true,
         id: 'maestria',
-        originalSource: '@maestria/plugin',
+        originalSource: '@maestria/agent-plugins',
         root: path.join(root, 'plugins', 'managed', 'maestria'),
         source: 'local-path',
       });

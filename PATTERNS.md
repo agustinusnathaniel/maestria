@@ -91,7 +91,7 @@ How each platform implements this pattern:
 | **Oh My Pi** | Portable skills + native `task()` | OMP loads the shared plugin skills and dispatches personas through its native `task(agent, task)` tool. No wrapper, no enforcement, no session hooks: the retired native package no longer supplies gates or commands. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
 | **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
 | **Hermes** | Portable skills | The shared plugin exposes methodology through Hermes skill discovery. Permissions, delegation, lifecycle, and session state remain host-owned; the retired Python adapter no longer supplies gates or commands. |
-| **Agent Plugins v1 (portable)** | Shared portable surface | `@maestria/plugin` exposes root methodology skills. Native manifests select host-specific resources in the same archive; portable clients retain dispatch, context, and permission authority. |
+| **Agent Plugins v1 (portable)** | Shared portable surface | `@maestria/agent-plugins` exposes root methodology skills. Native manifests select host-specific resources in the same archive; portable clients retain dispatch, context, and permission authority. |
 
 ---
 

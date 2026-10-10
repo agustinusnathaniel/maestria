@@ -1,5 +1,5 @@
 ---
-"@maestria/plugin": minor
+"@maestria/agent-plugins": minor
 "maestria": minor
 ---
 

@@ -3,7 +3,7 @@ title: Contributing
 description: Maintain the generated Codex CLI integration and its marketplace-facing package metadata.
 ---
 
-`@maestria/plugin` is generated from the canonical directives in `packages/core/agent-directives/`. The package adapts those directives to Codex's namespaced skill format and pairs them with lightweight native custom-agent templates and an instruction resource. For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/).
+`@maestria/agent-plugins` is generated from the canonical directives in `packages/core/agent-directives/`. The package adapts those directives to Codex's namespaced skill format and pairs them with lightweight native custom-agent templates and an instruction resource. For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/).
 
 ## Package Boundary
 
@@ -11,12 +11,12 @@ Hand-authored files are the plugin manifest (`.codex-plugin/plugin.json`), the n
 
 ## Canonical Source Workflow
 
-Edit `packages/core/agent-directives/`, never generated files under `packages/plugin/skills/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
+Edit `packages/core/agent-directives/`, never generated files under `packages/agent-plugins/skills/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
 
 ```bash
 scripts/sync-all
 scripts/check-sync
-pnpm --filter @maestria/plugin test
+pnpm --filter @maestria/agent-plugins test
 ```
 
 ## Validation
@@ -24,8 +24,8 @@ pnpm --filter @maestria/plugin test
 Run the Codex plugin-creator validator against the package and inspect the generated skill files:
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/plugin
-pnpm --filter @maestria/plugin test
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/agent-plugins
+pnpm --filter @maestria/agent-plugins test
 ```
 
 The verified support boundary is Codex CLI plugin skills and native CLI installation. Codex desktop parity and runtime permission enforcement remain outside this package.

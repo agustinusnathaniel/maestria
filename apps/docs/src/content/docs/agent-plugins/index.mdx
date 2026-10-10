@@ -1,5 +1,5 @@
 ---
-title: '@maestria/plugin'
+title: '@maestria/agent-plugins'
 description: Use maestria's workflow methodology in agent clients that support Agent Plugins v1.
 ---
 
@@ -7,7 +7,7 @@ import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components'
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-@maestria/plugin packages maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
+@maestria/agent-plugins packages maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
 
 <Aside type="tip" title="When to choose the portable package">
   Choose it when you want the same skills across compatible clients with client-owned discovery,
@@ -17,7 +17,7 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 ## Before You Install
 
-You need a client that supports Agent Plugins v1 and its skills component; check the [compatible clients](https://agent-plugins.org/compatible-clients) list. The [compatibility matrix](/agent-plugin/compatibility/) records dated client checks: a pass confirms package discovery and skill loading, not native agents, commands, hooks, permissions, or session behavior.
+You need a client that supports Agent Plugins v1 and its skills component; check the [compatible clients](https://agent-plugins.org/compatible-clients) list. The [compatibility matrix](/agent-plugins/compatibility/) records dated client checks: a pass confirms package discovery and skill loading, not native agents, commands, hooks, permissions, or session behavior.
 
 ## What You Get
 
@@ -48,7 +48,7 @@ Use --json for a machine-readable report; the CLI never activates the package or
 <Steps>
 
 1. Open the client's plugin or extension installer.
-2. Install `@maestria/plugin`, or select the directory printed by maestria plugin install.
+2. Install `@maestria/agent-plugins`, or select the directory printed by maestria plugin install.
 3. Reload installed skills or start a new session.
 
 </Steps>
@@ -62,7 +62,7 @@ The command is intentionally namespaced as `maestria plugin ...`: `maestria inst
 Point a client that accepts local plugins at the directory containing plugin.json rather than its nested skills directory:
 
 ```text
-/path/to/maestria/packages/plugin/
+/path/to/maestria/packages/agent-plugins/
 ```
 
 A local checkout is useful when testing unreleased changes.
@@ -108,7 +108,7 @@ Read-only roles are guidance, not a security boundary; the consuming client rema
   <LinkCard
     title="Compatibility matrix"
     description="Dated smoke results and client-specific verification steps."
-    href="/agent-plugin/compatibility/"
+    href="/agent-plugins/compatibility/"
   />
   <LinkCard
     title="Agent Plugins v1 specification"
@@ -118,6 +118,6 @@ Read-only roles are guidance, not a security boundary; the consuming client rema
   <LinkCard
     title="Package source"
     description="Manifest, installation guide, and generated skills."
-    href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/plugin"
+    href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins"
   />
 </CardGrid>

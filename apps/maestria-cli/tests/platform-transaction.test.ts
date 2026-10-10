@@ -136,7 +136,10 @@ describe('uninstallOne', () => {
 describe('updateOne', () => {
   it('migrates legacy declarative package versions to the consolidated release', async () => {
     const release: unknown = JSON.parse(
-      await readFile(new URL('../../../packages/plugin/package.json', import.meta.url), 'utf-8'),
+      await readFile(
+        new URL('../../../packages/agent-plugins/package.json', import.meta.url),
+        'utf-8',
+      ),
     );
     if (
       typeof release !== 'object' ||
@@ -165,7 +168,7 @@ describe('updateOne', () => {
               ),
               getLatestVersion: Effect.succeed(latest),
               id,
-              npmPackage: '@maestria/plugin',
+              npmPackage: '@maestria/agent-plugins',
               update,
             }),
             true,

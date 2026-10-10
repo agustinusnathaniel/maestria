@@ -6,14 +6,14 @@ description: How to install @maestria/pi or run maestria on OMP through the port
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/pi` adds the maestria methodology to the [Pi](https://pi.software) coding agent as one extension registering 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration. [Oh My Pi](https://omp.sh) (OMP) runs the same methodology through the portable `@maestria/plugin` skills with native `task()` dispatch: no maestria-owned executable ships for OMP.
+`@maestria/pi` adds the maestria methodology to the [Pi](https://pi.software) coding agent as one extension registering 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration. [Oh My Pi](https://omp.sh) (OMP) runs the same methodology through the portable `@maestria/agent-plugins` skills with native `task()` dispatch: no maestria-owned executable ships for OMP.
 
 <Aside type="caution">
   **Migrating from `@maestria/omp`?** The native OMP package is retired. Remove it first (`omp
   plugin uninstall @maestria/omp`), then install the plugin below. Session hooks, tool interception,
   review-mode enforcement, goal mirroring, and per-agent model files do not carry over; see the [OMP
   integration
-  guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/plugin/integrations/omp/README.md)
+  guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/integrations/omp/README.md)
   for the exact boundary.
 </Aside>
 
@@ -44,7 +44,7 @@ The [maestria CLI](/cli/) stages the portable plugin for OMP:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install omp" />
 
-This runs `omp plugin install @maestria/plugin`. OMP loads the portable skills from the package manifest; no slash commands or session hooks are installed.
+This runs `omp plugin install @maestria/agent-plugins`. OMP loads the portable skills from the package manifest; no slash commands or session hooks are installed.
 
   </TabItem>
 </Tabs>
@@ -53,7 +53,7 @@ This runs `omp plugin install @maestria/plugin`. OMP loads the portable skills f
 
 1. Start your platform: `pi` or `omp`. Expected: on Pi the extension loads automatically and the agent dispatches from the first turn; on OMP load the `global-rules` and `orchestrator` skills in session, then ask the agent to route work through them.
 
-2. List what's installed: `pi list` (Pi) or `omp plugin list` (OMP). Expected: `@maestria/pi` or `@maestria/plugin` appears in the output.
+2. List what's installed: `pi list` (Pi) or `omp plugin list` (OMP). Expected: `@maestria/pi` or `@maestria/agent-plugins` appears in the output.
 
 ## Updating
 
@@ -85,10 +85,10 @@ pi install npm:@maestria/pi@<version>
 />
 
 ```bash
-omp plugin install @maestria/plugin@latest
+omp plugin install @maestria/agent-plugins@latest
 
 # Or pin a version
-omp plugin install @maestria/plugin@<version>
+omp plugin install @maestria/agent-plugins@<version>
 ```
 
   </TabItem>
@@ -127,7 +127,7 @@ pi uninstall npm:@gotgenes/pi-subagents
 />
 
 ```bash
-omp plugin uninstall @maestria/plugin
+omp plugin uninstall @maestria/agent-plugins
 ```
 
   </TabItem>

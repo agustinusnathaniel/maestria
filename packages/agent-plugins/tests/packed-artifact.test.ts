@@ -150,7 +150,7 @@ describe('published consolidated plugin', () => {
             manifests: manifestPaths,
             nativeKimiSkills,
             nativeReadOnlyRoles: readOnlyRoles,
-            reproduction: 'pnpm --filter @maestria/plugin test',
+            reproduction: 'pnpm --filter @maestria/agent-plugins test',
             result: 'passed',
             sharedSkills: skills,
           },

@@ -161,7 +161,7 @@ describe('pi and omp package commands', () => {
       .mock.calls.find(
         (call) => call[0] === 'omp' && call[1]?.[0] === 'plugin' && call[1]?.[1] === 'uninstall',
       );
-    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/plugin']);
+    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/agent-plugins']);
 
     vi.clearAllMocks();
     const pi = requirePlatform('pi');
@@ -182,13 +182,21 @@ describe('pi and omp package commands', () => {
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi'], 120_000]);
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@latest'], 120_000]);
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@1.2.3'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/plugin'], 120_000]);
     expect(calls).toContainEqual([
       'omp',
-      ['plugin', 'install', '@maestria/plugin@latest'],
+      ['plugin', 'install', '@maestria/agent-plugins'],
       120_000,
     ]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/plugin@1.2.3'], 120_000]);
+    expect(calls).toContainEqual([
+      'omp',
+      ['plugin', 'install', '@maestria/agent-plugins@latest'],
+      120_000,
+    ]);
+    expect(calls).toContainEqual([
+      'omp',
+      ['plugin', 'install', '@maestria/agent-plugins@1.2.3'],
+      120_000,
+    ]);
   });
 });
 
@@ -206,7 +214,7 @@ describe('hermes portable plugin commands', () => {
 
   it('reports the portable plugin identity without a Python adapter', async () => {
     const hermes = requirePlatform('hermes');
-    expect(hermes.npmPackage).toBe('@maestria/plugin');
+    expect(hermes.npmPackage).toBe('@maestria/agent-plugins');
     expect(await Effect.runPromise(hermes.getInstalledVersion)).toBe('0.2.0');
     vi.clearAllMocks();
     await Effect.runPromise(hermes.uninstall);
@@ -228,7 +236,7 @@ describe('hermes portable plugin commands', () => {
     expect(calls).toContainEqual([
       'plugins',
       'install',
-      'agustinusnathaniel/maestria/packages/plugin',
+      'agustinusnathaniel/maestria/packages/agent-plugins',
       '--enable',
       120_000,
     ]);
@@ -273,10 +281,10 @@ describe('marketplace-backed platform handlers', () => {
     const cursor = getPlatform('cursor');
     const kimiCode = getPlatform('kimi-code');
 
-    expect(claudeCode?.npmPackage).toBe('@maestria/plugin');
-    expect(codex?.npmPackage).toBe('@maestria/plugin');
-    expect(cursor?.npmPackage).toBe('@maestria/plugin');
-    expect(kimiCode?.npmPackage).toBe('@maestria/plugin');
+    expect(claudeCode?.npmPackage).toBe('@maestria/agent-plugins');
+    expect(codex?.npmPackage).toBe('@maestria/agent-plugins');
+    expect(cursor?.npmPackage).toBe('@maestria/agent-plugins');
+    expect(kimiCode?.npmPackage).toBe('@maestria/agent-plugins');
     expect(claudeCode?.supportsVersionPinning).toBe(false);
     expect(codex?.supportsVersionPinning).toBe(false);
   });

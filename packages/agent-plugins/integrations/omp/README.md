@@ -2,7 +2,7 @@
 
 # OMP Integration
 
-OMP (Oh My Pi) consumes the root Agent Plugins v1 manifest and shared skills. No OMP-specific manifest applies: OMP parses the standard `plugin.json` and validates skill frontmatter natively, so this package ships no host manifest shim. Install the staged package through the host plugin flow (`maestria install omp` stages `@maestria/plugin` via `omp plugin install`), then load the `global-rules` and `orchestrator` skills in session. If the retired `@maestria/omp` native package is still installed, remove it first (`omp plugin uninstall @maestria/omp`) so its executable hooks do not shadow the portable skills.
+OMP (Oh My Pi) consumes the root Agent Plugins v1 manifest and shared skills. No OMP-specific manifest applies: OMP parses the standard `plugin.json` and validates skill frontmatter natively, so this package ships no host manifest shim. Install the staged package through the host plugin flow (`maestria install omp` stages `@maestria/agent-plugins` via `omp plugin install`), then load the `global-rules` and `orchestrator` skills in session. If the retired `@maestria/omp` native package is still installed, remove it first (`omp plugin uninstall @maestria/omp`) so its executable hooks do not shadow the portable skills.
 
 ## Specialist → task() Routing
 

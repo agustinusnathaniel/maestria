@@ -8,7 +8,7 @@
       "name": "maestria",
       "source": {
         "source": "npm",
-        "package": "@maestria/plugin"
+        "package": "@maestria/agent-plugins"
       },
       "policy": {
         "installation": "AVAILABLE",

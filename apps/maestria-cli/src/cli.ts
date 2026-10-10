@@ -95,7 +95,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   plugin: {
     examples: [
       'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
-      'maestria plugin install                 Stage @maestria/plugin in the maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
       'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
     ],
@@ -145,7 +145,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
 const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   install: {
     examples: [
-      'maestria plugin install                 Stage @maestria/plugin in the maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
       'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
       'maestria plugin install --json          Output the staged package report as JSON',

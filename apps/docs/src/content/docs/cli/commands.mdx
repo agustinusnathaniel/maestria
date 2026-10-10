@@ -130,10 +130,10 @@ Skill flags are validated before any change. An unmanaged skill already present 
 | ------------- | ----------- | ------------------------------------------------------- |
 | `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
 | `pi`          | Pi          | `@maestria/pi` (npm)                                    |
-| `kimi-code`   | Kimi Code   | `@maestria/plugin` (npm)                                |
+| `kimi-code`   | Kimi Code   | `@maestria/agent-plugins` (npm)                         |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
-| `cursor`      | Cursor      | `@maestria/plugin` (npm)                                |
-| `omp`         | Oh My Pi    | `@maestria/plugin` (npm, portable skills)               |
+| `cursor`      | Cursor      | `@maestria/agent-plugins` (npm)                         |
+| `omp`         | Oh My Pi    | `@maestria/agent-plugins` (npm, portable skills)        |
 | `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
 | `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
@@ -177,7 +177,7 @@ maestria plugin install [source] [--destination <path>] [--json]
 | --- | --- |
 | `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, optional MCP configuration, and package path containment without writing files |
 | `maestria plugin validate ./my-plugin --json` | Emits the validation report as JSON |
-| `maestria plugin install` | Fetches `@maestria/plugin`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
+| `maestria plugin install` | Fetches `@maestria/agent-plugins`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
 | `maestria plugin install ./my-plugin` | Validates and stages a local package |
 | `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
 
@@ -185,10 +185,10 @@ The staged directory contains the root `plugin.json` and fixed `skills/` layout.
 
 ### Sources and destinations
 
-`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/plugin`:
+`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugins`:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install" />
-<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/plugin@0.1.2" />
+<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugins@0.1.2" />
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install ./my-plugin" />
 
 Without `--destination`, the package is staged under:

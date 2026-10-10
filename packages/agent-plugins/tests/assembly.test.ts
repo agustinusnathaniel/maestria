@@ -11,10 +11,14 @@ const temporaryRoots: string[] = [];
 const fixture = (): string => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'maestria-plugin-assembly-'));
   temporaryRoots.push(root);
-  fs.cpSync(path.join(repoRoot, 'packages/plugin'), path.join(root, 'packages/plugin'), {
-    filter: (source) => !source.includes(`${path.sep}node_modules`),
-    recursive: true,
-  });
+  fs.cpSync(
+    path.join(repoRoot, 'packages/agent-plugins'),
+    path.join(root, 'packages/agent-plugins'),
+    {
+      filter: (source) => !source.includes(`${path.sep}node_modules`),
+      recursive: true,
+    },
+  );
   return root;
 };
 
@@ -27,7 +31,7 @@ afterEach(() => {
 describe('consolidated plugin assembly', () => {
   it('reports drift without writing and repairs only owned outputs idempotently', () => {
     const root = fixture();
-    const packageRoot = path.join(root, 'packages/plugin');
+    const packageRoot = path.join(root, 'packages/agent-plugins');
     const target = path.join(packageRoot, 'agents/reviewer.md');
     const stale = path.join(packageRoot, 'agents/retired.md');
     const native = path.join(packageRoot, 'agents/codex/maestria-reviewer.toml');
@@ -50,7 +54,7 @@ describe('consolidated plugin assembly', () => {
 
   it('fails before writes or cleanup when a required native resource is missing', () => {
     const root = fixture();
-    const packageRoot = path.join(root, 'packages/plugin');
+    const packageRoot = path.join(root, 'packages/agent-plugins');
     const target = path.join(packageRoot, 'agents/builder.md');
     const stale = path.join(packageRoot, 'agents/retired.md');
     fs.writeFileSync(target, 'drift\n');
@@ -64,7 +68,7 @@ describe('consolidated plugin assembly', () => {
 
   it('rejects malformed shared role metadata before changing outputs', () => {
     const root = fixture();
-    const packageRoot = path.join(root, 'packages/plugin');
+    const packageRoot = path.join(root, 'packages/agent-plugins');
     const target = path.join(packageRoot, 'agents/builder.md');
     fs.writeFileSync(target, 'drift\n');
     fs.writeFileSync(path.join(packageRoot, 'skills/writer/SKILL.md'), 'missing frontmatter\n');
@@ -75,7 +79,7 @@ describe('consolidated plugin assembly', () => {
 
   it('rejects linked output directories without writing outside the package', () => {
     const root = fixture();
-    const packageRoot = path.join(root, 'packages/plugin');
+    const packageRoot = path.join(root, 'packages/agent-plugins');
     const external = path.join(root, 'external');
     fs.mkdirSync(external);
     fs.writeFileSync(path.join(external, 'sentinel.md'), 'untouched\n');

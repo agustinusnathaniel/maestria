@@ -28,7 +28,7 @@ agent-directives/
   skills/            - Shared handoff and iteration-limit sources
 ```
 
-The consolidated plugin lives at `packages/plugin/`. Its root projection maps shared methodology to `skills/<name>/SKILL.md`; configs under `integrations/` preserve native host agents, commands, rules, and Kimi personas. Host manifests select native resources without adding duplicate skill roots. `scripts/sync-all` regenerates projections and bundle resources; `scripts/check-sync` verifies both. Canonical methodology stays here. Hooks and automations are inactive unless explicitly implemented and configured.
+The consolidated plugin lives at `packages/agent-plugins/`. Its root projection maps shared methodology to `skills/<name>/SKILL.md`; configs under `integrations/` preserve native host agents, commands, rules, and Kimi personas. Host manifests select native resources without adding duplicate skill roots. `scripts/sync-all` regenerates projections and bundle resources; `scripts/check-sync` verifies both. Canonical methodology stays here. Hooks and automations are inactive unless explicitly implemented and configured.
 
 Methodology skills distributed as standalone skills (for example `create-pull-request`, `docs-update`) live once at the repository root under `skills/` and are not generated from this directory: the CLI invokes the official `skills` CLI to install them, and core keeps only the routing pointer. Do not copy skill bodies into plugin packages. The Claude Code plugin manifest for these standalone skills lives at `skills/.claude-plugin/plugin.json`.
 

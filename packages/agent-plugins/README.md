@@ -1,4 +1,4 @@
-# @maestria/plugin
+# @maestria/agent-plugins
 
 maestria packages shared engineering methodology and native integration metadata in one plugin. The canonical methodology remains in `packages/core/agent-directives/`; this package contains generated projections and host adapters.
 
@@ -22,4 +22,4 @@ Start with [installation](INSTALL.md) and [support boundaries](docs/support.md).
 
 Run `scripts/sync-all`, then `scripts/check-sync` from the repository root. The root and nested sync configs derive skills, agents, rules, and commands from core. `scripts/sync-consolidated-plugin.ts` then assembles the advisory root agent profiles and integration guides after the native projections are generated. It never installs into host directories.
 
-Run `pnpm --filter @maestria/plugin test` for assembly, native Kimi behavior, and packed payload checks. The packed test writes `artifacts/plugin-pack-evidence.json` with the shipped entries, manifest checks, preserved read-only metadata, and reproduction command. Live host loading remains unverified.
+Run `pnpm --filter @maestria/agent-plugins test` for assembly, native Kimi behavior, and packed payload checks. The packed test writes `artifacts/plugin-pack-evidence.json` with the shipped entries, manifest checks, preserved read-only metadata, and reproduction command. Live host loading remains unverified.

@@ -34,7 +34,7 @@ Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (ru
 
 - Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package (supported range `^21.5.1`); the maestria CLI installs it for you.
 - The methodology is advisory prompt guidance; the maker/checker split is enforced at the tool level only where Pi supports review-mode tool blocking.
-- OMP is served through `@maestria/plugin` portable skills (`maestria install omp`).
+- OMP is served through `@maestria/agent-plugins` portable skills (`maestria install omp`).
 
 ## Documentation and Changelog
 
