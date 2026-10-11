@@ -87,16 +87,6 @@ const sha256 = (value: string): string => createHash('sha256').update(value, 'ut
 const normalizeText = (value: string, temporaryRoot: string): string =>
   value.replaceAll('\r\n', '\n').split(temporaryRoot).join('<TMP>');
 
-const readSkillBody = (relativePath: string): string => {
-  const text = fs.readFileSync(path.join(packageRoot, relativePath), 'utf-8');
-  const match = /^---\r?\n[\s\S]*?\r?\n---\r?\n(?<body>[\s\S]*)$/u.exec(text);
-  const body = match?.groups?.body;
-  if (body === undefined) {
-    throw new Error('required-skill-frontmatter-invalid');
-  }
-  return body.replace(/^<!-- Auto-generated[\s\S]*?-->\s*/u, '').trim();
-};
-
 const collectText = (value: unknown): string[] => {
   if (typeof value === 'string') {
     return [value];
@@ -365,7 +355,9 @@ const recordChildEvidence = (
   const toolNames = readToolNames(requestBody.tools);
   const normalizedNames = new Set(toolNames.map((name) => name.toLowerCase()));
   state.checks.childRequestObserved = true;
-  state.checks.wrapperLoaded = systemText.includes('You are a Maestria specialist subagent.');
+  state.checks.wrapperLoaded = systemText.includes(
+    'You review code for quality. You do not edit files',
+  );
   state.checks.reviewerSkillPreloaded = systemText.includes(reviewerSkill);
   state.checks.globalRulesPreloaded = systemText.includes(globalRulesSkill);
   state.checks.childToolsPresent = toolNames.length > 0;
@@ -485,9 +477,17 @@ export const createPreloadFixture = async (
   temporaryRoot: string,
   state = createPreloadState(),
 ): Promise<PreloadFixture> => {
-  const reviewerSkill = normalizeText(readSkillBody('skills/reviewer/SKILL.md'), temporaryRoot);
+  const reviewerSkill = normalizeText(
+    fs
+      .readFileSync(
+        path.resolve(packageRoot, '../core/agent-directives/specialists/reviewer.md'),
+        'utf-8',
+      )
+      .trim(),
+    temporaryRoot,
+  );
   const globalRulesSkill = normalizeText(
-    readSkillBody('skills/global-rules/SKILL.md'),
+    fs.readFileSync(path.resolve(packageRoot, '../core/agent-directives/rules.md'), 'utf-8').trim(),
     temporaryRoot,
   );
   state.contextDigests.reviewerSkill = sha256(reviewerSkill);

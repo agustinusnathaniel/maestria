@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "version": "0.7.0",
-  "description": "maestria methodology skills for Codex: specialist workflows, orchestration, and review contracts",
+  "description": "Maestria utility skills with companion CLI native agents and orchestration instructions",
   "author": {
     "name": "agustinusnathaniel"
   },
@@ -11,8 +11,8 @@
   "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
   "interface": {
     "displayName": "maestria",
-    "shortDescription": "Specialist workflow skills for Codex",
-    "longDescription": "Shared specialist and workflow skills for Codex, including handoffs, bounded repair, and review contracts. The companion Maestria CLI adds native custom-agent profiles and orchestration instructions; marketplace installation provides the skills plugin. The host owns runtime permissions and enforcement.",
+    "shortDescription": "Handoff and bounded repair utility skills",
+    "longDescription": "Two utility skills for Codex. The companion Maestria CLI installs complete native custom agents and marked orchestration instructions. Codex owns runtime permissions and enforcement.",
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],

@@ -34,7 +34,7 @@ describe('Codex managed native agents', () => {
         [
           '<!-- maestria:codex-orchestrator:start -->',
           '## maestria orchestration',
-          'Use $maestria:orchestrator and delegate with agent_type.',
+          'Self-contained routing, policy, and per-turn FEIN, SONAR, BLITZ instructions.',
           '<!-- maestria:codex-orchestrator:end -->',
           '',
         ].join('\n'),
@@ -63,6 +63,10 @@ describe('Codex managed native agents', () => {
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
       const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
+      expect(installedInstructions).toContain(
+        await readFile(join(sourceRoot, 'rules', 'codex', 'instructions', 'AGENTS.md'), 'utf-8'),
+      );
+      expect(installedInstructions).not.toContain('$maestria:orchestrator');
       expect(installedInstructions.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
       expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsFile": "AGENTS.md"',

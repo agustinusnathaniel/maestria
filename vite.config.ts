@@ -21,6 +21,7 @@ export default defineConfig({
         'packages/*/prompts/**',
         'packages/*/rules/**',
         'packages/agent-plugins/integrations/*/README.md',
+        'packages/agent-plugins/AGENTS.md',
         'packages/**/skills/**',
         'packages/*/SYSTEM.md',
         '.agents',

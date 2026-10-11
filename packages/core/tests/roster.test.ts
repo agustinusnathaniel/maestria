@@ -2,10 +2,6 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import componentConfig from '../../agent-plugins/generation/agents.sync.config.js';
-import pluginConfig from '../../agent-plugins/generation/skills.sync.config.js';
-import claudeCodeConfig from '../../agent-plugins/generation/claude-code.sync.config.js';
-import cursorConfig from '../../agent-plugins/generation/cursor.sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
@@ -53,19 +49,36 @@ const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
   return ops;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 const syncConfigs: Record<string, SyncConfig> = {
-  'claude-code': claudeCodeConfig,
-  components: componentConfig,
-  cursor: cursorConfig,
   opencode: opencodeConfig,
   pi: piConfig,
-  plugin: pluginConfig,
 };
 
 describe('canonical specialist roster', () => {
   it('derives eight specialist files and seven delegable roles', () => {
     expect(canonicalFiles).toHaveLength(8);
     expect(delegableNames).toHaveLength(7);
+  });
+
+  it('keeps the consolidated profile registry aligned with canonical specialists', () => {
+    const registry: unknown = JSON.parse(
+      readFileSync(
+        path.join(import.meta.dirname, '../../agent-plugins/generation/profiles.json'),
+        'utf-8',
+      ),
+    );
+    if (!isRecord(registry)) {
+      throw new Error('Expected profile registry object');
+    }
+    expect(
+      findViolations(
+        canonicalFiles.map((file) => file.replace(/\.md$/u, '')),
+        Object.keys(registry),
+      ),
+    ).toEqual({ extra: [], missing: [] });
   });
 
   it('keeps ALLOWED_AGENTS aligned with the delegable roster', () => {
@@ -75,9 +88,7 @@ describe('canonical specialist roster', () => {
   for (const [platform, config] of Object.entries(syncConfigs)) {
     describe(platform, () => {
       it('registers the expected canonical specialist roster', () => {
-        const expected = ['claude-code', 'cursor', 'components'].includes(platform)
-          ? canonicalFiles.filter((file) => file !== `${ORCHESTRATOR}.md`)
-          : canonicalFiles;
+        const expected = canonicalFiles;
         const { missing } = findViolations(expected, Object.keys(config.files ?? {}));
         expect(missing).toEqual([]);
       });
@@ -93,8 +104,7 @@ describe('canonical specialist roster', () => {
       const ops = collectReplaceOps(config);
       expect(ops.length, platform).toBeGreaterThan(0);
       const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
-      const referencedNames =
-        platform === 'components' ? ['architect', 'builder', 'reviewer'] : delegableNames;
+      const referencedNames = delegableNames;
       const uncovered = referencedNames.filter(
         (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
       );

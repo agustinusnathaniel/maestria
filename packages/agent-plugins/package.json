@@ -38,10 +38,10 @@
     "INSTALL.md",
     "README.md",
     "LICENSE",
-    "commands/cursor",
-    "commands/kimi-code",
-    "rules/cursor",
-    "rules/codex/instructions"
+    "commands",
+    "rules",
+    "AGENTS.md",
+    "compatibility/devin/skills"
   ],
   "type": "module",
   "publishConfig": {
@@ -56,9 +56,6 @@
     "typescript": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:"
-  },
-  "engines": {
-    "node": ">=22.12.0"
   },
   "omp": {}
 }

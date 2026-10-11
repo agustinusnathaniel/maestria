@@ -1,0 +1,34 @@
+{
+  "adventurer": {
+    "name": "adventurer",
+    "description": "Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes."
+  },
+  "architect": {
+    "name": "architect",
+    "description": "Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions."
+  },
+  "builder": {
+    "name": "builder",
+    "description": "Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor."
+  },
+  "diagnose": {
+    "name": "diagnose",
+    "description": "Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention."
+  },
+  "planner": {
+    "name": "planner",
+    "description": "Phased planning agent with dependencies, verification criteria, timelines, and rollback points."
+  },
+  "reviewer": {
+    "name": "reviewer",
+    "description": "Independent review agent covering correctness, security, performance, maintainability, and quality gates."
+  },
+  "writer": {
+    "name": "writer",
+    "description": "Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records."
+  },
+  "orchestrator": {
+    "name": "orchestrator",
+    "description": "Workflow dispatcher task profile that selects routes, coordinates specialists, and preserves evidence"
+  }
+}

@@ -1,24 +1,13 @@
 ## Claude Code Integration
 
-### Global rules
+### Global rules and specialist agents
 
-Each specialist agent preloads its role skill and the universal `maestria:global-rules` skill. If either is missing from context, stop and report the missing skill before proceeding.
+The selected native agents embed their complete canonical role and global policy. Dispatch with the Agent tool using `maestria:adventurer`, `maestria:architect`, `maestria:builder`, `maestria:diagnose`, `maestria:planner`, `maestria:reviewer`, or `maestria:writer`. They do not depend on role or policy skills being installed or preloaded.
 
-### Specialist agents
+Research and review agents retain `disallowedTools: Write, Edit` and `model: inherit`. Those metadata fields are host controls; shell-mediated writes and judgment remain outside this guarantee. Plugin `permissionMode`, `hooks`, and `mcpServers` agent fields are ignored by Claude Code.
 
-Delegate with the Agent tool using the scoped agent names in Specialist Ownership above.
+### Workflow commands
 
-`maestria:adventurer`, `maestria:planner`, and `maestria:reviewer` deny the `Write` and `Edit` tools at the runtime level (read-only research and review roles).
+`/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` are explicit native command files. Each carries the complete mode, router, and global policy and preserves `$ARGUMENTS`. The two utility skills are `handoff` and `iteration-limits`.
 
-### Workflow mode skills
-
-| Invocation | Pipeline |
-| --- | --- |
-| `/maestria:fein` | Full pipeline: recon -> design -> implement -> review |
-| `/maestria:sonar` | Research only: owning specialist -> optional distinct specialist -> STOP |
-| `/maestria:blitz` | Fast path: direct or `maestria:builder` (skip optional ceremony; required review remains) |
-
-### Platform notes
-
-- Methodology and skills are advisory guidance, not hard security enforcement. Tool restrictions (`disallowedTools`) are enforced by Claude Code; everything else is prompt guidance.
-- Plugin agent frontmatter `permissionMode`, `hooks`, and `mcpServers` are ignored by Claude Code; do not rely on them.
+See [Claude Code plugin components](https://code.claude.com/docs/en/plugins/components).

@@ -1,10 +1,9 @@
 ---
-description: Concise handoff contract for passing outcome, constraints, evidence, blockers, and next steps between workflow stages.
+description: Pass outcome, constraints, evidence, blockers, and next steps between workflow stages
 name: handoff
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->
 
 # Handoff Aid
 

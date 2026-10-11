@@ -45,7 +45,7 @@ const readManifest = (): Record<string, unknown> => {
 };
 
 describe('Claude Code native plugin loading', () => {
-  it('preloads the shared rules and each role skill while retaining native metadata', () => {
+  it('embeds complete role and policy context while retaining native metadata', () => {
     const manifest = readManifest();
     const agentPaths = manifest.agents;
 
@@ -61,41 +61,29 @@ describe('Claude Code native plugin loading', () => {
       expect(metadata.name).toBe(role);
       expect(metadata.model).toBe('inherit');
       expect(metadata.disallowedTools).toBe(expectedDisallowedTools);
-      expect(metadata.skills).toEqual(['maestria:global-rules', `maestria:${role}`]);
-      expect(body.length).toBeLessThan(700);
-      expect(body).toMatch(/preloaded[\s\S]*role skill/iu);
-      expect(body).toMatch(/if either[\s\S]*missing[\s\S]*stop/iu);
-
-      for (const skill of [`global-rules`, role]) {
-        const skillPath = path.join(pluginRoot, `skills/${skill}/SKILL.md`);
-        expect(fs.existsSync(skillPath)).toBe(true);
-        const { metadata: skillMetadata } = parseFrontmatter(
-          fs.readFileSync(skillPath, 'utf-8'),
-          skillPath,
-        );
-        expect(skillMetadata.name).toBe(skill);
-      }
+      expect(metadata.skills).toBeUndefined();
+      const core = path.resolve(packageRoot, '../core/agent-directives');
+      expect(body).toContain(
+        fs.readFileSync(path.join(core, `specialists/${role}.md`), 'utf-8').trim(),
+      );
+      expect(body).toContain(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8').trim());
+      expect(body).not.toMatch(/(?:global-rules|reviewer)\/SKILL\.md/u);
     }
   });
 
-  it('exposes each workflow mode once through shared skills', () => {
+  it('exposes each workflow mode once through explicit native commands', () => {
     const manifest = readManifest();
 
     const pluginName = typeof manifest.name === 'string' ? manifest.name : '';
     expect(pluginName).toBe('maestria');
-    expect(manifest.commands).toEqual([]);
-
+    expect(manifest.commands).toEqual(modes.map((mode) => `./commands/${mode}.md`));
     for (const mode of modes) {
-      const skillPath = path.join(pluginRoot, `skills/${mode}/SKILL.md`);
-      const { metadata } = parseFrontmatter(fs.readFileSync(skillPath, 'utf-8'), skillPath);
-
-      const skillName = typeof metadata.name === 'string' ? metadata.name : '';
-      expect(skillName).toBe(mode);
-      expect(metadata['user-invocable']).not.toBe(false);
-      expect(`/${pluginName}:${skillName}`).toBe(`/maestria:${mode}`);
-      expect(
-        fs.existsSync(path.join(pluginRoot, `integrations/claude-code/commands/${mode}.md`)),
-      ).toBe(false);
+      const command = fs.readFileSync(path.join(pluginRoot, `commands/${mode}.md`), 'utf-8');
+      expect(command).toContain(`[MODE: ${mode}]`);
+      expect(command).toContain('$ARGUMENTS');
+      expect(command).toContain('## Routing');
+      expect(command).toContain('## Universal Floors');
+      expect(fs.existsSync(path.join(pluginRoot, `skills/${mode}/SKILL.md`))).toBe(false);
     }
   });
 });

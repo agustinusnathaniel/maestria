@@ -69,7 +69,7 @@ describe('consolidated plugin assembly', () => {
     fs.writeFileSync(stale, 'stale\n');
     fs.rmSync(path.join(packageRoot, 'generation/codex/maestria-writer.toml'));
 
-    expect(main(['--preflight'], root)).toBe(0);
+    expect(main(['--preflight'], root)).toBe(2);
     expect(() => syncConsolidatedPlugin(root)).toThrow(/maestria-writer\.toml/u);
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
     expect(fs.readFileSync(stale, 'utf-8')).toBe('stale\n');
@@ -102,15 +102,15 @@ describe('consolidated plugin assembly', () => {
     }
   });
 
-  it('rejects malformed shared role metadata before changing outputs', () => {
+  it('rejects a missing canonical role before changing outputs', () => {
     const root = fixture();
     const packageRoot = path.join(root, 'packages/agent-plugins');
     const target = path.join(packageRoot, 'integrations/omp/README.md');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
-    fs.writeFileSync(path.join(packageRoot, 'agents/writer.md'), 'missing frontmatter\n');
+    fs.rmSync(path.join(root, 'packages/core/agent-directives/specialists/writer.md'));
 
-    expect(() => syncConsolidatedPlugin(root)).toThrow(/frontmatter/u);
+    expect(() => syncConsolidatedPlugin(root)).toThrow(/writer\.md/u);
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
   });
 

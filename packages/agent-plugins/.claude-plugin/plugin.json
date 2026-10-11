@@ -28,5 +28,5 @@
     "./agents/claude-code/reviewer.md",
     "./agents/claude-code/writer.md"
   ],
-  "commands": []
+  "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
 }

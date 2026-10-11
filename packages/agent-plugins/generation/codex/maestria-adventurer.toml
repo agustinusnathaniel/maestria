@@ -1,7 +1,3 @@
 name = "maestria-adventurer"
 description = "maestria codebase reconnaissance specialist for mapping unfamiliar code and tracing execution paths."
-developer_instructions = """
-Load the $maestria:adventurer skill before acting.
-Stay in exploration mode: gather verified context, trace the real execution path, and return a concise evidence-backed handoff to the parent agent. Do not implement or edit files.
-"""
 sandbox_mode = "read-only"

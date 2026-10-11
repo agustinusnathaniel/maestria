@@ -1,9 +1,15 @@
 import { Effect } from 'effect';
-import { cp, mkdir, mkdtemp, readdir, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, realpath, rm, stat } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { isRecord } from '@/lib/primitives.js';
+import {
+  isFileNotFound,
+  isRecord,
+  isStringArray,
+  isWithin,
+  readJsonRecord,
+} from '@/lib/primitives.js';
 import { MAESTRIA_PLUGIN_PACKAGE } from '@/lib/package-constants.js';
 import { getMaestriaCacheDir, run } from '@/lib/shell.js';
 
@@ -125,17 +131,138 @@ const safePathSegment = (value: string): string => {
   return encoded === '.' || encoded === '..' || encoded === '' ? 'unversioned' : encoded;
 };
 
-const copyPluginDirectory = async (source: string, destination: string): Promise<void> => {
-  const entries = await readdir(source);
-  await Promise.all(
-    entries.map(async (entry) => {
-      await cp(path.join(source, entry), path.join(destination, entry), {
-        errorOnExist: true,
-        force: false,
-        recursive: true,
-      });
+const isSafeRelativePath = (value: string): boolean =>
+  value !== '' &&
+  !value.includes('\\') &&
+  !value.includes('\0') &&
+  !path.posix.isAbsolute(value) &&
+  !path.win32.isAbsolute(value) &&
+  !value.split('/').includes('..');
+
+const containedSourcePath = async (root: string, relative: string): Promise<string> => {
+  if (!isSafeRelativePath(relative)) {
+    throw new AgentPluginError(`Invalid staged file path: ${relative}`);
+  }
+  const resolved = await realpath(path.join(root, relative));
+  if (!isWithin(root, resolved)) {
+    throw new AgentPluginError(`${relative} resolves outside the plugin root`);
+  }
+  return resolved;
+};
+
+const npmPublishedFiles = async (root: string): Promise<string[] | undefined> => {
+  let metadata;
+  try {
+    metadata = await readJsonRecord(await containedSourcePath(root, 'package.json'));
+  } catch (error) {
+    if (isFileNotFound(error)) {
+      return undefined;
+    }
+    throw error;
+  }
+  if (metadata.files === undefined) {
+    return undefined;
+  }
+  if (!isStringArray(metadata.files) || !metadata.files.every(isSafeRelativePath)) {
+    throw new AgentPluginError('package.json files must contain safe relative publish paths');
+  }
+  const cache = await mkdtemp(path.join(tmpdir(), 'maestria-agent-plugin-pack-'));
+  try {
+    const output = await Effect.runPromise(
+      run(
+        'npm',
+        ['pack', root, '--dry-run', '--json', '--ignore-scripts', '--cache', cache],
+        120_000,
+      ),
+    );
+    const parsed: unknown = JSON.parse(output) as unknown;
+    const result: unknown = Array.isArray(parsed) ? parsed[0] : undefined;
+    if (!isRecord(result) || !Array.isArray(result.files)) {
+      throw new AgentPluginError('npm pack returned no publishable file list');
+    }
+    return result.files.map((entry: unknown) => {
+      if (!isRecord(entry) || typeof entry.path !== 'string' || !isSafeRelativePath(entry.path)) {
+        throw new AgentPluginError('npm pack returned an invalid staged file path');
+      }
+      return entry.path;
+    });
+  } finally {
+    await rm(cache, { force: true, recursive: true });
+  }
+};
+
+interface PluginEntry {
+  readonly directory: boolean;
+  readonly relative: string;
+}
+
+const directoryEntries = async (
+  root: string,
+  relative = '.',
+  ancestors: ReadonlySet<string> = new Set(),
+): Promise<PluginEntry[]> => {
+  const resolved = await containedSourcePath(root, relative);
+  const info = await stat(resolved);
+  if (info.isFile()) {
+    return [{ directory: false, relative }];
+  }
+  if (!info.isDirectory()) {
+    throw new AgentPluginError(`${relative} must be a regular file or directory`);
+  }
+  if (ancestors.has(resolved)) {
+    throw new AgentPluginError(`${relative} contains a cyclic directory symlink`);
+  }
+  const nextAncestors = new Set([...ancestors, resolved]);
+  const entries: PluginEntry[] = relative === '.' ? [] : [{ directory: true, relative }];
+  const names = await readdir(resolved);
+  const children = await Promise.all(
+    names.map(
+      async (name) => await directoryEntries(root, path.posix.join(relative, name), nextAncestors),
+    ),
+  );
+  return [...entries, ...children.flat()];
+};
+
+const pluginPayload = async (root: string): Promise<PluginEntry[]> => {
+  const published = await npmPublishedFiles(root);
+  if (published === undefined) {
+    return await directoryEntries(root);
+  }
+  return await Promise.all(
+    published.map(async (relative) => {
+      const resolved = await containedSourcePath(root, relative);
+      const info = await stat(resolved);
+      if (!info.isFile()) {
+        throw new AgentPluginError(`${relative} must be a regular published file`);
+      }
+      return { directory: false, relative };
     }),
   );
+};
+
+const copyPluginDirectory = async (
+  source: string,
+  destination: string,
+  entries: readonly PluginEntry[],
+): Promise<void> => {
+  const results = await Promise.allSettled(
+    entries.map(async (entry) => {
+      const target = path.join(destination, entry.relative);
+      if (entry.directory) {
+        await mkdir(target, { recursive: true });
+      } else {
+        await mkdir(path.dirname(target), { recursive: true });
+        await cp(await containedSourcePath(source, entry.relative), target, {
+          errorOnExist: true,
+          force: false,
+        });
+      }
+    }),
+  );
+  const failure = results.find((result) => result.status === 'rejected');
+  if (failure !== undefined) {
+    throw failure.reason;
+  }
 };
 
 export const stageAgentPlugin = async (
@@ -150,6 +277,7 @@ export const stageAgentPlugin = async (
     if (!report.valid || report.name === undefined) {
       throw new AgentPluginError(formatAgentPluginValidation(report).trim());
     }
+    const entries = await pluginPayload(resolved.root);
     const versionSegment = safePathSegment(report.version ?? 'unversioned');
     const defaultDestination = path.join(
       getMaestriaCacheDir(),
@@ -170,7 +298,7 @@ export const stageAgentPlugin = async (
       throw error;
     }
     try {
-      await copyPluginDirectory(resolved.root, destination);
+      await copyPluginDirectory(resolved.root, destination, entries);
       const installed = await validateAgentPlugin(destination);
       if (!installed.valid) {
         throw new AgentPluginError(formatAgentPluginValidation(installed).trim());

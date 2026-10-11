@@ -87,7 +87,7 @@ const assertNativeMetadata = (packedRoot: string): void => {
     expect(claude).toContain('disallowedTools: Write, Edit');
     expect(cursor).toContain('readonly: true');
     expect(codex).toContain('sandbox_mode = "read-only"');
-    expect(advisory).toContain('Read-only role (advisory)');
+    expect(advisory).toContain('## Universal Floors');
     expect(advisory).not.toMatch(/^(?:readonly|disallowedTools|sandbox_mode):/mu);
   }
 };
@@ -121,23 +121,23 @@ describe('published consolidated plugin', () => {
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(14);
-      expect(skills).toHaveLength(14);
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(5);
+      expect(skills).toHaveLength(2);
       expect(skills.every((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry))).toBe(
         true,
       );
-      expect(new Set(skills.map((entry) => entry.split('/')[2])).size).toBe(14);
+      expect(new Set(skills.map((entry) => entry.split('/')[2])).size).toBe(2);
       const rootAgents = entries.filter((entry) => /^package\/agents\/[^/]+\.md$/u.test(entry));
-      expect(rootAgents).toHaveLength(roles.length);
+      expect(rootAgents).toHaveLength(roles.length + 1);
       expect(
         entries.some((entry) =>
           /(?:generation\/|sync\.config|\.test\.ts|vite\.config|tsconfig)/u.test(entry),
         ),
       ).toBe(false);
-      expect(entries.some((entry) => /^package\/commands\/[^/]+\.md$/u.test(entry))).toBe(false);
-      expect(entries.some((entry) => /^package\/rules\/[^/]+\.(?:md|mdc)$/u.test(entry))).toBe(
-        false,
+      expect(entries.filter((entry) => /^package\/commands\/[^/]+\.md$/u.test(entry))).toHaveLength(
+        3,
       );
+      expect(entries).toContain('package/rules/global.md');
       expect(packageManifest.private).toBe(false);
       expect(packageManifest.publishConfig).toEqual({ access: 'public', provenance: true });
       expect(packageManifest.repository).toEqual(
@@ -146,15 +146,27 @@ describe('published consolidated plugin', () => {
       expect(packageManifest.pnpm).toBeUndefined();
       expect(packageManifest.packageManager).toBeUndefined();
       expect(packageManifest.omp).toEqual({});
+      expect(packageManifest.engines).toBeUndefined();
+      expect(manifests[4].agents).toBeUndefined();
+      expect(manifests[4].commands).toBeUndefined();
+      expect(entries).toContain('package/AGENTS.md');
       expect(manifests[1].skills).toBeUndefined();
       expect(manifests[1].agents).toEqual(roles.map((role) => `./agents/claude-code/${role}.md`));
       expect(manifests[5].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
-      expect(manifests[5].commands).toEqual([]);
-      expect(manifests[6].agents).toEqual([]);
+      expect(manifests[5].commands).toEqual([
+        './commands/fein.md',
+        './commands/sonar.md',
+        './commands/blitz.md',
+      ]);
+      expect(manifests[6].agents).toBe('./agents/kimi-code/');
       expect(manifests[6].skills).toBe('./skills/');
       expect(manifests[6].commands).toBe('./commands/kimi-code/');
-      expect(manifests[6].systemPromptPath).toBe('./skills/global-rules/SKILL.md');
-      expect(manifests[1].commands).toEqual([]);
+      expect(manifests[6].systemPromptPath).toBe('./rules/kimi-code/bootstrap.md');
+      expect(manifests[1].commands).toEqual([
+        './commands/fein.md',
+        './commands/sonar.md',
+        './commands/blitz.md',
+      ]);
       expect(manifests[2].commands).toBe('./commands/cursor/');
       expect(manifests[2].rules).toBe('./rules/cursor/');
       for (const role of roles) {

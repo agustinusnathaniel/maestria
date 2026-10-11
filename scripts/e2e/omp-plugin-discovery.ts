@@ -11,14 +11,10 @@ import { loadPackedPlugin } from './omp-plugin-package.ts';
 
 const EXPECTED_HOST_VERSION = '18.4.8';
 const PLUGIN_NAME = '@maestria/agent-plugins';
-const EXPECTED_PLUGIN_COUNTS = { agents: 7, commands: 0, rules: 0, skills: 14 } as const;
-const EXPECTED_AGENT_NAMES = 'adventurer architect builder diagnose planner reviewer writer'.split(
-  ' ',
-);
-const EXPECTED_SKILL_NAMES =
-  'adventurer architect blitz builder diagnose fein global-rules handoff iteration-limits orchestrator planner reviewer sonar writer'.split(
-    ' ',
-  );
+const EXPECTED_PLUGIN_COUNTS = { agents: 8, commands: 3, rules: 1, skills: 2 } as const;
+const EXPECTED_AGENT_NAMES =
+  'adventurer architect builder diagnose orchestrator planner reviewer writer'.split(' ');
+const EXPECTED_SKILL_NAMES = ['handoff', 'iteration-limits'];
 const scriptDir = import.meta.dirname;
 const repoRoot = path.resolve(scriptDir, '../..');
 const usage =
@@ -383,10 +379,10 @@ const checkPackedDiscovery = async (
   checkSkillDiscovery(skills, legacySkills);
   await checkAgentDiscovery(host, fixture, extensionRoots);
   recordCheck(
-    'legacy command and rule roots are empty',
+    'native commands and always-apply policy are discovered',
     counts.commands === EXPECTED_PLUGIN_COUNTS.commands &&
       counts.rules === EXPECTED_PLUGIN_COUNTS.rules,
-    `commands=${counts.commands}, rules=${counts.rules}; expected 0 for each`,
+    `commands=${counts.commands}, rules=${counts.rules}; expected 3 commands and 1 rule`,
   );
 };
 

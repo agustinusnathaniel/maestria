@@ -6,7 +6,7 @@ Delegate via the `Task` tool to the plugin's custom agents (`agents/`). Pass a c
 
 ### How to invoke
 
-1. Load this orchestrator skill for methodology (already in context when relevant).
+1. Use the complete router and global policy supplied by the always-apply native rule.
 2. Call `Task` with the specialist agent name and a full handoff: Goal, Context, Requirements, Known problems, Assumptions, Success criteria, Next step.
 3. For parallel independent work, launch multiple `Task` calls in one turn.
 
@@ -28,3 +28,5 @@ Users can trigger modes with slash commands from this plugin:
 | `/fein` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | `/sonar` | Research only: adventurer → architect/planner → STOP |
 | `/blitz` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
+
+The Cursor Integration manifest selects native `agents/cursor/` profiles, shared `skills/`, and the Cursor command and rule paths.

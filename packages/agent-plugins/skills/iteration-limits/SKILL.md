@@ -1,10 +1,9 @@
 ---
-description: Verifiable termination and bounded repair guidance for loops, reviews, and repeated implementation attempts.
+description: Bound repair and stop repeated work using verifiable termination criteria
 name: iteration-limits
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->
 
 # Iteration Limits
 

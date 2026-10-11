@@ -27,5 +27,5 @@
     "./agents/reviewer.md",
     "./agents/writer.md"
   ],
-  "commands": []
+  "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
 }
