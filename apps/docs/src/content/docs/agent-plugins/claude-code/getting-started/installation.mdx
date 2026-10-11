@@ -9,16 +9,17 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/agent-plugins` is a declarative Claude Code plugin: a `.claude-plugin/plugin.json` manifest, native agent profiles, and shared skills for roles, global rules, orchestration, and workflow modes. No build step or runtime code is required.
+`@maestria/agent-plugins` is a declarative Claude Code plugin: a `.claude-plugin/plugin.json` manifest, native agent profiles, three native workflow commands, and the two utility skills. No build step or runtime code is required.
 
 See the host-side model in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
 
 <Aside type="caution" title="CLI evidence is scoped">
-  Strict plugin validation passes. An offline fixture on Claude Code `2.1.217` verifies the reviewer
-  child, preload of its role and global-rules skills, and a tool schema without Write or Edit. It
-  does not test model judgment, shell-mediated editing, every specialist, other CLI versions,
-  account plugin sync, or Desktop Code. See the [runtime support
-  matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+  Strict plugin validation passes. An offline fixture on Claude Code `2.1.217` verifies complete
+  reviewer role and global policy in the native child request, a tool schema without Write or Edit,
+  and return of the child result. It does not test model judgment, shell-mediated editing, every
+  specialist, other CLI versions, account plugin sync, Cowork, or Desktop Code. See the [host
+  verification
+  record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
 </Aside>
 
 ## Prerequisites
@@ -81,24 +82,29 @@ claude plugin validate ./packages/agent-plugins --strict
 
 3. **Check the read-only roles**
 
-   `@maestria:adventurer`, `@maestria:planner`, and `@maestria:reviewer` cannot call the `Write` or `Edit` tools (denied via `disallowedTools`).
+   `maestria:adventurer`, `maestria:planner`, and `maestria:reviewer` cannot call the `Write` or `Edit` tools (denied via `disallowedTools`).
 
 </Steps>
 
 ## What's Inside
 
-| Component | Namespaced identifier | Purpose |
+| Component | Identifier | Purpose |
 | --- | --- | --- |
-| Agents | `@maestria:<agent>` | 7 specialist agents: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
-| Skills | `maestria:<role>`, `/maestria:orchestrator`, `maestria:global-rules`, `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Shared role methodology, routing, universal rules, and full-pipeline, research-only, or fast implementation modes |
+| Native agents | `maestria:<role>` through the Agent tool | Seven complete specialist profiles |
+| Native commands | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Full, research-only, and fast workflows with complete routing and policy |
+| Utility skills | `maestria:handoff`, `maestria:iteration-limits` | Context transfer and bounded repair |
 
-Each specialist profile declares its matching role skill and `maestria:global-rules` in the native `skills` field. The offline fixture verified that preload for the reviewer child on Claude Code `2.1.217`; it does not establish model behavior or loading across every role and version.
+Profiles and commands embed the complete canonical methodology. They do not preload role skills or a global-rules skill. Workflow commands preserve the task arguments.
 
 ## Tool Restrictions
 
-The only runtime enforcement in this package is `disallowedTools: Write, Edit` on `adventurer`, `planner`, and `reviewer`; skills, preloaded rules, and role prompts are advisory guidance, not a security boundary.
+Native `disallowedTools: Write, Edit` metadata filters those tools for adventurer, planner, and reviewer. Role and policy text remains guidance; shell-mediated writes are outside this filter. The host controls permission decisions and lifecycle.
 
-Claude Code ignores the `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents, so this plugin ships none of them. To enforce those fields, copy an agent file into `.claude/agents/` or `~/.claude/agents/`. The plugin does not ship a `rules/` directory and does not write project or user `CLAUDE.md` files.
+Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents. Maestria ships no executable hooks or MCP server and does not modify `CLAUDE.md`.
+
+## Claude Chat and Cowork
+
+The same package includes native commands supported by Claude Code, Desktop Code, and Cowork. Claude account plugins can expose commands and utility skills in Chat; Chat ignores native agents. Cowork supports plugin agents, while Maestria's account-sync and Cowork behavior remain unverified. Account plugins sync into Claude Code when signed in with the same account on Claude Code `2.1.273` or later. See [Claude's plugin surface guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
 
 ## Uninstalling
 

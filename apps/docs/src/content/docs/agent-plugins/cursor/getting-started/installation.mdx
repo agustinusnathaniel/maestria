@@ -47,13 +47,15 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 
 ## What gets installed
 
-| Path                           | Purpose                  |
-| ------------------------------ | ------------------------ |
-| `.cursor-plugin/plugin.json`   | Plugin manifest          |
-| `agents/*.md`                  | 7 specialist Task agents |
-| `skills/orchestrator/SKILL.md` | Dispatcher methodology   |
-| `rules/maestria-global.mdc`    | Always-on global rules   |
-| `commands/*.md`                | Workflow slash commands  |
+| Path                               | Purpose                                |
+| ---------------------------------- | -------------------------------------- |
+| `.cursor-plugin/plugin.json`       | Plugin manifest                        |
+| `agents/cursor/*.md`               | 7 complete specialist Task agents      |
+| `skills/*/SKILL.md`                | handoff and iteration-limits utilities |
+| `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing |
+| `commands/cursor/*.md`             | Complete workflow slash commands       |
+
+The manifest explicitly selects Cursor resources. Native profiles embed complete role and global policy; no orchestrator or role skill preload is needed. Package and sync checks verify these files, while live Cursor loading remains unverified. See the [compatibility matrix](/agent-plugins/compatibility/).
 
 ## Uninstall
 

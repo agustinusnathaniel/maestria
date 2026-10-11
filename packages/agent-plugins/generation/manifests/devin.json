@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "version": "0.7.0",
-  "description": "Shared maestria engineering methodology as portable Agent Skills, with native host overlays in the same package.",
+  "description": "Maestria specialist profiles, always-on policy, workflow entry points, and reusable utilities for Devin",
   "author": {
     "name": "agustinusnathaniel",
     "url": "https://github.com/agustinusnathaniel"

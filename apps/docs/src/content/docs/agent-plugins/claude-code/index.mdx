@@ -1,6 +1,6 @@
 ---
 title: '@maestria/agent-plugins'
-description: Declarative Claude Code plugin that ships 7 specialist agents and shared methodology skills for roles, orchestration, and workflow modes.
+description: Native Claude Code specialists and workflow commands with complete methodology and two utility skills.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -21,7 +21,7 @@ import { marks } from '@/data/marks.js';
     <PlatformHero
       eyebrow="@MAESTRIA/PLUGIN"
       title="Seven specialists behind Claude Code."
-      lead="Install one plugin. Get 7 specialist agents, shared role guidance, global rules, and fein/sonar/blitz workflow skills."
+      lead="Install seven complete specialist agents, native fein/sonar/blitz commands, and two utility skills."
       mark={marks.claudeCode}
       primaryCta={{ href: '/agent-plugins/claude-code/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/agent-plugins/claude-code/getting-started/quick-start/', label: 'Quick start' }}
@@ -32,11 +32,11 @@ import { marks } from '@/data/marks.js';
       <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">
         <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">CLI evidence is scoped</p>
         <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
-          Strict plugin validation passes. An offline fixture on Claude Code <code>2.1.217</code>
-          verifies the reviewer child, its role and global-rules skill preload, and a tool schema
-          without Write or Edit. It does not verify all agents, model behavior, shell isolation,
-          account sync, or Desktop Code. See the
-          <a href="https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md">runtime support matrix</a> for evidence.
+          Strict validation passes. An offline fixture on Claude Code <code>2.1.217</code>
+          verified complete reviewer role and global policy in the native child request, a tool
+          schema without Write or Edit, and return of the child result. It does not test model
+          judgment, shell isolation, all specialists, account sync, Cowork, or Desktop Code. See the
+          <a href="https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md">host verification record</a>.
         </p>
       </aside>
     </div>
@@ -46,7 +46,7 @@ import { marks } from '@/data/marks.js';
         <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Claude Chat and Cowork</p>
         <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
           Claude account plugins expose skills and commands in Chat and Cowork. Maestria's
-          workflow entry points are skills, with no separate command files. Claude supports
+          workflow entry points are native commands with complete routing and policy. Claude supports
           plugin subagents and hooks in Cowork and Claude Code, not Chat. Account plugins sync
           into Claude Code when signed in with the same account on Claude Code <code>2.1.273</code>
           or later. This is separate from the Code setup below; the Maestria fixture on
@@ -59,17 +59,17 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="01"
       kicker="WHAT YOU GET"
-      title="Native agents, shared skills."
+      title="Complete agents and native commands."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
       <FeatureGrid
         items={[
-          { title: '7 specialist agents', desc: 'All seven specialists, available as namespaced @maestria:<agent> mentions in every session.' },
-          { title: 'Orchestrator skill', desc: '/maestria:orchestrator routes work to the right specialist.' },
-          { title: 'Workflow mode skills', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the pipeline depth for each task.' },
-          { title: 'Role and global rules preloaded', desc: 'Each specialist preloads its matching role skill and the maestria:global-rules skill.' },
-          { title: 'Read-only roles enforced', desc: 'adventurer, planner, and reviewer deny Write and Edit via disallowedTools.' },
-          { title: 'Declarative projection', desc: 'A .claude-plugin/plugin.json manifest, native agent profiles, and shared skills - no build step or runtime code.' },
+          { title: '7 specialist agents', desc: 'Seven namespaced specialist profiles dispatched through the Claude Code Agent tool.' },
+          { title: 'Complete routing', desc: 'Workflow commands carry the dispatcher and global policy into the session.' },
+          { title: 'Native workflow commands', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the route for each task.' },
+          { title: 'Complete child context', desc: 'Each profile embeds its role and policy, with no skill-preload dependency.' },
+          { title: 'Native tool filters', desc: 'adventurer, planner, and reviewer deny Write and Edit. Shell-mediated writes remain outside that filter.' },
+          { title: 'Declarative projection', desc: 'Native profiles and commands plus handoff and iteration-limits utilities, with no executable adapter.' },
         ]}
       />
     </PluginSection>

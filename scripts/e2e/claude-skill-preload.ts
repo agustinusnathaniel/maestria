@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Offline Claude Code E2E for native subagent skill preloads.
+// Offline Claude Code E2E for complete native subagent context.
 // Usage: node --experimental-strip-types scripts/e2e/claude-skill-preload.ts
 //   --out artifacts/claude-skill-preload-evidence.json
 
@@ -70,7 +70,7 @@ const runCli = async (
       '--print',
       '--output-format',
       'json',
-      'Call the Maestria reviewer subagent for a one-line preload probe.',
+      'Call the Maestria reviewer subagent for a one-line native context probe.',
     ],
     { cwd, env, stdio: 'ignore' },
   );
@@ -156,7 +156,7 @@ if (outIndex === -1 || process.argv[outIndex + 1] === undefined) {
 }
 const outPath = path.resolve(repoRoot, process.argv[outIndex + 1] ?? '');
 const evidence = await runE2e(outPath);
-process.stdout.write(`Claude skill preload E2E ${evidence.status}: ${outPath}\n`);
+process.stdout.write(`Claude native context E2E ${evidence.status}: ${outPath}\n`);
 if (evidence.status !== 'passed') {
   process.exitCode = 1;
 }

@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install and use maestria to manage runtime integrations and portable Agent Plugins across supported coding agent platforms.
+description: Install and use maestria to manage host integrations and portable Agent Plugins across supported coding agent platforms.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
@@ -15,7 +15,7 @@ The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: 
 
 This checks which supported coding-agent CLIs are on your PATH and whether maestria is installed for each one. With no command, maestria defaults to status.
 
-### Install a Runtime Integration
+### Install a Host Integration
 
 Install all detected platforms:
 
@@ -33,7 +33,7 @@ Use the plugin namespace when the client supports Agent Plugins v1:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. The client controls activation, permissions, trust, and session behavior.
+The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. Portable discovery supplies handoff and iteration-limits utilities; full methodology uses the selected host's native resources. The client controls activation, permissions, trust, and session behavior.
 
 For a local package:
 

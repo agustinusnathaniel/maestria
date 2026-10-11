@@ -133,13 +133,13 @@ Skill flags are validated before any change. An unmanaged skill already present 
 | `kimi-code`   | Kimi Code   | `@maestria/agent-plugins` (npm)                         |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
 | `cursor`      | Cursor      | `@maestria/agent-plugins` (npm)                         |
-| `omp`         | Oh My Pi    | `@maestria/agent-plugins` (npm, portable skills)        |
+| `omp`         | Oh My Pi    | `@maestria/agent-plugins` (npm, native data resources)  |
 | `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
 | `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in its active AGENTS.md. Marketplace-only Codex installation supplies two utilities.
 
 ### Error handling
 
@@ -383,7 +383,7 @@ Choose the model each maestria specialist uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP loads portable plugin skills and has no per-agent model files.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP discovers native root task profiles whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
 
 For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` (global) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 

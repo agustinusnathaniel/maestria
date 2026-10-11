@@ -1,103 +1,64 @@
 ---
 title: Installation & Setup
-description: Install @maestria/agent-plugins in Kimi Code. The package reuses shared skills and adds Kimi workflow aliases and host-specific bootstrap instructions.
+description: Install complete native Maestria profiles, workflow commands, and session instructions in Kimi Code.
 ---
 
-This integration ships in the shared `@maestria/agent-plugins` package. The `kimi-code` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
-
-import { Steps } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/agent-plugins` is a declarative plugin with no build step.
+The Kimi integration ships in `@maestria/agent-plugins`. Its manifest selects seven complete native profiles in `agents/kimi-code/`, three native workflow commands in `commands/kimi-code/`, and the session bootstrap in `rules/kimi-code/bootstrap.md`. Root `skills/` contains the two utilities.
 
 ## Prerequisites
 
-- Kimi Code with support for the manifest's `skills`, `commands`, `sessionStart`, `skillInstructions`, and `systemPromptPath` fields. Check the host's current manifest documentation for those capabilities; this repository has not verified a minimum host version end to end.
-- Node.js 22.12 or later and npm when using the maestria CLI.
+Use a Kimi Code version supporting native plugin agents, commands, and `systemPromptPath`. See the [official plugin guide](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html). Node.js 22.12 or later and npm are needed for the Maestria CLI. Package checks confirm the emitted contract; live Kimi loading and model behavior remain unverified.
 
-The locally inspected Kimi Code v0.18 sources do not support the newer command and `systemPromptPath` fields used here. Do not expect those features on v0.18, and do not treat package or sync checks as proof of native runtime compatibility.
+## Install and Reload
 
-Host reference: the [Kimi plugin manifest](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) and [plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install kimi-code" />
 
-## Install
-
-<Steps>
-
-1. Install:
-
-   <AllPackageManagers
-     type="dlx"
-     pkg="maestria"
-     args="install kimi-code"
-     comment="Install for Kimi Code"
-   />
-
-2. Check the native plugin record:
-
-   <AllPackageManagers type="dlx" pkg="maestria" args="status" comment="Check installation" />
-
-3. Start a new session so the configured session-start skill and system-prompt contribution can load on a compatible host:
-
-   ```text
-   /reload
-   /new
-   ```
-
-</Steps>
-
-## Manual Install
-
-To control extraction yourself, run `npm pack @maestria/agent-plugins@latest`, extract the tarball, then run `/plugins install <extracted-directory>` from a Kimi Code session. Delete the temporary files afterward.
-
-## Optional Session Controls
-
-`[[hooks]]` and `[[permission.rules]]` blocks in `~/.kimi-code/config.toml` are the only tool-layer enforcement; persona text alone is advisory. The default installation adds neither. Hooks are executable code: review them before enabling. Permission rules apply session-wide, so a deny rule for review also blocks builder and writer work.
-
-> **Note (2026-09-22):** the recommended hooks below were previously recorded in ADR-KC-001 and are re-homed here, next to the install steps, so this guide is the single how-to reference.
-
-The recommended session controls live in the user's `config.toml`, not the plugin manifest; the user copies them in:
-
-- `PreToolUse` on `Bash` - block destructive commands (Kimi's upstream hooks documentation gives an example that exits 2 to block)
-- `UserPromptSubmit` - append a session reminder to every user message; the closest approximation of system-prompt injection
-- `PreCompact` / `PostCompact` - observation-only logging of compaction cycles
-
-`PreToolUse`, `UserPromptSubmit`, and `Stop` are blockable (return values affect the main flow); other events fire and forget. Subagent start/stop hooks are observation-only and suit telemetry.
-
-## Verify the Installation
-
-In Kimi Code, run:
+Inside Kimi Code, reload plugins or start a new session:
 
 ```text
+/reload
 /plugins list
 /plugins info maestria
 ```
 
-Confirm that the plugin is enabled. On a host that supports the manifest fields above, start a new session and ask the orchestrator to list the specialist routes. Full native loading remains unverified.
+Confirm `maestria` is enabled and exposes its native specialists and commands. For manual installation, extract `npm pack @maestria/agent-plugins@latest`, run `/plugins install <extracted-directory>`, then `/reload`.
+
+## What Loads
+
+| Component | Purpose |
+| --- | --- |
+| Seven native specialists | Complete role and global policy for adventurer, architect, builder, diagnose, planner, reviewer, and writer |
+| Three native commands | Complete fein, sonar, and blitz workflows with task arguments |
+| `systemPromptPath` bootstrap | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
+| Two utilities | `handoff` and `iteration-limits` |
+
+The integration uses neither `sessionStart.skill` nor `skillInstructions`. Native specialists replace the former mapping to built-in coder, explore, and plan agents. Child methodology does not depend on a parent loading role skills.
+
+## Tool and Model Boundaries
+
+Adventurer, planner, and reviewer profiles use `disallowedTools` to deny `WriteFile` and `StrReplaceFile`. This native tool filter is not a shell sandbox. Kimi owns permission decisions and execution safety. The plugin-agent format has no per-agent model field, so the host selects the model. The package adds no executable hooks or MCP server.
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
-| Plugin is missing | Run /plugins list and /plugins info maestria, then restart Kimi Code |
-| Orchestrator does not load | Confirm sessionStart.skill is orchestrator and start a new session |
-| Plugin changes do not appear | Run /reload, then /new |
-| Reviewer can edit | Configure session-wide permission rules; the persona prompt is not enforcement |
-| AgentSwarm is unavailable | Check the host's current AgentSwarm support |
+| Plugin missing | Run `/plugins list` and `/plugins info maestria`; verify the installation directory |
+| Old skills or agents appear | Remove the former standalone plugin, then `/reload` or start a new session |
+| Bootstrap does not load | Confirm the host supports `systemPromptPath` and the selected bootstrap file exists |
+| Native role missing | Confirm the host supports plugin agents and the manifest selects `agents/kimi-code/` |
+| Reviewer can edit through a shell | Native write-tool denial does not restrict shell execution |
 
-## Update
+## Update and Remove
 
-<AllPackageManagers type="dlx" pkg="maestria" args="update kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall kimi-code" />
 
-Updates replace the managed package: back up local edits before updating.
-
-## Uninstall
-
-<AllPackageManagers type="dlx" pkg="maestria" args="uninstall kimi-code" />
-
-Or from a Kimi Code session, run `/plugins remove maestria`. Remove any custom `[[hooks]]` or `[[permission.rules]]` blocks from `~/.kimi-code/config.toml` separately.
+Updates replace the managed package. Back up local changes first. User-configured host permission rules or hooks remain separate from this plugin.
 
 ## Next Steps
 
-- [Quick Start](/agent-plugins/kimi-code/getting-started/quick-start/) for your first delegated task
-- [Skill Reference](/core/agents/) for the specialist roles
-- [Kimi Code Contributing](/agent-plugins/kimi-code/contributing/) for package changes
+- [Quick Start](/agent-plugins/kimi-code/getting-started/quick-start/)
+- [Specialist Reference](/core/agents/)
+- [Compatibility](/agent-plugins/compatibility/)

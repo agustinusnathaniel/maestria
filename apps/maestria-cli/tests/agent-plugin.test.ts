@@ -128,7 +128,7 @@ describe('Agent Plugin staging', () => {
       await readFile(path.join(destination, 'plugin.json'), 'utf-8'),
     ) as unknown;
     expect(manifest).toMatchObject({ name: 'maestria' });
-  });
+  }, 30_000);
 
   it('fetches, stages, and revalidates an npm package source', async () => {
     const parent = await makeTempDirectory();

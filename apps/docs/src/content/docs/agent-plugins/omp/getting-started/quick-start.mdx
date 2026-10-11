@@ -1,30 +1,31 @@
 ---
 title: Quick Start
-description: Route work through shared Maestria skills in an Oh My Pi session.
+description: Use native Maestria workflow commands and task profiles in Oh My Pi.
 ---
 
-Start OMP and load the `global-rules` and `orchestrator` skills through OMP's skill interface. Portable skills do not execute at session start or change host permissions.
+After [installation](/agent-plugins/omp/getting-started/installation/), start a fresh OMP session. Native rule discovery supplies complete routing and global policy. The plugin utilities do not need to be loaded first.
 
 ## Run a Workflow
 
-Choose one of the shared workflow skills and give it your task:
+```text
+/fein Add rate limiting to the API and review the result independently.
+```
 
-| Skill   | Use                                          |
-| ------- | -------------------------------------------- |
-| `fein`  | Full pipeline for substantial work           |
-| `sonar` | Research and stop before implementation      |
-| `blitz` | Fast implementation with required safeguards |
-
-For example, ask OMP to use the `fein` skill to add rate limiting to an API. The skill provides Maestria's workflow; OMP controls how and when it loads.
+Use `/sonar <goal>` for research that stops before editing, or `/blitz <goal>` for familiar work with required safeguards. Each command carries complete mode, routing, and policy instructions.
 
 ## Delegate to a Specialist
 
-The package includes advisory root profiles for adventurer, architect, builder, diagnose, planner, reviewer, and writer. When you delegate, include the role guidance, global rules, task constraints, and acceptance evidence in the child task. Loading a skill in the parent does not automatically add its contents to a child context.
+Ask OMP to use its native `task(agent, task)` tool with `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, or `writer`. For example:
 
-OMP provides the native `task` tool. The package declares no task wrapper or enforcement layer, and the exact task interface and context inheritance depend on the active OMP version.
+```text
+Use the adventurer task profile to trace authentication in src/auth/.
+Report paths and uncertainties without editing.
+```
 
-## Next Steps
+Each profile includes full methodology. Supply the task outcome, constraints, and acceptance evidence in the handoff, then use a separate reviewer after implementation.
 
-- [Installation](/agent-plugins/omp/getting-started/installation/)
-- [Reference](/agent-plugins/omp/reference/)
-- [When to Use maestria](/core/when-to-use/)
+The eighth `orchestrator` profile is a dispatcher task, not a primary-agent override. Profiles inherit the parent model by default. Read-only guidance in generic root profiles is advisory; runtime tools and enforcement remain OMP controls.
+
+## Use Utilities
+
+`handoff` transfers context and `iteration-limits` bounds repair loops. They are the only portable skills in the package. See the [reference](/agent-plugins/omp/reference/) for native resources and verification limits.

@@ -1,24 +1,34 @@
 ---
 title: Agent Plugins Changelog
-description: Curated changes to the shared Agent Plugins package and host documentation.
+description: Curated changes and migration notes for the consolidated Maestria plugin.
 ---
+
+## Unreleased
+
+### Native Methodology and Portable Utilities
+
+- Root `skills/` now contains only `handoff` and `iteration-limits`. Roles, policy, routing, and modes have distinct native resources; remove the former role, orchestrator, global-rules, and mode skill invocations from your setup.
+- Native profiles embed complete role and policy instructions. Native commands embed complete mode, router, and policy, preserving task arguments. Child methodology no longer depends on role or global-rules skill preloads.
+- Claude Code ships seven native specialists and explicit `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` commands. Cursor retains native profiles, commands, and an always-apply routing and policy rule.
+- Codex marketplace installation supplies only two utilities. Use `maestria install codex` for complete native TOMLs and marked global instructions, then use FEIN, SONAR, and BLITZ keywords or mode markers. Codex `0.153.4` discovers conventional root skills and ignores the overlay skills selector.
+- Kimi Code now selects seven native plugin profiles and a complete `systemPromptPath` bootstrap. Built-in coder/explore/plan mappings and session-start skill loading are removed. Native plugin profiles have no per-agent model setting.
+- Devin explicitly selects its utilities and three workflow compatibility skills. Root agents and `AGENTS.md` carry complete methodology; native plugin agents remain local CLI/Desktop only.
+- ZCode explicitly enables the three native workflow commands. Profiles and commands carry full policy; separate plugin rule-selector support remains unverified.
+- OMP now receives eight native task profiles, three commands, one always-apply global rule, and two utilities. The dispatcher task does not override the primary agent. No retired executable enforcement or lifecycle behavior carries over.
+- Hermes receives only the two portable utilities. Optional full guidance requires manual import into the host-selected context file; portable activation does not inject it or register specialists. The Python adapter remains retired.
+- No executable adapters, lifecycle hooks, recurring automations, or MCP servers ship in this archive. Host availability and package inclusion are documented separately.
 
 ## 2026-10-11
 
-- Kept the package directly installable with root host manifests beside generated agents and skills. Canonical roles, modes, policy, and utilities retain their separate ownership in core; development inputs live in generation.
-- Local and Git installation now select `packages/agent-plugins/`. Published npm archives keep the same root layout and complete host-compatible skill exports.
-- Removed source integration context/config clutter and retained generated runtime guides and selected compatibility paths at the package root.
+- Made `packages/agent-plugins/` directly installable with host manifests beside generated resources. Git and extracted npm archives use the same installation root; development generation inputs remain outside the published archive.
+- Retained existing public host routes under `/agent-plugins/` and updated installation, quickstarts, capability descriptions, and compatibility boundaries for the native resource split.
 
 ## 2026-10-10
 
-- Added concise Devin and ZCode guides, separated Codex CLI and desktop-app setup, and documented Claude Code Desktop and Claude account plugin surfaces with their current evidence limits.
-- Consolidated shared role and workflow methodology into one root skill corpus. Kimi Code now selects those shared skills instead of shipping duplicate specialist skills.
-- Added thin host aliases and loader wrappers where native activation needs them. Claude Code profiles preload their role skill and global rules; Cursor retains full role guidance where child skill preloading is not established.
-- Documented host-specific resource ownership and runtime limits. OMP uses the portable package and advisory root profiles; the package provides no OMP runtime extension or command layer.
-- Grouped public guides for Claude Code, Codex, Cursor, Kimi Code, Hermes, and OMP under `/agent-plugins/<host>/`. Pi remains at `/pi/`, OpenCode at `/opencode/`, and portable package guidance at `/agent-plugins/`.
-- Added redirects from the former host-root routes and the combined Pi/OMP routes to their new locations.
+- Consolidated the former standalone declarative host packages into one archive and grouped public guides under `/agent-plugins/<host>/`, retaining redirects from former routes. Pi remains at `/pi/` and OpenCode at `/opencode/`.
+- Added Devin and ZCode setup guides and separate Codex CLI and desktop setup. The initial shared role/mode skill layout and thin profile wrappers from this date are superseded by the unreleased migration above.
 
-See each host's page for installation, support, and release history:
+See the host guides for setup and preserved standalone release history:
 
 - [Claude Code](/agent-plugins/claude-code/)
 - [Codex](/agent-plugins/codex/)
@@ -26,4 +36,3 @@ See each host's page for installation, support, and release history:
 - [Kimi Code](/agent-plugins/kimi-code/)
 - [Hermes](/agent-plugins/hermes/)
 - [Oh My Pi](/agent-plugins/omp/)
-- [Pi](/pi/)

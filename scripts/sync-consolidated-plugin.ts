@@ -134,7 +134,6 @@ const readCanonicalInputs = (repoRoot: string): Inputs => {
   }
   const args = readInput(coreRoot, 'integrations/command-arguments.md');
   requiredHeading(args, '$ARGUMENTS', 'integrations/command-arguments.md');
-  readInput(coreRoot, 'agents/claude-wrapper.md');
   const codexInstructions = readInput(coreRoot, 'integrations/codex-instructions.md');
   requiredHeading(
     codexInstructions,

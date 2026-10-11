@@ -6,7 +6,7 @@ description: Install and verify the shared Agent Plugins package for Oh My Pi.
 import { Steps } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-OMP uses the shared `@maestria/agent-plugins` package. Its portable skills provide methodology and its root role profiles provide advisory specialist guidance. OMP owns plugin activation, task execution, permissions, and session behavior.
+OMP uses the shared `@maestria/agent-plugins` package. It supplies complete native task profiles, workflow commands, an always-apply policy and routing rule, and two utility skills. OMP owns plugin activation, task execution, permissions, and session behavior.
 
 ## Install
 
@@ -22,7 +22,7 @@ OMP uses the shared `@maestria/agent-plugins` package. Its portable skills provi
    omp plugin list
    ```
 
-3. In a new session, use OMP's skill discovery to load `global-rules` and `orchestrator` before routing work.
+3. Start a new session and confirm `/fein`, `/sonar`, and `/blitz` are available, along with seven specialist task identities and the dispatcher task. Root rule discovery supplies policy and routing.
 
 </Steps>
 
@@ -34,7 +34,7 @@ omp plugin install @maestria/agent-plugins@latest
 
 ## Verify Discovery
 
-The packaged-artifact probe verified that OMP 18.4.8 discovers 14 shared skills and seven root advisory profiles from the archive. That source-level discovery check does not test model behavior, task execution, permissions, session hooks, or other OMP versions. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
+An isolated OMP 18.4.8 real-CLI probe installed the packed archive, disabled it, reinstalled it, and uninstalled it. It verified eight task profiles, three commands, one always-apply rule, two utilities, exact native bodies, command argument expansion, main-session policy injection, and all eight child-template compositions. Its 41 checks and 52 native file comparisons passed. No inference or actual task spawning ran, so model judgment and runtime permission enforcement remain unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
 
 ## Update
 
@@ -56,7 +56,7 @@ Or remove the package from OMP:
 omp plugin uninstall @maestria/agent-plugins
 ```
 
-If the retired `@maestria/omp` executable package is still installed, remove that package separately. Its hooks, interception, review-mode enforcement, goal mirroring, and per-agent model configuration were not carried into the portable integration.
+If the retired `@maestria/omp` executable package is still installed, remove that package separately. Its hooks, interception, review-mode enforcement, goal mirroring, and per-agent model configuration were not carried into this data-only integration.
 
 ## Next Steps
 

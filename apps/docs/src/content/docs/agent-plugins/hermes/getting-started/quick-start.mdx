@@ -1,28 +1,28 @@
 ---
 title: Quick Start
-description: Choose a Maestria workflow through Hermes portable skills.
+description: Discover and use Maestria's two portable utilities in Hermes.
 ---
 
-After [installation](/agent-plugins/hermes/getting-started/installation/), start a fresh Hermes session. Ask the agent to list plugin skills, load `global-rules`, then load `orchestrator` using the discovered fully qualified names.
+After [installation](/agent-plugins/hermes/getting-started/installation/), enable the plugin and start a fresh session. Ask Hermes to call `skills_list`, then `skill_view` with the discovered qualified name of `handoff` or `iteration-limits`.
 
-## Choose a route
-
-| Skill   | Use                                                     |
-| ------- | ------------------------------------------------------- |
-| `fein`  | Multi-stage work with delegation and independent review |
-| `sonar` | Research and planning, then stop before implementation  |
-| `blitz` | The smallest safe route for a concrete task             |
-
-These are workflow instructions. They do not install slash commands, persist a mode, or restrict tools.
-
-## Try a task
+## Transfer a Task
 
 ```text
-Use Maestria's sonar skill to investigate this module. Report the findings and stop before editing.
+Use the installed handoff utility to summarize this task's outcome,
+constraints, evidence, blockers, and next step.
 ```
 
-For implementation, describe the intended outcome and acceptance evidence. Hermes decides which native delegation tools are available. When an independent reviewer is unavailable, report that limitation instead of presenting a same-context review as independent.
+## Bound a Repair Loop
 
-## Host boundaries
+```text
+Use the installed iteration-limits utility to define when this repair
+is complete and when repeated failures should be reported as blocked.
+```
 
-Maestria adds no memory provider, background schedule, OpenCode bridge, or permission gate. Configure those capabilities through Hermes if your workflow needs them.
+These utilities provide guidance. They do not activate the Maestria router, register specialists, create workflow commands, or restrict tools.
+
+## Optional Methodology Context
+
+To add full routing, policy, and mode guidance manually, follow [the host-context setup](/agent-plugins/hermes/getting-started/installation/#optional-manual-host-context). A portable install alone does not load that context. Even with manual guidance, native agent registration and delegation remain Hermes capabilities.
+
+Maestria adds no Python adapter, memory provider, background schedule, OpenCode bridge, or permission gate. See [compatibility](/agent-plugins/compatibility/) for dated discovery evidence and its limits.

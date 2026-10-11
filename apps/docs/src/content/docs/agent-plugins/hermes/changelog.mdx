@@ -5,9 +5,11 @@ description: Release history for @maestria/hermes.
 
 ## Unreleased
 
+- Portable installation now supplies only handoff and iteration-limits. Full policy and routing require optional manual host context import; no native agents or mode commands are registered. See the [shared migration notes](/agent-plugins/changelog/).
+
 - Replaced the Python adapter with portable skills in `@maestria/agent-plugins`. Native mode commands, gating, hooks, and the OpenCode bridge are retired. Entries below preserve the former adapter release history.
 
-## Unreleased
+## Former Python Adapter (unreleased)
 
 - Project customization (`.maestria/workflow.md` then `.maestria/rules.md`) loads as subordinate guidance, re-read every `pre_llm_call` turn with a visible error banner; see the [methodology changelog](/core/changelog/).
 

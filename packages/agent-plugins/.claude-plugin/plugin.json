@@ -3,7 +3,7 @@
   "name": "maestria",
   "displayName": "maestria",
   "version": "0.7.0",
-  "description": "maestria methodology for Claude Code: specialist agents, shared methodology skills, and workflow mode skills",
+  "description": "Maestria native specialists, workflow commands, and reusable utility skills for Claude Code",
   "author": {
     "name": "agustinusnathaniel"
   },

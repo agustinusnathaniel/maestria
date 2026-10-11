@@ -1,12 +1,15 @@
 ---
 title: Oh My Pi Changelog
-description: Current OMP distribution notes and links to the archived native package history.
+description: Changes to the data-only OMP integration in the consolidated plugin.
 ---
 
-## 2026-10-10: Shared Agent Plugins integration
+## Unreleased
 
-- OMP uses the shared `@maestria/agent-plugins` skill corpus and advisory root role profiles.
-- The package declares no OMP commands, rules, hooks, executable extension, or task wrapper. OMP owns activation, task execution, permissions, and session behavior.
-- The OMP 18.4.8 packed-discovery probe verifies skills and profiles through the host loader. It does not verify `omp plugin install` or task execution; see the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
+- Added complete native resources: eight task profiles, three workflow commands, one always-apply global rule, and two portable utilities. The dispatcher task does not replace the primary agent; read-only prompt guidance remains advisory.
+- Retired role and workflow skill facades. Parent skill loading is no longer required for native specialist methodology.
+- The package includes no executable adapter, hooks, review interceptor, goal wrapper, or MCP server. Remove the retired `@maestria/omp` runtime package separately.
+- The OMP 18.4.8 real-CLI probe verifies packed installation lifecycle, native resource bodies, command argument expansion, and main/child context composition. It runs no inference or task spawning and does not establish model judgment or tool denial. See [compatibility](/agent-plugins/compatibility/) and the [shared changelog](/agent-plugins/changelog/).
 
-Earlier releases of the retired `@maestria/omp` executable are preserved in the [combined Pi and OMP release archive](/pi/changelog/).
+## 2026-10-10
+
+- Moved OMP to `@maestria/agent-plugins` and grouped its public guides under `/agent-plugins/omp/`. The initial 14-skill, seven-profile layout is superseded by the native resource split above.

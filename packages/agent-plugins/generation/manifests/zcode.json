@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "version": "0.7.0",
-  "description": "Shared maestria engineering methodology as portable Agent Skills, with native host overlays in the same package.",
+  "description": "Maestria native specialist profiles, workflow commands, and reusable utilities for ZCode",
   "author": {
     "name": "agustinusnathaniel",
     "url": "https://github.com/agustinusnathaniel"

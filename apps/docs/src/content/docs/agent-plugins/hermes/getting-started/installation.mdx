@@ -5,7 +5,7 @@ description: Install the consolidated Maestria plugin through Hermes portable Ag
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-Hermes consumes the root portable manifest and shared methodology skills in `@maestria/agent-plugins`. It requires a Hermes version that supports [portable Agent Plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).
+Hermes consumes the root portable manifest and the `handoff` and `iteration-limits` utility skills in `@maestria/agent-plugins`. It requires a Hermes version that supports [portable Agent Plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).
 
 ## Install
 
@@ -23,7 +23,17 @@ For unreleased work, copy the plugin into an isolated Hermes home and use the ho
 
 ## Verify skills
 
-Ask Hermes to use `skills_list` to discover the plugin's fully qualified skill names, then `skill_view` to load `global-rules` and `orchestrator`. Do not assume the old Python plugin's `maestria:` namespace: Hermes derives portable namespaces from package identity.
+Ask Hermes to use `skills_list` to discover the plugin's fully qualified skill names, then `skill_view` to load `handoff` or `iteration-limits`. Do not assume the old Python plugin's `maestria:` namespace: Hermes derives portable namespaces from package identity.
+
+## Optional Manual Host Context
+
+Portable installation supplies only utilities. For full policy, routing, and mode guidance, manually add the contents of bundled `rules/hermes/context.md` to the context file Hermes already selects, preserving existing instructions. If no context file exists, create one appropriate for your project. The package and CLI do not modify these user files or import the bundled context automatically.
+
+Hermes loads only the first applicable project context type. It searches for `.hermes.md` or `HERMES.md` from the current directory toward the Git root, then falls back to `AGENTS.md` in the current directory, followed by other supported context types. Do not create a higher-priority `.hermes.md` that hides an existing `AGENTS.md`. See the [official prompt-assembly order](https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly).
+
+Start a new session or rebuild the host prompt, then verify that the selected context includes the complete policy, router, and mode instructions. Host context-size settings can truncate the roughly 23 KB bundled guidance. Hermes subagents skip project context files, so manual delegation must explicitly pass the relevant role guidance, global policy, and task constraints to each child.
+
+Manual context remains advisory. It does not register native specialist profiles, create mode commands, or add hooks or enforcement. Hermes owns delegation, permissions, and lifecycle.
 
 ## Migrate the Python adapter
 
@@ -47,4 +57,4 @@ The equivalent Maestria commands remain `update hermes` and `uninstall hermes`. 
 ## Next steps
 
 - [Quick Start](/agent-plugins/hermes/getting-started/quick-start/)
-- [Workflow skills](/agent-plugins/hermes/commands/)
+- [Utility skills](/agent-plugins/hermes/commands/)

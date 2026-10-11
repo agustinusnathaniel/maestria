@@ -5,7 +5,7 @@ description: Your first session with @maestria/agent-plugins - specialists, orch
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-Once the plugin is installed, global rules apply to every Agent session.
+After installing and reloading the plugin, the selected always-apply native rule supplies complete routing and global policy. Native profiles and commands embed their full methodology; no orchestrator or role skill preload is needed.
 
 <Aside type="caution" title="Full orchestration is not always the best path">
   Direct execution or one specialist is often better for small changes and expensive models. Read
@@ -20,14 +20,14 @@ In Agent chat (IDE or CLI):
 /fein Fix the flaky auth test and review the fix
 ```
 
-That runs the full pipeline: adventurer → architect/planner → builder → reviewer.
+That selects the full route, adding reconnaissance and design when needed, followed by implementation and independent review.
 
 Other modes:
 
 | Command         | Behavior                                    |
 | --------------- | ------------------------------------------- |
 | `/sonar <goal>` | Research only - stops before implementation |
-| `/blitz <goal>` | Builder-first fast path                     |
+| `/blitz <goal>` | Smallest safe route with required review    |
 
 ## Try a single specialist
 
@@ -43,13 +43,14 @@ Expected sequence:
 
 <Steps>
 
-1. `diagnose` - root cause
-2. `builder` - minimal fix
-3. `reviewer` - validation (read-only; must not edit)
+1. `diagnose` - find the root cause, apply the confirmed minimal fix, and verify it
+2. `reviewer` - independent validation (read-only; must not edit)
 
 </Steps>
 
 Never ask the same agent that implemented to review its own work.
+
+The two utility skills are `handoff` and `iteration-limits`. Native resource loading is documented and package-checked; live Cursor verification remains open.
 
 ## Next
 

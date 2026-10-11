@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -1654,6 +1654,63 @@ describe('canonical source overrides', () => {
     await expect(runSync({ config })).rejects.toThrow(/preloaded methodology/u);
     expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toContain(
       'shared role skill',
+    );
+  });
+});
+
+describe('sync CLI dry-run status', () => {
+  const repoRoot = path.resolve(import.meta.dirname, '../../..');
+  const temporaryRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of temporaryRoots.splice(0)) {
+      rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  const dryRun = (invalidOutput: boolean) => {
+    const root = mkdtempSync(join(tmpdir(), 'maestria-sync-cli-status-'));
+    temporaryRoots.push(root);
+    mkdirSync(join(root, 'source'));
+    mkdirSync(join(root, 'output'));
+    writeFileSync(join(root, 'source', 'role.md'), 'Canonical role instructions\n');
+    writeFileSync(join(root, 'output', 'unrelated.md'), 'Preserve this file\n');
+    if (invalidOutput) {
+      mkdirSync(join(root, 'output', 'role.md'));
+    }
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(configPath, "export default {source: './source', output: './output'};\n");
+    const result = spawnSync(
+      process.execPath,
+      [
+        join(repoRoot, 'node_modules', 'tsx', 'dist', 'cli.mjs'),
+        join(repoRoot, 'packages', 'core', 'scripts', 'sync.ts'),
+        '--config',
+        configPath,
+        '--dry-run',
+        '--verbose',
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    );
+    return { result, root };
+  };
+
+  it('fails dry-run processing errors without changing existing outputs', () => {
+    const { root, result } = dryRun(true);
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain('EISDIR');
+    expect(readdirSync(join(root, 'output', 'role.md'))).toEqual([]);
+    expect(readFileSync(join(root, 'output', 'unrelated.md'), 'utf-8')).toBe(
+      'Preserve this file\n',
+    );
+  });
+
+  it('allows valid dry-run drift without writing or cleaning outputs', () => {
+    const { root, result } = dryRun(false);
+    expect(result.status).toBe(0);
+    expect(existsSync(join(root, 'output', 'role.md'))).toBe(false);
+    expect(readFileSync(join(root, 'output', 'unrelated.md'), 'utf-8')).toBe(
+      'Preserve this file\n',
     );
   });
 });

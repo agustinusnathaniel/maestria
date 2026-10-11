@@ -1,41 +1,46 @@
 ---
 title: Compatibility
-description: Current and historical verification evidence for @maestria/agent-plugins and its host integrations.
+description: Dated package, loader, and runtime evidence for Maestria's host integrations.
 sidebar:
   order: 2
 ---
 
-import { Aside, Badge } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
 
-This page separates current evidence for the consolidated `@maestria/agent-plugins` package from smoke checks against its former standalone artifact. A pass applies only to the named host, version, package, and behavior. It does not imply support for other components or surfaces.
+Evidence updated: 2026-10-11. Package validation confirms shipped files and manifest contracts. Loader probes confirm the specific resources and tool schemas they observe. Neither establishes model judgment, live behavior across versions, or enforcement beyond the host's controls. The [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) record reproducible methods and limits.
 
-Evidence updated: 2026-10-10. The [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) contain the detailed methods and limits.
+## Current Package Contracts
 
-## Current consolidated-package evidence
-
-| Surface | Status | What the evidence establishes |
+| Host or surface | Packaged contract | Verification boundary |
 | --- | --- | --- |
-| Claude Code CLI `2.1.217` | <Badge text="CLI fixture passed" variant="success" /> | Strict plugin validation passed. An offline fixture verified the reviewer child, its role and global-rules skill preload, and a tool schema without Write or Edit. It does not test model judgment, shell-mediated editing, every specialist, other versions, account sync, or Desktop Code. |
-| Hermes Agent | <Badge text="Archive smoke passed" variant="success" /> | On 2026-10-10, an isolated home loaded all 14 skills from the npm-packed consolidated archive and `hermes plugins doctor` passed. No Maestria tools or hooks loaded. The public evidence summary does not pin a Hermes version or link a standalone probe artifact. |
-| Oh My Pi `18.4.8` | <Badge text="Packed discovery probe" variant="success" /> | The installed loader and capability providers discovered 14 skills and seven root profiles from a packed fixture. The probe did not run the host install transaction, `omp plugin install`, tasks, or model behavior. |
-| Codex CLI | <Badge text="Installer tests passed" variant="note" /> | Package/unit tests and builds cover the companion installer and native profile payload. There is no fresh CLI host E2E for the consolidated archive. The earlier Codex `0.145.0` marketplace smoke used the former standalone package. A direct marketplace install provides skills only. See the [Codex guide](/agent-plugins/codex/). |
-| Codex in the ChatGPT desktop app | <Badge text="Setup documented" variant="note" /> | The desktop guide follows OpenAI's local npm marketplace procedure. Maestria has not been runtime-tested in the desktop app. |
-| Devin | <Badge text="Host loading unverified" variant="caution" /> | The package includes a Devin manifest, shared skills, and root specialist profiles. See the [Devin guide](/agent-plugins/devin/); no live Devin load is recorded. |
-| ZCode | <Badge text="Host loading unverified" variant="caution" /> | The package includes a ZCode manifest, shared skills, and root specialist profiles. See the [ZCode guide](/agent-plugins/zcode/); no live ZCode load is recorded. |
+| Portable Agent Plugins v1 | `handoff` and `iteration-limits`; no MCP server | Package and archive validation. The portable format does not declare native profiles, commands, rules, or hooks. |
+| Claude Code | Seven complete native specialists and three complete native workflow commands; two utilities | Strict validation and the `2.1.217` offline CLI fixture verify the complete reviewer role and policy in its native child request, absence of Write/Edit, and return of the result. Model judgment, shell isolation, other roles, account sync, Cowork, Chat, and Desktop behavior remain unverified. |
+| Cursor | Seven complete isolated profiles, native commands and always-apply policy and routing; two utilities | Package and schema checks. Live loading and enforcement unverified. |
+| Codex CLI `0.153.4` | Two marketplace utilities; companion CLI installs complete native TOMLs and marked global instructions | Inspected AgentPlugin loader discovers root `skills/` and ignores the overlay selector. Package and installer tests cover companion payloads. Fresh consolidated-package CLI model E2E unverified. |
+| Codex desktop | Two marketplace utilities | Documented personal npm marketplace setup. Native companion and desktop behavior unverified. |
+| Kimi Code | Seven native specialists, complete commands and `systemPromptPath` bootstrap; two utilities | Documented native contract and package checks. No per-agent model field. Live loading unverified. |
+| Devin | Root agents and `AGENTS.md`; two utilities and three selected workflow compatibility skills | Documented skills selector array and package checks. Native plugin agents are local CLI/Desktop only. Live loading unverified. |
+| ZCode | Explicit native specialist and command selectors; two utilities | Documented commands and package checks. Plugin rule-selector support and live loading unverified. |
+| OMP `18.4.8` | Eight task profiles, three commands, one always-apply rule, two utilities | An isolated real-CLI probe installed the packed archive, disabled, reinstalled, and uninstalled it. It checked exact native bodies, command arguments, main policy injection, and all eight child-template compositions. No inference or actual task spawning ran; runtime tool denial and model judgment remain unverified. |
+| Hermes | Two portable utilities; optional manually configured host context | Documented portable and context-loader contracts. Current two-utility archive smoke requires separate evidence. Context is not automatically imported and does not register specialists. |
 
-## Historical checks against the former artifact
+OpenCode and Pi retain their separate native packages and guides. The Agent Plugins archive intentionally ships no executable adapter, hooks, automation, or MCP server; this does not imply those capabilities are unsupported by a host.
 
-These checks passed against the former `@maestria/agent-plugin` artifact. They do not establish compatibility of the consolidated package.
+## Historical Checks
 
-| Client | Historical result | Scope |
+These checks predate the current semantic split. They cannot validate the current profiles, commands, or two-utility layout.
+
+| Client or fixture | Historical result | Scope |
 | --- | --- | --- |
-| Hermes Agent `0.20.3` | Live smoke passed | Installed and enabled the old npm-packed artifact in an isolated Hermes home; the plugin list and doctor checks passed. |
-| Grok Bot CLI `1.0.0` | Live smoke passed | Installed and validated the old local package in an isolated Grok home. |
-
-For clients without a current evidence row, use the [official compatible clients list](https://agent-plugins.org/compatible-clients) for host support and follow the relevant setup guide. Setup instructions do not establish runtime compatibility.
+| Claude Code `2.1.217` | Offline fixture passed | Earlier reviewer wrapper preloaded role and policy skills; its child schema omitted Write and Edit. |
+| OMP `18.4.8` | Packed discovery passed | Earlier archive exposed 14 skills, seven profiles, no commands, and no rules. |
+| Hermes consolidated archive, 2026-10-10 | Isolated-home smoke passed | Earlier 14-skill archive loaded and plugin doctor passed; host version was not pinned in the public summary. |
+| Hermes `0.20.3` | Live smoke passed | Former standalone portable artifact loaded in an isolated home. |
+| Grok Bot CLI `1.0.0` | Live smoke passed | Former standalone portable artifact installed and validated in an isolated home. |
+| Codex CLI `0.145.0` | Marketplace smoke passed | Former standalone package; no current consolidated archive claim. |
 
 <Aside type="caution" title="Activation remains client-owned">
-  Agent Plugins standardizes package shape and component discovery, not each client's UI, account
-  state, marketplace setup, enablement controls, or session behavior. After installing, enable the
-  plugin if needed and start a new session to confirm its skills appear.
+  Follow the selected host guide, enable the plugin when required, and start a fresh session.
+  Confirm the expected utilities and native resources appear before relying on them. A package check
+  or documented setup is not a live runtime compatibility result.
 </Aside>

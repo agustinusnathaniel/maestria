@@ -1,11 +1,11 @@
 ---
 title: Maestria for ZCode
-description: Use shared Maestria skills and specialist profiles in ZCode.
+description: Use complete native Maestria profiles and workflow commands in ZCode.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-The ZCode integration uses the `@maestria/agent-plugins` package. Its `.zcode-plugin/plugin.json` manifest selects the shared skills and seven root specialist profiles. Maestria ships no ZCode command files; workflow modes are skills.
+The ZCode integration uses the `@maestria/agent-plugins` package. Its `.zcode-plugin/plugin.json` manifest explicitly selects seven complete root specialist profiles, the three root native workflow commands, and the two utility skills. Profiles embed role and policy; commands embed mode, router, and policy.
 
 ## Install
 
@@ -39,10 +39,10 @@ In ZCode, open a workspace, then choose **Settings → Plugins → Create → Ad
 
 ## Use
 
-Use the Skills group in ZCode's prompt picker to load `global-rules`, `orchestrator`, a specialist, or one of the `fein`, `sonar`, and `blitz` workflow skills. Dispatch a specialist profile through ZCode's subagent controls.
+Choose the native fein, sonar, or blitz command from ZCode's prompt picker and supply your goal. Use the native subagent controls to dispatch adventurer, architect, builder, diagnose, planner, reviewer, or writer with a complete task handoff. The Skills group exposes handoff and iteration-limits utilities.
 
-See the [specialist reference](/core/agents/) for role guidance and the [portable package guide](/agent-plugins/) for the shared skill set.
+See the [specialist reference](/core/agents/) for role guidance and the [portable package guide](/agent-plugins/) for the two shared utilities.
 
 ## Limits
 
-This package defines no ZCode commands, MCP servers, hooks, or executable runtime extension. The specialist profiles are advisory and do not enforce tool denial or a sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).
+The native commands are explicitly enabled in the manifest. The package adds no MCP server, hooks, or executable runtime extension. Plugin rule-selector support is unverified, so profiles and commands carry their own complete policy instead of depending on a separately loaded rule. The specialist profiles are advisory and do not enforce tool denial or a sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).

@@ -1,6 +1,6 @@
 ---
 title: Codex CLI installation
-description: Install the Maestria skills plugin and native companion agents in Codex CLI.
+description: Install the Maestria utilities plugin, complete native agents, and global routing instructions in Codex CLI.
 ---
 
 This setup targets Codex CLI. The same package also supports a skills-only local marketplace install in the [ChatGPT desktop app](/agent-plugins/codex/getting-started/desktop/).
@@ -9,7 +9,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/agent-plugins` is a Codex skills plugin with a companion native custom-agent pack. The maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
+`@maestria/agent-plugins` is a Codex utility-skills plugin with a companion native custom-agent pack. The maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
 
 <Aside type="tip" title="CLI verification scope">
   Package/unit tests and builds cover the consolidated companion installer and profile payload. The
@@ -20,7 +20,7 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 ## Prerequisites
 
-- Codex CLI `0.145.0` or a later version whose plugin and skills behavior you have reverified.
+- Codex CLI with plugin and native custom-agent support. The inspected AgentPlugin loader is version `0.153.4`; other versions require rechecking.
 - Node.js >=22.12.0 and npm on `PATH`. Direct Codex marketplace installation follows Codex's own prerequisites.
 
 ## Install through maestria
@@ -47,11 +47,11 @@ The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, the
 
 3. **Start a fresh Codex session**
 
-   Plugin discovery is session-sensitive. Confirm the `$maestria:*` skills are available.
+   Plugin discovery is session-sensitive. Confirm `$maestria:handoff` and `$maestria:iteration-limits` are available.
 
 4. **Exercise the integration**
 
-   Ask Codex to handle a meaningful task without a skill prefix and confirm the primary session follows the orchestration guidance. Then invoke `$maestria:orchestrator`, `$maestria:adventurer`, `$maestria:builder`, and `$maestria:reviewer`, and confirm the reviewer reports independently.
+   Ask Codex to handle a meaningful task without a skill prefix and confirm the primary session follows the orchestration guidance. Try `SONAR: trace authentication without editing`, then a separate implementation task with independent native reviewer delegation.
 
 5. **Verify native agent installation**
 
@@ -75,8 +75,8 @@ codex plugin marketplace add agustinusnathaniel/maestria
 codex plugin add maestria@maestria
 ```
 
-`codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation installs only the plugin and skills: it does not copy the native agent TOMLs or modify global `AGENTS.md`. Use `npx maestria install codex` for the full native-agent and automatic-orchestration setup.
+`codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation installs only the plugin and its `handoff` and `iteration-limits` utility skills: it does not copy the native agent TOMLs or modify global `AGENTS.md`. Use `npx maestria install codex` for the full native-agent and automatic-orchestration setup.
 
-This package presents its skills through `.codex-plugin/plugin.json`. Direct plugin installation does not add the native agent TOMLs or managed global instructions.
+Codex `0.153.4` discovers the conventional root `skills/` directory. Its AgentPlugin loader ignores the overlay skills selector, so that selector cannot turn native commands or agents into skills. The `.codex-plugin/plugin.json` compatibility manifest supplies presentation metadata. Direct plugin installation does not add native agent TOMLs or managed global instructions.
 
 See the separate [Codex desktop setup](/agent-plugins/codex/getting-started/desktop/) to install the skills through a personal npm marketplace.

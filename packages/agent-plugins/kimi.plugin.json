@@ -21,8 +21,8 @@
   "systemPromptPath": "./rules/kimi-code/bootstrap.md",
   "interface": {
     "displayName": "maestria Agent Pack",
-    "shortDescription": "Specialized engineering workflow skills for Kimi Code",
-    "longDescription": "Shared Maestria methodology skills with Kimi session-start orchestration and parent-to-child persona handoffs. Native profiles and permissions remain Kimi-owned.",
+    "shortDescription": "Native specialists and workflow commands for Kimi Code",
+    "longDescription": "Seven native specialist profiles, complete primary-session policy and routing, three workflow commands, and two reusable utilities. Models, tool authority, and session lifecycle remain Kimi-owned.",
     "developerName": "Agustinus Nathaniel",
     "websiteURL": "https://github.com/agustinusnathaniel/maestria"
   },

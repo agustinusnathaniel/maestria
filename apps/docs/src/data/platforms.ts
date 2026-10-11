@@ -48,7 +48,7 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: 'Native agent profiles with shared role and workflow skills for Claude Code.',
+    blurb: 'Complete native specialists and workflow commands for Claude Code.',
     href: '/agent-plugins/claude-code/',
     id: 'claude-code',
     installArgs: 'install claude-code',
@@ -56,7 +56,7 @@ export const platforms: Platform[] = [
     name: 'Maestria for Claude Code',
   },
   {
-    blurb: 'Specialist and workflow skills for Codex CLI.',
+    blurb: 'Native agents and global routing through the CLI; two plugin utilities.',
     href: '/agent-plugins/codex/',
     id: 'codex',
     installArgs: 'install codex',
@@ -64,7 +64,7 @@ export const platforms: Platform[] = [
     name: 'Maestria for Codex',
   },
   {
-    blurb: 'Shared role skills with Kimi-native command aliases and parent-to-child handoffs.',
+    blurb: 'Native Kimi specialists, commands, and complete session instructions.',
     href: '/agent-plugins/kimi-code/',
     id: 'kimi-code',
     installArgs: 'install kimi-code',
@@ -72,7 +72,7 @@ export const platforms: Platform[] = [
     name: 'Maestria for Kimi Code',
   },
   {
-    blurb: 'Specialist profiles, shared skills, and workflow aliases for Cursor IDE and CLI.',
+    blurb: 'Complete profiles, commands, and always-apply routing for Cursor IDE and CLI.',
     href: '/agent-plugins/cursor/',
     id: 'cursor',
     installArgs: 'install cursor',
@@ -88,7 +88,7 @@ export const platforms: Platform[] = [
     name: '@maestria/pi',
   },
   {
-    blurb: 'Portable methodology skills and advisory profiles for Oh My Pi.',
+    blurb: 'Native task profiles, commands, policy, and utilities for Oh My Pi.',
     href: '/agent-plugins/omp/',
     id: 'omp',
     installArgs: 'install omp',
@@ -96,7 +96,7 @@ export const platforms: Platform[] = [
     name: 'Maestria for Oh My Pi',
   },
   {
-    blurb: 'Shared methodology skills through Hermes portable plugin support.',
+    blurb: 'Two portable utilities, with optional manual methodology context for Hermes.',
     href: '/agent-plugins/hermes/',
     id: 'hermes',
     installArgs: 'install hermes',

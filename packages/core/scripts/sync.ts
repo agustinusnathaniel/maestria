@@ -33,7 +33,7 @@ USAGE
 
 EXIT CODES
   0  All good
-  1  Check failed (output differs from expected)
+  1  File processing or sync check failed
   2  Configuration error
 `);
 };
@@ -131,15 +131,15 @@ const main = async (): Promise<number> => {
     );
   }
 
-  if (opts.check && (errors > 0 || removed > 0)) {
+  if (errors > 0 || (opts.check && removed > 0)) {
     const parts: string[] = [];
     if (errors > 0) {
-      parts.push(`${errors} file(s) differ from expected`);
+      parts.push(`${errors} file error(s)`);
     }
     if (removed > 0) {
       parts.push(`${removed} stale file(s) would be removed`);
     }
-    console.error(`\nCheck failed: ${parts.join('; ')}`);
+    console.error(`\n${opts.check ? 'Check' : 'Sync'} failed: ${parts.join('; ')}`);
     return 1;
   }
 

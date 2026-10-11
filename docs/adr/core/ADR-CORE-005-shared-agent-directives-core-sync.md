@@ -26,6 +26,10 @@ Use one exact root-pinned `tsx` runner through `pnpm exec`, preserving each pack
 
 The tool is not published: it runs only within this monorepo, so a publish/consume cycle adds versioning and release work without a consumer benefit. The cost is requiring the workspace installation rather than running sync from an isolated package.
 
+### Consolidated compositions and whole-run preflight (2026-10-11)
+
+The consolidated plugin compiler composes multiple canonical role, policy, router and mode inputs into native resources while retaining core ownership and shared normalization/frontmatter helpers. Generic sync configs remain in use for native adapters. The root wrapper freezes the discovered config list and validates every entry with a read-only dry-run before any write. Detected processing errors return failure in dry-run and write modes as well as check mode, so output-file errors cannot silently bypass the preflight.
+
 ### Shared source plan and no-write preflight
 
 Resolve one ordered plan for validation and processing: primary Markdown in walk order, then secondary configured entries in declaration order. A missing source directory or configured file absent from both resolution locations throws `ConfigError` before any writes, cleanup, or removal. Missing inputs are not a verbose-only skip. Exit codes distinguish success (0), projection drift (1), and invalid configuration (2).

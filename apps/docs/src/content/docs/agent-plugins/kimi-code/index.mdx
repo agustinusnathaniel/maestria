@@ -1,6 +1,6 @@
 ---
 title: '@maestria/agent-plugins'
-description: Kimi Code integration that reuses Maestria's shared skills with native workflow aliases and parent-to-child specialist handoffs.
+description: Complete native Kimi specialists, workflow commands, session instructions, and two utility skills.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -20,8 +20,8 @@ import { marks } from '@/data/marks.js';
   <div class="home-inner">
     <PlatformHero
       eyebrow="@MAESTRIA/PLUGIN"
-      title="Shared skills, Kimi-native routing."
-      lead="Install one plugin. Reuse the shared role and workflow skills, with Kimi command aliases and parent-to-child specialist handoffs."
+      title="Native specialists for Kimi Code."
+      lead="Install seven complete native profiles, workflow commands, session routing and policy, and two utility skills."
       mark={marks.kimiCode}
       primaryCta={{ href: '/agent-plugins/kimi-code/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/agent-plugins/kimi-code/getting-started/quick-start/', label: 'Quick start' }}
@@ -36,12 +36,12 @@ import { marks } from '@/data/marks.js';
     >
       <FeatureGrid
         items={[
-          { title: 'Shared role skills', desc: 'Kimi uses the same seven specialist skills as the other integrations; it does not ship a second copy.' },
-          { title: 'Explicit parent-to-child handoff', desc: 'Load global rules before work and inline the full role skill, global rules, and task constraints into each native child prompt.' },
-          { title: 'Host-native workflow aliases', desc: 'Three thin command aliases select the shared fein, sonar, and blitz workflow skills.' },
-          { title: 'Version-sensitive manifest fields', desc: 'Session-start loading and the global-rules system-prompt contribution require Kimi host support; the repository\'s local 0.18 source does not verify those newer fields.' },
-          { title: 'Host-level controls', desc: 'User-configured hooks or permission rules can affect a whole session; they do not isolate reviewer permissions from builder or writer work.' },
-          { title: 'No duplicated methodology', desc: 'Only aliases and short bootstrap instructions are Kimi-specific; shared role and workflow bodies remain canonical.' },
+          { title: '7 native specialists', desc: 'Kimi selects isolated native profiles with complete role and policy instructions.' },
+          { title: 'Complete child context', desc: 'Pass task constraints and evidence to the native agent; its profile already includes the methodology.' },
+          { title: 'Native workflow commands', desc: 'fein, sonar, and blitz commands carry full routing, policy, and mode instructions.' },
+          { title: 'Session bootstrap', desc: 'systemPromptPath selects complete routing and policy within the host prompt budget.' },
+          { title: 'Native tool filters', desc: 'adventurer, planner, and reviewer deny WriteFile and StrReplaceFile. This filter is not a shell sandbox.' },
+          { title: 'Host-owned models', desc: 'Plugin agent metadata has no per-agent model field; Kimi chooses the active model.' },
         ]}
       />
     </PluginSection>

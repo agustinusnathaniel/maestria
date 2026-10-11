@@ -1,37 +1,23 @@
 ---
 title: Contributing
-description: Claude Code-specific package structure, sync behavior, and validation for @maestria/agent-plugins.
+description: Maintain Claude Code's native agents and commands in the consolidated plugin.
 ---
 
-For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
+See the [Contributing Guide](/core/contributing/) for repository setup and delivery.
 
-## Package Boundary
+## Ownership
 
-Claude Code is a declarative plugin with no runtime adapter. The sync pipeline generates native agent profiles from the shared wrapper in `packages/core/agent-directives/agents/` and shared role, rule, orchestration, and workflow skills from canonical directives. The manifest inputs and `generation/claude-code.sync.config.ts` are hand-authored; emitted profiles, skill exports, and root manifests are generated. Do not duplicate methodology in the package.
+Canonical role, mode, routing, and policy text lives in `packages/core/agent-directives/`. The consolidated generation pipeline emits complete Claude Code profiles into `agents/claude-code/` and complete native workflow commands at the package root. Root `skills/` contains only `handoff` and `iteration-limits`. Edit generation inputs or canonical directives, then regenerate; do not edit emitted resources.
 
-## Change Methodology
+The Claude manifest explicitly selects its seven profiles and three commands. Preserve native `model: inherit` and the read-only roles' `disallowedTools` metadata. Profiles must work without skill preloads.
 
-Edit the canonical sources in `packages/core/agent-directives/`, never generated files under `agents/` or `skills/`. Then regenerate and verify:
+## Verify
 
 ```bash
 scripts/sync-all
 scripts/check-sync
 pnpm --filter @maestria/agent-plugins test
+claude plugin validate ./packages/agent-plugins --strict
 ```
 
-## Validate the Package
-
-The focused checks require the Claude Code CLI:
-
-```bash
-cd packages/agent-plugins
-pnpm test
-claude plugin validate . --strict
-```
-
-The validator checks package structure and frontmatter. Runtime behavior still needs end-to-end verification; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
-
-## See Also
-
-- [Installation](/agent-plugins/claude-code/getting-started/installation/)
-- [Quick Start](/agent-plugins/claude-code/getting-started/quick-start/)
+Strict validation confirms package structure and frontmatter. The offline host fixture covers the tested Agent tool and child-context behavior; it does not establish model judgment, shell isolation, account sync, Cowork, or Desktop behavior. See the [compatibility matrix](/agent-plugins/compatibility/).

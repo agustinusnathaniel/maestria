@@ -13,10 +13,10 @@ export interface Checks {
   childResultReturnedToParent: boolean;
   childToolsPresent: boolean;
   editToolUnavailable: boolean;
-  globalRulesPreloaded: boolean;
+  globalPolicyPresent: boolean;
   reviewerAgentDispatched: boolean;
-  reviewerSkillPreloaded: boolean;
-  wrapperLoaded: boolean;
+  roleInstructionsPresent: boolean;
+  nativeProfileLoaded: boolean;
   writeToolUnavailable: boolean;
 }
 
@@ -64,10 +64,10 @@ const initialChecks = (): Checks => ({
   childResultReturnedToParent: false,
   childToolsPresent: false,
   editToolUnavailable: false,
-  globalRulesPreloaded: false,
+  globalPolicyPresent: false,
+  nativeProfileLoaded: false,
   reviewerAgentDispatched: false,
-  reviewerSkillPreloaded: false,
-  wrapperLoaded: false,
+  roleInstructionsPresent: false,
   writeToolUnavailable: false,
 });
 
@@ -345,8 +345,8 @@ const recordChildEvidence = (
   state: RuntimeState,
   requestBody: Record<string, unknown>,
   temporaryRoot: string,
-  reviewerSkill: string,
-  globalRulesSkill: string,
+  roleInstructions: string,
+  globalPolicy: string,
 ): void => {
   const systemText = normalizeText(
     collectText({ messages: requestBody.messages, system: requestBody.system }).join('\n'),
@@ -355,20 +355,20 @@ const recordChildEvidence = (
   const toolNames = readToolNames(requestBody.tools);
   const normalizedNames = new Set(toolNames.map((name) => name.toLowerCase()));
   state.checks.childRequestObserved = true;
-  state.checks.wrapperLoaded = systemText.includes(
+  state.checks.nativeProfileLoaded = systemText.includes(
     'You review code for quality. You do not edit files',
   );
-  state.checks.reviewerSkillPreloaded = systemText.includes(reviewerSkill);
-  state.checks.globalRulesPreloaded = systemText.includes(globalRulesSkill);
+  state.checks.roleInstructionsPresent = systemText.includes(roleInstructions);
+  state.checks.globalPolicyPresent = systemText.includes(globalPolicy);
   state.checks.childToolsPresent = toolNames.length > 0;
   state.checks.writeToolUnavailable = !normalizedNames.has('write');
   state.checks.editToolUnavailable = !normalizedNames.has('edit');
   state.contextDigests.childSystem = sha256(systemText);
   state.contextDigests.childTools = sha256([...toolNames].toSorted().join('\n'));
   if (
-    !state.checks.wrapperLoaded ||
-    !state.checks.reviewerSkillPreloaded ||
-    !state.checks.globalRulesPreloaded
+    !state.checks.nativeProfileLoaded ||
+    !state.checks.roleInstructionsPresent ||
+    !state.checks.globalPolicyPresent
   ) {
     setFailure(state, 'child-preload-content-missing');
   } else if (
@@ -385,10 +385,10 @@ const respondToChild = (
   requestBody: Record<string, unknown>,
   response: ServerResponse,
   temporaryRoot: string,
-  reviewerSkill: string,
-  globalRulesSkill: string,
+  roleInstructions: string,
+  globalPolicy: string,
 ): void => {
-  recordChildEvidence(state, requestBody, temporaryRoot, reviewerSkill, globalRulesSkill);
+  recordChildEvidence(state, requestBody, temporaryRoot, roleInstructions, globalPolicy);
   state.phase = 'awaiting-parent-result';
   sendText(response, requestBody, 'msg_child_result', childResultText);
 };
@@ -412,8 +412,8 @@ const handleFixtureRequest = async (
   response: ServerResponse,
   state: RuntimeState,
   temporaryRoot: string,
-  reviewerSkill: string,
-  globalRulesSkill: string,
+  roleInstructions: string,
+  globalPolicy: string,
 ): Promise<void> => {
   const diagnostic = requestDiagnostic(request);
   recordDiagnostic(state, diagnostic);
@@ -442,7 +442,7 @@ const handleFixtureRequest = async (
   if (state.phase === 'awaiting-parent') {
     respondToParent(state, requestBody, response);
   } else if (state.phase === 'awaiting-child') {
-    respondToChild(state, requestBody, response, temporaryRoot, reviewerSkill, globalRulesSkill);
+    respondToChild(state, requestBody, response, temporaryRoot, roleInstructions, globalPolicy);
   } else if (state.phase === 'awaiting-parent-result') {
     respondToParentResult(state, requestBody, response);
   } else {
@@ -477,7 +477,7 @@ export const createPreloadFixture = async (
   temporaryRoot: string,
   state = createPreloadState(),
 ): Promise<PreloadFixture> => {
-  const reviewerSkill = normalizeText(
+  const roleInstructions = normalizeText(
     fs
       .readFileSync(
         path.resolve(packageRoot, '../core/agent-directives/specialists/reviewer.md'),
@@ -486,12 +486,12 @@ export const createPreloadFixture = async (
       .trim(),
     temporaryRoot,
   );
-  const globalRulesSkill = normalizeText(
+  const globalPolicy = normalizeText(
     fs.readFileSync(path.resolve(packageRoot, '../core/agent-directives/rules.md'), 'utf-8').trim(),
     temporaryRoot,
   );
-  state.contextDigests.reviewerSkill = sha256(reviewerSkill);
-  state.contextDigests.globalRules = sha256(globalRulesSkill);
+  state.contextDigests.roleInstructions = sha256(roleInstructions);
+  state.contextDigests.globalRules = sha256(globalPolicy);
   const server = createServer((request, response) => {
     void (async () => {
       try {
@@ -500,8 +500,8 @@ export const createPreloadFixture = async (
           response,
           state,
           temporaryRoot,
-          reviewerSkill,
-          globalRulesSkill,
+          roleInstructions,
+          globalPolicy,
         );
       } catch {
         setFailure(state, 'fixture-handler-failed');

@@ -36,7 +36,7 @@ The important ownership rule is:
 | User-facing documentation | `apps/docs/` or the relevant package README | Generated agent files |
 | Architecture decisions | `docs/adr/<area>/` | A duplicate explanation in a package README |
 
-Release metadata, projection configs and manifest inputs under `generation/`, package READMEs, runtime code, and the docs site are hand-authored. The shared plugin's installable agent, skill, and integration exports are generated directly at the package root. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
+Release metadata, profile/native metadata and manifest inputs under `generation/`, package READMEs, runtime code, and the docs site are hand-authored. The shared plugin's installable agent, skill, and integration exports are generated directly at the package root. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
 
 ## The Sync Pipeline
 
@@ -48,7 +48,7 @@ packages/core/agent-directives/
 packages/<platform>/ generated agents, skills, commands, and rules
 ```
 
-Native adapters use `sync.config.ts`; the shared plugin keeps its projection configs under `generation/`. These configs declare output paths and host-specific transformations such as tool names, frontmatter, and routing syntax. The pipeline also removes stale generated files.
+Native adapters use `sync.config.ts`. The shared plugin uses `scripts/sync-consolidated-plugin.ts` to compose canonical sources into an explicit output plan; its hand-authored manifest/profile/native metadata lives under `generation/`. The pipeline validates all inputs before mutation and retires only owned generated files.
 
 Never edit a generated file. Edit the canonical source, then regenerate and verify:
 
@@ -92,7 +92,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `agent-plugins` | `generation/` configs and manifest inputs; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
+| `agent-plugins` | `generation/` manifest/profile/native metadata; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.

@@ -1,40 +1,48 @@
 ---
 title: Maestria for Devin
-description: Use shared Maestria skills and local custom subagents in Devin.
+description: Use complete local Devin agents, always-on policy, and host-specific workflow skill exports.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-The Devin integration uses the `@maestria/agent-plugins` package. Devin reads its shared skills and the root specialist profiles through the package's `.devin-plugin/plugin.json` manifest.
+Devin reads `@maestria/agent-plugins` through `.devin-plugin/plugin.json`. The package supplies complete conventional root agent profiles and always-on policy and routing in root `AGENTS.md`. The manifest's supported skills selector array adds two utilities and three Devin-specific workflow compatibility exports.
 
 ## Install
 
-Stage the package with the maestria CLI, then install the staged directory through Devin:
+Stage a validated package:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-Pass the staged directory printed by that command to Devin:
+Install the printed directory through Devin:
 
 ```bash
 devin plugins install --local /path/to/staged-plugin
+devin plugins info maestria
 ```
 
-Staging does not install or activate the plugin. Devin's `--local` option links the directory on this machine only.
-
-To add the plugin to Devin's personal plugin set for cloud sessions, install the repository subdirectory directly instead:
+`--local` links the directory on this machine. For personal plugin sync to cloud sessions and other devices, use the repository subdirectory:
 
 ```bash
 devin plugins install agustinusnathaniel/maestria#packages/agent-plugins
 ```
 
-The GitHub subdirectory form follows [Devin's plugin install format](https://docs.devin.ai/cli/extensibility/plugins/overview). Check the installed package with `devin plugins info maestria`.
+Changes apply to new sessions. Use **Reindex plugins** on Devin's Customize page to refresh the web listing. See the [official installation formats](https://docs.devin.ai/cli/extensibility/plugins/overview) and [Customize guide](https://docs.devin.ai/product-guides/plugins).
 
 ## Use
 
-Load `/maestria:global-rules` once in a session, then invoke `/maestria:orchestrator` or a specialist skill such as `/maestria:reviewer`. The `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` skills select the workflow depth. In local Devin CLI and Desktop sessions, the plugin's specialist profiles are available through host subagent controls as `maestria:<role>`.
+| Skill entry point             | Purpose                                 |
+| ----------------------------- | --------------------------------------- |
+| `/maestria:fein <goal>`       | Full route with independent review      |
+| `/maestria:sonar <goal>`      | Research and stop before implementation |
+| `/maestria:blitz <goal>`      | Smallest safe implementation route      |
+| `handoff`, `iteration-limits` | Context transfer and bounded repair     |
 
-See the [specialist reference](/core/agents/) for role guidance and the [portable package guide](/agent-plugins/) for the shared skill set.
+The three workflow exports carry complete mode, router, and policy. They live outside root `skills/`, keeping portable discovery limited to utilities. There are no role, orchestrator, or global-rules skill facades, and the manifest declares no undocumented command selector.
+
+In local CLI and Desktop sessions, dispatch native specialist profiles through Devin's subagent controls. Each profile includes complete role and global policy; carry task constraints and evidence in the handoff. Root `orchestrator` is a dispatcher profile, not a primary-agent override.
 
 ## Limits
 
-Devin loads plugin subagents in local CLI and Desktop sessions, not cloud sessions. Skills can be available in cloud sessions when installed through the personal plugin set. Specialist profiles provide advisory instructions; they do not enforce tool denial or a sandbox. Live Devin loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/) and [official Devin plugin guide](https://docs.devin.ai/cli/extensibility/plugins/overview).
+Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but their presence does not add native plugin subagents there. Root profiles provide advisory guidance and make no tool-denial or sandbox claim. No executable adapter, hooks, MCP server, or automation ships here. Live Devin loading remains unverified; package checks establish shipped resources only.
+
+See [compatibility](/agent-plugins/compatibility/), [specialist roles](/core/agents/), and the [package guide](/agent-plugins/).

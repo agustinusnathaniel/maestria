@@ -18,7 +18,7 @@ The format defines an artifact shape, not whether each compatible client discove
 
 The original decision published `@maestria/agent-plugin` as an additive, generated projection of the canonical directives. CORE-034 supersedes that package identity and topology; the portable projection remains generated, with host-specific behavior owned by native integrations.
 
-Limit the portable package to the v1 `plugin.json` manifest and generated Agent Skills. It does not declare MCP configuration, executable agent identities, commands, hooks, or client-specific extensions. Convert internal role references to sibling skill names and describe role or tool boundaries as advisory.
+Limit the portable package to the v1 `plugin.json` manifest and generated Agent Skills. It does not declare MCP configuration, executable agent identities, commands, hooks, or client-specific extensions. The current consolidated portable projection exports only handoff and iteration-limit utilities. Roles, workflow modes, and policy remain native resources; they are not converted into portable skills.
 
 Generate the projection from `packages/core/agent-directives/`; do not maintain a second hand-authored skills tree. The maestria CLI may validate a package and stage it in its cache or a chosen destination. Staging does not install, register, or activate it in a client.
 
@@ -30,7 +30,7 @@ The consuming client owns discovery, activation, permissions, trust, sandboxing,
 
 ## Consequences
 
-- Compatible clients can consume the shared methodology through one standard package, while native integrations keep their richer host capabilities.
+- Compatible clients can consume the reusable utilities through one standard package, while full methodology uses the selected native integration or documented context setup.
 - Canonical generation avoids a second maintained content tree, but the public package and manifest version need ongoing maintenance.
 - Portable skills cannot promise runtime enforcement or feature parity. Compatibility depends on the client's support for the manifest and skill format.
 - A conforming package does not guarantee that a given client discovers or invokes every skill.

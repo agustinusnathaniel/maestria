@@ -1,44 +1,45 @@
 # @maestria/agent-plugins
 
-maestria packages shared engineering methodology and native integration metadata in one plugin. The canonical methodology remains in `packages/core/agent-directives/`; this package contains generated projections, hand-authored manifests and integration configuration, and host adaptation inputs.
+Maestria ships one directly installable plugin with native host components and two reusable utility skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
 
-The package directory is directly installable from a repository checkout, like the PostHog and Pstack plugins. `plugin.json`, the host manifest directories, `agents/`, and `skills/` live at this root. Published npm archives expose the same resource layout. Hosts select their native profiles and entry points through manifests; generated exports are projections, not independent methodology sources. Kimi Code uses the shared skills and adds only host-specific command aliases, manifest instructions, and short native bootstrap text.
+## Component ownership
 
-| Host | Manifest | Native resources |
+| Package folder | Contents | Canonical input |
 | --- | --- | --- |
-| Portable clients | `plugin.json` | Shared skills; client owns activation |
-| Claude Code | `.claude-plugin/plugin.json` | Explicit thin agent wrappers; shared `skills/`; no duplicate workflow commands |
-| Cursor | `.cursor-plugin/plugin.json` | Native `agents/cursor/`, shared `skills/`, and selected `commands/cursor/` and `rules/cursor/` |
-| Codex | `.codex-plugin/plugin.json` | Shared skills; companion CLI installs `agents/codex/` and the instruction template |
-| Devin | `.devin-plugin/plugin.json` | Root advisory agent profiles; local CLI/Desktop only |
-| ZCode | `.zcode-plugin/plugin.json` | Explicit root advisory agent files and shared skills |
-| Hermes | `plugin.json` | Portable shared skills; host-generated qualified namespace |
-| OMP | `plugin.json` | Portable shared skills and root advisory profiles; activation and delegation belong to OMP |
-| Kimi Code | `kimi.plugin.json` | Shared `skills/`, Kimi command aliases, and shared global rules as system-prompt input; custom-agent discovery disabled |
+| `agents/` | Dispatcher and seven specialist definitions, plus schema-specific native profiles | Core `specialists/` |
+| `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points and native host projections | Core `commands/`, dispatcher, policy, and integration notes |
+| `rules/` | Global policy and supported host bootstrap/instruction resources | Core `rules.md` and integration notes |
+| `skills/` | Only `handoff` and `iteration-limits` reusable utilities | Core `skills/` |
+| `integrations/` | Generated host usage and capability guides | Core integration notes |
+| `compatibility/devin/skills/` | Generated workflow transport for Devin's skill-based command loader | The same canonical workflow compositions |
+| `generation/` | Development-only manifests, profile metadata, and native TOML metadata | Hand-authored mechanical inputs |
+| `assets/`, `docs/` | Presentation and package usage documentation | Hand-authored package files |
 
-See the [public integration guides](https://maestria.sznm.dev/agent-plugins/) for host-specific setup and capability differences. Start with [installation](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/INSTALL.md) and [support boundaries](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugins/docs/support.md). The shared orchestrator skill links to each host integration guide before native delegation.
+Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, router, policy, and argument contract without loading removed skills. Schema-specific profiles share canonical bodies; native formats, model settings, and tool restrictions stay host-specific.
 
-## Component ownership and generated exports
+The dispatcher profile does not automatically replace a host's primary agent. Host command, policy, or companion installation determines how primary-session routing is activated.
 
-| Path | Responsibility |
-| --- | --- |
-| Core `specialists/` | Canonical specialist and dispatcher role definitions |
-| Core `commands/` | Canonical workflow-mode definitions |
-| Core `rules.md` and `integrations/` | Shared contract and host-specific guidance |
-| Core `skills/` | Canonical reusable handoff and iteration-limit guidance |
-| Package `agents/` | Generated shared advisory profiles and selected native host profiles |
-| Package `skills/` | Generated host-compatible skill exports, including role, mode, global-rule, and utility representations |
-| Package `commands/`, `rules/` | Generated host aliases, activation rules, and instruction resources |
-| Package `integrations/` | Generated host guides only |
-| Package `generation/` | Development-only projection configs, manifest inputs, and native adaptation templates |
-| Package `assets/`, `docs/` | Presentation assets and package usage/support documentation |
+## Host mappings
 
-Canonical methodology remains in `packages/core/agent-directives/`. Roles belong to specialists, modes to commands, policy to rules, and reusable guidance to skills there. No duplicate semantic component tree is maintained inside this installable package. The generator derives advisory agent definitions directly from canonical roles rather than from exported role skills.
+| Host/surface | Installation resources | Boundary |
+| --- | --- | --- |
+| Claude Code and Desktop Code | Explicit native agent files, three native commands, two utilities | Research/review profiles exclude Write/Edit; shell-mediated editing is not a sandbox guarantee |
+| Claude Cowork / Chat | Shared command/utility resources | Native component availability differs by surface; Chat does not load plugin agents |
+| Cursor | Selected native agents, commands, always-applied policy, two utilities | Cursor owns native readonly enforcement and reload behavior |
+| Codex CLI / local desktop | Utilities through the plugin; full TOMLs and marked global instructions through `maestria install codex` | Marketplace-only installation does not activate routing, roles, or modes; companion instructions support per-turn FEIN/SONAR/BLITZ keywords |
+| ChatGPT plugin surfaces / portable v1 clients | Two root utilities | No portable native-agent, command, policy, or runtime-enforcement contract |
+| Kimi Code | Seven native profiles, three commands, complete primary-session bootstrap, two utilities | No built-in persona remapping or removed role-skill preloads; the host chooses models |
+| Devin | Root agents, root `AGENTS.md` policy, utilities and three selected workflow compatibility exports | Custom plugin agents load locally in CLI/Desktop, not cloud sessions |
+| ZCode | Selected full native profiles, three commands, utilities | Policy is embedded in agent/command context; a plugin rules selector is unverified |
+| OMP | Eight task profiles, three commands, one always-apply rule, two utilities | Dispatcher is a task profile; generic roles provide advisory boundaries rather than per-role tool enforcement |
+| Hermes | Two portable utilities; optional manual host context from `rules/hermes/context.md` | No Python adapter; installation alone does not activate orchestration, modes, or named agents |
 
-The fourteen complete `SKILL.md` exports preserve portable and native host loading contracts. Role and mode exports are compatibility representations, not additional semantic sources. Host-specific native schemas and permissions remain distinct. Cursor/Kimi aliases and host rules use selected subdirectories under `commands/` and `rules/` to avoid discovery by unrelated hosts. Build configuration stays in `generation/`, outside runtime integrations. This plugin has no executable hooks, automations, CLI, or MCP server.
+See [installation](INSTALL.md), [support boundaries](docs/support.md), and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; separately installable methodology skills remain under the repository's root `skills/`.
 
-## Development
+## Development and verification
 
-Run `scripts/sync-all`, then `scripts/check-sync` from the repository root. Configs under `generation/` project canonical methodology directly into host-compatible installation resources. `scripts/sync-consolidated-plugin.ts` assembles selected package resources and integration guides after projections are generated. It never installs into host directories.
+Edit core methodology or `generation/` metadata, then run `scripts/sync-all` and `scripts/check-sync`. The consolidated compiler composes an explicitly owned output plan from canonical inputs and validates it before mutation. It is the single writer for this package's generated resources. Generic package sync validates every discovered configuration before any write. Cleanup retires only named generated outputs and preserves unrelated files.
 
-Run `pnpm --filter @maestria/agent-plugins test` for assembly, native Kimi behavior, and packed payload checks. The packed test writes `artifacts/plugin-pack-evidence.json` with the shipped entries, manifest checks, preserved read-only metadata, and reproduction command. See [host-loading verification](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) for the Claude native-child and OMP packed-discovery probes, their reproduction commands, and their limits.
+Run `pnpm --filter @maestria/agent-plugins test` for archive, assembly, native context, and Kimi resource contracts. Packed evidence is written under ignored `artifacts/`. The [capability audit](https://github.com/agustinusnathaniel/maestria/blob/main/docs/agent-plugin-capabilities.md) records supported, selected, and unverified surfaces; [host verification](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) records reproducible loader probes and their limits.
+
+This package has no executable runtime adapter, hooks, scheduled automations, CLI executable, or MCP server. Some hosts support these components; they are intentionally omitted because this package supplies methodology and has no concrete executable integration requiring them.

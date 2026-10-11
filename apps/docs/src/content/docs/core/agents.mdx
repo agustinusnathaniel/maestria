@@ -3,7 +3,7 @@ title: Specialist Reference
 description: 'The 8 maestria agents: one orchestrator and 7 domain specialists. Roles, responsibilities, and when to call each one.'
 ---
 
-maestria defines 8 agents: one **orchestrator** and 7 domain specialists, each with a focused scope, clear permissions, and a specific place in the pipeline. Direct-route turns execute on the host; platform invocation syntax lives in the plugin documentation.
+maestria defines 8 agents: one **orchestrator** and 7 domain specialists, each with a focused scope and a specific place in the pipeline. Native profiles and tool controls vary by host; role guidance alone is advisory. Direct-route turns execute on the host; platform invocation syntax lives in the plugin documentation.
 
 ## Orchestration Model
 
@@ -45,6 +45,10 @@ Where keyword detection is supported, mode keywords are recognized anywhere in a
 | **Planner** | Implementation plans - phased milestones with verification criteria | Complex features needing structured rollout, migration plans, multi-phase work | Plan-only output; investigates with read-only tools |
 | **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Pre-merge review, security audit, post-implementation validation | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
 | **Writer** | Documentation - structured patterns for READMEs, API docs, changelogs, ADRs | READMEs, API docs, changelogs, architecture decisions | Documentation scope; not a code-editing role |
+
+## Portable Utilities
+
+The consolidated [Agent Plugins package](/agent-plugins/) exports two portable utilities: `handoff` for transferring task context and `iteration-limits` for bounding repair loops. Full methodology uses host-specific native profiles, commands, and policy entry points. Portable utilities alone do not activate this roster or its modes.
 
 ## Methodology Skills
 
