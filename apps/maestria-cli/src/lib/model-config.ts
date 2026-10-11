@@ -246,13 +246,11 @@ const OPENCODE_PROJECT_CANDIDATES = [
 ];
 const OPENCODE_PROJECT_CREATE = '.opencode/opencode.jsonc';
 
-// First existing candidate, or the fallback path to create.
 const firstExisting = (candidates: readonly string[], fallback: string): Effect.Effect<string> =>
   Effect.all(candidates.map((p) => fileExists(p))).pipe(
     Effect.map((exists) => candidates[exists.indexOf(true)] ?? fallback),
   );
 
-/** Resolve the config path for a level (first existing candidate, or the default to create) */
 const findOpenCodeConfigPath = (level: ModelConfigLevel): Effect.Effect<string> =>
   firstExisting(
     level === 'global' ? OPENCODE_GLOBAL_CANDIDATES : OPENCODE_PROJECT_CANDIDATES,

@@ -9,8 +9,6 @@ import { ConfigError, loadConfig } from './lib/config.js';
 import { runSync } from './lib/sync.js';
 import type { SyncFileResult } from './lib/sync.js';
 
-// ── CLI Types ──
-
 interface CliOptions {
   config: string;
   check: boolean;
@@ -19,8 +17,6 @@ interface CliOptions {
   verbose: boolean;
   help: boolean;
 }
-
-// ── Help ──
 
 const printHelp = (): void => {
   console.log(`
@@ -41,8 +37,6 @@ EXIT CODES
   2  Configuration error
 `);
 };
-
-// ── CLI Parsing ──
 
 const parseCliArgs = (): CliOptions => {
   const args = process.argv.slice(2);
@@ -74,8 +68,6 @@ const parseCliArgs = (): CliOptions => {
     verbose: values.verbose,
   };
 };
-
-// ── Main ──
 
 // oxlint-disable-next-line max-lines-per-function -- main orchestrates CLI parsing, config loading, sync execution, and result summarization as a single cohesive entry flow; splitting would fragment the linear startup sequence that shares opts/config/results.
 const main = async (): Promise<number> => {
@@ -125,7 +117,6 @@ const main = async (): Promise<number> => {
     throw error;
   }
 
-  // Summarize
   const written = results.filter((r) => r.status === 'written').length;
   const unchanged = results.filter((r) => r.status === 'unchanged').length;
   const removed = results.filter((r) => r.status === 'removed').length;

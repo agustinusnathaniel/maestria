@@ -15,8 +15,6 @@ import { resolveSyncPlan } from './plan.js';
 import type { ProcessFileOpts } from './process-file.js';
 import { processFile } from './process-file.js';
 
-// ── Public Types ──
-
 export interface SyncFileResult {
   source: string;
   output: string;
@@ -31,8 +29,6 @@ export interface SyncOptions {
   diff?: boolean;
   verbose?: boolean;
 }
-
-// ── Orchestration ──
 
 const processPlanEntry = async (
   entry: SyncPlanEntry,

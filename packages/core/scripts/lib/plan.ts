@@ -12,8 +12,6 @@ import path from 'node:path';
 import type { ResolvedFileConfig, ResolvedSyncConfig } from './config.js';
 import { ConfigError, resolveSourceFile } from './config.js';
 
-// ── Public Types ──
-
 export interface SyncPlanEntry {
   sourcePath: string;
   fileCfg: ResolvedFileConfig;
@@ -23,8 +21,6 @@ export interface SyncPlanEntry {
   logLabel: string;
   origin: 'primary' | 'secondary';
 }
-
-// ── Plan Resolution ──
 
 /**
  * Resolve the ordered plan for one run. `report` labels the verbose notes.

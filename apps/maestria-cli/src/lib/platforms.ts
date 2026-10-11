@@ -33,8 +33,6 @@ import type { PlatformResult } from '@/types.js';
 
 const { join } = nodePath;
 
-// ── Shared helpers ───────────────────────────────────
-
 /** Read OpenCode config file, trying .jsonc first then .json. */
 const readOpenCodeConfig = (): Effect.Effect<string, CommandError> => {
   const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
@@ -291,8 +289,6 @@ const runClaudePlugin = (action: 'install' | 'update'): Effect.Effect<void, Comm
     );
   });
 
-// ── Platform ID literal registry ─────────────────────
-
 /**
  * Literal-typed registry of platform IDs. This is the single source for the
  * platform ID union - PlatformHandler.id and ValidPlatform both derive from it,
@@ -310,8 +306,6 @@ export const PLATFORM_IDS = [
 ] as const;
 
 export type PlatformId = (typeof PLATFORM_IDS)[number];
-
-// ── Platform definitions ─────────────────────────────
 
 /**
  * Per-update host state that a handler captures exactly once so the update
@@ -747,7 +741,6 @@ const hermes: PlatformDefinition = {
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
 const CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents/cursor`;
-export const CURSOR_AGENT_NAMES = MAESTRIA_AGENTS;
 
 /** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
 const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandError> =>
@@ -760,7 +753,7 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
     try: async () => {
       const { readFile } = await import('node:fs/promises');
       const entries = await Promise.all(
-        CURSOR_AGENT_NAMES.map(async (agent) => {
+        MAESTRIA_AGENTS.map(async (agent) => {
           try {
             const content = await readFile(`${CURSOR_AGENT_DIR}/${agent}.md`, 'utf-8').catch(
               async (error: unknown) => {
@@ -894,8 +887,6 @@ const omp: PlatformDefinition = piStylePlatform({
   npmPackage: MAESTRIA_PLUGIN_PACKAGE,
   referencePrefix: '',
 });
-
-// ── Registry ─────────────────────────────────────────
 export const platforms: readonly PlatformHandler[] = [
   opencode,
   pi,

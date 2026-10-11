@@ -377,7 +377,6 @@ const reconcileOneTarget = async (
   ]);
 };
 
-/** Reconcile the companions after the plugin operation. */
 export const reconcileCompanions = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,

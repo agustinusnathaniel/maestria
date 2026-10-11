@@ -8,8 +8,6 @@ import path from 'node:path';
 import type { ResolvedSyncConfig } from './config.js';
 import type { SyncFileResult } from './sync.js';
 
-// ── Directory walker ──
-
 export const walkDir = async (dir: string): Promise<string[]> => {
   const entries: string[] = [];
 
@@ -31,16 +29,12 @@ export const walkDir = async (dir: string): Promise<string[]> => {
   return entries.toSorted();
 };
 
-// ── Atomic write (tmp + rename) ──
-
 export const atomicWrite = async (filePath: string, content: string): Promise<void> => {
   await mkdir(path.dirname(filePath), { recursive: true });
   const tmpPath = `${filePath}.tmp.${createHash('md5').update(filePath).digest('hex').slice(0, 8)}`;
   await writeFile(tmpPath, content, 'utf-8');
   await rename(tmpPath, filePath);
 };
-
-// ── Auto-clean stale output files ──
 
 export interface AutoCleanOpts {
   dryRun?: boolean;
