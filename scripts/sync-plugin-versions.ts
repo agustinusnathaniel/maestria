@@ -29,12 +29,7 @@
  *   previous release helper did.
  *
  * Targets:
- * - @maestria/agent-plugin packages/agent-plugin/package.json -> plugin.json
- * - @maestria/hermes       packages/hermes/package.json -> src/maestria_hermes/_version.py, plugin.yaml
- * - @maestria/claude-code  packages/claude-code/package.json -> .claude-plugin/plugin.json
- * - @maestria/codex        packages/codex/package.json -> .codex-plugin/plugin.json
- * - @maestria/cursor       packages/cursor/package.json -> .cursor-plugin/plugin.json
- * - @maestria/kimi-code    packages/kimi-code/package.json -> kimi.plugin.json
+ * - @maestria/agent-plugins -> generation manifest inputs and generated root manifests
  */
 
 import {
@@ -64,15 +59,25 @@ const VERSION_PY_HEADER = '"""Package version -- single source of truth."""';
 export type Target = [packageDir: string, manifests: string[]];
 
 export const TARGETS: Target[] = [
-  [path.join(ROOT, 'packages', 'agent-plugin'), [path.join('plugin.json')]],
   [
-    path.join(ROOT, 'packages', 'hermes'),
-    [path.join('src', 'maestria_hermes', '_version.py'), path.join('plugin.yaml')],
+    path.join(ROOT, 'packages', 'agent-plugins'),
+    [
+      'generation/manifests/plugin.json',
+      'generation/manifests/claude-code.json',
+      'generation/manifests/codex.json',
+      'generation/manifests/cursor.json',
+      'generation/manifests/devin.json',
+      'generation/manifests/zcode.json',
+      'generation/manifests/kimi.plugin.json',
+      'plugin.json',
+      '.claude-plugin/plugin.json',
+      '.codex-plugin/plugin.json',
+      '.cursor-plugin/plugin.json',
+      '.devin-plugin/plugin.json',
+      '.zcode-plugin/plugin.json',
+      'kimi.plugin.json',
+    ],
   ],
-  [path.join(ROOT, 'packages', 'claude-code'), [path.join('.claude-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'codex'), [path.join('.codex-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'cursor'), [path.join('.cursor-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'kimi-code'), [path.join('kimi.plugin.json')]],
 ];
 
 export const display = (p: string): string => {

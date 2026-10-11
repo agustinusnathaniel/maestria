@@ -36,7 +36,7 @@ The important ownership rule is:
 | User-facing documentation | `apps/docs/` or the relevant package README | Generated agent files |
 | Architecture decisions | `docs/adr/<area>/` | A duplicate explanation in a package README |
 
-Package manifests, runtime code, package READMEs, and the docs site are hand-authored. Agent files and skills produced by the sync pipeline are generated.
+Release metadata, projection configs and manifest inputs under `generation/`, package READMEs, runtime code, and the docs site are hand-authored. The shared plugin's installable agent, skill, and integration exports are generated directly at the package root. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
 
 ## The Sync Pipeline
 
@@ -48,7 +48,7 @@ packages/core/agent-directives/
 packages/<platform>/ generated agents, skills, commands, and rules
 ```
 
-Each platform's `sync.config.ts` declares its output path and the transformations needed for that host, such as tool names, frontmatter, and routing syntax. The pipeline also removes stale generated files.
+Native adapters use `sync.config.ts`; the shared plugin keeps its projection configs under `generation/`. These configs declare output paths and host-specific transformations such as tool names, frontmatter, and routing syntax. The pipeline also removes stale generated files.
 
 Never edit a generated file. Edit the canonical source, then regenerate and verify:
 
@@ -92,15 +92,8 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `pnpm --filter @maestria/kimi-code test` |
+| `agent-plugins` | `generation/` configs and manifest inputs; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
-| `omp` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/omp test` and `validate` |
-| `cursor` | `.cursor-plugin/` manifest and declarative files | `agents/`, `skills/`, `rules/`, `commands/` | `pnpm --filter @maestria/cursor test` |
-| `hermes` | Python adapter, hooks, middleware, and commands | `src/maestria_hermes/skills/` | `ruff check src/` |
-| `claude-code` | `.claude-plugin/` manifest | `agents/`, `skills/`, `commands/` | `pnpm --filter @maestria/claude-code test` and `claude plugin validate . --strict` |
-| `codex` | `.codex-plugin/` manifest and native-agent metadata | `skills/` | `pnpm --filter @maestria/codex test` |
-| `prime-agent` | manifest and verified extension subset | `skills/` | package validation and focused tests |
-| `agent-plugin` | portable manifest and package metadata | `skills/` | package validation and focused tests |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.
 

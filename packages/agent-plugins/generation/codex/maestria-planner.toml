@@ -1,0 +1,3 @@
+name = "maestria-planner"
+description = "maestria planning specialist for sequencing complex work with verification and rollback criteria."
+sandbox_mode = "read-only"

@@ -2,35 +2,142 @@
 command = "pnpm --filter @maestria/docs build"
 publish = "dist"
 
-# The former /pi/ and /omp/ doc sections were consolidated into /pi-omp/.
+# The shared plugin host guides moved under /agent-plugins/<host>/.
 [[redirects]]
-from = "/pi"
-to = "/pi-omp/"
+from = "/claude-code"
+to = "/agent-plugins/claude-code/"
 status = 301
 
 [[redirects]]
-from = "/pi/"
-to = "/pi-omp/"
+from = "/claude-code/*"
+to = "/agent-plugins/claude-code/:splat"
+status = 301
+
+[[redirects]]
+from = "/claude-code.md"
+to = "/agent-plugins/claude-code.md"
+status = 301
+
+[[redirects]]
+from = "/codex"
+to = "/agent-plugins/codex/"
+status = 301
+
+[[redirects]]
+from = "/codex/*"
+to = "/agent-plugins/codex/:splat"
+status = 301
+
+[[redirects]]
+from = "/codex.md"
+to = "/agent-plugins/codex.md"
+status = 301
+
+[[redirects]]
+from = "/cursor"
+to = "/agent-plugins/cursor/"
+status = 301
+
+[[redirects]]
+from = "/cursor/*"
+to = "/agent-plugins/cursor/:splat"
+status = 301
+
+[[redirects]]
+from = "/cursor.md"
+to = "/agent-plugins/cursor.md"
+status = 301
+
+[[redirects]]
+from = "/kimi-code"
+to = "/agent-plugins/kimi-code/"
+status = 301
+
+[[redirects]]
+from = "/kimi-code/*"
+to = "/agent-plugins/kimi-code/:splat"
+status = 301
+
+[[redirects]]
+from = "/kimi-code.md"
+to = "/agent-plugins/kimi-code.md"
+status = 301
+
+[[redirects]]
+from = "/hermes"
+to = "/agent-plugins/hermes/"
+status = 301
+
+[[redirects]]
+from = "/hermes/*"
+to = "/agent-plugins/hermes/:splat"
+status = 301
+
+[[redirects]]
+from = "/hermes.md"
+to = "/agent-plugins/hermes.md"
 status = 301
 
 [[redirects]]
 from = "/omp"
-to = "/pi-omp/"
+to = "/agent-plugins/omp/"
 status = 301
 
 [[redirects]]
-from = "/omp/"
-to = "/pi-omp/"
-status = 301
-
-[[redirects]]
-from = "/pi.md"
-to = "/pi-omp.md"
+from = "/omp/*"
+to = "/agent-plugins/omp/:splat"
 status = 301
 
 [[redirects]]
 from = "/omp.md"
-to = "/pi-omp.md"
+to = "/agent-plugins/omp.md"
+status = 301
+
+# The former combined /pi-omp/ guides are now Pi-only; OMP has its own plugin guide.
+[[redirects]]
+from = "/pi-omp"
+to = "/pi/"
+status = 301
+
+[[redirects]]
+from = "/pi-omp/*"
+to = "/pi/:splat"
+status = 301
+
+[[redirects]]
+from = "/pi-omp.md"
+to = "/pi.md"
+status = 301
+
+# The former /agent-plugin/ doc section was renamed to /agent-plugins/.
+[[redirects]]
+from = "/agent-plugin"
+to = "/agent-plugins/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/"
+to = "/agent-plugins/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/compatibility"
+to = "/agent-plugins/compatibility/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/compatibility/"
+to = "/agent-plugins/compatibility/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin.md"
+to = "/agent-plugins.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugin/compatibility.md"
+to = "/agent-plugins/compatibility.md"
 status = 301
 
 [build.environment]

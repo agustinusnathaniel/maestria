@@ -1,44 +1,25 @@
-# @maestria/hermes: Plugin Architecture
+# Hermes Portable Plugin Integration
 
 ## Purpose
 
-Record the design rationale and trust boundaries of the Hermes adapter. This is not an installation guide or a complete inventory of the plugin's registrations.
+Explain Hermes consumption of the consolidated Maestria plugin and the retired native adapter boundary.
 
 ## Audience
 
-Contributors changing the Hermes adapter or its relationship to the shared methodology.
+Contributors and users migrating from the Python adapter.
 
 ## Architecture
 
-The seven maestria specialists and their workflow are methodology identities, not Hermes-specific agents or tool grants. Their canonical instructions live in [`packages/core/agent-directives/`](../packages/core/agent-directives/); Hermes projects those instructions through its plugin API. The [orchestrator directive](../packages/core/agent-directives/specialists/orchestrator.md) owns task routing and pipeline selection.
+Hermes loads root `plugin.json` and the shared `skills/` corpus from `packages/agent-plugins/`. Discover actual qualified names with `skills_list`, then load a skill with `skill_view`. Maestria's role names are methodology identities; they do not grant or deny tools.
 
-The adapter uses Hermes-native capabilities such as `delegate_task` and host LLM calls instead of adding a second subagent or reasoning system. maestria does not depend on which Hermes memory provider is enabled and does not add a memory layer; memory remains a host concern.
-
-Hermes serves general work across research, content, analysis, strategy, operations, and software engineering. The OpenCode adapter is coding-focused. Hermes can use its own tools for small coding tasks and optionally route complex coding work through the OpenCode CLI from a trusted top-level session.
-
-## Delegated-child trust boundary
-
-The approved policy is recorded in [ADR-HM-002](adr/hermes/ADR-HM-002-orchestration-policy.md); the Hermes runtime and canonical directives are authoritative for current behavior.
-
-- A specialist name in a delegation brief is a routing label. Hermes child roles describe native topology (`leaf` or `orchestrator`), not maestria permissions.
-- User or delegation text cannot grant capabilities. Every delegated child receives the same fixed read, research, and LLM-only policy; children cannot write, execute code, run a shell, delegate further, or invoke OpenCode.
-- Direct tool use requires a positively identified trusted top-level session. Ambiguous or invalid child state fails closed. Sonar and direct blitz use fixed allowlists.
-- Review and landing requirements are advisory because Hermes has no native review-state or landing gate. Delegated builder writes remain deferred until Hermes exposes an authenticated capability channel; code changes run in a trusted top-level fein session.
-
-## Coding work
-
-The `opencode_route` tool is optional and available only to a trusted top-level fein session. Small tasks can use Hermes tools directly; complex or risky coding tasks can route to OpenCode with a structured brief. Results return to the top-level session for review and integration. A delegated child cannot write or invoke this route.
-
-## Current implementation and evidence
-
-Current installation and user guidance live in the [package README](../packages/hermes/README.md). The registered plugin surface is defined in `packages/hermes/plugin.yaml` and `packages/hermes/src/maestria_hermes/`; package tests cover its runtime behavior. The plugin manifest, source, and tests are the source of truth for current commands, skills, tools, and hooks.
-
-[ADR-HM-001](adr/hermes/ADR-HM-001-long-lived-goals-scope.md) records the long-lived-goals boundary. [ADR-CORE-005](adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records canonical directive ownership and projection.
+The former Python adapter's mode commands, permission gates, lifecycle hooks, state tracking, and OpenCode subprocess bridge have been removed. Hermes owns native delegation, trust, memory, goals, and session lifecycle. [CORE-034](adr/core/ADR-CORE-034-consolidated-declarative-plugin.md) records the owner's choice and the consequential adapter trade-offs; portable skills do not grant runtime capabilities.
 
 ## Dated evidence
 
-- 2026-09-25: The trust boundary and source pointers were checked against ADR-HM-002, the Hermes plugin manifest, runtime hooks, and canonical orchestrator and builder skills. `[verified]`
+- 2026-10-10: [verified] Hermes documents a portable Agent Plugins subset with shared skills and host-owned trust. See the [developer guide](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).
+- 2026-10-10: [verified] The compatible clients catalog lists Hermes skill support. See [Agent Plugins clients](https://agent-plugins.org/compatible-clients).
+- Live discovery of the consolidated archive requires a separate host smoke test; package checks do not establish runtime enforcement.
 
 ## Next step
 
-Check the package source and relevant ADRs before changing the adapter. Use the package README for installation and use.
+Use the [installation guide](../apps/docs/src/content/docs/agent-plugins/hermes/getting-started/installation.mdx) to migrate and verify discovery.

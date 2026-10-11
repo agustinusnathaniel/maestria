@@ -1,0 +1,41 @@
+---
+title: Compatibility
+description: Current and historical verification evidence for @maestria/agent-plugins and its host integrations.
+sidebar:
+  order: 2
+---
+
+import { Aside, Badge } from '@astrojs/starlight/components';
+
+This page separates current evidence for the consolidated `@maestria/agent-plugins` package from smoke checks against its former standalone artifact. A pass applies only to the named host, version, package, and behavior. It does not imply support for other components or surfaces.
+
+Evidence updated: 2026-10-10. The [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) contain the detailed methods and limits.
+
+## Current consolidated-package evidence
+
+| Surface | Status | What the evidence establishes |
+| --- | --- | --- |
+| Claude Code CLI `2.1.217` | <Badge text="CLI fixture passed" variant="success" /> | Strict plugin validation passed. An offline fixture verified the reviewer child, its role and global-rules skill preload, and a tool schema without Write or Edit. It does not test model judgment, shell-mediated editing, every specialist, other versions, account sync, or Desktop Code. |
+| Hermes Agent | <Badge text="Archive smoke passed" variant="success" /> | On 2026-10-10, an isolated home loaded all 14 skills from the npm-packed consolidated archive and `hermes plugins doctor` passed. No Maestria tools or hooks loaded. The public evidence summary does not pin a Hermes version or link a standalone probe artifact. |
+| Oh My Pi `18.4.8` | <Badge text="Packed discovery probe" variant="success" /> | The installed loader and capability providers discovered 14 skills and seven root profiles from a packed fixture. The probe did not run the host install transaction, `omp plugin install`, tasks, or model behavior. |
+| Codex CLI | <Badge text="Installer tests passed" variant="note" /> | Package/unit tests and builds cover the companion installer and native profile payload. There is no fresh CLI host E2E for the consolidated archive. The earlier Codex `0.145.0` marketplace smoke used the former standalone package. A direct marketplace install provides skills only. See the [Codex guide](/agent-plugins/codex/). |
+| Codex in the ChatGPT desktop app | <Badge text="Setup documented" variant="note" /> | The desktop guide follows OpenAI's local npm marketplace procedure. Maestria has not been runtime-tested in the desktop app. |
+| Devin | <Badge text="Host loading unverified" variant="caution" /> | The package includes a Devin manifest, shared skills, and root specialist profiles. See the [Devin guide](/agent-plugins/devin/); no live Devin load is recorded. |
+| ZCode | <Badge text="Host loading unverified" variant="caution" /> | The package includes a ZCode manifest, shared skills, and root specialist profiles. See the [ZCode guide](/agent-plugins/zcode/); no live ZCode load is recorded. |
+
+## Historical checks against the former artifact
+
+These checks passed against the former `@maestria/agent-plugin` artifact. They do not establish compatibility of the consolidated package.
+
+| Client | Historical result | Scope |
+| --- | --- | --- |
+| Hermes Agent `0.20.3` | Live smoke passed | Installed and enabled the old npm-packed artifact in an isolated Hermes home; the plugin list and doctor checks passed. |
+| Grok Bot CLI `1.0.0` | Live smoke passed | Installed and validated the old local package in an isolated Grok home. |
+
+For clients without a current evidence row, use the [official compatible clients list](https://agent-plugins.org/compatible-clients) for host support and follow the relevant setup guide. Setup instructions do not establish runtime compatibility.
+
+<Aside type="caution" title="Activation remains client-owned">
+  Agent Plugins standardizes package shape and component discovery, not each client's UI, account
+  state, marketplace setup, enablement controls, or session behavior. After installing, enable the
+  plugin if needed and start a new session to confirm its skills appear.
+</Aside>

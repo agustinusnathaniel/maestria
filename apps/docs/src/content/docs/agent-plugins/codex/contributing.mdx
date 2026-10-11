@@ -1,0 +1,31 @@
+---
+title: Contributing
+description: Maintain the generated Codex CLI integration and its marketplace-facing package metadata.
+---
+
+`@maestria/agent-plugins` is generated from the canonical directives in `packages/core/agent-directives/`. The package adapts those directives to Codex's namespaced skill format and pairs them with lightweight native custom-agent templates and an instruction resource. For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/).
+
+## Package Boundary
+
+Release metadata and the host adaptation inputs under `generation/` are hand-authored. Core directives remain the methodology source; the root installation resources are generated. Codex's native templates and instruction resources are compiled into the installable bundle. The repository-level `.agents/plugins/marketplace.json` selects the published npm package, whose resource paths match the directly installable package root; the staging directory is not another canonical source.
+
+## Canonical Source Workflow
+
+Edit `packages/core/agent-directives/`, never generated files under `packages/agent-plugins/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/agent-plugins test
+```
+
+## Validation
+
+Run the Codex plugin-creator validator against the package and inspect the generated skill files:
+
+```bash
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/agent-plugins
+pnpm --filter @maestria/agent-plugins test
+```
+
+Package/unit tests and builds cover the companion installer and native profile payload. The earlier Codex CLI `0.145.0` marketplace smoke used the former standalone package; fresh CLI host loading of the consolidated archive remains unverified. Desktop marketplace setup installs the skills-only projection. The companion Maestria CLI manages native agent TOMLs and global instructions; their desktop behavior remains unverified. Codex owns runtime permissions and enforcement.

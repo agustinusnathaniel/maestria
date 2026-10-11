@@ -3,7 +3,7 @@ name: blitz
 description: Fast capability-aware route - skip optional recon and design ceremony
 pipeline: direct when the host permits; otherwise use a permitted specialist
 precedence: mode marker overrides trigger phrases
-detection: case-insensitive keyword, [MODE: blitz] marker injected at front of message
+detection: 'case-insensitive keyword, [MODE: blitz] marker injected at front of message'
 ---
 
 [MODE: blitz]

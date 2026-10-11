@@ -1,0 +1,2 @@
+name = "maestria-diagnose"
+description = "maestria diagnosis specialist for tracing regressions from symptoms to root cause and prevention."

@@ -1,0 +1,31 @@
+{
+  "name": "maestria",
+  "version": "0.7.0",
+  "description": "Shared maestria engineering methodology as portable Agent Skills, with native host overlays in the same package.",
+  "author": {
+    "name": "agustinusnathaniel",
+    "url": "https://github.com/agustinusnathaniel"
+  },
+  "homepage": "https://maestria.sznm.dev/",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "ai-engineering",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "specialists"
+  ],
+  "skills": "./skills/",
+  "agents": [
+    "./agents/adventurer.md",
+    "./agents/architect.md",
+    "./agents/builder.md",
+    "./agents/diagnose.md",
+    "./agents/planner.md",
+    "./agents/reviewer.md",
+    "./agents/writer.md"
+  ],
+  "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
+}

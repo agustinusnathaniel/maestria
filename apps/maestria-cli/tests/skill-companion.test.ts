@@ -542,10 +542,9 @@ describe('reconcile companions', () => {
     );
   });
 
-  it('maps omp to the universal target like prime-agent', async () => {
+  it('maps omp to the universal target', async () => {
     const { companionAgentFor, isCompanionSupported } = await import('@/lib/skill-companion.js');
     expect(companionAgentFor('omp')).toBe('universal');
-    expect(companionAgentFor('prime-agent')).toBe('universal');
     expect(isCompanionSupported('omp')).toBe(true);
     const runner = fakeSkillCli({ universal: '/fake/shared/create-pull-request' });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, null);

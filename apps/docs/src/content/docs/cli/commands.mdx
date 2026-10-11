@@ -62,7 +62,7 @@ Each platform object:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
+| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
 | `label` | string | Human-readable name |
 | `available` | boolean | CLI tool detected on `$PATH` |
 | `installed` | boolean | maestria is installed for this platform |
@@ -130,11 +130,10 @@ Skill flags are validated before any change. An unmanaged skill already present 
 | ------------- | ----------- | ------------------------------------------------------- |
 | `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
 | `pi`          | Pi          | `@maestria/pi` (npm)                                    |
-| `prime-agent` | Prime Agent | `@maestria/prime-agent` (npm, native package manager)   |
-| `kimi-code`   | Kimi Code   | `@maestria/kimi-code` (npm)                             |
+| `kimi-code`   | Kimi Code   | `@maestria/agent-plugins` (npm)                         |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
-| `cursor`      | Cursor      | `@maestria/cursor` (npm)                                |
-| `omp`         | Oh My Pi    | `@maestria/omp` (npm)                                   |
+| `cursor`      | Cursor      | `@maestria/agent-plugins` (npm)                         |
+| `omp`         | Oh My Pi    | `@maestria/agent-plugins` (npm, portable skills)        |
 | `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
 | `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
@@ -142,20 +141,13 @@ Skill flags are validated before any change. An unmanaged skill already present 
 
 Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
 
-**Prime Agent** uses its native package manager. maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
-
-Prime has two additional constraints:
-
-- **Global scope only.** maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh temporary directory that exposes only user settings; the directory is removed afterward.
-- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. maestria detects a pinned user-scope registration and reports an error instead of silently skipping it.
-
 ### Error handling
 
 **Input validation** - unknown platform IDs fail before any platform work:
 
 | Scenario | Error message |
 | --- | --- |
-| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex` |
+| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex` |
 
 **Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform instead of aborting the batch:
 
@@ -185,7 +177,7 @@ maestria plugin install [source] [--destination <path>] [--json]
 | --- | --- |
 | `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, optional MCP configuration, and package path containment without writing files |
 | `maestria plugin validate ./my-plugin --json` | Emits the validation report as JSON |
-| `maestria plugin install` | Fetches `@maestria/agent-plugin`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
+| `maestria plugin install` | Fetches `@maestria/agent-plugins`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
 | `maestria plugin install ./my-plugin` | Validates and stages a local package |
 | `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
 
@@ -193,10 +185,10 @@ The staged directory contains the root `plugin.json` and fixed `skills/` layout.
 
 ### Sources and destinations
 
-`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugin`:
+`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugins`:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install" />
-<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugin@0.1.2" />
+<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugins@0.1.2" />
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install ./my-plugin" />
 
 Without `--destination`, the package is staged under:
@@ -254,7 +246,7 @@ Use `--version` to pin a specific version instead of the latest:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
-Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
+Exact version pinning is not available for `claude-code`, `codex`, or `hermes`. The first two update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
 
 When every installed plugin is already current, `update` still reconciles methodology skills and reports the plugin step as a no-op per platform. Legacy installs without a skill record infer only `create-pull-request`, never `docs-update`.
 
@@ -265,7 +257,7 @@ When every installed plugin is already current, `update` still reconciles method
 | `maestria update opencode,pi` | Updates OpenCode and Pi in one run, one platform at a time |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically |
 | `maestria update --all` | Updates all installed platforms to latest |
-| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code, Codex CLI, and Prime Agent return a version-pinning validation result |
+| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code and Codex CLI return a version-pinning validation result |
 
 ### Version caching
 
@@ -350,7 +342,7 @@ maestria check <platform> [--json] [--quiet]
 maestria check --all [--json] [--quiet]
 ```
 
-`<platform>` is one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
+`<platform>` is one of `opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
 
 ### Flags
 
@@ -391,7 +383,7 @@ Choose the model each maestria specialist uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP loads portable plugin skills and has no per-agent model files.
 
 For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` (global) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
@@ -399,7 +391,7 @@ For Codex, the command writes native custom-agent TOML files under `~/.codex/age
 
 <AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
+Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
 
 ### Non-interactive (CI)
 
@@ -424,14 +416,14 @@ For a partial assignment, set a model for any role you want to change:
 
 ### Flags
 
-| Flag | Description |
-| --- | --- |
-| `--global` | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`, `~/.omp/agent/`) |
-| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`, `.omp/agents/`) |
-| `--set` | Set models non-interactively, e.g. `planner=<model-id>` |
-| `--json` | Output the resulting config as JSON |
-| `--quiet` | Suppress spinner output (recommended for CI) |
-| `--compact` | Minimal machine-friendly text output |
+| Flag        | Description                                                             |
+| ----------- | ----------------------------------------------------------------------- |
+| `--global`  | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`) |
+| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`)        |
+| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`                 |
+| `--json`    | Output the resulting config as JSON                                     |
+| `--quiet`   | Suppress spinner output (recommended for CI)                            |
+| `--compact` | Minimal machine-friendly text output                                    |
 
 ### JSON schema
 
@@ -456,9 +448,8 @@ An empty string means the agent inherits the session model.
 | -------- | ----------------------------------- | -------------------------- |
 | opencode | `~/.config/opencode/opencode.jsonc` | `.opencode/opencode.jsonc` |
 | pi       | `~/.pi/agent/agents/<name>.md`      | `.pi/agents/<name>.md`     |
-| omp      | `~/.omp/agent/agents/<name>.md`     | `.omp/agents/<name>.md`    |
 
-opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi and omp set the `model:` line in the agent's frontmatter. For pi/omp, a missing project agent file is created from the global one.
+opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
 
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.

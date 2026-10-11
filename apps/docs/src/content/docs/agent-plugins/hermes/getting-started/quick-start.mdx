@@ -1,0 +1,28 @@
+---
+title: Quick Start
+description: Choose a Maestria workflow through Hermes portable skills.
+---
+
+After [installation](/agent-plugins/hermes/getting-started/installation/), start a fresh Hermes session. Ask the agent to list plugin skills, load `global-rules`, then load `orchestrator` using the discovered fully qualified names.
+
+## Choose a route
+
+| Skill   | Use                                                     |
+| ------- | ------------------------------------------------------- |
+| `fein`  | Multi-stage work with delegation and independent review |
+| `sonar` | Research and planning, then stop before implementation  |
+| `blitz` | The smallest safe route for a concrete task             |
+
+These are workflow instructions. They do not install slash commands, persist a mode, or restrict tools.
+
+## Try a task
+
+```text
+Use Maestria's sonar skill to investigate this module. Report the findings and stop before editing.
+```
+
+For implementation, describe the intended outcome and acceptance evidence. Hermes decides which native delegation tools are available. When an independent reviewer is unavailable, report that limitation instead of presenting a same-context review as independent.
+
+## Host boundaries
+
+Maestria adds no memory provider, background schedule, OpenCode bridge, or permission gate. Configure those capabilities through Hermes if your workflow needs them.

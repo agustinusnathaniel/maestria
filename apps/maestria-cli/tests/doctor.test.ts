@@ -324,14 +324,14 @@ describe('doctor reports', () => {
       calls.push(flag === -1 ? '' : (args[flag + 1] ?? ''));
       return { stderr: '', stdout: '[]' };
     };
-    const record = buildRecord({ omp: [], opencode: [], 'prime-agent': [] });
+    const record = buildRecord({ omp: [], opencode: [] });
     const reports = await collectDoctorReports(
       runner,
-      [status('opencode'), status('omp'), status('prime-agent')],
+      [status('opencode'), status('omp')],
       record,
       SOURCE,
     );
-    expect(reports).toHaveLength(3);
+    expect(reports).toHaveLength(2);
     expect(calls.filter((agent) => agent === 'universal')).toHaveLength(1);
     expect(calls.filter((agent) => agent === 'opencode')).toHaveLength(1);
   });
@@ -349,7 +349,6 @@ describe('doctor reports', () => {
     const largeStatuses = [
       status('opencode', { label: 'OpenCode' }),
       status('omp', { label: 'Oh My Pi' }),
-      status('prime-agent', { label: 'Prime Agent' }),
       status('cursor', {
         available: true,
         installed: false,
@@ -376,7 +375,6 @@ describe('doctor reports', () => {
         platforms: [
           { id: 'opencode', observed: inventory.opencode },
           { id: 'omp', observed: inventory.universal },
-          { id: 'prime-agent', observed: inventory.universal },
           { id: 'cursor', observed: inventory.cursor },
         ],
       });
@@ -386,7 +384,6 @@ describe('doctor reports', () => {
       const human = await runHuman(fakeListCli(inventory), largeStatuses, null);
       const observedLines = human.output.split('\n').filter((line) => line.includes('Observed:'));
       expect(observedLines.filter((line) => line.includes('/fake/shared/skills'))).toHaveLength(1);
-      expect(human.output).toContain('same as omp');
       expect(countOf(human.output, 'unrelated skills omitted')).toBe(3);
       expect(countOf(human.output, 'Next:')).toBe(largeStatuses.length);
       expect(human.output).toContain('to install the plugin');
@@ -402,7 +399,6 @@ describe('doctor reports', () => {
       expect(platforms.map((platform) => (isRecord(platform) ? platform.id : undefined))).toEqual([
         'opencode',
         'omp',
-        'prime-agent',
         'cursor',
       ]);
       for (const platform of platforms) {

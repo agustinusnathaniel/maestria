@@ -29,8 +29,8 @@ export const MANAGED_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_S
 
 /**
  * maestria platform ID to native skills-CLI agent ID. `null` means no
- * companion target exists. omp and prime-agent alias to `universal`: their
- * hosts natively discover `~/.agents/skills/` SKILL.md directories.
+ * companion target exists. omp aliases to `universal`: its host natively
+ * discovers `~/.agents/skills/` SKILL.md directories.
  */
 const COMPANION_AGENTS: Record<string, string | null> = {
   'claude-code': 'claude-code',
@@ -41,7 +41,6 @@ const COMPANION_AGENTS: Record<string, string | null> = {
   omp: 'universal',
   opencode: 'opencode',
   pi: 'pi',
-  'prime-agent': 'universal',
 };
 
 export const companionAgentFor = (platformId: string): string | null =>

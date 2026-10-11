@@ -1,0 +1,64 @@
+---
+title: '@maestria/agent-plugins'
+description: Shared maestria skills for Codex CLI and Codex in the ChatGPT desktop app, with native agents available through the CLI installer.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <div class="relative min-w-0">
+      <PlatformHero
+        eyebrow="@MAESTRIA/PLUGIN"
+        title="Shared maestria skills for Codex."
+        lead="Use the workflow skills in Codex CLI or Codex in the ChatGPT desktop app. The maestria CLI also installs native specialist agents and orchestration guidance for Codex CLI."
+        mark={marks.codex}
+        primaryCta={{ href: '/agent-plugins/codex/getting-started/installation/', label: 'Codex CLI setup' }}
+        secondaryCta={{ href: '/agent-plugins/codex/getting-started/quick-start/', label: 'Quick start' }}
+        installCommand="npx maestria install codex"
+      />
+    </div>
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Shared skills, with CLI-specific companions."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Shared workflow skills', desc: 'Namespaced specialists, global rules, orchestration, handoff, bounded iteration, and workflow modes.' },
+          { title: 'Codex CLI companions', desc: 'The maestria CLI also installs seven native agent TOMLs and a managed orchestration block in global instructions.' },
+          { title: 'Desktop app plugin', desc: 'A local marketplace installs the skills plugin in Codex in the ChatGPT desktop app.' },
+          { title: 'Different installation results', desc: 'Marketplace installation adds skills only. It does not add the CLI-managed native agents or global instruction block.' },
+          { title: 'Host-owned controls', desc: 'Codex retains permissions, approvals, sandbox settings, and hook trust. Maestria guidance does not enforce them.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Codex CLI setup', href: '/agent-plugins/codex/getting-started/installation/' },
+        { label: 'Codex desktop setup', href: '/agent-plugins/codex/getting-started/desktop/' },
+        { label: 'Changelog', href: '/agent-plugins/codex/changelog/' },
+        { label: 'Contributing', href: '/agent-plugins/codex/contributing/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

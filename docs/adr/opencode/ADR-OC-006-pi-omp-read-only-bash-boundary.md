@@ -92,7 +92,6 @@ Run the shared parser, Pi, and OMP package tests, and `pnpm e2e:fail-closed` for
 
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): the pre-code failure-mode inventory this decision's cases come from.
 - [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): shared Pi/OMP adapter ownership.
-- [ADR-HM-003](../hermes/ADR-HM-003-credential-safe-subprocess-boundary.md): credential-safe subprocess boundary.
 - [Testing Philosophy](../../testing.md): behavior-test selection and evidence requirements.
 
 ## Supersession

@@ -34,8 +34,8 @@ export interface Platform {
 }
 
 /**
- * All nine entries in homepage grid order. Nine cells complete the 3-column
- * grid; `/ecosystem/` closes it with shared companion tooling.
+ * All nine entries in homepage grid order. `/ecosystem/` closes the grid
+ * with shared companion tooling.
  */
 export const platforms: Platform[] = [
   {
@@ -48,62 +48,60 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: 'Namespaced agents, skills, and workflow commands for Claude Code.',
-    href: '/claude-code/',
+    blurb: 'Native agent profiles with shared role and workflow skills for Claude Code.',
+    href: '/agent-plugins/claude-code/',
     id: 'claude-code',
     installArgs: 'install claude-code',
     mark: 'claudeCode',
-    name: '@maestria/claude-code',
+    name: 'Maestria for Claude Code',
   },
   {
     blurb: 'Specialist and workflow skills for Codex CLI.',
-    href: '/codex/',
+    href: '/agent-plugins/codex/',
     id: 'codex',
     installArgs: 'install codex',
     mark: 'codex',
-    name: '@maestria/codex',
+    name: 'Maestria for Codex',
   },
   {
-    blurb: '8 specialized skills with swarm-aware orchestration and no build step.',
-    href: '/kimi-code/',
+    blurb: 'Shared role skills with Kimi-native command aliases and parent-to-child handoffs.',
+    href: '/agent-plugins/kimi-code/',
     id: 'kimi-code',
     installArgs: 'install kimi-code',
     mark: 'kimiCode',
-    name: '@maestria/kimi-code',
+    name: 'Maestria for Kimi Code',
   },
   {
-    blurb: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
-    href: '/cursor/',
+    blurb: 'Specialist profiles, shared skills, and workflow aliases for Cursor IDE and CLI.',
+    href: '/agent-plugins/cursor/',
     id: 'cursor',
     installArgs: 'install cursor',
     mark: 'cursorMark',
-    name: '@maestria/cursor',
+    name: 'Maestria for Cursor',
   },
   {
-    blurb: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
-    href: '/pi-omp/',
-    id: 'pi-omp',
-    // CLI positional arg is `pi` (see /cli/commands/), not `pi-omp`.
+    blurb: '7 specialist subagents with native workflow modes and session tracking for Pi.',
+    href: '/pi/',
+    id: 'pi',
     installArgs: 'install pi',
     mark: 'piOmp',
-    name: '@maestria/pi & @maestria/omp',
+    name: '@maestria/pi',
   },
   {
-    blurb: 'Methodology layer for Hermes Agent: specialists, pipeline, and mode system.',
-    href: '/hermes/',
+    blurb: 'Portable methodology skills and advisory profiles for Oh My Pi.',
+    href: '/agent-plugins/omp/',
+    id: 'omp',
+    installArgs: 'install omp',
+    mark: 'piOmp',
+    name: 'Maestria for Oh My Pi',
+  },
+  {
+    blurb: 'Shared methodology skills through Hermes portable plugin support.',
+    href: '/agent-plugins/hermes/',
     id: 'hermes',
-    // Hermes installs via its own git-based plugin manager, not the maestria CLI.
-    installArgs: '',
+    installArgs: 'install hermes',
     mark: 'hermes',
-    name: '@maestria/hermes',
-  },
-  {
-    blurb: 'Skills-first maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
-    href: '/prime-agent/',
-    id: 'prime-agent',
-    installArgs: 'install prime-agent',
-    mark: 'primeAgent',
-    name: '@maestria/prime-agent',
+    name: 'Maestria for Hermes',
   },
   {
     auxiliary: true,

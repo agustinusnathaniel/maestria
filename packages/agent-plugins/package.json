@@ -1,0 +1,61 @@
+{
+  "name": "@maestria/agent-plugins",
+  "version": "0.7.0",
+  "private": false,
+  "description": "maestria consolidated methodology plugin with portable skills and native host overlays",
+  "keywords": [
+    "agent-plugins",
+    "agent-skills",
+    "ai",
+    "maestria",
+    "orchestration",
+    "plugin"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/agent-plugins"
+  },
+  "files": [
+    "plugin.json",
+    ".claude-plugin/plugin.json",
+    ".cursor-plugin/plugin.json",
+    ".codex-plugin/plugin.json",
+    ".devin-plugin/plugin.json",
+    ".zcode-plugin/plugin.json",
+    "kimi.plugin.json",
+    "skills",
+    "agents",
+    "assets",
+    "integrations/*/README.md",
+    "docs",
+    "INSTALL.md",
+    "README.md",
+    "LICENSE",
+    "commands",
+    "rules",
+    "AGENTS.md",
+    "compatibility/devin/skills"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "omp": {}
+}

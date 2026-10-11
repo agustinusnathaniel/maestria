@@ -15,6 +15,8 @@ export interface ReplaceOp {
 export type ResolvedReplaceOp = ReplaceOp & { scope: 'default' | 'file' };
 
 export interface FileConfig {
+  /** Canonical input override, relative to the config directory (per-file only). */
+  source?: string;
   output?: string;
   stripFrontmatter?: boolean;
   replace?: ReplaceOp[];
@@ -26,7 +28,7 @@ export interface FileConfig {
 export interface SyncConfig {
   source: string;
   output?: string;
-  default?: FileConfig;
+  default?: Omit<FileConfig, 'source'>;
   files?: Record<string, FileConfig>;
   /** Relative paths (relative to output dir) to exclude from auto-clean */
   preserve?: string[];
@@ -43,6 +45,7 @@ export interface ResolvedSyncConfig {
 }
 
 export interface ResolvedFileConfig {
+  source?: string;
   output: string;
   stripFrontmatter: boolean;
   replace: ResolvedReplaceOp[];
@@ -55,7 +58,7 @@ export class ConfigError extends Error {
   override name = 'ConfigError';
 }
 
-export type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output'>;
+export type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output' | 'source'>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -92,7 +95,14 @@ const resolveFileConfig = (
   filename: string,
 ): ResolvedFileConfig => {
   const baseDir = outputDir || configDir;
+  if (
+    fileCfg.source !== undefined &&
+    (typeof fileCfg.source !== 'string' || fileCfg.source.trim() === '')
+  ) {
+    throw new ConfigError(`Invalid source override for ${filename}`);
+  }
   return {
+    ...(fileCfg.source === undefined ? {} : { source: path.resolve(configDir, fileCfg.source) }),
     ...mergeFileConfig(fileCfg, defaultCfg),
     output: resolveFileOutput(fileCfg, baseDir, filename),
   };

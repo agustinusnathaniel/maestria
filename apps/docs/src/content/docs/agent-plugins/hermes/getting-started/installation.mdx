@@ -1,0 +1,50 @@
+---
+title: Installation & Setup
+description: Install the consolidated Maestria plugin through Hermes portable Agent Plugins support.
+---
+
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+Hermes consumes the root portable manifest and shared methodology skills in `@maestria/agent-plugins`. It requires a Hermes version that supports [portable Agent Plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).
+
+## Install
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
+
+Or install through Hermes:
+
+```bash
+hermes plugins install \
+  agustinusnathaniel/maestria/packages/agent-plugins --enable
+hermes plugins list
+```
+
+For unreleased work, copy the plugin into an isolated Hermes home and use the host enable command. The plugin should appear as `maestria`. Enable it if your installer leaves it disabled, then start a new session.
+
+## Verify skills
+
+Ask Hermes to use `skills_list` to discover the plugin's fully qualified skill names, then `skill_view` to load `global-rules` and `orchestrator`. Do not assume the old Python plugin's `maestria:` namespace: Hermes derives portable namespaces from package identity.
+
+## Migrate the Python adapter
+
+The Maestria installer disables `maestria-hermes` after the replacement installs successfully. A failed install leaves the old adapter enabled. For direct installation, disable the old adapter yourself after verifying the new plugin:
+
+```bash
+hermes plugins disable maestria-hermes
+```
+
+The Python adapter's mode commands, role gates, lifecycle hooks, and OpenCode bridge are retired. The portable skills are advisory; Hermes owns permissions, trust, delegation, and session behavior. Legacy files and user data are not deleted by migration.
+
+## Update and remove
+
+```bash
+hermes plugins update maestria
+hermes plugins remove maestria
+```
+
+The equivalent Maestria commands remain `update hermes` and `uninstall hermes`. Git-based installation does not support npm version pinning.
+
+## Next steps
+
+- [Quick Start](/agent-plugins/hermes/getting-started/quick-start/)
+- [Workflow skills](/agent-plugins/hermes/commands/)

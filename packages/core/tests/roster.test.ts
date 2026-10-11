@@ -2,16 +2,8 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import agentPluginConfig from '../../agent-plugin/sync.config.js';
-import claudeCodeConfig from '../../claude-code/sync.config.js';
-import codexConfig from '../../codex/sync.config.js';
-import cursorConfig from '../../cursor/sync.config.js';
-import hermesConfig from '../../hermes/sync.config.js';
-import kimiCodeConfig from '../../kimi-code/sync.config.js';
-import ompConfig from '../../omp/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
-import primeAgentConfig from '../../prime-agent/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
 import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
@@ -57,17 +49,12 @@ const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
   return ops;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 const syncConfigs: Record<string, SyncConfig> = {
-  'agent-plugin': agentPluginConfig,
-  'claude-code': claudeCodeConfig,
-  codex: codexConfig,
-  cursor: cursorConfig,
-  hermes: hermesConfig,
-  'kimi-code': kimiCodeConfig,
-  omp: ompConfig,
   opencode: opencodeConfig,
   pi: piConfig,
-  'prime-agent': primeAgentConfig,
 };
 
 describe('canonical specialist roster', () => {
@@ -76,14 +63,33 @@ describe('canonical specialist roster', () => {
     expect(delegableNames).toHaveLength(7);
   });
 
+  it('keeps the consolidated profile registry aligned with canonical specialists', () => {
+    const registry: unknown = JSON.parse(
+      readFileSync(
+        path.join(import.meta.dirname, '../../agent-plugins/generation/profiles.json'),
+        'utf-8',
+      ),
+    );
+    if (!isRecord(registry)) {
+      throw new Error('Expected profile registry object');
+    }
+    expect(
+      findViolations(
+        canonicalFiles.map((file) => file.replace(/\.md$/u, '')),
+        Object.keys(registry),
+      ),
+    ).toEqual({ extra: [], missing: [] });
+  });
+
   it('keeps ALLOWED_AGENTS aligned with the delegable roster', () => {
     expect(findViolations(delegableNames, ALLOWED_AGENTS)).toEqual({ extra: [], missing: [] });
   });
 
   for (const [platform, config] of Object.entries(syncConfigs)) {
     describe(platform, () => {
-      it('registers every canonical specialist file', () => {
-        const { missing } = findViolations(canonicalFiles, Object.keys(config.files ?? {}));
+      it('registers the expected canonical specialist roster', () => {
+        const expected = canonicalFiles;
+        const { missing } = findViolations(expected, Object.keys(config.files ?? {}));
         expect(missing).toEqual([]);
       });
     });
@@ -98,7 +104,8 @@ describe('canonical specialist roster', () => {
       const ops = collectReplaceOps(config);
       expect(ops.length, platform).toBeGreaterThan(0);
       const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
-      const uncovered = delegableNames.filter(
+      const referencedNames = delegableNames;
+      const uncovered = referencedNames.filter(
         (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
       );
       expect(uncovered, platform).toEqual([]);
@@ -152,23 +159,6 @@ const piHostTools = (): string[] => {
   );
 };
 
-const ompHostTools = (): string[] => {
-  const source = readFileSync(
-    path.join(
-      hostPackageRoot('omp', '@oh-my-pi/pi-coding-agent'),
-      'src',
-      'tools',
-      'builtin-names.ts',
-    ),
-    'utf-8',
-  );
-  return quotedNames(
-    source,
-    /BUILTIN_TOOL_NAMES\s*=\s*\[(?<names>[\s\S]*?)\]\s*as const/u,
-    'OMP BUILTIN_TOOL_NAMES',
-  );
-};
-
 const TOOLS_LINE = /^tools: (?<names>.*)$/mu;
 
 /** Tool names the shipped agent file for `agentFile` grants, or null when undeclared. */
@@ -188,20 +178,6 @@ describe('generated agent tool lists', () => {
     const hostTools = new Set(piHostTools());
     for (const agentFile of agentFiles('pi')) {
       const granted = grantedTools('pi', agentFile) ?? [];
-      expect(
-        granted.filter((tool) => !hostTools.has(tool)),
-        agentFile,
-      ).toEqual([]);
-    }
-  });
-
-  it('grants only tools at least one Pi-family host registers', () => {
-    // OMP passes its declared lists through unchanged, so its shipped files
-    // carry the full declared table; a name neither host registers is dead on
-    // every host that consumes this sync.
-    const hostTools = new Set([...piHostTools(), ...ompHostTools()]);
-    for (const agentFile of agentFiles('omp')) {
-      const granted = grantedTools('omp', agentFile) ?? [];
       expect(
         granted.filter((tool) => !hostTools.has(tool)),
         agentFile,

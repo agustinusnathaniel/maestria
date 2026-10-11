@@ -19,8 +19,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   check: {
     examples: [
       'maestria check opencode           Check if @maestria/opencode is installed',
-      'maestria check hermes             Check if @maestria/hermes is installed',
-      'maestria check prime-agent        Check if @maestria/prime-agent is installed',
+      'maestria check hermes             Check the shared plugin in Hermes',
       'maestria check --all              Check all detected platforms',
       'maestria check opencode --json    Output as JSON',
       'maestria check opencode --quiet   Exit code only (for scripts)',
@@ -31,13 +30,12 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria configure opencode       Choose per-agent models interactively',
       'maestria configure opencode --project  Configure for the current project only',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set one model',
-      'maestria configure omp --set adventurer=opencode-go/deepseek-v4-flash,writer=opencode-go/deepseek-v4-pro  Set several',
       'maestria configure pi --set builder=  Reset an agent to inherit the session model',
       'maestria configure opencode --json   Output the resulting config as JSON',
       'maestria configure --quiet            Suppress spinner output (for CI)',
     ],
     tip: [
-      'Per-agent models are supported for: opencode (config file), codex (native agent TOML), cursor (native agent files), pi and omp (agent frontmatter).',
+      'Per-agent models are supported for: opencode (config file), codex (native agent TOML), cursor (native agent files), pi (agent frontmatter). OMP loads portable plugin skills and has no per-agent model files.',
       'Use --global (default) or --project to choose the config level.',
       'For CI pipelines, pass --set with --global or --project and add --quiet.',
     ].join('\n'),
@@ -59,7 +57,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install hermes           Install for a specific platform',
       'maestria install claude-code      Install for Claude Code',
       'maestria install codex            Install for Codex CLI',
-      'maestria install prime-agent      Install for Prime Agent',
       'maestria install --compact        Minimal machine-friendly output',
     ],
   },
@@ -79,7 +76,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install hermes           Install for Hermes agent',
       'maestria install claude-code      Install for Claude Code',
       'maestria install codex            Install for Codex CLI',
-      'maestria install prime-agent      Install for Prime Agent',
       'maestria configure opencode       Choose per-agent models interactively',
       'maestria configure codex          Configure native Codex custom-agent models',
       'maestria configure cursor        Configure native Cursor agent models',
@@ -99,7 +95,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   plugin: {
     examples: [
       'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
-      'maestria plugin install                 Stage @maestria/agent-plugin in the maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
       'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
     ],
@@ -141,7 +137,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update hermes            Update Hermes to latest',
       'maestria update claude-code      Update Claude Code to latest',
       'maestria update codex            Update Codex CLI to latest',
-      'maestria update prime-agent      Update Prime Agent to latest',
       'maestria update --compact         Minimal machine-friendly output',
     ],
   },
@@ -150,7 +145,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
 const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   install: {
     examples: [
-      'maestria plugin install                 Stage @maestria/agent-plugin in the maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
       'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
       'maestria plugin install --json          Output the staged package report as JSON',

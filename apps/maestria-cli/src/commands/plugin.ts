@@ -5,6 +5,7 @@ import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { stageAgentPlugin } from '@/lib/agent-plugin-staging.js';
 import { formatAgentPluginValidation, validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
+import { MAESTRIA_PLUGIN_PACKAGE } from '@/lib/package-constants.js';
 
 export interface PluginValidateArgs {
   json?: boolean;
@@ -41,7 +42,8 @@ export const handlePluginInstall = async (args: PluginInstallArgs): Promise<Comm
       exitCode: 0,
       output: [
         `Staged ${staged.name ?? 'Agent Plugin'}${versionSuffix} at ${staged.destination}`,
-        'Point a compatible client at this directory to load the portable package.',
+        'Validated the portable manifest, skills, and MCP configuration. Native host schemas are not checked.',
+        'Point a compatible client at this directory to load the package.',
       ].join('\n'),
     };
   } catch (error) {
@@ -63,7 +65,7 @@ const validateCommand = defineCommand({
     },
   },
   meta: {
-    description: 'Validate an Agent Plugins v1 directory package',
+    description: 'Validate the portable manifest, skills, and MCP configuration',
     name: 'validate',
   },
   run: toCommandRun(handlePluginValidate),
@@ -81,7 +83,7 @@ const installCommand = defineCommand({
       type: 'boolean',
     },
     source: {
-      default: '@maestria/agent-plugin',
+      default: MAESTRIA_PLUGIN_PACKAGE,
       description: 'Local Agent Plugin directory or npm package specifier',
       type: 'positional',
     },

@@ -3,13 +3,13 @@
 
 ## Project and Ownership
 
-maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform agent, skill, command, and rule projections are generated; package manifests and READMEs are hand-authored. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
+maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, installation resources and host manifests are generated directly at the package root; edit its release metadata, `generation/` manifest/config inputs, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
 ## Engineering Boundaries
 
 - `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
 - Platform adapters belong in their own `packages/<platform>/`. Shared code belongs in the appropriate neutral package, not in another platform's package.
-- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The portable `agent-plugin` package declares skills only, with no runtime adapter, commands, hooks, or MCP component.
+- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The consolidated `@maestria/agent-plugins` root is directly installable. Canonical core separates roles, commands, rules, and utility skills; package exports provide host-compatible skills and explicitly selected native resources. It declares no executable runtime adapter, hooks, or MCP component.
 - Pi is a runtime extension and may use Node.js APIs. Keep host-neutral shared utilities separate from its runtime adapter.
 - Prefer small, reviewable changes. Preserve canonical ownership, package boundaries, and sync correctness when choosing between approaches.
 
@@ -30,7 +30,7 @@ Read relevant ADRs before changing architecture, sync behavior, or agent convent
 | Change | Read |
 | --- | --- |
 | Plugin architecture or canonical sync | [CORE-002](docs/adr/core/ADR-CORE-002-plugin-architecture.md), [CORE-005](docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) |
-| Portable Agent Plugins projection | [CORE-022](docs/adr/core/ADR-CORE-022-agent-plugins-portable-projection.md) |
+| Portable Agent Plugins projection | [CORE-022](docs/adr/core/ADR-CORE-022-agent-plugins-portable-projection.md), [CORE-034](docs/adr/core/ADR-CORE-034-consolidated-declarative-plugin.md) |
 | Agent routing, persistence, or instruction policy | [CORE-019](docs/adr/core/ADR-CORE-019-directive-simplification.md) |
 | OpenCode permissions or workflow modes | [OC-001](docs/adr/opencode/ADR-OC-001-tool-permission-design.md), [OC-003](docs/adr/opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) |
 | Kimi Code integration | [KC-001](docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) |

@@ -26,19 +26,21 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 
 The collection keeps consequential architectural choices. Procedures and documentation conventions live in the guides above; retired records remain in Git history. Numbering gaps are intentional. Use the [ADR criteria](guides/doc-format.md#new-adrs) before adding another record.
 
-| Area                                                      | Records                          |
-| --------------------------------------------------------- | -------------------------------- |
-| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/)           |
-| OpenCode permissions and workflow modes                   | [OpenCode ADRs](adr/opencode/)   |
-| Kimi Code distribution and integration                    | [Kimi Code ADRs](adr/kimi-code/) |
-| Cursor integration                                        | [Cursor ADRs](adr/cursor/)       |
-| Hermes integration and orchestration                      | [Hermes ADRs](adr/hermes/)       |
-| Pi and Oh My Pi ecosystem and lifecycle                   | [Pi ADRs](adr/pi/)               |
+| Area | Records |
+| --- | --- |
+| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/) |
+| OpenCode permissions and workflow modes | [OpenCode ADRs](adr/opencode/) |
+| Kimi Code distribution and integration | [Kimi Code ADRs](adr/kimi-code/) |
+| Cursor integration | [Cursor ADRs](adr/cursor/) |
+| Hermes portable integration | [Hermes guide](hermes-maestria-plugin.md) |
+| Pi and Oh My Pi ecosystem and lifecycle | [Pi ADRs](adr/pi/) |
 
 ## Plans
 
-[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
+[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [consolidated package README](../packages/agent-plugins/README.md) for installation and current user guidance.
 
 ## Next Step
 
 Choose the document for your task above. When adding a new engineering guide, link it here if it provides a new entry point.
+
+The declarative plugin ownership decision is recorded in [CORE-034](adr/core/ADR-CORE-034-consolidated-declarative-plugin.md).

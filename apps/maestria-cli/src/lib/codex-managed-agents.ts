@@ -15,9 +15,9 @@ import type { JsonRecord } from '@/lib/primitives.js';
 import { CommandError } from '@/lib/shell.js';
 
 // Codex plugin manifests do not declare custom agents or primary-session
-// instructions. The published maestria package carries native agent TOMLs and
-// a managed AGENTS.md block as companion payloads, and the CLI owns copying
-// them into Codex's documented locations.
+// instructions. The published maestria package carries Codex agent TOMLs and
+// a managed AGENTS.md block as companion payloads, and the CLI copies them
+// into Codex's documented locations.
 const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
 
 interface CodexManagedAgentManifest {
@@ -251,10 +251,10 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
   // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator orchestrates the same atomic Codex transaction; splitting the generator would duplicate manifest/sourceFiles/targetDir closure and hide the linear install steps. Kept intact for cohesion.
   Effect.gen(function* installCodexManagedAgentsEffect() {
     const manifest = yield* readCodexManagedAgentManifest();
-    const sourceDir = `${packageRoot}/agents`;
+    const sourceDir = `${packageRoot}/agents/codex`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
-    const sourceInstructionsPath = `${packageRoot}/instructions/AGENTS.md`;
+    const sourceInstructionsPath = `${packageRoot}/rules/codex/instructions/AGENTS.md`;
 
     const sourceInstructions = yield* Effect.tryPromise({
       catch: (error) =>

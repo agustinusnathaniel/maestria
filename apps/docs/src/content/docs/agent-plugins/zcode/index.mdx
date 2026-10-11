@@ -1,0 +1,48 @@
+---
+title: Maestria for ZCode
+description: Use shared Maestria skills and specialist profiles in ZCode.
+---
+
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+The ZCode integration uses the `@maestria/agent-plugins` package. Its `.zcode-plugin/plugin.json` manifest selects the shared skills and seven root specialist profiles. Maestria ships no ZCode command files; workflow modes are skills.
+
+## Install
+
+Stage the plugin in a directory beside a ZCode marketplace file:
+
+```bash
+mkdir -p ./maestria-zcode
+```
+
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="plugin install --destination ./maestria-zcode/plugin"
+/>
+
+Create `./maestria-zcode/marketplace.json` with this entry:
+
+```json
+{
+  "name": "maestria-local",
+  "plugins": [
+    {
+      "name": "maestria",
+      "source": "./plugin"
+    }
+  ]
+}
+```
+
+In ZCode, open a workspace, then choose **Settings → Plugins → Create → Add marketplace** and select the `./maestria-zcode` directory. Find **maestria** in the **Personal** section and click **Install**. Staging alone does not install or activate the plugin. See [ZCode's plugin guide](https://zcode.z.ai/en/docs/plugin) for the current UI labels and marketplace format.
+
+## Use
+
+Use the Skills group in ZCode's prompt picker to load `global-rules`, `orchestrator`, a specialist, or one of the `fein`, `sonar`, and `blitz` workflow skills. Dispatch a specialist profile through ZCode's subagent controls.
+
+See the [specialist reference](/core/agents/) for role guidance and the [portable package guide](/agent-plugins/) for the shared skill set.
+
+## Limits
+
+This package defines no ZCode commands, MCP servers, hooks, or executable runtime extension. The specialist profiles are advisory and do not enforce tool denial or a sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).

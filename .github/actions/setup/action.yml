@@ -1,27 +1,8 @@
 name: 'maestria Setup'
-description: 'Install dependencies with pnpm (which brings Node too), optionally setup Python + ruff, restore vp task cache'
-inputs:
-  python:
-    description: 'Set up Python and install ruff (required for check-python)'
-    required: false
-    default: 'true'
+description: 'Install dependencies with pnpm (which brings Node too), restore vp task cache'
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-python@v6
-      if: inputs.python == 'true'
-      with:
-        python-version-file: 'packages/hermes/pyproject.toml'
-    - name: Cache pip downloads (ruff wheel)
-      if: inputs.python == 'true'
-      uses: actions/cache@v6
-      with:
-        path: ~/.cache/pip
-        key: pip-ruff-0.16.7-${{ runner.os }}
-    - name: Install Python checks
-      if: inputs.python == 'true'
-      run: pip install ruff==0.16.7
-      shell: bash
     # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
     - uses: pnpm/setup@v3
       with:

@@ -2,7 +2,7 @@
 
 Project-specific non-negotiable rules. These supplement the core agent rules and are propagated to all subagents via delegation prompt "Known problems" sections.
 
-- `!!!` **Canonical source purity** - Edit canonical sources in `packages/core/agent-directives/` only. Never edit generated copies in `packages/opencode/agents/`, `packages/kimi-code/skills/`, `packages/pi/agents/`, or `packages/pi/skills/`. After editing, run `bash scripts/sync-all` to regenerate platform copies and `bash scripts/check-sync` to verify consistency. The sync pipeline exists to prevent drift; bypassing it creates technical debt.
+- `!!!` **Canonical source purity** - Edit shared methodology only in `packages/core/agent-directives/`. Platform projections are generated; change their hand-authored sync configs only when the host projection needs different structure. Never edit generated files directly. After directive or projection changes, run `scripts/sync-all` to regenerate outputs and `scripts/check-sync` to verify consistency. The sync pipeline prevents drift; bypassing it creates technical debt.
 - `!!!` **Sync pipeline correctness** - Run `scripts/check-sync` after every agent directive change. A corrupted sync breaks agents across all platforms. Accuracy matters more than speed.
 - `!!!` **Validate commits and integrated delivery** - Validate each coherent slice before committing it. Before delivery, the delivery owner runs the gates in `docs/checklist.md` on the integrated result. Reuse passing evidence until affected files or acceptance conditions change.
 - `!!!` **Changeset for user-facing changes** - Run `pnpm changeset` before committing any user-facing change. Only `feat` commits warrant a minor bump; all others are patch.

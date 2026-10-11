@@ -134,6 +134,52 @@ describe('uninstallOne', () => {
 });
 
 describe('updateOne', () => {
+  it('migrates legacy declarative package versions to the consolidated release', async () => {
+    const release: unknown = JSON.parse(
+      await readFile(
+        new URL('../../../packages/agent-plugins/package.json', import.meta.url),
+        'utf-8',
+      ),
+    );
+    if (
+      typeof release !== 'object' ||
+      release === null ||
+      !('version' in release) ||
+      typeof release.version !== 'string'
+    ) {
+      throw new Error('Missing consolidated release version');
+    }
+    const latest = release.version;
+    const legacy = {
+      'claude-code': '0.3.13',
+      codex: '0.4.11',
+      cursor: '0.2.14',
+      'kimi-code': '0.6.11',
+    } as const;
+    await withTempCacheHome(async () => {
+      for (const id of ['codex', 'claude-code', 'cursor', 'kimi-code'] as const) {
+        const update = vi.fn(() => Effect.void);
+        // oxlint-disable-next-line no-await-in-loop -- migrations share one isolated version cache.
+        const result = await Effect.runPromise(
+          updateOne(
+            makePlatform({
+              getInstalledVersion: Effect.sync(() =>
+                update.mock.calls.length > 0 ? latest : legacy[id],
+              ),
+              getLatestVersion: Effect.succeed(latest),
+              id,
+              npmPackage: '@maestria/agent-plugins',
+              update,
+            }),
+            true,
+          ),
+        );
+        expect(update, id).toHaveBeenCalledOnce();
+        expect(result.message, id).toBe('Updated');
+      }
+    });
+  });
+
   it('propagates a latest-version probe defect instead of attempting an update', async () => {
     const update = vi.fn(() => Effect.void);
     await expect(

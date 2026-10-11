@@ -1,0 +1,33 @@
+---
+title: Oh My Pi Reference
+description: Skill discovery, advisory role profiles, and host boundaries for Maestria on OMP.
+---
+
+## Resources
+
+The package exposes the shared Agent Plugins skill corpus and seven conventional root role profiles: adventurer, architect, builder, diagnose, planner, reviewer, and writer. OMP 18.4.8's package discovery source loaded those resources from the packed artifact. See the [verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) for the tested boundary.
+
+Use the `global-rules` and `orchestrator` skills to start a session. The workflow modes are also skills:
+
+| Skill   | Purpose                   |
+| ------- | ------------------------- |
+| `fein`  | Full workflow pipeline    |
+| `sonar` | Research-only route       |
+| `blitz` | Fast implementation route |
+
+They are skills, not OMP slash commands. Load them through OMP's skill discovery interface.
+
+## Specialist Dispatch
+
+OMP supplies a native `task` tool. The package declares no `maestria_subagent` wrapper. Carry the relevant role guidance and global rules in each child task when the host does not inherit loaded skills automatically.
+
+The package discovery probe does not verify model behavior, task execution, context inheritance, or tool restrictions. Consult the active OMP version's documentation for the task tool contract.
+
+## Runtime Boundaries
+
+- Portable skills and root role profiles provide advisory methodology.
+- The package declares no OMP commands, rules, hooks, MCP servers, or executable extension.
+- Tool permissions, session lifecycle, and task behavior remain host-owned.
+- The retired `@maestria/omp` package's review-mode enforcement, goal mirroring, and session hooks do not carry over.
+
+For Pi extension behavior, use the [Pi reference](/pi/reference/).

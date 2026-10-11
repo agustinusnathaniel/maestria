@@ -10,11 +10,11 @@ maestria is a **behavior layer** for these agents. It packages design patterns, 
 
 The patterns come from months of daily AI-assisted engineering. Independent review, delegation chains, handoff contracts, and iteration limits address recurring failures from that work. They are published under MIT so other teams can reuse them.
 
-maestria packages do not use automatic postinstall scripts. Direct plugin installers read the package's agents, skills, and rules, while the `maestria` CLI may stage packages or update host-owned files when you explicitly ask it to. The portable Agent Plugin package contains only its manifest and skills. Check each platform guide for the host-specific installation and update behavior.
+maestria packages do not use automatic postinstall scripts. Direct plugin installers read the package's agents, skills, and rules, while the `maestria` CLI may stage packages or update host-owned files when you explicitly ask it to. The consolidated plugin shares portable skills and selects native resources through host manifests. Check each platform guide for the host-specific installation and update behavior.
 
 ## Goals
 
-- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets declarative agents, skills, and commands. Codex gets skills plus CLI-managed native agents and instructions.
+- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets native agent profiles that preload shared role and global-rule skills, alongside shared workflow-mode skills. Codex gets skills plus CLI-managed native agents and instructions.
 
 - **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 
@@ -28,7 +28,7 @@ maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 - **Not an LLM provider.** maestria does not provide inference endpoints or model access. Model selection is your platform's configuration.
 
-- **Not a skill bundle.** Domain-specific methodology skills (test-driven development, architecture decisions, etc.) are installed separately via the skills CLI. maestria prescribes which to load and when, but does not include them.
+- **Focused skill bundle.** Domain-specific methodology skills (test-driven development, architecture decisions, etc.) are installed separately via the skills CLI. maestria prescribes which to load and when, but does not include them.
 
 - **Not auto-extracting.** All patterns are manually curated. No automated session mining, no implicit learning, no telemetry.
 
@@ -42,18 +42,11 @@ maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 ## Packages
 
-| Package                  | Platform         |
-| ------------------------ | ---------------- |
-| `@maestria/opencode`     | OpenCode         |
-| `@maestria/kimi-code`    | Kimi Code        |
-| `@maestria/cursor`       | Cursor IDE & CLI |
-| `@maestria/omp`          | Oh My Pi         |
-| `@maestria/claude-code`  | Claude Code      |
-| `@maestria/codex`        | Codex CLI        |
-| `@maestria/hermes`       | Hermes           |
-| `@maestria/pi`           | Pi               |
-| `@maestria/prime-agent`  | Prime Agent      |
-| `@maestria/agent-plugin` | Agent Plugins v1 |
+| Package | Platform |
+| --- | --- |
+| `@maestria/opencode` | OpenCode |
+| `@maestria/agent-plugins` | Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, Agent Plugins |
+| `@maestria/pi` | Pi |
 
 Canonical agent directives live in the private `@maestria/core` package (`packages/core/agent-directives/`) and are projected into the platform packages above by the sync pipeline. `packages/shared/*` holds private host-neutral utilities. Neither is published.
 

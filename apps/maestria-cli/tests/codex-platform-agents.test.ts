@@ -27,14 +27,14 @@ describe('Codex managed native agents', () => {
     process.env.CODEX_HOME = codexHome;
 
     try {
-      await mkdir(join(sourceRoot, 'agents'), { recursive: true });
-      await mkdir(join(sourceRoot, 'instructions'), { recursive: true });
+      await mkdir(join(sourceRoot, 'agents', 'codex'), { recursive: true });
+      await mkdir(join(sourceRoot, 'rules', 'codex', 'instructions'), { recursive: true });
       await writeFile(
-        join(sourceRoot, 'instructions', 'AGENTS.md'),
+        join(sourceRoot, 'rules', 'codex', 'instructions', 'AGENTS.md'),
         [
           '<!-- maestria:codex-orchestrator:start -->',
           '## maestria orchestration',
-          'Use $maestria:orchestrator and delegate with agent_type.',
+          'Self-contained routing, policy, and per-turn FEIN, SONAR, BLITZ instructions.',
           '<!-- maestria:codex-orchestrator:end -->',
           '',
         ].join('\n'),
@@ -42,7 +42,7 @@ describe('Codex managed native agents', () => {
       await Promise.all(
         AGENTS.map(async (agent) => {
           await writeFile(
-            join(sourceRoot, 'agents', `maestria-${agent}.toml`),
+            join(sourceRoot, 'agents', 'codex', `maestria-${agent}.toml`),
             [
               `name = "maestria-${agent}"`,
               `description = "new ${agent}"`,
@@ -63,6 +63,10 @@ describe('Codex managed native agents', () => {
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
       const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
+      expect(installedInstructions).toContain(
+        await readFile(join(sourceRoot, 'rules', 'codex', 'instructions', 'AGENTS.md'), 'utf-8'),
+      );
+      expect(installedInstructions).not.toContain('$maestria:orchestrator');
       expect(installedInstructions.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
       expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsFile": "AGENTS.md"',
@@ -78,7 +82,7 @@ describe('Codex managed native agents', () => {
       );
 
       await writeFile(
-        join(sourceRoot, 'agents', 'maestria-builder.toml'),
+        join(sourceRoot, 'agents', 'codex', 'maestria-builder.toml'),
         [
           'name = "maestria-builder"',
           'description = "updated builder"',
@@ -130,18 +134,18 @@ describe('Codex managed native agents', () => {
     process.env.CODEX_HOME = codexHome;
 
     try {
-      await mkdir(join(sourceRoot, 'agents'), { recursive: true });
-      await mkdir(join(sourceRoot, 'instructions'), { recursive: true });
+      await mkdir(join(sourceRoot, 'agents', 'codex'), { recursive: true });
+      await mkdir(join(sourceRoot, 'rules', 'codex', 'instructions'), { recursive: true });
       await Promise.all(
         AGENTS.map(async (agent) => {
           await writeFile(
-            join(sourceRoot, 'agents', `maestria-${agent}.toml`),
+            join(sourceRoot, 'agents', 'codex', `maestria-${agent}.toml`),
             `name = "maestria-${agent}"\ndescription = "${agent}"\ndeveloper_instructions = "${agent}"\n`,
           );
         }),
       );
       await writeFile(
-        join(sourceRoot, 'instructions', 'AGENTS.md'),
+        join(sourceRoot, 'rules', 'codex', 'instructions', 'AGENTS.md'),
         '<!-- maestria:codex-orchestrator:start -->\nmanaged\n<!-- maestria:codex-orchestrator:end -->\n',
       );
       await mkdir(codexHome, { recursive: true });

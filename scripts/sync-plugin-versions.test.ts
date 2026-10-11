@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 
-import { main, syncTarget } from './sync-plugin-versions.js';
+import { main, syncTarget, TARGETS } from './sync-plugin-versions.js';
 import type { Target } from './sync-plugin-versions.js';
 
 /**
@@ -304,6 +304,26 @@ const runMain = (pkg: string, manifests: string[], ...args: string[]): number =>
 };
 
 describe('main wiring', () => {
+  it('tracks every generation manifest and flattened bundle manifest for version sync', () => {
+    expect(TARGETS).toHaveLength(1);
+    expect(TARGETS[0]?.[1]).toEqual([
+      'generation/manifests/plugin.json',
+      'generation/manifests/claude-code.json',
+      'generation/manifests/codex.json',
+      'generation/manifests/cursor.json',
+      'generation/manifests/devin.json',
+      'generation/manifests/zcode.json',
+      'generation/manifests/kimi.plugin.json',
+      'plugin.json',
+      '.claude-plugin/plugin.json',
+      '.codex-plugin/plugin.json',
+      '.cursor-plugin/plugin.json',
+      '.devin-plugin/plugin.json',
+      '.zcode-plugin/plugin.json',
+      'kimi.plugin.json',
+    ]);
+  });
+
   it('returns 0 when in sync under --check', () => {
     const root = tempDir();
     const { pkg, manifestPaths } = makePackage(root, '1.2.3', {

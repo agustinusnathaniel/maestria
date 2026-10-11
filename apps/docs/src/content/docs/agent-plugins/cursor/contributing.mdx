@@ -1,0 +1,24 @@
+---
+title: Contributing
+description: How to contribute to @maestria/agent-plugins - sync config, agents, and commands.
+---
+
+For general setup and PR workflow, see the [Contributing Guide](/core/contributing/).
+
+## Package Boundary
+
+`@maestria/agent-plugins` generates Cursor's root agent profiles from the canonical specialist prompts, shared skills from the shared skill sources, and thin mode aliases from `packages/core/agent-directives/aliases/workflow.md`. Generated aliases and activation rules belong in `commands/cursor/` and `rules/cursor/`; its manifest explicitly selects them. Projection configs and manifest inputs live under `generation/`. Keep the complete role prompts in the root profiles because reliable skill preloading is not verified for Cursor agents.
+
+## Editing Methodology
+
+Edit `packages/core/agent-directives/`, never generated package resources, and keep Cursor-specific transforms in `generation/cursor.sync.config.ts`. Then sync and verify:
+
+```bash
+./scripts/sync-all
+./scripts/check-sync
+pnpm --filter @maestria/agent-plugins test
+```
+
+## ADR
+
+Architecture decisions: [ADR-CR-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/cursor/ADR-CR-001-cursor-plugin-architecture.md).

@@ -6,7 +6,25 @@
     { "source": "/omp", "destination": "/pi-omp/", "permanent": true },
     { "source": "/omp/", "destination": "/pi-omp/", "permanent": true },
     { "source": "/pi.md", "destination": "/pi-omp.md", "permanent": true },
-    { "source": "/omp.md", "destination": "/pi-omp.md", "permanent": true }
+    { "source": "/omp.md", "destination": "/pi-omp.md", "permanent": true },
+    { "source": "/agent-plugin", "destination": "/agent-plugins/", "permanent": true },
+    { "source": "/agent-plugin/", "destination": "/agent-plugins/", "permanent": true },
+    {
+      "source": "/agent-plugin/compatibility",
+      "destination": "/agent-plugins/compatibility/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugin/compatibility/",
+      "destination": "/agent-plugins/compatibility/",
+      "permanent": true
+    },
+    { "source": "/agent-plugin.md", "destination": "/agent-plugins.md", "permanent": true },
+    {
+      "source": "/agent-plugin/compatibility.md",
+      "destination": "/agent-plugins/compatibility.md",
+      "permanent": true
+    }
   ],
   "headers": [
     {

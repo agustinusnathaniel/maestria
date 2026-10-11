@@ -1,0 +1,27 @@
+{
+  "name": "maestria",
+  "version": "0.7.0",
+  "description": "Maestria utility skills with companion CLI native agents and orchestration instructions",
+  "author": {
+    "name": "agustinusnathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
+  "interface": {
+    "displayName": "maestria",
+    "shortDescription": "Handoff and bounded repair utility skills",
+    "longDescription": "Two utility skills for Codex. The companion Maestria CLI installs complete native custom agents and marked orchestration instructions. Codex owns runtime permissions and enforcement.",
+    "developerName": "agustinusnathaniel",
+    "category": "Developer Tools",
+    "capabilities": ["Skills"],
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
+    "defaultPrompt": [
+      "Route this task through the maestria specialists.",
+      "Review this change independently before implementation.",
+      "Create a concise handoff with evidence and blockers."
+    ]
+  },
+  "skills": "./skills/"
+}

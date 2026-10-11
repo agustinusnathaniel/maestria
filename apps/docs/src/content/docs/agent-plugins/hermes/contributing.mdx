@@ -1,0 +1,22 @@
+---
+title: Contributing
+description: Maintain the portable Hermes integration in the shared Maestria plugin.
+---
+
+For setup and delivery, see the [Contributing Guide](/core/contributing/).
+
+## Ownership
+
+Shared methodology lives in `packages/core/agent-directives/`. The consolidated plugin's shared skills and Hermes integration guide are generated; update their projection or guide-generation input instead of editing generated files.
+
+Hermes has no Maestria Python adapter. Trust, delegation, tool authority, memory, and lifecycle remain Hermes capabilities.
+
+## Verify
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/agent-plugins test
+```
+
+For a live smoke test, use an isolated Hermes home and install the packed plugin, then inspect plugin and skill discovery. Package checks do not prove host enforcement.

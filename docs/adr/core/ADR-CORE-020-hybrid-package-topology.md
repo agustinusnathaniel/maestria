@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11.
+Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11. Distribution-status decision partially superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) on 2026-10-10.
 
 ## Context
 
@@ -18,7 +18,7 @@ Share pure host-neutral mechanics through narrow private workspace modules under
 
 The mode-sharing decision preserves case-insensitive word boundaries, priority, disabled keywords, code-span exclusion, stripping, section extraction, and the accepted unclosed-fence false-positive behavior recorded in [OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md). Share tested mechanics without imposing one adapter's strictness or mode lifetime on another.
 
-Share Pi/OMP filesystem/frontmatter validation as development tooling while retaining its output, exit status, and strictness. Prime's stricter validator, pinned fork types, and fail-closed verified extension subset remain independent under [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md). Hermes stays native Python; it is not bundled into a Node runtime.
+Share Pi/OMP filesystem/frontmatter validation as development tooling while retaining its output, exit status, and strictness. Prime's stricter validator, pinned fork types, and fail-closed verified extension subset remain independent under [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md). At the time of this decision Hermes used a native Python adapter; CORE-034 later retired it in favor of the consolidated declarative package.
 
 The management CLI remains a separate distribution. Derive platform validation from its handler registry while preserving ordering, messages, and public types, without importing effectful handlers into validation or creating cycles. Shared batch mechanics keep sequencing and result handling consistent while individual commands retain choices and messages.
 
@@ -47,6 +47,10 @@ Share demonstrated adapter surfaces directly: narrow installers accept what they
 - [CORE-006](ADR-CORE-006-project-workflow-protocol.md): Node project-loader sharing outside browser-safe core.
 - [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md): supported host surfaces and enforcement evidence.
 - [CORE-007](ADR-CORE-007-cli-package-plugin-management.md): CLI ownership and native install handlers.
+
+## Supersession
+
+[CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) supersedes this record's distribution-status claims for Hermes, OMP, and Prime Agent, and records the consolidated declarative package topology. The decisions here about narrow private code sharing and runtime boundaries remain in force.
 
 ## Date
 

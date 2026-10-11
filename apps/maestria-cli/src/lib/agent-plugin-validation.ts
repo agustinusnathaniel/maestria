@@ -38,6 +38,7 @@ export interface AgentPluginValidation {
   readonly name?: string;
   readonly root: string;
   readonly skillNames: string[];
+  readonly validationScope: 'portable-manifest-skills-mcp';
   readonly valid: boolean;
   readonly version?: string;
   readonly warnings: string[];
@@ -68,6 +69,7 @@ const finalize = (draft: ValidationDraft): AgentPluginValidation => ({
   root: draft.root,
   skillNames: draft.skillNames.toSorted(),
   valid: draft.errors.length === 0 && draft.name !== undefined,
+  validationScope: 'portable-manifest-skills-mcp',
   ...(draft.version === undefined ? {} : { version: draft.version }),
   warnings: draft.warnings,
 });
@@ -309,6 +311,7 @@ export const validateAgentPlugin = async (input: string): Promise<AgentPluginVal
       root: requestedRoot,
       skillNames: [],
       valid: false,
+      validationScope: 'portable-manifest-skills-mcp',
       warnings: [],
     };
   }
@@ -334,7 +337,10 @@ export const formatAgentPluginValidation = (report: AgentPluginValidation): stri
   if (report.version !== undefined) {
     lines.push(`Version: ${report.version}`);
   }
-  lines.push(`Skills: ${report.skillNames.length}`);
+  lines.push(
+    `Skills: ${report.skillNames.length}`,
+    'Scope: portable manifest, skills, and MCP configuration; native host schemas are not checked.',
+  );
   for (const error of report.errors) {
     lines.push(`Error: ${error}`);
   }

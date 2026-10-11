@@ -1,0 +1,57 @@
+---
+title: Quick Start
+description: Your first session with @maestria/agent-plugins - specialists, orchestration, and workflow modes.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Once the plugin is installed, global rules apply to every Agent session.
+
+<Aside type="caution" title="Full orchestration is not always the best path">
+  Direct execution or one specialist is often better for small changes and expensive models. Read
+  [When to Use maestria](/core/when-to-use/) before starting `/fein`.
+</Aside>
+
+## Try a workflow command
+
+In Agent chat (IDE or CLI):
+
+```text
+/fein Fix the flaky auth test and review the fix
+```
+
+That runs the full pipeline: adventurer → architect/planner → builder → reviewer.
+
+Other modes:
+
+| Command         | Behavior                                    |
+| --------------- | ------------------------------------------- |
+| `/sonar <goal>` | Research only - stops before implementation |
+| `/blitz <goal>` | Builder-first fast path                     |
+
+## Try a single specialist
+
+> "Use the builder agent to add a JSDoc comment to the `add` function in `src/math.ts`."
+
+The main agent spawns `builder` via `Task` with a complete handoff.
+
+## Try maker/checker
+
+> "The login flow throws on empty email. Trace the bug, fix it, and review the fix."
+
+Expected sequence:
+
+<Steps>
+
+1. `diagnose` - root cause
+2. `builder` - minimal fix
+3. `reviewer` - validation (read-only; must not edit)
+
+</Steps>
+
+Never ask the same agent that implemented to review its own work.
+
+## Next
+
+- [Agent reference](/core/agents/) - specialist responsibilities
+- [Pipeline & roles](/core/pipeline/) - handoff contracts and iteration limits

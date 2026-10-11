@@ -1,0 +1,3 @@
+name = "maestria-architect"
+description = "maestria architecture specialist for comparing approaches, boundaries, and trade-offs."
+sandbox_mode = "read-only"

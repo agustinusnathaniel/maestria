@@ -44,20 +44,9 @@ export default defineConfig({
         }),
         starlightLlmsTxt({
           description:
-            'Portable AI engineering workflows for OpenCode, Claude Code, Kimi Code, Cursor, Pi, and Hermes. ' +
-            'Includes @maestria/opencode (8 agents, global rules injection), ' +
-            '@maestria/claude-code (declarative Claude Code plugin with specialist agents, ' +
-            'orchestrator and global-rules skills, and fein/sonar/blitz workflow commands), ' +
-            '@maestria/codex (Codex CLI skills projection with specialist workflows, ' +
-            'orchestration, handoffs, and review contracts), ' +
-            '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
-            '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
-            '@maestria/pi (full agent orchestration for Pi Coding Agent), ' +
-            '@maestria/hermes (methodology layer for Hermes Agent), ' +
-            '@maestria/prime-agent (maestria methodology for Prime Agent as Agent Skills ' +
-            'plus a verified Prime/Pi extension for workflow modes), and ' +
-            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX), ' +
-            '@maestria/agent-plugin (the portable Agent Plugins v1 skills-only package).',
+            'Portable AI engineering workflows. @maestria/agent-plugins bundles Codex, Claude Code, ' +
+            'Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and portable Agent Plugins resources. ' +
+            'Native runtime adapters remain available as @maestria/opencode and @maestria/pi.',
           details:
             'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [maestria agent instructions](https://maestria.sznm.dev/agents.md).',
           optionalLinks: [
@@ -72,12 +61,12 @@ export default defineConfig({
             {
               description: 'Installable Agent Plugins v1 package with the standard skills layout.',
               label: 'maestria portable Agent Plugin',
-              url: 'https://maestria.sznm.dev/agent-plugin/',
+              url: 'https://maestria.sznm.dev/agent-plugins/',
             },
             {
               description: 'Live smoke results and manual activation checks by client.',
               label: 'maestria Agent Plugin compatibility',
-              url: 'https://maestria.sznm.dev/agent-plugin/compatibility/',
+              url: 'https://maestria.sznm.dev/agent-plugins/compatibility/',
             },
             {
               description: 'Install with `npx maestria install <platform>`.',
@@ -137,10 +126,97 @@ export default defineConfig({
         {
           collapsed: true,
           items: [
-            { label: 'Overview', link: '/agent-plugin/' },
-            { label: 'Compatibility', link: '/agent-plugin/compatibility/' },
+            { label: 'Overview', link: '/agent-plugins/' },
+            { label: 'Compatibility', link: '/agent-plugins/compatibility/' },
+            { label: 'Changelog', link: '/agent-plugins/changelog/' },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/claude-code/' },
+                {
+                  items: [
+                    { autogenerate: { directory: 'agent-plugins/claude-code/getting-started' } },
+                  ],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/claude-code/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/claude-code/contributing/' },
+              ],
+              label: 'Claude Code',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/codex/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/codex/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/codex/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/codex/contributing/' },
+              ],
+              label: 'Codex',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/cursor/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/cursor/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/cursor/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/cursor/contributing/' },
+              ],
+              label: 'Cursor',
+            },
+            {
+              items: [{ label: 'Overview', link: '/agent-plugins/devin/' }],
+              label: 'Devin',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/kimi-code/' },
+                {
+                  items: [
+                    { autogenerate: { directory: 'agent-plugins/kimi-code/getting-started' } },
+                  ],
+                  label: 'Getting Started',
+                },
+                { label: 'Changelog', link: '/agent-plugins/kimi-code/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/kimi-code/contributing/' },
+              ],
+              label: 'Kimi Code',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/hermes/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/hermes/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Commands', link: '/agent-plugins/hermes/commands/' },
+                { label: 'Changelog', link: '/agent-plugins/hermes/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/hermes/contributing/' },
+              ],
+              label: 'Hermes',
+            },
+            {
+              items: [
+                { label: 'Overview', link: '/agent-plugins/omp/' },
+                {
+                  items: [{ autogenerate: { directory: 'agent-plugins/omp/getting-started' } }],
+                  label: 'Getting Started',
+                },
+                { label: 'Reference', link: '/agent-plugins/omp/reference/' },
+                { label: 'Changelog', link: '/agent-plugins/omp/changelog/' },
+                { label: 'Contributing', link: '/agent-plugins/omp/contributing/' },
+              ],
+              label: 'Oh My Pi',
+            },
+            {
+              items: [{ label: 'Overview', link: '/agent-plugins/zcode/' }],
+              label: 'ZCode',
+            },
           ],
-          label: '@maestria/agent-plugin',
+          label: 'Agent Plugins',
         },
         {
           items: [
@@ -186,95 +262,16 @@ export default defineConfig({
         {
           collapsed: true,
           items: [
-            { label: 'Overview', link: '/kimi-code/' },
+            { label: 'Overview', link: '/pi/' },
             {
-              items: [{ autogenerate: { directory: 'kimi-code/getting-started' } }],
+              items: [{ autogenerate: { directory: 'pi/getting-started' } }],
               label: 'Getting Started',
             },
-            { label: 'Changelog', link: '/kimi-code/changelog/' },
-            { label: 'Contributing', link: '/kimi-code/contributing/' },
+            { label: 'Reference', link: '/pi/reference/' },
+            { label: 'Changelog', link: '/pi/changelog/' },
+            { label: 'Contributing', link: '/pi/contributing/' },
           ],
-          label: '@maestria/kimi-code',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/claude-code/' },
-            {
-              items: [{ autogenerate: { directory: 'claude-code/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/claude-code/changelog/' },
-            { label: 'Contributing', link: '/claude-code/contributing/' },
-          ],
-          label: '@maestria/claude-code',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/codex/' },
-            {
-              items: [{ autogenerate: { directory: 'codex/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/codex/changelog/' },
-            { label: 'Contributing', link: '/codex/contributing/' },
-          ],
-          label: '@maestria/codex',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/cursor/' },
-            {
-              items: [{ autogenerate: { directory: 'cursor/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/cursor/changelog/' },
-            { label: 'Contributing', link: '/cursor/contributing/' },
-          ],
-          label: '@maestria/cursor',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/pi-omp/' },
-            {
-              items: [{ autogenerate: { directory: 'pi-omp/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Reference', link: '/pi-omp/reference/' },
-            { label: 'Changelog', link: '/pi-omp/changelog/' },
-            { label: 'Contributing', link: '/pi-omp/contributing/' },
-          ],
-          label: '@maestria/pi & @maestria/omp',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/hermes/' },
-            {
-              items: [{ autogenerate: { directory: 'hermes/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Commands', link: '/hermes/commands/' },
-            { label: 'Changelog', link: '/hermes/changelog/' },
-            { label: 'Contributing', link: '/hermes/contributing/' },
-          ],
-          label: '@maestria/hermes',
-        },
-        {
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/prime-agent/' },
-            {
-              items: [{ autogenerate: { directory: 'prime-agent/getting-started' } }],
-              label: 'Getting Started',
-            },
-            { label: 'Changelog', link: '/prime-agent/changelog/' },
-            { label: 'Contributing', link: '/prime-agent/contributing/' },
-          ],
-          label: '@maestria/prime-agent',
+          label: '@maestria/pi',
         },
       ],
       social: [

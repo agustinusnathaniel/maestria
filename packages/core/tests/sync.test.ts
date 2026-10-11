@@ -1569,3 +1569,91 @@ describe('checkProvenance', () => {
     expect(existsSync(join(tmpDir, 'PWNED'))).toBe(false);
   });
 }, 30_000);
+
+describe('canonical source overrides', () => {
+  let root: string;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), 'maestria-source-override-'));
+    mkdirSync(join(root, 'source'));
+    mkdirSync(join(root, 'output'));
+    writeFileSync(join(root, 'source', 'builder.md'), 'Full builder methodology\n');
+    writeFileSync(join(root, 'source', 'reviewer.md'), 'Full reviewer methodology\n');
+    writeFileSync(join(root, 'wrapper.md'), 'Follow the preloaded methodology.\n');
+  });
+  afterEach(() => {
+    rmSync(root, { force: true, recursive: true });
+  });
+
+  it('projects one canonical wrapper into separate native profiles idempotently', async () => {
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(
+      configPath,
+      `export default ${JSON.stringify({
+        files: {
+          'builder.md': { frontmatter: { name: 'builder' }, source: './wrapper.md' },
+          'reviewer.md': { frontmatter: { name: 'reviewer' }, source: './wrapper.md' },
+        },
+        output: './output',
+        source: './source',
+      })}`,
+    );
+    const config = await loadConfig(configPath);
+    await runSync({ config });
+    const builder = readFileSync(join(root, 'output', 'builder.md'), 'utf-8');
+    const reviewer = readFileSync(join(root, 'output', 'reviewer.md'), 'utf-8');
+    expect(builder).toContain('name: builder');
+    expect(reviewer).toContain('name: reviewer');
+    expect(builder).toContain('Follow the preloaded methodology.');
+    expect(reviewer).toContain('Follow the preloaded methodology.');
+    expect(builder).not.toContain('Full builder methodology');
+    const repeated = await runSync({ config });
+    expect(repeated.every((result) => result.status === 'unchanged')).toBe(true);
+  });
+
+  it('fails before writes or cleanup when an override source is missing', async () => {
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(
+      configPath,
+      `export default ${JSON.stringify({
+        files: {
+          'reviewer.md': { source: './missing.md' },
+        },
+        output: './output',
+        source: './source',
+      })}`,
+    );
+    writeFileSync(join(root, 'output', 'builder.md'), 'Existing output\n');
+    writeFileSync(join(root, 'output', 'stale.md'), 'Keep until preflight succeeds\n');
+    const config = await loadConfig(configPath);
+    await expect(runSync({ config })).rejects.toThrow(/missing\.md/u);
+    expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toBe('Existing output\n');
+    expect(existsSync(join(root, 'output', 'stale.md'))).toBe(true);
+  });
+
+  it('validates replacement anchors against the selected canonical source', async () => {
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(
+      configPath,
+      `export default ${JSON.stringify({
+        files: {
+          'builder.md': {
+            replace: [{ from: 'preloaded methodology', to: 'shared role skill' }],
+            source: './wrapper.md',
+          },
+        },
+        output: './output',
+        source: './source',
+      })}`,
+    );
+    const config = await loadConfig(configPath);
+    await runSync({ config });
+    expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toContain(
+      'shared role skill',
+    );
+    writeFileSync(join(root, 'wrapper.md'), 'Changed without the required anchor\n');
+    await expect(runSync({ config })).rejects.toThrow(/preloaded methodology/u);
+    expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toContain(
+      'shared role skill',
+    );
+  });
+});

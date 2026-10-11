@@ -20,7 +20,7 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 ## What It Provides
 
 - **Methodology skills** (4 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session.
-- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi-omp/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
 - **Compaction preservation** - session state survives compaction with structured summaries.
 - **Subagent dispatch** - delegation to specialist subagents via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
@@ -34,11 +34,11 @@ Place optional `.maestria/workflow.md` (sequencing) and `.maestria/rules.md` (ru
 
 - Subagent dispatch depends on the `@gotgenes/pi-subagents` peer package (supported range `^21.5.1`); the maestria CLI installs it for you.
 - The methodology is advisory prompt guidance; the maker/checker split is enforced at the tool level only where Pi supports review-mode tool blocking.
-- Pi-specific: `@maestria/omp` is a separate package for Oh My Pi.
+- OMP is served through `@maestria/agent-plugins` portable skills (`maestria install omp`).
 
 ## Documentation and Changelog
 
-- [User-facing documentation](https://maestria.sznm.dev/pi-omp/) on the docs site (shared with `@maestria/omp`)
+- [User-facing documentation](https://maestria.sznm.dev/pi/) on the docs site
 - [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/CHANGELOG.md)
 
 ## Contributing

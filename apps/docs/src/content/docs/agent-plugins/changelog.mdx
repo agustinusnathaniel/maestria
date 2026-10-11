@@ -1,0 +1,29 @@
+---
+title: Agent Plugins Changelog
+description: Curated changes to the shared Agent Plugins package and host documentation.
+---
+
+## 2026-10-11
+
+- Kept the package directly installable with root host manifests beside generated agents and skills. Canonical roles, modes, policy, and utilities retain their separate ownership in core; development inputs live in generation.
+- Local and Git installation now select `packages/agent-plugins/`. Published npm archives keep the same root layout and complete host-compatible skill exports.
+- Removed source integration context/config clutter and retained generated runtime guides and selected compatibility paths at the package root.
+
+## 2026-10-10
+
+- Added concise Devin and ZCode guides, separated Codex CLI and desktop-app setup, and documented Claude Code Desktop and Claude account plugin surfaces with their current evidence limits.
+- Consolidated shared role and workflow methodology into one root skill corpus. Kimi Code now selects those shared skills instead of shipping duplicate specialist skills.
+- Added thin host aliases and loader wrappers where native activation needs them. Claude Code profiles preload their role skill and global rules; Cursor retains full role guidance where child skill preloading is not established.
+- Documented host-specific resource ownership and runtime limits. OMP uses the portable package and advisory root profiles; the package provides no OMP runtime extension or command layer.
+- Grouped public guides for Claude Code, Codex, Cursor, Kimi Code, Hermes, and OMP under `/agent-plugins/<host>/`. Pi remains at `/pi/`, OpenCode at `/opencode/`, and portable package guidance at `/agent-plugins/`.
+- Added redirects from the former host-root routes and the combined Pi/OMP routes to their new locations.
+
+See each host's page for installation, support, and release history:
+
+- [Claude Code](/agent-plugins/claude-code/)
+- [Codex](/agent-plugins/codex/)
+- [Cursor](/agent-plugins/cursor/)
+- [Kimi Code](/agent-plugins/kimi-code/)
+- [Hermes](/agent-plugins/hermes/)
+- [Oh My Pi](/agent-plugins/omp/)
+- [Pi](/pi/)

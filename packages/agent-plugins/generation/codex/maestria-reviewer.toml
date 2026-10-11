@@ -1,0 +1,3 @@
+name = "maestria-reviewer"
+description = "maestria independent reviewer for correctness, security, performance, and missing-test risks."
+sandbox_mode = "read-only"

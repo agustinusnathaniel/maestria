@@ -57,7 +57,9 @@ export const resolveSyncPlan = (
       label: relPath,
       logLabel: relPath,
       origin: 'primary',
-      sourcePath: path.resolve(config.source, relPath),
+      sourcePath:
+        (explicit ?? resolveSourceFile(config, filename)).source ??
+        path.resolve(config.source, relPath),
     });
   }
 
@@ -67,7 +69,7 @@ export const resolveSyncPlan = (
     if (matchedFilenames.has(filename)) {
       continue;
     }
-    const sourcePath = path.resolve(secondarySourceDir, filename);
+    const sourcePath = fileCfg.source ?? path.resolve(secondarySourceDir, filename);
     if (!existsSync(sourcePath)) {
       missing.push(filename);
       continue;

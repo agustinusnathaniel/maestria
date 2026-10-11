@@ -381,14 +381,14 @@ export const configureCommand = defineCommand({
     },
     platform: {
       description:
-        'Platform to configure. One of: opencode, codex, cursor, pi, omp. Pass directly to skip interactive selection.',
+        'Platform to configure. One of: opencode, codex, cursor, pi. Pass directly to skip interactive selection.',
       required: false,
       type: 'positional',
     },
     project: {
       default: false,
       description:
-        'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, .pi/agents/, or .omp/agents/).',
+        'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, or .pi/agents/).',
       type: 'boolean',
     },
     quiet: {

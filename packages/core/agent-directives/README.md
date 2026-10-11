@@ -14,6 +14,9 @@ This directory holds the shared methodology, rules, workflow modes, and skill pr
 agent-directives/
   README.md          - This file
   COMPOSITION.md     - Human-facing composition guidance
+  agents/            - Host-native wrappers that load shared role skills
+  aliases/           - Thin entry-point templates for shared workflow modes
+  integrations/      - Host-specific notes that explain native adapter behavior
   specialists/       - Role definitions for the 8 pipeline agents (orchestrator + 7 specialists)
     adventurer.md    - Codebase reconnaissance
     architect.md     - Architecture decisions and ADRs
@@ -28,9 +31,21 @@ agent-directives/
   skills/            - Shared handoff and iteration-limit sources
 ```
 
-The portable Agent Plugins v1 package lives at `packages/agent-plugin/`. It maps the specialist, workflow-mode, rules, handoff, and iteration-limit sources to the fixed `skills/<name>/SKILL.md` layout and replaces host-specific role syntax with plain skill names. It intentionally has no runtime adapter, executable agent, command, hook, or MCP component.
+The consolidated `@maestria/agent-plugins` package lives at `packages/agent-plugins/` and is directly installable. Core remains the authoring home: roles belong to `specialists/`, modes to `commands/`, policy to `rules.md` and host integration notes, and reusable utility guidance to `skills/`. Development-only configs, manifest inputs, and native templates live in the package's `generation/` directory. Runtime integrations contain generated guides and selected host resources, never build configuration.
+
+Root host manifests, agent profiles, and fourteen skill exports are tracked for Git consumers and ship at the same paths in npm archives. Full role/mode/global-rule skill exports are compatibility representations that preserve host loading and component names; they do not become semantic sources. Generate advisory agent definitions directly from canonical roles, not from role-skill exports. There is no duplicate semantic component tree or nested installation root. `scripts/sync-all` regenerates package resources and `scripts/check-sync` verifies them. The standalone CLI remains in `apps/maestria-cli`.
 
 Methodology skills distributed as standalone skills (for example `create-pull-request`, `docs-update`) live once at the repository root under `skills/` and are not generated from this directory: the CLI invokes the official `skills` CLI to install them, and core keeps only the routing pointer. Do not copy skill bodies into plugin packages. The Claude Code plugin manifest for these standalone skills lives at `skills/.claude-plugin/plugin.json`.
+
+Host-native agent wrappers live under `agents/` when a platform can preload the shared role skill directly. Keep them limited to host-specific loading behavior; the `specialists/` files and projected skills remain the methodology source of truth. Workflow aliases live under `aliases/` and select a shared mode skill without copying its procedure. Host notes live under `integrations/`; they document how a projection loads and delegates without duplicating the shared router.
+
+## Reuse a Canonical Input in a Projection
+
+Sync configs use a top-level `source` for the default canonical input. A file entry can set its own `source` path, relative to that sync config, when one generated output should reuse a different canonical input. The `source` override changes which input is rendered; it does not create another methodology source.
+
+Use a per-file source override when an adapter needs a thin native wrapper or alias instead of copying a full specialist or mode body. For example, Claude Code's seven native agent profiles are generated from one wrapper in `agents/claude-wrapper.md`; each profile names its role skill and the shared global-rules skill in native frontmatter. Cursor and Kimi workflow aliases reuse `aliases/workflow.md` and substitute the selected mode name. Their behavior remains in the shared mode skills.
+
+Keep the adapter-specific content in frontmatter, replacements, or integration notes. If the host cannot reliably preload the shared skill, retain the complete role guidance in that host's canonical specialist projection instead of using an empty wrapper. After changing an input or sync config, run `scripts/sync-all` and `scripts/check-sync` from the repository root.
 
 ## How to Add a New Specialist
 

@@ -1,0 +1,63 @@
+---
+title: Quick Start
+description: Use the shared Maestria skills in Claude Code CLI or a local Desktop Code session.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Once the plugin is loaded (see [Claude Code installation](/agent-plugins/claude-code/getting-started/installation/)), use the same skills in the CLI or a local or SSH Code session in Desktop.
+
+<Aside type="caution" title="Choose the workflow before choosing the orchestrator">
+  maestria adds coordination and review sessions. For small changes or expensive, slow models,
+  direct execution or one specialist is often the better path. Read [When to use
+  maestria](/core/when-to-use/) first.
+</Aside>
+
+## Open Claude Code
+
+For a session-only load from a repository checkout, start the CLI with:
+
+```bash
+claude --plugin-dir ./packages/agent-plugins
+```
+
+In Claude Code Desktop, open a local or SSH Code session and confirm `maestria` appears in the plugin manager. Cloud sessions do not load plugins installed through the Desktop UI.
+
+## Delegate to a Specialist
+
+Call any specialist directly by its namespaced name:
+
+```markdown
+@maestria:adventurer Explore the auth module and trace the login flow.
+```
+
+The specialists are `@maestria:adventurer`, `@maestria:architect`, `@maestria:builder`, `@maestria:diagnose`, `@maestria:planner`, `@maestria:reviewer`, and `@maestria:writer`. See the [Specialist Reference](/core/agents/) for role details.
+
+## Use the Orchestrator
+
+For unfamiliar, multi-file, or high-risk work, run the orchestrator skill to route the work through the right specialists:
+
+```markdown
+/maestria:orchestrator I need to add rate limiting to the API. Plan and implement it.
+```
+
+The orchestrator decomposes the task, delegates to specialists, and integrates the results. It does not implement work it has delegated.
+
+## Select a Pipeline Mode
+
+Three namespaced workflow skills control pipeline depth:
+
+- `/maestria:fein` - full pipeline: recon, design, implement, review
+- `/maestria:sonar` - research only: owning specialist, optional distinct specialist, STOP
+- `/maestria:blitz` - fast path: direct or `maestria:builder` (skip optional ceremony; required review remains)
+
+```markdown
+/maestria:fein add rate limiting to the API.
+```
+
+The orchestrator routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles; see [Modes](/core/agents/#modes) for keyword precedence and detection. Specialist profiles declare their role skill and `maestria:global-rules` for preload. A CLI fixture verified that behavior for the reviewer child only; see the [installation evidence](/agent-plugins/claude-code/getting-started/installation/).
+
+## Next Steps
+
+- [Specialist Reference](/core/agents/) - Full docs for all 7 specialists plus the orchestrator
+- [Workflow Patterns](/core/workflow-patterns/) - Orchestration and pipeline patterns

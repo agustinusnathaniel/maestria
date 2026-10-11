@@ -13,7 +13,7 @@
       "description": "Portable AI engineering workflows for Claude Code.",
       "source": {
         "source": "npm",
-        "package": "@maestria/claude-code"
+        "package": "@maestria/agent-plugins"
       }
     }
   ]

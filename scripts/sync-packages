@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export LC_ALL=C
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SYNC_SCRIPT="$ROOT/packages/core/scripts/sync.ts"
@@ -18,14 +19,28 @@ else
   exit 2
 fi
 
-for config in "$ROOT"/packages/*/sync.config.ts; do
-  [ -f "$config" ] || continue
+(cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts --preflight)
+
+shopt -s nullglob
+CONFIGS=("$ROOT"/packages/*/sync.config.ts)
+shopt -u nullglob
+
+# Validate every discovered config before any package can write or clean output.
+for config in "${CONFIGS[@]}"; do
+  echo ""
+  echo "=== Validating ${config#"$ROOT/"} ==="
+  (cd "$(dirname "$config")" && pnpm exec tsx "$SYNC_SCRIPT" --config "$config" --dry-run)
+done
+
+for config in "${CONFIGS[@]}"; do
   PKG_DIR="$(dirname "$config")"
   PKG_NAME="$(basename "$PKG_DIR")"
 
   echo ""
   echo "=== $VERB $PKG_NAME ==="
-  if (cd "$PKG_DIR" && pnpm exec tsx "$SYNC_SCRIPT" "$FLAG"); then
+  SYNC_COMMAND=(pnpm exec tsx "$SYNC_SCRIPT" --config "$config" "$FLAG")
+
+  if (cd "$PKG_DIR" && "${SYNC_COMMAND[@]}"); then
     if [ "$FLAG" = "--check" ]; then
       echo "  ✅ $PKG_NAME is in sync"
     fi
@@ -36,6 +51,12 @@ for config in "$ROOT"/packages/*/sync.config.ts; do
     fi
   fi
 done
+
+if [ "$HAD_ERROR" -eq 0 ]; then
+  if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts "${1:---write}"); then
+    HAD_ERROR=1
+  fi
+fi
 
 echo ""
 if [ "$HAD_ERROR" -eq 0 ]; then

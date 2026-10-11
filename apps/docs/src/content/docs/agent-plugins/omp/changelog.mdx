@@ -1,0 +1,12 @@
+---
+title: Oh My Pi Changelog
+description: Current OMP distribution notes and links to the archived native package history.
+---
+
+## 2026-10-10: Shared Agent Plugins integration
+
+- OMP uses the shared `@maestria/agent-plugins` skill corpus and advisory root role profiles.
+- The package declares no OMP commands, rules, hooks, executable extension, or task wrapper. OMP owns activation, task execution, permissions, and session behavior.
+- The OMP 18.4.8 packed-discovery probe verifies skills and profiles through the host loader. It does not verify `omp plugin install` or task execution; see the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
+
+Earlier releases of the retired `@maestria/omp` executable are preserved in the [combined Pi and OMP release archive](/pi/changelog/).
