@@ -7,7 +7,7 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 ## Package Boundary
 
-Kimi Code is a declarative package with no runtime SDK or build step. Manifest inputs, `generation/kimi-code.sync.config.ts`, and tests are hand-authored; the emitted `plugin/kimi.plugin.json` is generated. The manifest selects the shared root `skills/` corpus; only Kimi command aliases and its short orchestration guide are generated from canonical workflow and integration sources. Do not add duplicate specialist skill bodies or a second global-rules file for Kimi.
+Kimi Code is a declarative package with no runtime SDK or build step. Manifest inputs, `generation/kimi-code.sync.config.ts`, and tests are hand-authored; the emitted `kimi.plugin.json` is generated. The manifest selects the shared root `skills/` corpus; only Kimi command aliases and its short orchestration guide are generated from canonical workflow and integration sources. Do not add duplicate specialist skill bodies or a second global-rules file for Kimi.
 
 ## Manifest Contract
 
@@ -21,7 +21,7 @@ The manifest owns the Kimi-native entry points:
 
 ## Change Shared Methodology
 
-Edit `packages/core/agent-directives/` for shared methodology. Use `packages/core/agent-directives/integrations/kimi-code.md` for Kimi-specific dispatch guidance and `aliases/workflow.md` for shared workflow command wrappers. Generated source components and the installable `plugin/` resources are outputs; do not edit them directly. Regenerate and verify from the repository root:
+Edit `packages/core/agent-directives/` for shared methodology. Use `packages/core/agent-directives/integrations/kimi-code.md` for Kimi-specific dispatch guidance and `aliases/workflow.md` for shared workflow command wrappers. Generated package agents, skills, commands, rules, and manifests are outputs; do not edit them directly. Regenerate and verify from the repository root:
 
 ```bash
 scripts/sync-all

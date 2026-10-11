@@ -1,12 +1,12 @@
 # Support boundaries
 
-The generated `plugin/` installation bundle ships declarative methodology and host resources. Its contents become the npm archive root; Git consumers select that subdirectory. Source components and development-only generation configs are excluded from that archive. Sync and npm archive checks verify resource containment, complete paths, distinct skill roots, and preserved native metadata. Live loading and host enforcement are unverified unless a separate host test supplies evidence.
+The package directory is the installation root for Git and local consumers. Its host manifests and generated resources use the same paths in npm archives. Canonical methodology stays in core, and development-only generation configs are excluded from the archive. Sync and archive checks verify resource containment, complete paths, distinct skill roots, and preserved native metadata. Live loading and host enforcement are unverified unless a separate host test supplies evidence.
 
 | Host | Contract | Official reference |
 | --- | --- | --- |
 | Portable | Root manifest and standard Agent Skills; no portable runtime agent declaration | [Agent Plugins specification](https://agent-plugins.org/specification) |
 | Claude Code | Shared default skills scan; explicit thin agent wrappers with role and global-rules skill preloads; preserved native tool-denial fields | [Plugin components](https://code.claude.com/docs/en/plugins/components) ([manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference)) |
-| Cursor | Isolated Cursor agent profiles, shared skills, and selected integration commands and rules; full role guidance remains in profiles where skill preloading is not verified | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
+| Cursor | Isolated Cursor agent profiles, shared skills, and selected command and rule subdirectories; full role guidance remains in profiles where skill preloading is not verified | [Plugin schema](https://github.com/cursor/plugins/blob/main/schemas/plugin.schema.json) |
 | Codex | Skill manifest plus companion CLI-managed native TOMLs and instructions; OpenAI presentation via the `.codex-plugin/plugin.json` compatibility fallback, no inline `extensions.com.openai` | [Codex plugin documentation](https://developers.openai.com/codex/plugins) ([packaging guide](https://developers.openai.com/plugins/build/plugins)) |
 | Devin | Conventional root advisory agents; CLI/Desktop availability differs from cloud; no hooks or MCP servers declared | [Plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) ([Customize product guide](https://docs.devin.ai/product-guides/plugins)) |
 | ZCode | Explicit root advisory agents and shared skills; no host-specific command prompts | [Plugin documentation](https://zcode.z.ai/en/docs/plugin) |

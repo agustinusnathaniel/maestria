@@ -254,7 +254,7 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
     const sourceDir = `${packageRoot}/agents/codex`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
-    const sourceInstructionsPath = `${packageRoot}/integrations/codex/instructions/AGENTS.md`;
+    const sourceInstructionsPath = `${packageRoot}/rules/codex/instructions/AGENTS.md`;
 
     const sourceInstructions = yield* Effect.tryPromise({
       catch: (error) =>

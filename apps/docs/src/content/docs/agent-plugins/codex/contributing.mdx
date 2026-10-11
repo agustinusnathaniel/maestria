@@ -7,11 +7,11 @@ description: Maintain the generated Codex CLI integration and its marketplace-fa
 
 ## Package Boundary
 
-Release metadata and the host adaptation inputs under `generation/` are hand-authored. Core directives remain the methodology source; semantic component views and the full `plugin/` bundle are generated. Codex's native templates and instruction resources are compiled into the installable bundle. The repository-level `.agents/plugins/marketplace.json` selects the published npm package, whose root is flattened from `plugin/`; the staging directory is not another canonical source.
+Release metadata and the host adaptation inputs under `generation/` are hand-authored. Core directives remain the methodology source; the root installation resources are generated. Codex's native templates and instruction resources are compiled into the installable bundle. The repository-level `.agents/plugins/marketplace.json` selects the published npm package, whose resource paths match the directly installable package root; the staging directory is not another canonical source.
 
 ## Canonical Source Workflow
 
-Edit `packages/core/agent-directives/`, never generated files under `packages/agent-plugins/plugin/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
+Edit `packages/core/agent-directives/`, never generated files under `packages/agent-plugins/`. See the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow). Regenerate and verify:
 
 ```bash
 scripts/sync-all
@@ -24,7 +24,7 @@ pnpm --filter @maestria/agent-plugins test
 Run the Codex plugin-creator validator against the package and inspect the generated skill files:
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/agent-plugins/plugin
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/agent-plugins
 pnpm --filter @maestria/agent-plugins test
 ```
 

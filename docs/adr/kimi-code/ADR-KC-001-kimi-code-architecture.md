@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects shared skills and host-specific aliases from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/plugin/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/generation/kimi-code.sync.config.ts). Newer manifest-field support remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
+Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects shared skills and host-specific aliases from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [sync config](../../../packages/agent-plugins/generation/kimi-code.sync.config.ts). Newer manifest-field support remains unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
 
 ## Context
 

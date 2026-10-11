@@ -51,7 +51,7 @@ export interface PreloadFixture {
   stop: () => Promise<void>;
 }
 
-const packageRoot = path.resolve(import.meta.dirname, '../../packages/agent-plugins/plugin');
+const packageRoot = path.resolve(import.meta.dirname, '../../packages/agent-plugins');
 const fixtureStopText = 'CLAUDE_PRELOAD_FIXTURE_STOP';
 const childResultText = 'CLAUDE_PRELOAD_CHILD_RESULT';
 const parentResultText = 'CLAUDE_PRELOAD_PARENT_RESULT';

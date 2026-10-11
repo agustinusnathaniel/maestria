@@ -11,7 +11,7 @@ const profile = (name: string, description: string, readOnly = false) => ({
     name,
     skills: [...GLOBAL_RULES_PRELOAD, `maestria:${name}`],
   },
-  output: `${name}.md`,
+  output: `../agents/claude-code/${name}.md`,
   source: CLAUDE_WRAPPER,
 });
 
@@ -49,6 +49,5 @@ export default {
       'Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.',
     ),
   },
-  output: '../plugin/agents/claude-code',
   source: './sources',
 } satisfies SyncConfig;

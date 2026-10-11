@@ -43,7 +43,7 @@ const skill = (
 ): FileConfig => ({
   ...extra,
   frontmatter: { description, name },
-  output: `../plugin/skills/${name}/SKILL.md`,
+  output: `../skills/${name}/SKILL.md`,
   source,
 });
 
@@ -93,8 +93,6 @@ export default {
       '../../core/agent-directives/commands/fein.md',
       { stripFrontmatter: true },
     ),
-    'handoff.md': { output: 'handoff.md' },
-    'iteration-limits.md': { output: 'iteration-limits.md' },
     'orchestrator.md': skill(
       'orchestrator',
       'maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.',
@@ -131,6 +129,5 @@ export default {
       '../../core/agent-directives/specialists/writer.md',
     ),
   },
-  output: '../skills',
-  source: '../../core/agent-directives/skills',
+  source: './sources',
 } satisfies SyncConfig;

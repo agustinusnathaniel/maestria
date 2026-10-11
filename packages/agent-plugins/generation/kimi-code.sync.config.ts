@@ -7,6 +7,7 @@ const alias = (mode: string) => ({
     description: `Apply the shared ${mode} workflow to the user's request`,
     name: mode,
   },
+  output: `../commands/kimi-code/${mode}.md`,
   replace: [{ from: '@@MODE@@', to: mode }],
   source: workflowSource,
 });
@@ -17,6 +18,5 @@ export default {
     'fein.md': alias('fein'),
     'sonar.md': alias('sonar'),
   },
-  output: '../commands/kimi-code',
   source: './sources',
 } satisfies SyncConfig;

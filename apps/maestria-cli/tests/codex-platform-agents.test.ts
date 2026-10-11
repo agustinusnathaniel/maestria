@@ -28,9 +28,9 @@ describe('Codex managed native agents', () => {
 
     try {
       await mkdir(join(sourceRoot, 'agents', 'codex'), { recursive: true });
-      await mkdir(join(sourceRoot, 'integrations', 'codex', 'instructions'), { recursive: true });
+      await mkdir(join(sourceRoot, 'rules', 'codex', 'instructions'), { recursive: true });
       await writeFile(
-        join(sourceRoot, 'integrations', 'codex', 'instructions', 'AGENTS.md'),
+        join(sourceRoot, 'rules', 'codex', 'instructions', 'AGENTS.md'),
         [
           '<!-- maestria:codex-orchestrator:start -->',
           '## maestria orchestration',
@@ -131,7 +131,7 @@ describe('Codex managed native agents', () => {
 
     try {
       await mkdir(join(sourceRoot, 'agents', 'codex'), { recursive: true });
-      await mkdir(join(sourceRoot, 'integrations', 'codex', 'instructions'), { recursive: true });
+      await mkdir(join(sourceRoot, 'rules', 'codex', 'instructions'), { recursive: true });
       await Promise.all(
         AGENTS.map(async (agent) => {
           await writeFile(
@@ -141,7 +141,7 @@ describe('Codex managed native agents', () => {
         }),
       );
       await writeFile(
-        join(sourceRoot, 'integrations', 'codex', 'instructions', 'AGENTS.md'),
+        join(sourceRoot, 'rules', 'codex', 'instructions', 'AGENTS.md'),
         '<!-- maestria:codex-orchestrator:start -->\nmanaged\n<!-- maestria:codex-orchestrator:end -->\n',
       );
       await mkdir(codexHome, { recursive: true });

@@ -75,7 +75,7 @@ describe('canonical specialist roster', () => {
   for (const [platform, config] of Object.entries(syncConfigs)) {
     describe(platform, () => {
       it('registers the expected canonical specialist roster', () => {
-        const expected = ['claude-code', 'cursor'].includes(platform)
+        const expected = ['claude-code', 'cursor', 'components'].includes(platform)
           ? canonicalFiles.filter((file) => file !== `${ORCHESTRATOR}.md`)
           : canonicalFiles;
         const { missing } = findViolations(expected, Object.keys(config.files ?? {}));
@@ -93,7 +93,9 @@ describe('canonical specialist roster', () => {
       const ops = collectReplaceOps(config);
       expect(ops.length, platform).toBeGreaterThan(0);
       const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
-      const uncovered = delegableNames.filter(
+      const referencedNames =
+        platform === 'components' ? ['architect', 'builder', 'reviewer'] : delegableNames;
+      const uncovered = referencedNames.filter(
         (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
       );
       expect(uncovered, platform).toEqual([]);

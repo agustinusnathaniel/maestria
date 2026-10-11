@@ -72,7 +72,7 @@ export const loadPackedPlugin = (
   recordCheck: RecordCheck,
 ): { manifest: PluginManifest; packageRoot: string } => {
   const sourcePackageRoot = path.join(repoRoot, 'packages/agent-plugins');
-  const sourceManifest = readPluginManifest(path.join(sourcePackageRoot, 'plugin/package.json'));
+  const sourceManifest = readPluginManifest(path.join(sourcePackageRoot, 'package.json'));
   const packDirectory = path.join(fixtureRoot, 'pack');
   const pnpmHome = path.join(fixtureRoot, 'pnpm-home');
   const packEnv = { ...process.env, HOME: pnpmHome, USERPROFILE: pnpmHome };

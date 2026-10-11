@@ -5,9 +5,9 @@ description: Curated changes to the shared Agent Plugins package and host docume
 
 ## 2026-10-11
 
-- Separated semantic source components from the generated installable bundle: roles in agents, modes in commands, policy in rules, reusable utilities in skills, and development inputs in generation.
-- Local and Git installation now select `packages/agent-plugins/plugin/`. Published npm archives keep the same root layout and complete host-compatible skill exports.
-- Removed source integration context/config clutter and retained runtime guides and compatibility paths in the generated bundle.
+- Kept the package directly installable with root host manifests beside generated agents and skills. Canonical roles, modes, policy, and utilities retain their separate ownership in core; development inputs live in generation.
+- Local and Git installation now select `packages/agent-plugins/`. Published npm archives keep the same root layout and complete host-compatible skill exports.
+- Removed source integration context/config clutter and retained generated runtime guides and selected compatibility paths at the package root.
 
 ## 2026-10-10
 

@@ -18,7 +18,7 @@ import {
 import type { Evidence, RuntimeState } from './claude-skill-preload-fixture.ts';
 
 const repoRoot = path.resolve(import.meta.dirname, '../..');
-const packageRoot = path.join(repoRoot, 'packages/agent-plugins/plugin');
+const packageRoot = path.join(repoRoot, 'packages/agent-plugins');
 const timeoutMs = 20_000;
 
 const restrictedEnv = (configDir: string): NodeJS.ProcessEnv => {

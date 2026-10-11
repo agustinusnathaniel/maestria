@@ -62,10 +62,10 @@ The command is intentionally namespaced as `maestria plugin ...`: `maestria inst
 Point a client that accepts local plugins at the directory containing plugin.json rather than its nested skills directory:
 
 ```text
-/path/to/maestria/packages/agent-plugins/plugin/
+/path/to/maestria/packages/agent-plugins/
 ```
 
-A local checkout is useful when testing unreleased changes. `plugin/` is the generated installation bundle; the parent package directory holds source components and generation tooling. Published npm archives already expose the bundle at their root, so do not append `plugin/` to an extracted npm package.
+A local checkout is useful when testing unreleased changes. `packages/agent-plugins/` is directly installable: its host manifests sit beside the generated agents and skills. Published npm archives expose the same resource layout. Canonical methodology lives in core; the package's `generation/` directory contains development tooling.
 
 ## Portable and Native Boundaries
 

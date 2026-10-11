@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import { parse } from 'yaml';
 
 const packageRoot = path.resolve(import.meta.dirname, '..');
-const pluginRoot = path.join(packageRoot, 'plugin');
+const pluginRoot = packageRoot;
 const manifestPath = path.join(pluginRoot, '.claude-plugin/plugin.json');
 const roles = [
   'adventurer',

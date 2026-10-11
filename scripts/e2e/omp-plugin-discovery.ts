@@ -111,14 +111,20 @@ const counts: Record<keyof typeof EXPECTED_PLUGIN_COUNTS, number | null> = {
   rules: null,
   skills: null,
 };
+const discoveryCounts: Record<string, typeof counts> = {};
 let hostVersion: string | null = null;
 let pluginVersion: string | null = null;
 let failure: string | null = null;
+let discoverySurface = '';
 
 const normalize = (value: string): string => value.split(tempRoot).join('<TMP>');
 
 const recordCheck = (name: string, pass: boolean, detail = ''): void => {
-  checks.push({ detail: normalize(detail), name, pass });
+  checks.push({
+    detail: normalize(detail),
+    name: discoverySurface ? `${discoverySurface}: ${name}` : name,
+    pass,
+  });
   if (!pass) {
     throw new Error(`${name}: ${detail || 'check failed'}`);
   }
@@ -431,7 +437,19 @@ const probe = async (): Promise<void> => {
     packed.packageRoot,
     packed.manifest,
   );
+  discoverySurface = 'archive';
   await checkPackedDiscovery(host, fixture);
+  discoveryCounts.archive = { ...counts };
+  const gitFixture = {
+    cwd: path.join(tempRoot, 'git-cwd'),
+    home: path.join(tempRoot, 'git-home'),
+    packageRoot: path.join(repoRoot, 'packages/agent-plugins'),
+  };
+  fs.mkdirSync(gitFixture.cwd, { recursive: true });
+  fs.mkdirSync(gitFixture.home, { recursive: true });
+  discoverySurface = 'git root';
+  await checkPackedDiscovery(host, gitFixture);
+  discoveryCounts.gitRoot = { ...counts };
 };
 
 try {
@@ -443,6 +461,7 @@ try {
   const artifact = {
     checks,
     counts,
+    discoveryCounts,
     host: {
       name: '@oh-my-pi/pi-coding-agent',
       version: hostVersion,

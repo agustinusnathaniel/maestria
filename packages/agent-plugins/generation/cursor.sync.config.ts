@@ -12,7 +12,7 @@ const aliases = Object.fromEntries(
   ['blitz', 'fein', 'sonar'].map((mode) => [
     `cursor-${mode}.md`,
     {
-      output: `../../../commands/cursor/${mode}.md`,
+      output: `../commands/cursor/${mode}.md`,
       prepend: `---\nname: ${mode}\ndescription: ${CURSOR_MODE_DESCRIPTIONS[mode]}\n---\n`,
       replace: [{ from: '@@MODE@@', to: mode }],
       source: workflowSource,
@@ -30,7 +30,7 @@ const role = (name: string, description: string, extra: Partial<FileConfig> = {}
       ? { readonly: true }
       : {}),
   },
-  output: `${name}.md`,
+  output: `../agents/cursor/${name}.md`,
   source: `../../core/agent-directives/specialists/${name}.md`,
 });
 
@@ -66,7 +66,7 @@ export default {
         description:
           'maestria global agent rules - always apply for Cursor sessions using the maestria plugin',
       },
-      output: '../../../rules/cursor/maestria-global.mdc',
+      output: '../rules/cursor/maestria-global.mdc',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - maestria for Cursor' },
         {
@@ -102,6 +102,5 @@ export default {
     ),
     ...aliases,
   },
-  output: '../plugin/agents/cursor',
   source: './sources',
 } satisfies SyncConfig;

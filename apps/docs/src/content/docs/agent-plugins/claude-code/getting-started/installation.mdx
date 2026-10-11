@@ -58,7 +58,7 @@ Then, in a local or SSH Code session, click **+** beside the prompt, choose **Pl
 From a checkout of this repository:
 
 ```bash
-claude plugin validate ./packages/agent-plugins/plugin --strict
+claude plugin validate ./packages/agent-plugins --strict
 ```
 
 `--strict` treats warnings as errors and is the recommended CI check. A clean run prints `✔ Validation passed`.
@@ -72,7 +72,7 @@ claude plugin validate ./packages/agent-plugins/plugin --strict
    `--plugin-dir` is session-only and can be passed multiple times to load several plugins:
 
    ```bash
-   claude --plugin-dir ./packages/agent-plugins/plugin
+   claude --plugin-dir ./packages/agent-plugins
    ```
 
 2. **Confirm the plugin and its components loaded**

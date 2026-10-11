@@ -1,4 +1,3 @@
-import { specialistReferenceReplacements } from '../../core/scripts/lib/specialist-replacements.js';
 import type { FileConfig, SyncConfig } from '../../core/scripts/lib/config.js';
 
 const readonlyNotes: Record<string, string> = {
@@ -12,12 +11,19 @@ const readonlyNotes: Record<string, string> = {
 
 const role = (name: string, description: string): FileConfig => ({
   frontmatter: { description, name },
-  output: `${name}.md`,
+  output: `../agents/${name}.md`,
+  source: `../../core/agent-directives/specialists/${name}.md`,
   ...(readonlyNotes[name] === undefined ? {} : { prepend: readonlyNotes[name] }),
 });
 
 export default {
-  default: { replace: specialistReferenceReplacements() },
+  default: {
+    replace: [
+      { from: '@architect', to: 'architect' },
+      { from: '@builder', to: 'builder' },
+      { from: '@reviewer', to: 'reviewer' },
+    ],
+  },
   files: {
     'adventurer.md': role(
       'adventurer',
@@ -35,10 +41,6 @@ export default {
       'diagnose',
       'Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.',
     ),
-    'orchestrator.md': role(
-      'orchestrator',
-      'maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.',
-    ),
     'planner.md': role(
       'planner',
       'Phased planning agent with dependencies, verification criteria, timelines, and rollback points.',
@@ -52,6 +54,5 @@ export default {
       'Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.',
     ),
   },
-  output: '../agents',
-  source: '../../core/agent-directives/specialists',
+  source: './sources',
 } satisfies SyncConfig;

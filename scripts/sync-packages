@@ -18,6 +18,8 @@ else
   exit 2
 fi
 
+(cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts --preflight)
+
 for config in "$ROOT"/packages/*/sync.config.ts "$ROOT"/packages/agent-plugins/generation/*.sync.config.ts; do
   [ -f "$config" ] || continue
   PKG_DIR="$(dirname "$config")"

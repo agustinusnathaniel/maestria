@@ -3,7 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
 const packageRoot = path.resolve(import.meta.dirname, '..');
-const root = path.join(packageRoot, 'plugin');
+const root = packageRoot;
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -59,13 +59,10 @@ describe('Kimi shared methodology loading', () => {
 
   it('keeps explicit workflow aliases outside other clients conventional discovery roots', async () => {
     const config = await manifest();
-    expect(config.commands).toBe('./integrations/kimi-code/commands/');
+    expect(config.commands).toBe('./commands/kimi-code/');
     await Promise.all(
       ['fein', 'sonar', 'blitz'].map(async (mode) => {
-        const alias = await readFile(
-          path.join(root, `integrations/kimi-code/commands/${mode}.md`),
-          'utf-8',
-        );
+        const alias = await readFile(path.join(root, `commands/kimi-code/${mode}.md`), 'utf-8');
         expect(alias).toContain(`[MODE: ${mode}]`);
         expect(alias).toContain(`\`${mode}\``);
         expect(alias).toContain('arguments');

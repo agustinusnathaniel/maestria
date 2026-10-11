@@ -45,6 +45,10 @@ const packedArtifact = (output: string): { filename: string; files: string[] } =
 };
 
 const packageFixture = (destination: string): string => {
+  fs.copyFileSync(
+    path.join(repoRoot, 'pnpm-workspace.yaml'),
+    path.join(destination, 'pnpm-workspace.yaml'),
+  );
   const fixtureRoot = path.join(destination, 'source-package');
   fs.cpSync(packageRoot, fixtureRoot, {
     filter: (source) => !source.split(path.sep).includes('node_modules'),
@@ -89,10 +93,14 @@ const assertNativeMetadata = (packedRoot: string): void => {
 };
 
 describe('published consolidated plugin', () => {
-  it('packs the flattened install root with complete skills, native paths, and runtime metadata', () => {
+  it('packs the directly installable package root with complete skills, native paths, and runtime metadata', () => {
     const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'maestria-plugin-pack-'));
     try {
       const fixtureRoot = packageFixture(temporary);
+      for (const manifestPath of manifestPaths) {
+        expect(fs.existsSync(path.join(fixtureRoot, manifestPath))).toBe(true);
+      }
+      expect(fs.existsSync(path.join(fixtureRoot, 'plugin'))).toBe(false);
       const packed = packedArtifact(
         execFileSync('pnpm', ['pack', '--json', '--pack-destination', temporary], {
           cwd: fixtureRoot,
@@ -126,11 +134,15 @@ describe('published consolidated plugin', () => {
           /(?:generation\/|sync\.config|\.test\.ts|vite\.config|tsconfig)/u.test(entry),
         ),
       ).toBe(false);
-      expect(entries.some((entry) => /^package\/(?:commands|rules)\//u.test(entry))).toBe(false);
+      expect(entries.some((entry) => /^package\/commands\/[^/]+\.md$/u.test(entry))).toBe(false);
+      expect(entries.some((entry) => /^package\/rules\/[^/]+\.(?:md|mdc)$/u.test(entry))).toBe(
+        false,
+      );
       expect(packageManifest.private).toBe(false);
       expect(packageManifest.publishConfig).toEqual({ access: 'public', provenance: true });
-      expect(packageManifest.devDependencies).toBeUndefined();
-      expect(packageManifest.scripts).toBeUndefined();
+      expect(packageManifest.repository).toEqual(
+        expect.objectContaining({ directory: 'packages/agent-plugins' }),
+      );
       expect(packageManifest.pnpm).toBeUndefined();
       expect(packageManifest.packageManager).toBeUndefined();
       expect(packageManifest.omp).toEqual({});
@@ -140,18 +152,18 @@ describe('published consolidated plugin', () => {
       expect(manifests[5].commands).toEqual([]);
       expect(manifests[6].agents).toEqual([]);
       expect(manifests[6].skills).toBe('./skills/');
-      expect(manifests[6].commands).toBe('./integrations/kimi-code/commands/');
+      expect(manifests[6].commands).toBe('./commands/kimi-code/');
       expect(manifests[6].systemPromptPath).toBe('./skills/global-rules/SKILL.md');
       expect(manifests[1].commands).toEqual([]);
-      expect(manifests[2].commands).toBe('./integrations/cursor/commands/');
-      expect(manifests[2].rules).toBe('./integrations/cursor/rules/');
+      expect(manifests[2].commands).toBe('./commands/cursor/');
+      expect(manifests[2].rules).toBe('./rules/cursor/');
       for (const role of roles) {
         expect(entries).toContain(`package/agents/${role}.md`);
       }
-      expect(entries).toContain('package/integrations/cursor/commands/fein.md');
-      expect(entries).toContain('package/integrations/cursor/rules/maestria-global.mdc');
-      expect(entries).toContain('package/integrations/codex/instructions/AGENTS.md');
-      expect(entries).toContain('package/integrations/kimi-code/commands/fein.md');
+      expect(entries).toContain('package/commands/cursor/fein.md');
+      expect(entries).toContain('package/rules/cursor/maestria-global.mdc');
+      expect(entries).toContain('package/rules/codex/instructions/AGENTS.md');
+      expect(entries).toContain('package/commands/kimi-code/fein.md');
       assertNativeMetadata(packedRoot);
       for (const host of [
         'claude-code',

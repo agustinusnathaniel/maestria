@@ -3,13 +3,13 @@
 
 ## Project and Ownership
 
-maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, the complete `plugin/` installation bundle is generated too; edit its release metadata, `generation/` manifest/config inputs, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
+maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, installation resources and host manifests are generated directly at the package root; edit its release metadata, `generation/` manifest/config inputs, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
 ## Engineering Boundaries
 
 - `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
 - Platform adapters belong in their own `packages/<platform>/`. Shared code belongs in the appropriate neutral package, not in another platform's package.
-- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The consolidated `@maestria/agent-plugins` source separates agents, commands, rules, and utility skills; its generated `plugin/` bundle exports host-compatible skills and explicitly selected native resources. It declares no executable runtime adapter, hooks, or MCP component.
+- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The consolidated `@maestria/agent-plugins` root is directly installable. Canonical core separates roles, commands, rules, and utility skills; package exports provide host-compatible skills and explicitly selected native resources. It declares no executable runtime adapter, hooks, or MCP component.
 - Pi is a runtime extension and may use Node.js APIs. Keep host-neutral shared utilities separate from its runtime adapter.
 - Prefer small, reviewable changes. Preserve canonical ownership, package boundaries, and sync correctness when choosing between approaches.
 

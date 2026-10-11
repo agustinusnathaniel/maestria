@@ -2,7 +2,7 @@
 
 # OMP Integration
 
-OMP (Oh My Pi) uses `package.json#omp` for npm registration and the root Agent Plugins manifest for shared skill discovery. The empty `omp` object registers the package without an executable extension. Root `agents/*.md` are advisory profiles; host-specific commands and rules live under explicit integration paths and are not conventional OMP resources. Install the staged package through the host plugin flow (`maestria install omp` stages `@maestria/agent-plugins` via `omp plugin install`), then load the `global-rules` and `orchestrator` skills in session. If the retired `@maestria/omp` native package is still installed, remove it first (`omp plugin uninstall @maestria/omp`) so its executable hooks do not shadow the portable skills.
+OMP (Oh My Pi) uses `package.json#omp` for npm registration and the root Agent Plugins manifest for shared skill discovery. The empty `omp` object registers the package without an executable extension. Root `agents/*.md` are advisory profiles; host-specific commands and rules live under explicit host subdirectories and are not conventional OMP resources. Install the staged package through the host plugin flow (`maestria install omp` stages `@maestria/agent-plugins` via `omp plugin install`), then load the `global-rules` and `orchestrator` skills in session. If the retired `@maestria/omp` native package is still installed, remove it first (`omp plugin uninstall @maestria/omp`) so its executable hooks do not shadow the portable skills.
 
 ## Specialist → task() Routing
 
