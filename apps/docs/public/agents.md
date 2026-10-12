@@ -8,6 +8,8 @@ Use maestria when you need to:
 
 - Install or wire structured agent-methodology plugins into a supported coding platform: OpenCode, Pi, Claude Code, Codex CLI, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes.
 - Install the portable handoff and iteration-limits utilities when your client supports Agent Plugins v1. Full methodology requires the selected host integration: https://maestria.sznm.dev/agent-plugins/
+- Install on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes (one section per host): https://maestria.sznm.dev/agent-plugins/installation/
+- Run workflow modes and dispatch specialists on each host: https://maestria.sznm.dev/agent-plugins/usage/
 - Check live smoke results and client-specific activation steps: https://maestria.sznm.dev/agent-plugins/compatibility/
 - Decide how to route a task: direct execution vs specialist dispatch vs the full staged pipeline (thinker, worker, verifier).
 - Enforce maker/checker review: the builder never approves its own work; an independent reviewer signs off.

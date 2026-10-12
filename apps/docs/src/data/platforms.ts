@@ -1,12 +1,12 @@
 /**
- * Shared platform registry - single source of truth for every maestria
- * platform adapter across the homepage adapter grid and footer.
+ * Shared platform registry - single source of truth for every installable
+ * maestria package across the homepage adapter grid.
  *
  * Blurbs are presentation copy; keep them in sync with the homepage card
  * language. `mark` keys into the shared glyph dict in src/data/marks.ts.
  * `installArgs` is the argument string for `npx maestria <installArgs>`;
- * an empty string means the platform has no canonical maestria CLI install
- * (e.g. ecosystem tooling, or platforms installed via their own tooling).
+ * an empty string means the entry has no canonical maestria CLI install
+ * (e.g. ecosystem tooling, or the multi-host package, which installs per host).
  */
 
 export interface Platform {
@@ -31,6 +31,8 @@ export interface Platform {
   flagship?: boolean;
   /** Homepage-only: draws the dashed inset ring on the cell (auxiliary tooling). */
   auxiliary?: boolean;
+  /** Homepage-only: hosts served by a shared package, listed on the card. */
+  hosts?: string[];
 }
 
 /**
@@ -48,38 +50,6 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: 'Complete native specialists and workflow commands for Claude Code.',
-    href: '/agent-plugins/claude-code/',
-    id: 'claude-code',
-    installArgs: 'install claude-code',
-    mark: 'claudeCode',
-    name: 'maestria for Claude Code',
-  },
-  {
-    blurb: 'Native agents and global routing through the CLI; two plugin utilities.',
-    href: '/agent-plugins/codex/',
-    id: 'codex',
-    installArgs: 'install codex',
-    mark: 'codex',
-    name: 'maestria for Codex',
-  },
-  {
-    blurb: 'Native Kimi specialists, commands, and complete session instructions.',
-    href: '/agent-plugins/kimi-code/',
-    id: 'kimi-code',
-    installArgs: 'install kimi-code',
-    mark: 'kimiCode',
-    name: 'maestria for Kimi Code',
-  },
-  {
-    blurb: 'Complete profiles, commands, and always-apply routing for Cursor IDE and CLI.',
-    href: '/agent-plugins/cursor/',
-    id: 'cursor',
-    installArgs: 'install cursor',
-    mark: 'cursorMark',
-    name: 'maestria for Cursor',
-  },
-  {
     blurb: '7 specialist subagents with native workflow modes and session tracking for Pi.',
     href: '/pi/',
     id: 'pi',
@@ -88,36 +58,14 @@ export const platforms: Platform[] = [
     name: '@maestria/pi',
   },
   {
-    blurb: 'Native task profiles, commands, policy, and utilities for Oh My Pi.',
-    href: '/agent-plugins/omp/',
-    id: 'omp',
-    installArgs: 'install omp',
-    mark: 'piOmp',
-    name: 'maestria for Oh My Pi',
-  },
-  {
-    blurb: 'Two portable utilities, with optional manual methodology context for Hermes.',
-    href: '/agent-plugins/hermes/',
-    id: 'hermes',
-    installArgs: 'install hermes',
-    mark: 'hermes',
-    name: 'maestria for Hermes',
-  },
-  {
-    blurb: 'Complete local custom agents and always-on policy for Devin.',
-    href: '/agent-plugins/devin/',
-    id: 'devin',
+    blurb:
+      "One declarative package: seven specialists, three workflow modes, always-on policy, and two utilities, loaded through each host's own plugin system.",
+    hosts: ['Claude Code', 'Codex', 'Cursor', 'Kimi Code', 'Devin', 'ZCode', 'OMP', 'Hermes'],
+    href: '/agent-plugins/',
+    id: 'agent-plugins',
     installArgs: '',
-    mark: 'devin',
-    name: 'maestria for Devin',
-  },
-  {
-    blurb: 'Native profiles and workflow commands with embedded policy for ZCode.',
-    href: '/agent-plugins/zcode/',
-    id: 'zcode',
-    installArgs: '',
-    mark: 'zcode',
-    name: 'maestria for ZCode',
+    mark: 'platforms',
+    name: '@maestria/agent-plugins',
   },
   {
     auxiliary: true,

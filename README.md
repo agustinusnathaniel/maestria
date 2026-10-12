@@ -127,10 +127,5 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 For per-package uninstall instructions, see:
 
 - [@maestria/opencode uninstall](apps/docs/src/content/docs/opencode/getting-started/installation.mdx)
-- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/agent-plugins/kimi-code/getting-started/installation.mdx)
 - [@maestria/pi uninstall](apps/docs/src/content/docs/pi/getting-started/installation.mdx)
-- [Oh My Pi via Agent Plugins uninstall](apps/docs/src/content/docs/agent-plugins/omp/getting-started/installation.mdx)
-- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/agent-plugins/cursor/getting-started/installation.mdx)
-- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/agent-plugins/claude-code/getting-started/installation.mdx)
-- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/agent-plugins/codex/getting-started/installation.mdx)
-- [Hermes plugin uninstall](apps/docs/src/content/docs/agent-plugins/hermes/getting-started/installation.mdx)
+- [@maestria/agent-plugins uninstall](apps/docs/src/content/docs/agent-plugins/installation.mdx): one section per host (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes)

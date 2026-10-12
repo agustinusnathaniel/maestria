@@ -3,92 +3,392 @@
   "redirects": [
     {
       "source": "/claude-code",
-      "destination": "/agent-plugins/claude-code/",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/getting-started/installation",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
     {
       "source": "/claude-code/:path*",
-      "destination": "/agent-plugins/claude-code/:path*",
+      "destination": "/agent-plugins/installation/#claude-code",
       "permanent": true
     },
     {
       "source": "/claude-code.md",
-      "destination": "/agent-plugins/claude-code.md",
+      "destination": "/agent-plugins/installation.md",
       "permanent": true
     },
     {
       "source": "/codex",
-      "destination": "/agent-plugins/codex/",
+      "destination": "/agent-plugins/installation/#codex",
+      "permanent": true
+    },
+    {
+      "source": "/codex/",
+      "destination": "/agent-plugins/installation/#codex",
+      "permanent": true
+    },
+    {
+      "source": "/codex/getting-started/installation",
+      "destination": "/agent-plugins/installation/#codex-cli",
+      "permanent": true
+    },
+    {
+      "source": "/codex/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#codex-cli",
+      "permanent": true
+    },
+    {
+      "source": "/codex/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/codex/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/codex/getting-started/desktop",
+      "destination": "/agent-plugins/installation/#codex-desktop",
+      "permanent": true
+    },
+    {
+      "source": "/codex/getting-started/desktop/",
+      "destination": "/agent-plugins/installation/#codex-desktop",
+      "permanent": true
+    },
+    {
+      "source": "/codex/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/codex/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/codex/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/codex/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
     {
       "source": "/codex/:path*",
-      "destination": "/agent-plugins/codex/:path*",
+      "destination": "/agent-plugins/installation/#codex",
       "permanent": true
     },
     {
       "source": "/codex.md",
-      "destination": "/agent-plugins/codex.md",
+      "destination": "/agent-plugins/installation.md",
       "permanent": true
     },
     {
       "source": "/cursor",
-      "destination": "/agent-plugins/cursor/",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/getting-started/installation",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
     {
       "source": "/cursor/:path*",
-      "destination": "/agent-plugins/cursor/:path*",
+      "destination": "/agent-plugins/installation/#cursor",
       "permanent": true
     },
     {
       "source": "/cursor.md",
-      "destination": "/agent-plugins/cursor.md",
+      "destination": "/agent-plugins/installation.md",
       "permanent": true
     },
     {
       "source": "/kimi-code",
-      "destination": "/agent-plugins/kimi-code/",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/getting-started/installation",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
     {
       "source": "/kimi-code/:path*",
-      "destination": "/agent-plugins/kimi-code/:path*",
+      "destination": "/agent-plugins/installation/#kimi-code",
       "permanent": true
     },
     {
       "source": "/kimi-code.md",
-      "destination": "/agent-plugins/kimi-code.md",
+      "destination": "/agent-plugins/installation.md",
       "permanent": true
     },
     {
       "source": "/hermes",
-      "destination": "/agent-plugins/hermes/",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/getting-started/installation",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/commands",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/commands/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
     {
       "source": "/hermes/:path*",
-      "destination": "/agent-plugins/hermes/:path*",
+      "destination": "/agent-plugins/installation/#hermes",
       "permanent": true
     },
     {
       "source": "/hermes.md",
-      "destination": "/agent-plugins/hermes.md",
+      "destination": "/agent-plugins/installation.md",
       "permanent": true
     },
     {
       "source": "/omp",
-      "destination": "/agent-plugins/omp/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/omp/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/omp/getting-started/installation",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/omp/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/omp/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/omp/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/omp/reference",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/omp/reference/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/omp/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/omp/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/omp/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/omp/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
     {
       "source": "/omp/:path*",
-      "destination": "/agent-plugins/omp/:path*",
+      "destination": "/agent-plugins/installation/#omp",
       "permanent": true
     },
     {
       "source": "/omp.md",
-      "destination": "/agent-plugins/omp.md",
+      "destination": "/agent-plugins/installation.md",
       "permanent": true
     },
     {
@@ -137,7 +437,57 @@
       "permanent": true
     },
     {
+      "source": "/agent-plugins/claude-code",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/getting-started/installation",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/getting-started/installation.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
       "source": "/agent-plugins/claude-code/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/contributing/",
       "destination": "/agent-plugins/contributing/",
       "permanent": true
     },
@@ -147,57 +497,12 @@
       "permanent": true
     },
     {
-      "source": "/agent-plugins/codex/contributing",
-      "destination": "/agent-plugins/contributing/",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/codex/contributing.md",
-      "destination": "/agent-plugins/contributing.md",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/cursor/contributing",
-      "destination": "/agent-plugins/contributing/",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/cursor/contributing.md",
-      "destination": "/agent-plugins/contributing.md",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/kimi-code/contributing",
-      "destination": "/agent-plugins/contributing/",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/kimi-code/contributing.md",
-      "destination": "/agent-plugins/contributing.md",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/hermes/contributing",
-      "destination": "/agent-plugins/contributing/",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/hermes/contributing.md",
-      "destination": "/agent-plugins/contributing.md",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/omp/contributing",
-      "destination": "/agent-plugins/contributing/",
-      "permanent": true
-    },
-    {
-      "source": "/agent-plugins/omp/contributing.md",
-      "destination": "/agent-plugins/contributing.md",
-      "permanent": true
-    },
-    {
       "source": "/agent-plugins/claude-code/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/changelog/",
       "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
@@ -207,7 +512,92 @@
       "permanent": true
     },
     {
+      "source": "/agent-plugins/claude-code/:path*",
+      "destination": "/agent-plugins/installation/#claude-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex",
+      "destination": "/agent-plugins/installation/#codex",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/",
+      "destination": "/agent-plugins/installation/#codex",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/installation",
+      "destination": "/agent-plugins/installation/#codex-cli",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#codex-cli",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/installation.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/desktop",
+      "destination": "/agent-plugins/installation/#codex-desktop",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/desktop/",
+      "destination": "/agent-plugins/installation/#codex-desktop",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/getting-started/desktop.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
       "source": "/agent-plugins/codex/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/changelog/",
       "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
@@ -217,7 +607,77 @@
       "permanent": true
     },
     {
+      "source": "/agent-plugins/codex/:path*",
+      "destination": "/agent-plugins/installation/#codex",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/getting-started/installation",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/getting-started/installation.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
       "source": "/agent-plugins/cursor/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/changelog/",
       "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
@@ -227,7 +687,77 @@
       "permanent": true
     },
     {
+      "source": "/agent-plugins/cursor/:path*",
+      "destination": "/agent-plugins/installation/#cursor",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/getting-started/installation",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#kimi-code",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/getting-started/installation.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
       "source": "/agent-plugins/kimi-code/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/changelog/",
       "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
@@ -237,17 +767,132 @@
       "permanent": true
     },
     {
-      "source": "/agent-plugins/hermes/changelog",
-      "destination": "/agent-plugins/legacy-changelog/",
+      "source": "/agent-plugins/kimi-code/:path*",
+      "destination": "/agent-plugins/installation/#kimi-code",
       "permanent": true
     },
     {
-      "source": "/agent-plugins/hermes/changelog.md",
-      "destination": "/agent-plugins/legacy-changelog.md",
+      "source": "/agent-plugins/devin",
+      "destination": "/agent-plugins/installation/#devin",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/devin/",
+      "destination": "/agent-plugins/installation/#devin",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/devin.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/devin/:path*",
+      "destination": "/agent-plugins/installation/#devin",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/zcode",
+      "destination": "/agent-plugins/installation/#zcode",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/zcode/",
+      "destination": "/agent-plugins/installation/#zcode",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/zcode.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/zcode/:path*",
+      "destination": "/agent-plugins/installation/#zcode",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/getting-started/installation",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/getting-started/installation.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/reference",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/reference/",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/reference.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
       "permanent": true
     },
     {
       "source": "/agent-plugins/omp/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/changelog/",
       "destination": "/agent-plugins/legacy-changelog/",
       "permanent": true
     },
@@ -257,13 +902,103 @@
       "permanent": true
     },
     {
+      "source": "/agent-plugins/omp/:path*",
+      "destination": "/agent-plugins/installation/#omp",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/getting-started/installation",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/getting-started/installation/",
+      "destination": "/agent-plugins/installation/#hermes",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/getting-started/installation.md",
+      "destination": "/agent-plugins/installation.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/getting-started/quick-start",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
       "source": "/agent-plugins/hermes/commands",
-      "destination": "/agent-plugins/hermes/getting-started/quick-start/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/commands/",
+      "destination": "/agent-plugins/usage/#per-host-syntax",
       "permanent": true
     },
     {
       "source": "/agent-plugins/hermes/commands.md",
-      "destination": "/agent-plugins/hermes/getting-started/quick-start.md",
+      "destination": "/agent-plugins/usage.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/contributing/",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/changelog/",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/:path*",
+      "destination": "/agent-plugins/installation/#hermes",
       "permanent": true
     }
   ],

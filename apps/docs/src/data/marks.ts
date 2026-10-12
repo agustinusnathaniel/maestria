@@ -2,7 +2,7 @@
  * Shared inline SVG marks, 24x24 stroke glyphs rendered locally. Decorative
  * (always rendered with aria-hidden), no assets or dependencies, no emoji.
  *
- * Keys cover specialist roles, principles, and platform adapters. Components
+ * Keys cover specialist roles, principles, and the package families on the homepage. Components
  * render them via `<svg {...markAttrs} set:html={marks[key]} />`.
  */
 
@@ -21,16 +21,9 @@ export const marks: Record<string, string> = {
   architect:
     '<rect x="4.5" y="4.5" width="15" height="15"/><rect x="9.5" y="9.5" width="5" height="5"/>',
   builder: '<path d="M10 5.5 4.5 12 10 18.5"/><path d="M14 5.5 19.5 12 14 18.5"/>',
-  claudeCode: '<path d="M12 4.5v15"/><path d="m5.8 8.25 12.4 7.5"/><path d="m18.2 8.25-12.4 7.5"/>',
-  codex:
-    '<path d="M9.75 4.5c-2.1 0-3.15 1.05-3.15 3.15v1.7c0 1.5-.85 2.4-2.35 2.65 1.5.25 2.35 1.15 2.35 2.65v1.7c0 2.1 1.05 3.15 3.15 3.15"/><path d="M14.25 4.5c2.1 0 3.15 1.05 3.15 3.15v1.7c0 1.5.85 2.4 2.35 2.65-1.5.25-2.35 1.15-2.35 2.65v1.7c0 2.1-1.05 3.15-3.15 3.15"/>',
-  cursorMark: '<path d="M5.5 4.5 10.53 18.03l2.02-5.48 5.48-2.02z"/>',
-  devin: '<path d="M5 5.5h6.5a6.5 6.5 0 0 1 0 13H5Z"/>',
   diagnose: '<circle cx="10.5" cy="10.5" r="6"/><line x1="15" y1="15" x2="20.5" y2="20.5"/>',
   ecosystem:
     '<circle cx="6.5" cy="6" r="1.9"/><circle cx="17.5" cy="8" r="1.9"/><circle cx="10" cy="18" r="1.9"/><path d="M8.3 6.6 15.7 7.8"/><path d="m6.9 7.9 2.6 8.2"/><path d="m16.9 9.8-5.9 6.6"/>',
-  hermes: '<path d="M4.5 6.5 15 10.25"/><path d="M4.5 12H20"/><path d="m15 13.75-10.5 3.75"/>',
-  kimiCode: '<path d="M12 4.5 19.5 12 12 19.5 4.5 12Z"/>',
   makerChecker:
     '<rect x="3.5" y="7" width="4.5" height="4.5"/><rect x="16" y="7" width="4.5" height="4.5"/><line x1="9.5" y1="9.25" x2="14.5" y2="9.25"/><polyline points="12.5 7.25 14.5 9.25 12.5 11.25"/>',
   opencode:
@@ -49,5 +42,4 @@ export const marks: Record<string, string> = {
     '<rect x="4.5" y="4.5" width="15" height="15"/><polyline points="8.25 12.25 11.25 15.25 16 9"/>',
   writer:
     '<path d="M12 4.5 18.75 18.75 12 16 5.25 18.75 Z"/><line x1="12" y1="4.5" x2="12" y2="16"/>',
-  zcode: '<polyline points="5 6 19 6 5 18 19 18"/>',
 };

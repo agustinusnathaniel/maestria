@@ -1,37 +1,45 @@
 ---
 title: '@maestria/agent-plugins'
-description: Install maestria's native host resources or its two portable utility skills from one package.
+description: One package that installs maestria's specialists, workflow commands, policy, and utility skills on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes.
 ---
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
-import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/agent-plugins` packages maestria's agents, workflow commands, policy, and utility skills in one directly installable directory. Each host uses its own supported resources. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), this package exposes two [Agent Skills](https://agentskills.io/specification): `handoff` and `iteration-limits`.
+`@maestria/agent-plugins` packages maestria's agents, workflow commands, policy, and utility skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes two [Agent Skills](https://agentskills.io/specification): `handoff` and `iteration-limits`.
 
-<Aside type="tip" title="Choose the host guide for the full methodology">
-  Portable installation supplies utilities. Native host integrations add specialist profiles,
-  workflow entry points, and policy through the host's supported interfaces. Use the guide for your
-  client before installing.
+<Aside type="tip" title="Native hosts get the full methodology">
+  Portable installation supplies the two utilities. Native host integrations add seven specialist
+  profiles, three workflow modes, and policy through the host's own interfaces. Choose your host in
+  [Installation](/agent-plugins/installation/) before installing.
 </Aside>
 
-## Choose Your Host
+## What you get
 
-| Host | What the installation provides | Guide |
-| --- | --- | --- |
-| Claude Code | Seven native specialists, three native workflow commands, two utilities | [Claude Code](/agent-plugins/claude-code/) |
-| Codex | Two plugin utilities; companion CLI installs seven native agents and global routing instructions | [Codex](/agent-plugins/codex/) |
-| Cursor | Seven native specialists, three workflow commands, always-apply policy and routing, two utilities | [Cursor](/agent-plugins/cursor/) |
-| Kimi Code | Seven native specialists, three workflow commands, session bootstrap, two utilities | [Kimi Code](/agent-plugins/kimi-code/) |
-| Devin | Seven root agent profiles and always-on policy; two utilities; modes by keyword | [Devin](/agent-plugins/devin/) |
-| ZCode | Seven native specialists, three workflow commands, two utilities | [ZCode](/agent-plugins/zcode/) |
-| Oh My Pi | Seven task profiles, three commands, always-apply policy and routing, two utilities | [Oh My Pi](/agent-plugins/omp/) |
-| Hermes | Two portable utilities; optional manual host context configuration | [Hermes](/agent-plugins/hermes/) |
+- **Seven specialists:** adventurer, architect, builder, diagnose, planner, reviewer, and writer, each embedding its complete role and the global policy.
+- **Three workflow modes:** `fein` (full route), `sonar` (research and plan, then stop), and `blitz` (smallest safe route).
+- **Always-on policy and routing,** on hosts that can load it.
+- **Two utilities:** `handoff` and `iteration-limits`, on every host.
 
-[OpenCode](/opencode/) and [Pi](/pi/) retain their separate native runtime packages. The [compatibility matrix](/agent-plugins/compatibility/) distinguishes documented resources, package validation, loader probes, and live runtime verification.
+Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent-plugins/usage/) for commands and dispatch.
 
-See the official [compatible clients](https://agent-plugins.org/compatible-clients) list for portable format support; the matrix above describes maestria resources, not live verification.
+## Hosts at a glance
 
-## Portable Utilities
+| Host | Specialists | Workflow modes | Always-on policy | Read-only roles |
+| --- | --- | --- | --- | --- |
+| [Claude Code](/agent-plugins/installation/#claude-code) | 7 native | 3 native commands (`/maestria:fein` and others) | In the commands | Write and Edit tools denied |
+| [Codex](/agent-plugins/installation/#codex) | 7 native, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | `sandbox_mode = "read-only"` |
+| [Cursor](/agent-plugins/installation/#cursor) | 7 native | 3 commands | Always-apply rule | Declared, not enforced for plugin agents |
+| [Kimi Code](/agent-plugins/installation/#kimi-code) | 7 native | 3 commands | `systemPromptPath` bootstrap | Write and Edit tools denied |
+| [Devin](/agent-plugins/installation/#devin) | 7 root profiles, local only | Mode keywords | Root `AGENTS.md` | Prompt-level |
+| [ZCode](/agent-plugins/installation/#zcode) | 7 native | 3 commands | In the profiles and commands (no rules component) | Write and Edit removed from subagent tools; shell remains |
+| [OMP](/agent-plugins/installation/#omp) | 7 task profiles | 3 commands | Always-apply rule | Prompt-level |
+| [Hermes](/agent-plugins/installation/#hermes) | None | None | Optional manual context | Not applicable |
+
+Every host also gets the two utilities. Codex marketplace installation supplies only the utilities; the specialists and routing come from `maestria install codex`. Hermes supplies the utilities, with optional [manual context](/agent-plugins/installation/#hermes-manual-context) for routing.
+
+[OpenCode](/opencode/) and [Pi](/pi/) keep their separate native runtime packages. The [compatibility matrix](/agent-plugins/compatibility/) distinguishes documented resources, package validation, loader probes, and live runtime verification. See the official [compatible clients](https://agent-plugins.org/compatible-clients) list for portable format support; the table above describes maestria resources, not live verification.
+
+## Portable utilities
 
 | Skill              | Purpose                                                              |
 | ------------------ | -------------------------------------------------------------------- |
@@ -40,39 +48,23 @@ See the official [compatible clients](https://agent-plugins.org/compatible-clien
 
 These utilities live at `skills/<name>/SKILL.md`. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
 
-## Stage and Validate the Package
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
-
-Install `@maestria/agent-plugins` through the selected client using its package installer or the staged directory. The exact activation command depends on the client.
-
-The command prints a staged directory for your client's installer or local-plugin setting. Staging does not activate the plugin or change client configuration. To validate an existing directory:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
-
-A successful check reports a valid manifest and the two utility skills. Use `--json` for a machine-readable report. `maestria install <host>` performs the host-specific installation described in that host's guide.
-
-The command is intentionally namespaced as `maestria plugin ...`: `maestria install` manages runtime integrations and host installation flows; `maestria plugin` validates and stages artifacts.
-
-## Install from a Checkout
-
-Point the host at the package directory containing `plugin.json`:
-
-```text
-/path/to/maestria/packages/agent-plugins/
-```
-
-The checkout and extracted npm archive share the same installation root. Follow the host's enable and trust flow, then reload plugins or start a new session. Install this bundle once per host namespace; remove the superseded standalone integration to avoid duplicate resources.
-
-## Runtime Boundaries
+## Runtime boundaries
 
 Markdown hosts share one profile per role in `agents/<role>.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. Rules stay per host because host formats differ. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
-
-If utilities do not appear, confirm the selected directory contains `plugin.json` and `skills/`, check host trust settings, and reload discovery. For native resources, use the host guide's verification steps.
 
 ## Resources
 
 <CardGrid>
+  <LinkCard
+    title="Installation"
+    description="Install steps, verification, and limits for each host."
+    href="/agent-plugins/installation/"
+  />
+  <LinkCard
+    title="Usage"
+    description="Workflow modes, specialists, and per-host syntax."
+    href="/agent-plugins/usage/"
+  />
   <LinkCard
     title="Compatibility matrix"
     description="Dated evidence and the limits of each host check."

@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
@@ -7,6 +7,128 @@ import { RECOVERY_LINKS } from '@/lib/agent-delivery.ts';
 
 const __dirname = import.meta.dirname;
 const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
+const APP_ROOT = path.resolve(__dirname, '..');
+
+const INSTALL = '/agent-plugins/installation/';
+const USAGE = '/agent-plugins/usage/#per-host-syntax';
+
+/** Hosts whose `/agent-plugins/<host>/` page trees were merged into Installation and Usage. */
+const REMOVED_HOSTS = [
+  'claude-code',
+  'codex',
+  'cursor',
+  'kimi-code',
+  'devin',
+  'zcode',
+  'omp',
+  'hermes',
+];
+
+/** Every removed HTML route (no trailing slash) and where it now redirects. */
+const REMOVED_ROUTES: [string, string][] = [
+  ...REMOVED_HOSTS.map((host): [string, string] => [
+    `/agent-plugins/${host}`,
+    `${INSTALL}#${host}`,
+  ]),
+  ...['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp'].flatMap(
+    (host): [string, string][] => [
+      [
+        `/agent-plugins/${host}/getting-started/installation`,
+        `${INSTALL}#${host === 'codex' ? 'codex-cli' : host}`,
+      ],
+      [`/agent-plugins/${host}/getting-started/quick-start`, USAGE],
+      [`/agent-plugins/${host}/contributing`, '/agent-plugins/contributing/'],
+      [`/agent-plugins/${host}/changelog`, '/agent-plugins/legacy-changelog/'],
+    ],
+  ),
+  ['/agent-plugins/codex/getting-started/desktop', `${INSTALL}#codex-desktop`],
+  ['/agent-plugins/omp/reference', `${INSTALL}#omp`],
+  ['/agent-plugins/hermes/commands', USAGE],
+  // Root-level routes that predate the /agent-plugins/ grouping.
+  ...['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp'].map(
+    (host): [string, string] => [`/${host}`, `${INSTALL}#${host}`],
+  ),
+];
+
+/** Installation headings that other pages and redirects link to. */
+const INSTALL_ANCHORS = [
+  'claude-code',
+  'codex',
+  'codex-cli',
+  'codex-desktop',
+  'cursor',
+  'kimi-code',
+  'devin',
+  'zcode',
+  'omp',
+  'hermes',
+  'hermes-manual-context',
+];
+
+/** `.md` twin of an HTML redirect target: anchors are dropped. */
+const markdownTwin = (target: string): string => {
+  const [route = ''] = target.split('#');
+  return `${route.replace(/\/$/u, '')}.md`;
+};
+
+/** Heading ids as Starlight generates them for simple headings. */
+const headingAnchors = (text: string): string[] =>
+  [...text.matchAll(/^#{2,4} (?<heading>.+)$/gmu)].map(({ groups }) =>
+    (groups?.heading ?? '')
+      .toLowerCase()
+      .replaceAll(/[^\p{L}\p{N}\s-]/gu, '')
+      .trim()
+      .replaceAll(/\s/gu, '-'),
+  );
+
+interface VercelRedirect {
+  source: string;
+  destination: string;
+  permanent: boolean;
+}
+
+const isVercelRedirect = (value: unknown): value is VercelRedirect =>
+  typeof value === 'object' &&
+  value !== null &&
+  'source' in value &&
+  typeof value.source === 'string' &&
+  'destination' in value &&
+  typeof value.destination === 'string' &&
+  'permanent' in value &&
+  typeof value.permanent === 'boolean';
+
+/** Read the `redirects` array of `vercel.json`. */
+const readVercelRedirects = async (): Promise<VercelRedirect[]> => {
+  const parsed: unknown = JSON.parse(
+    await readFile(path.resolve(APP_ROOT, 'vercel.json'), 'utf-8'),
+  );
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null ||
+    !('redirects' in parsed) ||
+    !Array.isArray(parsed.redirects) ||
+    !parsed.redirects.every(isVercelRedirect)
+  ) {
+    throw new TypeError('vercel.json has an invalid redirects array');
+  }
+  return parsed.redirects;
+};
+
+/** Parse `_redirects` into a `from -> to` map (status must be 301). */
+const readRedirects = async (): Promise<Map<string, string>> => {
+  const text = await readFile(path.resolve(APP_ROOT, 'public', '_redirects'), 'utf-8');
+  const map = new Map<string, string>();
+  for (const line of text.split('\n')) {
+    if (line.trim() === '' || line.startsWith('#')) {
+      continue;
+    }
+    const [from = '', to = '', status] = line.trim().split(/\s+/u);
+    expect(status, line).toBe('301');
+    expect(map.has(from), `duplicate redirect source ${from}`).toBe(false);
+    map.set(from, to);
+  }
+  return map;
+};
 
 /** Strip a leading YAML frontmatter block, returning only the markdown body. */
 const stripFrontmatter = (text: string): string => {
@@ -90,20 +212,33 @@ describe('404 page', () => {
 });
 
 describe('portable Agent Plugin documentation', () => {
-  it('documents the artifact boundary and installation path', async () => {
+  it('documents the artifact boundary on the overview page', async () => {
     const { full } = await readDoc('agent-plugins/index.mdx');
 
     expect(full).toContain('@maestria/agent-plugins');
     expect(full).toContain('compatible clients');
-    expect(full).toContain('Install `@maestria/agent-plugins`');
-    expect(full).toContain('plugin.json');
+    expect(full).toContain('https://agent-plugins.org/compatible-clients');
     expect(full).toContain('skills/<name>/SKILL.md');
+    expect(full).toContain('native subagent registration');
+    expect(full).toContain('[compatibility matrix](/agent-plugins/compatibility/)');
+    expect(full).not.toContain('packages/core/agent-directives');
+    expect(full).not.toContain('sync.config.ts');
+  });
+
+  it('documents the staging path and every host on the installation page', async () => {
+    const { full } = await readDoc('agent-plugins/installation.mdx');
+
+    expect(full).toContain('Install `@maestria/agent-plugins`');
+    expect(full).toContain('args="plugin install"');
+    expect(full).toContain('plugin.json');
     expect(full).toContain('The command is intentionally namespaced as `maestria plugin ...`');
     expect(full).toContain('`maestria install` manages runtime integrations');
     expect(full).toContain('The exact activation command depends on the client');
-    expect(full).toContain('native subagent registration');
-    expect(full).not.toContain('packages/core/agent-directives');
-    expect(full).not.toContain('sync.config.ts');
+
+    const anchors = headingAnchors(full);
+    for (const anchor of INSTALL_ANCHORS) {
+      expect(anchors).toContain(anchor);
+    }
   });
 
   it('documents the portable CLI path across user entry points', async () => {
@@ -116,7 +251,6 @@ describe('portable Agent Plugin documentation', () => {
     const decisionGuide = await readDoc('core/when-to-use.mdx');
     const howItWorks = await readDoc('core/how-it-works.mdx');
 
-    expect(agentPlugin.full).toContain('args="plugin install"');
     expect(agentPlugin.full).toContain('https://agent-plugins.org/compatible-clients');
     expect(agentPlugin.full).toContain('[compatibility matrix](/agent-plugins/compatibility/)');
     expect(compatibility.full).toContain('Activation remains client-owned');
@@ -131,67 +265,141 @@ describe('portable Agent Plugin documentation', () => {
 });
 
 describe('platform guide routes', () => {
-  it('groups shared-package hosts under Agent Plugins while keeping Pi and OpenCode independent', async () => {
-    const guides = await Promise.all(
-      ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp'].map(
-        async (host) => await readDoc(`agent-plugins/${host}/index.mdx`),
-      ),
-    );
-    for (const { full } of guides) {
-      expect(full.length).toBeGreaterThan(0);
-    }
+  it('lists one card per installable package on the homepage', () => {
+    expect(platforms.map(({ id, href }) => [id, href])).toEqual([
+      ['opencode', '/opencode/'],
+      ['pi', '/pi/'],
+      ['agent-plugins', '/agent-plugins/'],
+      ['ecosystem', '/ecosystem/'],
+    ]);
+    const agentPlugins = platforms.find(({ id }) => id === 'agent-plugins');
+    expect(agentPlugins?.name).toBe('@maestria/agent-plugins');
+    expect(agentPlugins?.hosts).toEqual([
+      'Claude Code',
+      'Codex',
+      'Cursor',
+      'Kimi Code',
+      'Devin',
+      'ZCode',
+      'OMP',
+      'Hermes',
+    ]);
+  });
 
+  it('keeps Pi and OpenCode independent of the shared package', async () => {
     const pi = await readDoc('pi/index.mdx');
     const openCode = await readDoc('opencode/index.mdx');
     expect(pi.full).toContain('@maestria/pi');
     expect(openCode.full).toContain('@maestria/opencode');
-
-    const routes = new Map(platforms.map(({ id, href }) => [id, href]));
-    expect(routes.get('claude-code')).toBe('/agent-plugins/claude-code/');
-    expect(routes.get('codex')).toBe('/agent-plugins/codex/');
-    expect(routes.get('cursor')).toBe('/agent-plugins/cursor/');
-    expect(routes.get('kimi-code')).toBe('/agent-plugins/kimi-code/');
-    expect(routes.get('hermes')).toBe('/agent-plugins/hermes/');
-    expect(routes.get('omp')).toBe('/agent-plugins/omp/');
-    expect(routes.get('pi')).toBe('/pi/');
-    expect(routes.get('opencode')).toBe('/opencode/');
   });
 
-  it('redirects prior root host routes without redirecting the new Pi route', async () => {
-    const redirects = await readFile(
-      path.resolve(__dirname, '..', 'public', '_redirects'),
-      'utf-8',
+  it('removes the per-host page trees in favor of Installation and Usage', async () => {
+    const missing = await Promise.all(
+      REMOVED_HOSTS.map(
+        async (host) =>
+          await stat(path.join(DOCS_ROOT, 'agent-plugins', host)).then(
+            () => false,
+            () => true,
+          ),
+      ),
     );
-    const netlify = await readFile(path.resolve(__dirname, '..', 'netlify.toml'), 'utf-8');
+    expect(missing.every(Boolean)).toBe(true);
 
-    expect(redirects).toContain('/claude-code/* /agent-plugins/claude-code/:splat 301');
-    expect(redirects).toContain('/pi-omp/* /pi/:splat 301');
-    expect(redirects).toContain('/omp/* /agent-plugins/omp/:splat 301');
-    expect(netlify).toContain('from = "/codex/*"');
-    expect(netlify).toContain('to = "/agent-plugins/codex/:splat"');
+    const pages = await Promise.all(
+      ['installation', 'usage', 'compatibility', 'contributing', 'changelog'].map(
+        async (page) => await readDoc(`agent-plugins/${page}.mdx`),
+      ),
+    );
+    for (const { full } of pages) {
+      expect(full.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('redirects every removed route and its markdown twin in all three redirect files', async () => {
+    const redirects = await readRedirects();
+    const netlify = await readFile(path.resolve(APP_ROOT, 'netlify.toml'), 'utf-8');
+    const vercel = await readVercelRedirects();
+
+    const cases: [string, string][] = [];
+    for (const [route, target] of REMOVED_ROUTES) {
+      cases.push([route, target], [`${route}/`, target], [`${route}.md`, markdownTwin(target)]);
+    }
+    // Host index twins end in `.md` directly, without a trailing slash rule.
+    for (const [from, to] of cases) {
+      expect(redirects.get(from), `_redirects ${from}`).toBe(to);
+      expect(netlify, `netlify ${from}`).toContain(`from = "${from}"\nto = "${to}"\nstatus = 301`);
+      const entry = vercel.find(({ source }) => source === from);
+      expect(entry, `vercel ${from}`).toEqual({
+        destination: to,
+        permanent: true,
+        source: from,
+      });
+    }
+  });
+
+  it('sends every other path under a removed host tree to its Installation section', async () => {
+    const redirects = await readRedirects();
+    const netlify = await readFile(path.resolve(APP_ROOT, 'netlify.toml'), 'utf-8');
+    const vercel = await readVercelRedirects();
+
+    for (const host of REMOVED_HOSTS) {
+      const target = `/agent-plugins/installation/#${host}`;
+      expect(redirects.get(`/agent-plugins/${host}/*`)).toBe(target);
+      expect(netlify).toContain(`from = "/agent-plugins/${host}/*"\nto = "${target}"`);
+      expect(vercel).toContainEqual(
+        expect.objectContaining({ destination: target, source: `/agent-plugins/${host}/:path*` }),
+      );
+    }
+    for (const host of ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp']) {
+      const target = `/agent-plugins/installation/#${host}`;
+      expect(redirects.get(`/${host}/*`)).toBe(target);
+      expect(netlify).toContain(`from = "/${host}/*"\nto = "${target}"`);
+    }
+    expect(redirects.get('/pi-omp/*')).toBe('/pi/:splat');
     expect(netlify).not.toContain('from = "/pi"');
   });
 
-  it('redirects consolidated per-host pages to their shared replacements', async () => {
-    const redirects = await readFile(
-      path.resolve(__dirname, '..', 'public', '_redirects'),
-      'utf-8',
+  it('never redirects to a removed route and always lands on an existing page and heading', async () => {
+    const redirects = await readRedirects();
+    const installation = await readDoc('agent-plugins/installation.mdx');
+    const usage = await readDoc('agent-plugins/usage.mdx');
+    const installAnchors = headingAnchors(installation.full);
+    const usageAnchors = headingAnchors(usage.full);
+    const removedHostRoute = new RegExp(
+      `^/agent-plugins/(${REMOVED_HOSTS.join('|')})(/|\\.md|$)`,
+      'u',
     );
-    const netlify = await readFile(path.resolve(__dirname, '..', 'netlify.toml'), 'utf-8');
 
-    for (const host of ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp']) {
-      expect(redirects).toContain(
-        `/agent-plugins/${host}/contributing /agent-plugins/contributing/ 301`,
-      );
-      expect(redirects).toContain(
-        `/agent-plugins/${host}/changelog /agent-plugins/legacy-changelog/ 301`,
-      );
-      expect(netlify).toContain(`from = "/agent-plugins/${host}/contributing"`);
-      expect(netlify).toContain(`from = "/agent-plugins/${host}/changelog"`);
-    }
-    expect(redirects).toContain(
-      '/agent-plugins/hermes/commands /agent-plugins/hermes/getting-started/quick-start/ 301',
+    const targets = [...redirects].filter(([, to]) => !to.includes(':splat'));
+    const missing = await Promise.all(
+      targets.map(async ([from, to]) => {
+        const [route = '', anchor] = to.split('#');
+        const page = route.replace(/\.md$/u, '').replace(/\/$/u, '').replace(/^\//u, '');
+        const exists = await Promise.all(
+          [`${page}.mdx`, `${page}/index.mdx`].map(
+            async (candidate) =>
+              await stat(path.join(DOCS_ROOT, candidate)).then(
+                () => true,
+                () => false,
+              ),
+          ),
+        );
+        let anchors: string[] | undefined;
+        if (anchor) {
+          anchors = page === 'agent-plugins/usage' ? usageAnchors : installAnchors;
+        }
+        return {
+          anchorMissing: anchor !== undefined && anchors?.includes(anchor) !== true,
+          from,
+          pageMissing: !exists.some(Boolean),
+          removed: removedHostRoute.test(to),
+          to,
+        };
+      }),
     );
-    expect(netlify).toContain('from = "/agent-plugins/hermes/commands"');
+
+    expect(missing.filter(({ removed }) => removed)).toEqual([]);
+    expect(missing.filter(({ pageMissing }) => pageMissing)).toEqual([]);
+    expect(missing.filter(({ anchorMissing }) => anchorMissing)).toEqual([]);
   });
 });

@@ -127,83 +127,12 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: 'Overview', link: '/agent-plugins/' },
+            { label: 'Installation', link: '/agent-plugins/installation/' },
+            { label: 'Usage', link: '/agent-plugins/usage/' },
             { label: 'Compatibility', link: '/agent-plugins/compatibility/' },
             { label: 'Contributing', link: '/agent-plugins/contributing/' },
             { label: 'Changelog', link: '/agent-plugins/changelog/' },
             { label: 'Legacy Changelog', link: '/agent-plugins/legacy-changelog/' },
-            {
-              items: [
-                { label: 'Overview', link: '/agent-plugins/claude-code/' },
-                {
-                  items: [
-                    { autogenerate: { directory: 'agent-plugins/claude-code/getting-started' } },
-                  ],
-                  label: 'Getting Started',
-                },
-              ],
-              label: 'Claude Code',
-            },
-            {
-              items: [
-                { label: 'Overview', link: '/agent-plugins/codex/' },
-                {
-                  items: [{ autogenerate: { directory: 'agent-plugins/codex/getting-started' } }],
-                  label: 'Getting Started',
-                },
-              ],
-              label: 'Codex',
-            },
-            {
-              items: [
-                { label: 'Overview', link: '/agent-plugins/cursor/' },
-                {
-                  items: [{ autogenerate: { directory: 'agent-plugins/cursor/getting-started' } }],
-                  label: 'Getting Started',
-                },
-              ],
-              label: 'Cursor',
-            },
-            {
-              items: [{ label: 'Overview', link: '/agent-plugins/devin/' }],
-              label: 'Devin',
-            },
-            {
-              items: [
-                { label: 'Overview', link: '/agent-plugins/kimi-code/' },
-                {
-                  items: [
-                    { autogenerate: { directory: 'agent-plugins/kimi-code/getting-started' } },
-                  ],
-                  label: 'Getting Started',
-                },
-              ],
-              label: 'Kimi Code',
-            },
-            {
-              items: [
-                { label: 'Overview', link: '/agent-plugins/hermes/' },
-                {
-                  items: [{ autogenerate: { directory: 'agent-plugins/hermes/getting-started' } }],
-                  label: 'Getting Started',
-                },
-              ],
-              label: 'Hermes',
-            },
-            {
-              items: [
-                { label: 'Overview', link: '/agent-plugins/omp/' },
-                {
-                  items: [{ autogenerate: { directory: 'agent-plugins/omp/getting-started' } }],
-                  label: 'Getting Started',
-                },
-                { label: 'Reference', link: '/agent-plugins/omp/reference/' },
-              ],
-              label: 'Oh My Pi',
-            },
-            {
-              items: [{ label: 'Overview', link: '/agent-plugins/zcode/' }],
-              label: 'ZCode',
-            },
           ],
           label: 'Agent Plugins',
         },
