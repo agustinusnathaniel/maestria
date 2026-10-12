@@ -27,13 +27,13 @@ export interface DoctorDeps {
 }
 
 const INSTALL_PLUGIN_HINT = 'to install the plugin';
-const RECORD_SELECTION_HINT = 'to record a selection';
+const LEGACY_CLEANUP_HINT = 'to remove legacy';
 
 /**
  * Human table shows one actionable step per platform. Priority: an uninstalled
- * plugin blocks everything else, then a missing record, otherwise the first
- * accumulated step (share, exclude, restore, re-run, manual). The JSON output
- * keeps the full `next` array as the machine contract.
+ * plugin blocks everything else, then legacy cleanup, otherwise the first
+ * accumulated step. The JSON output keeps the full `next` array as the
+ * machine contract.
  */
 const selectDisplayNext = (platform: DoctorPlatformReport): string[] => {
   if (platform.next.length <= 1) {
@@ -45,11 +45,9 @@ const selectDisplayNext = (platform: DoctorPlatformReport): string[] => {
       return [install];
     }
   }
-  if (platform.recorded === null) {
-    const record = platform.next.find((item) => item.includes(RECORD_SELECTION_HINT));
-    if (record !== undefined) {
-      return [record];
-    }
+  const legacy = platform.next.find((item) => item.includes(LEGACY_CLEANUP_HINT));
+  if (legacy !== undefined) {
+    return [legacy];
   }
   return platform.next.slice(0, 1);
 };
@@ -195,7 +193,7 @@ export const doctorCommand = defineCommand({
     json: {
       default: false,
       description:
-        'Output skill diagnostics as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output legacy skill diagnostics as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       type: 'boolean',
     },
     quiet: {
@@ -205,7 +203,7 @@ export const doctorCommand = defineCommand({
     },
   },
   meta: {
-    description: 'Diagnose skill setup without changing anything (read-only)',
+    description: 'Report legacy CLI-installed skills without changing anything (read-only)',
     name: 'doctor',
   },
   run: toCommandRun(handleDoctor),

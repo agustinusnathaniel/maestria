@@ -24,6 +24,6 @@ export interface PlatformResult {
   readonly message: string;
   readonly prevVersion?: string;
   readonly nextVersion?: string;
-  /** Active skill selection applied by this operation (absent when untouched). */
+  /** Legacy CLI-managed skill state left by this operation (absent when untouched). */
   readonly skills?: string[];
 }

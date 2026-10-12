@@ -42,8 +42,8 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   },
   doctor: {
     examples: [
-      'maestria doctor                   Diagnose skill setup without changing anything',
-      'maestria doctor --json            Show skill diagnostics as JSON',
+      'maestria doctor                   Report legacy CLI-installed skills without changing anything',
+      'maestria doctor --json            Show legacy skill diagnostics as JSON',
       'maestria doctor --quiet           Suppress spinner output',
     ],
   },
@@ -110,7 +110,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria setup --ecosystem codegraph,opensrc --yes  Check ecosystem tools non-interactively',
       'maestria setup --xtarterize-skills --cwd ./my-project --yes  Apply project skills',
       'maestria setup --skill-source acme/skills:global --yes  Install a skill source globally',
-      'maestria setup --skills create-pull-request --yes  Reconcile maestria skills',
       'maestria setup --json             Output the per-action report as JSON',
     ],
     tip: [

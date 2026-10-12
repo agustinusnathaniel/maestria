@@ -77,7 +77,7 @@ This reports the skill record path, per-platform plugin state, recorded selectio
 
 ### Coordinate Project Setup
 
-Check ecosystem tools and reconcile skills for a project:
+Check ecosystem tools for a project:
 
 <AllPackageManagers
   type="dlx"
@@ -85,7 +85,7 @@ Check ecosystem tools and reconcile skills for a project:
   args="setup --ecosystem codegraph,opensrc --yes"
 />
 
-Setup is read-only until the final confirmation. Ecosystem tools are detection plus manual steps only; the CLI never installs them automatically. Use `--skills` and `--exclude-skills` to select the `create-pull-request` and `docs-update` methodology skills. See the [setup reference](/cli/commands/#setup).
+Setup is read-only until the final confirmation. Ecosystem tools are detection plus manual steps only; the CLI never installs them automatically. maestria's own `create-pull-request` and `docs-update` skills come with each package; use `--skill-source` to add external skill repositories. See the [setup reference](/cli/commands/#setup).
 
 ## Prerequisites
 
