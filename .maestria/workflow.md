@@ -58,7 +58,7 @@ Update documentation when behavior, architecture, or user-facing workflows chang
 | Change | Documentation |
 | --- | --- |
 | Core methodology or pipeline | apps/docs/src/content/docs/core/ |
-| Platform behavior | apps/docs/src/content/docs/agent-plugins/<host>/ for shared plugin hosts; opencode/ or pi/ for native adapters; package README |
+| Platform behavior | apps/docs/src/content/docs/agent-plugins/installation.mdx and usage.mdx for shared plugin hosts (one section per host); opencode/ or pi/ for native adapters; package README |
 | Architecture or boundary | docs/adr/<area>/ |
 | Project-wide rule or pattern | AGENTS.md, PATTERNS.md, or VISION.md |
 
