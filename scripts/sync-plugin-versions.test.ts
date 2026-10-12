@@ -9,9 +9,8 @@ import type { Target } from './sync-plugin-versions.js';
 /**
  * Behavior-focused tests for scripts/sync-plugin-versions.ts.
  *
- * The synchronizer copies each package.json `version` into the platform
- * plugin manifests that ship with it (Hermes `_version.py` + `plugin.yaml`,
- * Claude Code, Codex, Cursor, and Kimi Code `plugin.json`). These tests exercise the behavior release
+ * The synchronizer copies each package.json `version` into the JSON plugin
+ * manifests that ship with it. These tests exercise the behavior release
  * automation depends on - parity checking, drift repair with formatting
  * preservation, and fail-closed handling of malformed or missing input -
  * against throwaway fixture trees under the OS temp dir. They never touch the
@@ -152,53 +151,6 @@ describe('syncTarget', () => {
     }
   });
 
-  it('rejects a malformed YAML manifest in check and write without writing', () => {
-    const malformed = 'name: x\nversion: [1,2,\n';
-    const root = tempDir();
-    const { pkg, manifestPaths } = makePackage(root, '1.2.3', { 'plugin.yaml': malformed });
-    for (const check of [true, false]) {
-      const results = syncTarget(pkg, manifestPaths, check);
-      expect(results).toHaveLength(1);
-      expect(results[0]).toMatch(/^ERROR: /u);
-    }
-    expect(fs.readFileSync(path.join(pkg, 'plugin.yaml'), 'utf-8')).toBe(malformed);
-  });
-
-  it('reads quoted YAML versions as semantic values and preserves quote style and comments', () => {
-    // The DRIFT report shows the semantic value without quotes; the update
-    // keeps the original quote style and inline comment (the yaml library
-    // normalizes whitespace, e.g. multi-space alignment and CRLF -> LF).
-    for (const quote of ['"', "'"] as const) {
-      const root = tempDir();
-      const pluginYaml =
-        `name: maestria-hermes\nversion: ${quote}0.1.12${quote}  # release version\r\n` +
-        'provides_tools:\n  - opencode_route\n';
-      const { pkg, manifestPaths } = makePackage(root, '0.1.13', { 'plugin.yaml': pluginYaml });
-      const checkResults = syncTarget(pkg, manifestPaths, true);
-      expect(checkResults[0]).toContain('expected 0.1.13 found 0.1.12');
-      syncTarget(pkg, manifestPaths, false);
-      expect(fs.readFileSync(path.join(pkg, 'plugin.yaml'), 'utf-8')).toBe(
-        `name: maestria-hermes\nversion: ${quote}0.1.13${quote} # release version\n` +
-          'provides_tools:\n  - opencode_route\n',
-      );
-    }
-  });
-
-  it('regenerates Hermes _version.py canonically on update', () => {
-    const root = tempDir();
-    const { pkg, manifestPaths } = makePackage(root, '0.1.13', {
-      'src/maestria_hermes/_version.py':
-        '#!/usr/bin/env python3\n"""Package version -- single source of truth."""\n' +
-        '__version__ = "0.1.12"\n',
-    });
-    const results = syncTarget(pkg, manifestPaths, false);
-    expect(results).toHaveLength(1);
-    expect(results[0]).toMatch(/^OK: synced /u);
-    expect(fs.readFileSync(path.join(pkg, 'src/maestria_hermes/_version.py'), 'utf-8')).toBe(
-      '"""Package version -- single source of truth."""\n__version__ = "0.1.13"\n',
-    );
-  });
-
   it('fails on missing package.json in check and write', () => {
     const root = tempDir();
     const pkg = path.join(root, 'pkg');
@@ -277,24 +229,6 @@ describe('syncTarget', () => {
     expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
     expect(fs.readFileSync(path.join(pkg, 'b.json'), 'utf-8')).toBe(noVersion);
   });
-
-  it('leaves a drifted first manifest untouched when a later YAML manifest lacks version', () => {
-    const drifted = '{\n  "version": "1.2.2"\n}\n';
-    const noVersion = 'name: maestria-hermes\nprovides_tools:\n  - opencode_route\n';
-    const root = tempDir();
-    const { pkg, manifestPaths } = makePackage(root, '1.2.3', {
-      'a.json': drifted,
-      'plugin.yaml': noVersion,
-    });
-    const results = syncTarget(pkg, manifestPaths, false);
-    expect(results).toHaveLength(2);
-    expect(results[0]).toMatch(/^ERROR: /u);
-    expect(results[0]).toContain('skipped');
-    expect(results[1]).toContain('no "version" field found');
-    expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
-    expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
-    expect(fs.readFileSync(path.join(pkg, 'plugin.yaml'), 'utf-8')).toBe(noVersion);
-  });
 });
 
 /** Run main() against fixture targets. */
@@ -338,57 +272,49 @@ describe('main wiring', () => {
     expect(runMain(emptyPkg, [])).toBe(1);
   });
 
-  it('syncs Hermes and Claude target manifests in write mode (integration)', () => {
+  it('syncs JSON manifests across targets in write mode (integration)', () => {
     const root = tempDir();
-    const hermesPkg = path.join(root, 'hermes');
-    const claudePkg = path.join(root, 'claude-code');
-    for (const dir of [hermesPkg, claudePkg]) {
+    const firstPkg = path.join(root, 'first');
+    const secondPkg = path.join(root, 'second');
+    for (const dir of [firstPkg, secondPkg]) {
       fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(
-      path.join(hermesPkg, 'package.json'),
-      `${JSON.stringify({ name: '@maestria/hermes', version: '0.1.13' }, null, 2)}\n`,
+      path.join(firstPkg, 'package.json'),
+      `${JSON.stringify({ name: '@maestria/first', version: '0.1.13' }, null, 2)}\n`,
       'utf-8',
     );
     fs.writeFileSync(
-      path.join(claudePkg, 'package.json'),
-      `${JSON.stringify({ name: '@maestria/claude-code', version: '0.2.0' }, null, 2)}\n`,
-      'utf-8',
-    );
-    fs.mkdirSync(path.join(hermesPkg, 'src', 'maestria_hermes'), { recursive: true });
-    fs.writeFileSync(
-      path.join(hermesPkg, 'src', 'maestria_hermes', '_version.py'),
-      '"""Package version -- single source of truth."""\n__version__ = "0.1.12"\n',
+      path.join(secondPkg, 'package.json'),
+      `${JSON.stringify({ name: '@maestria/second', version: '0.2.0' }, null, 2)}\n`,
       'utf-8',
     );
     fs.writeFileSync(
-      path.join(hermesPkg, 'plugin.yaml'),
-      'name: maestria-hermes\nversion: 0.1.12\ndescription: test\n',
+      path.join(firstPkg, 'plugin.json'),
+      '{\n  "name": "maestria",\n  "version": "0.1.12"\n}\n',
       'utf-8',
     );
-    fs.mkdirSync(path.join(claudePkg, '.claude-plugin'), { recursive: true });
+    fs.mkdirSync(path.join(secondPkg, '.claude-plugin'), { recursive: true });
     fs.writeFileSync(
-      path.join(claudePkg, '.claude-plugin', 'plugin.json'),
+      path.join(secondPkg, '.claude-plugin', 'plugin.json'),
       '{\n  "name": "maestria",\n  "version": "0.1.0"\n}\n',
       'utf-8',
     );
 
     const targets: Target[] = [
-      [hermesPkg, ['src/maestria_hermes/_version.py', 'plugin.yaml']],
-      [claudePkg, ['.claude-plugin/plugin.json']],
+      [firstPkg, ['plugin.json']],
+      [secondPkg, ['.claude-plugin/plugin.json']],
     ];
     expect(main([], targets)).toBe(0);
 
-    expect(
-      fs.readFileSync(path.join(hermesPkg, 'src', 'maestria_hermes', '_version.py'), 'utf-8'),
-    ).toBe('"""Package version -- single source of truth."""\n__version__ = "0.1.13"\n');
-    expect(fs.readFileSync(path.join(hermesPkg, 'plugin.yaml'), 'utf-8')).toContain(
-      'version: 0.1.13',
+    const firstManifest = parseJsonObject(
+      fs.readFileSync(path.join(firstPkg, 'plugin.json'), 'utf-8'),
     );
-    const claudeManifest = parseJsonObject(
-      fs.readFileSync(path.join(claudePkg, '.claude-plugin', 'plugin.json'), 'utf-8'),
+    expect(firstManifest.version).toBe('0.1.13');
+    const secondManifest = parseJsonObject(
+      fs.readFileSync(path.join(secondPkg, '.claude-plugin', 'plugin.json'), 'utf-8'),
     );
-    expect(claudeManifest.version).toBe('0.2.0');
+    expect(secondManifest.version).toBe('0.2.0');
 
     // After the sync everything is in parity: --check exits 0.
     expect(main(['--check'], targets)).toBe(0);

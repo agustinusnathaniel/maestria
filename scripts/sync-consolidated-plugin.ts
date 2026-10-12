@@ -17,7 +17,9 @@ const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
   handoff: 'Delegation and Context',
   'iteration-limits': 'Bounded Repair and Fail-Loud Behavior',
 };
-const HOSTS = ['claude-code', 'codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp', 'zcode'];
+// Hosts whose canonical integration note is composed into a shipped rule, context, or profile.
+const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
+const RETIRED_GUIDE_HOSTS = [...HOSTS, 'claude-code', 'zcode'];
 const NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
 const ROOT_MANIFESTS = [
@@ -41,7 +43,7 @@ const RETIRED_OUTPUTS = [
   'rules/global/global-rules.md',
   'skills/handoff.md',
   'skills/iteration-limits.md',
-  ...HOSTS.map((host) => `integrations/${host}/README.md`),
+  ...RETIRED_GUIDE_HOSTS.map((host) => `integrations/${host}/README.md`),
 ];
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -114,17 +116,11 @@ const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
 };
 
 const integrationDisplayName = (host: string): string => {
-  if (host === 'claude-code') {
-    return 'Claude Code';
-  }
   if (host === 'codex') {
     return 'Codex CLI';
   }
   if (host === 'omp') {
     return 'OMP';
-  }
-  if (host === 'zcode') {
-    return 'ZCode';
   }
   return `${host.charAt(0).toUpperCase()}${host.slice(1)}`;
 };

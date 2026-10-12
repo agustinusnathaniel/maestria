@@ -160,8 +160,9 @@ describe('published consolidated plugin', () => {
       expect(entries).toContain('package/AGENTS.md');
       expect(manifests[1].skills).toBeUndefined();
       expect(manifests[1].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
-      // ZCode reads agent and command selectors as directories only.
-      expect(manifests[5].agents).toBe('./agents/');
+      // ZCode reads command selectors as directories and discovers agents/ by convention;
+      // its `agents` manifest key is diagnostic-only.
+      expect(manifests[5].agents).toBeUndefined();
       expect(manifests[5].commands).toBe('./commands/');
       expect(manifests[6].agents).toBe('./agents/');
       expect(manifests[6].skills).toBe('./skills/');
