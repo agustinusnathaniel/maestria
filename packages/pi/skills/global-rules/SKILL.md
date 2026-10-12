@@ -53,7 +53,7 @@ Research-only, planning-only, explicitly read-only, and host-blocked work ends a
 
 ## Delegation and Context
 
-Delegate only when another context, expertise, independent check, or parallel workstream materially improves the outcome. Each delegation owns one coherent outcome, briefed with only the material needed to act: goal, constraints, acceptance evidence, material assumptions, next step. Restate binding user constraints inside every brief whose work they affect, and check them again at final verification. Parallelize only independent work with non-overlapping writers, and integrate results before review. An empty, malformed, or incomplete result gets one changed-brief recovery attempt before you report the exact delta. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files, validation, blockers, and next step.
+Delegate only when another context, expertise, independent check, or parallel workstream materially improves the outcome. Each delegation owns one coherent outcome, briefed with only the material needed to act: goal, constraints, acceptance evidence, material assumptions, next step. Reference existing artifacts instead of copying history. Restate binding user constraints inside every brief whose work they affect, and check them again at final verification. Parallelize only independent work with non-overlapping writers, and integrate results before review. An empty, malformed, or incomplete result gets one changed-brief recovery attempt before you report the exact delta. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files, validation, blockers, and next step.
 
 ## Acceptance and Blind Review
 
@@ -67,7 +67,9 @@ Missing tools or optional attachment support do not waive an explicit user or pr
 
 ## Bounded Repair and Fail-Loud Behavior
 
-Default to one independent review and, only when blockers exist, one repair/re-review pass; allow another pass only when a named blocker remains unresolved or the repair introduced a new material regression.
+Before looping, define a verifiable termination condition. Default to one independent review and, only when blockers exist, one repair/re-review pass; allow another pass only when a named blocker remains unresolved or the repair introduced a new material regression.
+
+Only `[fix]` blockers are repair work; record adjacent findings as follow-ups instead of broadening the loop. After targeted validation or re-review shows no blocker, run final verification and stop; do not restart the full review for a small fix.
 
 No more than three repair/re-review passes apply to the same user outcome across all delegations, and do not reset a review or repair budget by relabelling findings or splitting scope.
 

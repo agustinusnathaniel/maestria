@@ -5,6 +5,11 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-10-12
+
+- **Portable utility skills match the global rules.** `handoff` and `iteration-limits` are now generated from the global rules sections they summarize instead of maintained as separate text. The rules gained the stop conditions the skill used to carry alone: define a verifiable termination condition before looping, treat only `[fix]` blockers as repair work, and stop after final verification instead of restarting a full review for a small fix.
+- **Optional skills are documented in one place.** The [Agent Reference](/core/agents/#optional-skills) lists the maestria methodology skills, how the CLI installs them, and where to get the generic engineering skills specialists name.
+
 ## 2026-09-30
 
 - **Comments and tests earn their keep.** Implementers and reviewers now reassess explanatory comments and redundant tests before accepting a change.

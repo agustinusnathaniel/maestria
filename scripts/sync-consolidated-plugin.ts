@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
 import {
+  extractSection,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
@@ -10,7 +11,12 @@ import {
 
 const ROLES = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
 const MODES = ['fein', 'sonar', 'blitz'];
-const UTILITIES = ['handoff', 'iteration-limits'];
+const UTILITIES = ['handoff', 'iteration-limits'] as const;
+// Each utility skill projects one rules.md section, so it cannot drift from policy.
+const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
+  handoff: 'Delegation and Context',
+  'iteration-limits': 'Bounded Repair and Fail-Loud Behavior',
+};
 const HOSTS = ['claude-code', 'codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp', 'zcode'];
 const NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
@@ -87,6 +93,14 @@ const requiredHeading = (source: string, heading: string, label: string): void =
   }
 };
 
+const utilitySection = (rules: string, heading: string): string => {
+  const section = extractSection(rules, heading);
+  if (section === null) {
+    throw new Error(`Missing canonical heading ## ${heading}: rules.md`);
+  }
+  return section;
+};
+
 const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
   const source = readInput(coreRoot, `commands/${mode}.md`);
   const frontmatter = /^---\n(?<metadata>[\s\S]*?)\n---\n/u.exec(source)?.groups?.metadata;
@@ -158,7 +172,7 @@ const readCanonicalInputs = (repoRoot: string): Inputs => {
     roles,
     rules,
     utilities: Object.fromEntries(
-      UTILITIES.map((name) => [name, readInput(coreRoot, `skills/${name}.md`)]),
+      UTILITIES.map((name) => [name, utilitySection(rules, UTILITY_SECTIONS[name])]),
     ),
   };
 };
@@ -319,7 +333,7 @@ const addUtilitySkills = (plan: Map<string, string>, input: Inputs): void => {
     addOutput(
       plan,
       `skills/${utility}/SKILL.md`,
-      document(stripFrontmatter(source), {
+      document(source, {
         description: utilityDescription(utility),
         name: utility,
       }),

@@ -2,10 +2,16 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
+import { extractSection } from '@/lib/transforms.js';
+
 const DIRECTIVES_DIR = path.join(import.meta.dirname, '..', 'agent-directives');
 
 const readDirective = (...segments: string[]): string =>
   readFileSync(path.join(DIRECTIVES_DIR, ...segments), 'utf-8');
+
+/** The `handoff` and `iteration-limits` skills are projections of these rules sections. */
+const readUtilitySkill = (heading: string): string =>
+  extractSection(readDirective('rules.md'), heading) ?? '';
 
 const assertOrdered = (document: string, headings: string[]): void => {
   let previous = -1;
@@ -130,7 +136,7 @@ describe('canonical directive behavioral contracts', () => {
   it('continues incomplete work and freezes scope across delegations', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
-    const iteration = readDirective('skills', 'iteration-limits.md');
+    const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
 
     expect(rules).toMatch(/orchestrator owns continuation for implementation and delivery work/iu);
     expect(rules).toMatch(/not a user checkpoint/iu);
@@ -202,13 +208,14 @@ describe('canonical directive behavioral contracts', () => {
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
     const rules = readDirective('rules.md');
-    const handoff = readDirective('skills', 'handoff.md');
+    const handoff = readUtilitySkill('Delegation and Context');
 
     for (const concept of [
       /outcome/iu,
-      /context and constraints/iu,
-      /acceptance and evidence/iu,
-      /assumptions or blockers/iu,
+      /constraints/iu,
+      /acceptance evidence/iu,
+      /assumptions/iu,
+      /blockers/iu,
       /next step/iu,
     ]) {
       expect(handoff).toMatch(concept);
@@ -267,21 +274,21 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
     const rules = readDirective('rules.md');
-    const iteration = readDirective('skills', 'iteration-limits.md');
+    const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
 
     expect(rules).toMatch(
       /one independent review and.*only when blockers exist.*one repair\/re-review pass/iu,
     );
     expect(rules).toMatch(/named blocker remains unresolved|new material regression/iu);
     expect(iteration).toMatch(/no more than three repair\/re-review passes/iu);
-    expect(iteration).toMatch(/`\[fix\]` means blocking\/material/iu);
+    expect(iteration).toMatch(/only `\[fix\]` blockers are repair work/iu);
     expect(iteration).toMatch(/final verification/iu);
     expect(iteration).toMatch(/and stop/iu);
     expect(rules).toMatch(/observable progress/iu);
     expect(rules).toMatch(/repeated causes.*no new evidence|no new evidence.*repeated causes/iu);
     expect(rules).toMatch(/do not loop silently/iu);
     expect(iteration).toMatch(/verifiable termination condition/iu);
-    expect(iteration).toMatch(/change strategy or escalate/iu);
+    expect(iteration).toMatch(/change strategy - route root-cause uncertainty to diagnosis/iu);
     expect(iteration).toMatch(/Tried X, Y, Z/u);
   });
 

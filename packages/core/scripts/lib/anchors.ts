@@ -6,9 +6,15 @@
 
 import { readFile } from 'node:fs/promises';
 
+import { ConfigError } from './config.js';
 import type { ResolvedFileConfig, ResolvedReplaceOp, ResolvedSyncConfig } from './config.js';
 import type { SyncPlanEntry } from './plan.js';
-import { applyReplaceOps, normalizeLineEndings, stripFrontmatter } from './transforms.js';
+import {
+  applyReplaceOps,
+  extractSection,
+  normalizeLineEndings,
+  stripFrontmatter,
+} from './transforms.js';
 
 // ── Public Types ──
 
@@ -39,9 +45,17 @@ interface AnchorTarget {
   replace: ResolvedReplaceOp[];
 }
 
-const prepareContent = (raw: string, fileCfg: ResolvedFileConfig): string => {
+const prepareContent = (raw: string, fileCfg: ResolvedFileConfig, label: string): string => {
   const normalized = normalizeLineEndings(raw);
-  return fileCfg.stripFrontmatter ? stripFrontmatter(normalized) : normalized;
+  const content = fileCfg.stripFrontmatter ? stripFrontmatter(normalized) : normalized;
+  if (fileCfg.section === undefined) {
+    return content;
+  }
+  const section = extractSection(content, fileCfg.section);
+  if (section === null) {
+    throw new ConfigError(`Missing section "## ${fileCfg.section}" in ${label}`);
+  }
+  return section;
 };
 
 const collectTargets = async (plan: SyncPlanEntry[]): Promise<AnchorTarget[]> => {
@@ -49,7 +63,7 @@ const collectTargets = async (plan: SyncPlanEntry[]): Promise<AnchorTarget[]> =>
     plan.map(async (entry) => {
       const raw = await readFile(entry.sourcePath, 'utf-8');
       return {
-        content: prepareContent(raw, entry.fileCfg),
+        content: prepareContent(raw, entry.fileCfg, entry.label),
         label: entry.label,
         replace: entry.fileCfg.replace,
       };

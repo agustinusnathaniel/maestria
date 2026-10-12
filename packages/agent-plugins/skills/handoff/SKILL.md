@@ -5,17 +5,6 @@ name: handoff
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->
 
-# Handoff Aid
+# Delegation and Context
 
-Use a handoff when another agent or later step needs context. Include only:
-
-- **Outcome** - what must be achieved and why
-- **Context and constraints** - relevant paths, decisions, and boundaries
-- **Acceptance and evidence** - how completion will be verified
-- **Assumptions or blockers** - only material uncertainty or missing input
-- **Next step** - who or what follows
-
-Keep it concise, reference existing artifacts instead of copying history, and
-proceed on ordinary ambiguity after documenting a material assumption.
-
-For an optional contract header shape, see the available `spec-contract` skill; still optional and absence is normal.
+Delegate only when another context, expertise, independent check, or parallel workstream materially improves the outcome. Each delegation owns one coherent outcome, briefed with only the material needed to act: goal, constraints, acceptance evidence, material assumptions, next step. Reference existing artifacts instead of copying history. Restate binding user constraints inside every brief whose work they affect, and check them again at final verification. Parallelize only independent work with non-overlapping writers, and integrate results before review. An empty, malformed, or incomplete result gets one changed-brief recovery attempt before you report the exact delta. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files, validation, blockers, and next step.

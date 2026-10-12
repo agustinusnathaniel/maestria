@@ -1065,8 +1065,7 @@ describe('secondary source loop', () => {
     mkdirSync(sourceDir, { recursive: true });
     mkdirSync(outputDir, { recursive: true });
 
-    // Canonical source lives in a subdirectory of the parent of source -
-    // the same layout as packages/core/agent-directives/skills/.
+    // Canonical source lives in a subdirectory of the parent of source.
     writeFileSync(
       join(sourceParent, 'skills', 'handoff.md'),
       '# Handoff Contract\n\n1. **Goal**\n',
@@ -1100,6 +1099,43 @@ describe('secondary source loop', () => {
     const out = readFileSync(outPath, 'utf-8');
     expect(out).toContain('name: handoff');
     expect(out).toContain('# Handoff Contract');
+  });
+
+  it('projects one rules section as a standalone document and fails closed when it is missing', async () => {
+    const sourceDir = join(tmpDir, 'specialists');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(sourceDir, { recursive: true });
+    writeFileSync(
+      join(tmpDir, 'rules.md'),
+      '# Rules\n\nIntro.\n\n## Handoffs\n\nBrief the goal.\n\n### Detail\n\nKeep it short.\n\n## Repair\n\nStop.\n',
+      'utf-8',
+    );
+    const sectionConfig = (section: string): ResolvedSyncConfig => ({
+      configDir: tmpDir,
+      configPath: join(tmpDir, 'sync.config.ts'),
+      files: {
+        handoff: {
+          ...configForOutput(join(outputDir, 'handoff', 'SKILL.md')),
+          section,
+          source: join(tmpDir, 'rules.md'),
+        },
+      },
+      output: outputDir,
+      preserve: [],
+      source: sourceDir,
+    });
+
+    await runSync({ config: sectionConfig('Handoffs') });
+    const out = readFileSync(join(outputDir, 'handoff', 'SKILL.md'), 'utf-8');
+    expect(out).toContain('# Handoffs\n\nBrief the goal.\n\n### Detail\n\nKeep it short.\n');
+    expect(out).not.toContain('Intro.');
+    expect(out).not.toContain('Repair');
+
+    rmSync(outputDir, { force: true, recursive: true });
+    await expect(runSync({ config: sectionConfig('Missing') })).rejects.toThrow(
+      /Missing section "## Missing" in handoff/u,
+    );
+    expect(existsSync(outputDir)).toBe(false);
   });
 
   it('throws one ConfigError naming every entry missing from source and secondary dirs', async () => {

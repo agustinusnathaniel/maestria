@@ -17,6 +17,8 @@ export type ResolvedReplaceOp = ReplaceOp & { scope: 'default' | 'file' };
 export interface FileConfig {
   /** Canonical input override, relative to the config directory (per-file only). */
   source?: string;
+  /** Project only this `## heading` section of the source, titled by it (per-file only). */
+  section?: string;
   output?: string;
   stripFrontmatter?: boolean;
   replace?: ReplaceOp[];
@@ -28,7 +30,7 @@ export interface FileConfig {
 export interface SyncConfig {
   source: string;
   output?: string;
-  default?: Omit<FileConfig, 'source'>;
+  default?: Omit<FileConfig, 'section' | 'source'>;
   files?: Record<string, FileConfig>;
   /** Relative paths (relative to output dir) to exclude from auto-clean */
   preserve?: string[];
@@ -46,6 +48,7 @@ export interface ResolvedSyncConfig {
 
 export interface ResolvedFileConfig {
   source?: string;
+  section?: string;
   output: string;
   stripFrontmatter: boolean;
   replace: ResolvedReplaceOp[];
@@ -58,7 +61,7 @@ export class ConfigError extends Error {
   override name = 'ConfigError';
 }
 
-export type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output' | 'source'>;
+export type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output' | 'section' | 'source'>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -101,8 +104,15 @@ const resolveFileConfig = (
   ) {
     throw new ConfigError(`Invalid source override for ${filename}`);
   }
+  if (
+    fileCfg.section !== undefined &&
+    (typeof fileCfg.section !== 'string' || fileCfg.section.trim() === '')
+  ) {
+    throw new ConfigError(`Invalid section for ${filename}`);
+  }
   return {
     ...(fileCfg.source === undefined ? {} : { source: path.resolve(configDir, fileCfg.source) }),
+    ...(fileCfg.section === undefined ? {} : { section: fileCfg.section }),
     ...mergeFileConfig(fileCfg, defaultCfg),
     output: resolveFileOutput(fileCfg, baseDir, filename),
   };

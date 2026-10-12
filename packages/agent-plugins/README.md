@@ -9,7 +9,7 @@ maestria ships one directly installable plugin with native host components and t
 | `agents/` | One profile per specialist for every Markdown host, plus a generated Codex TOML beside each | Core `specialists/` and `generation/profiles.json` |
 | `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
 | `rules/` | Global policy, plus one folder per host whose rule format differs | Core `rules.md` and integration notes |
-| `skills/` | Only `handoff` and `iteration-limits` reusable utilities | Core `skills/` |
+| `skills/` | Only `handoff` and `iteration-limits` reusable utilities | One core `rules.md` section each |
 | `integrations/` | Generated host usage and capability guides | Core integration notes |
 | `generation/` | Development-only manifests and profile metadata | Hand-authored mechanical inputs |
 | `assets/`, `docs/` | Presentation and package usage documentation | Hand-authored package files |
