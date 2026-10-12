@@ -304,16 +304,9 @@ const runMain = (pkg: string, manifests: string[], ...args: string[]): number =>
 };
 
 describe('main wiring', () => {
-  it('tracks every generation manifest and flattened bundle manifest for version sync', () => {
+  it('tracks every root manifest for version sync', () => {
     expect(TARGETS).toHaveLength(1);
     expect(TARGETS[0]?.[1]).toEqual([
-      'generation/manifests/plugin.json',
-      'generation/manifests/claude-code.json',
-      'generation/manifests/codex.json',
-      'generation/manifests/cursor.json',
-      'generation/manifests/devin.json',
-      'generation/manifests/zcode.json',
-      'generation/manifests/kimi.plugin.json',
       'plugin.json',
       '.claude-plugin/plugin.json',
       '.codex-plugin/plugin.json',

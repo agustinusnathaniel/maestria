@@ -878,7 +878,7 @@ const cursor: PlatformDefinition = {
 
 // OMP consumes the consolidated portable plugin: `omp plugin install`
 // stages `@maestria/agent-plugins`, whose root manifest and shared skills OMP loads
-// natively (see packages/agent-plugins/integrations/omp/README.md). No
+// natively (see https://maestria.sznm.dev/agent-plugins/installation/#omp). No
 // maestria-owned executable ships for OMP: no session hooks, no tool
 // interception, and no per-agent model files, so OMP has no model-config
 // handler. The retired `@maestria/omp` payload is not removed automatically;

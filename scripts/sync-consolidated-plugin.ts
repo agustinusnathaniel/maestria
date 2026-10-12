@@ -20,14 +20,14 @@ const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
 const HOSTS = ['claude-code', 'codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp', 'zcode'];
 const NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
-const MANIFESTS = [
-  ['generation/manifests/plugin.json', 'plugin.json'],
-  ['generation/manifests/claude-code.json', '.claude-plugin/plugin.json'],
-  ['generation/manifests/codex.json', '.codex-plugin/plugin.json'],
-  ['generation/manifests/cursor.json', '.cursor-plugin/plugin.json'],
-  ['generation/manifests/devin.json', '.devin-plugin/plugin.json'],
-  ['generation/manifests/zcode.json', '.zcode-plugin/plugin.json'],
-  ['generation/manifests/kimi.plugin.json', 'kimi.plugin.json'],
+const ROOT_MANIFESTS = [
+  'plugin.json',
+  '.claude-plugin/plugin.json',
+  '.codex-plugin/plugin.json',
+  '.cursor-plugin/plugin.json',
+  '.devin-plugin/plugin.json',
+  '.zcode-plugin/plugin.json',
+  'kimi.plugin.json',
 ] as const;
 const RETIRED_HOST_COPIES = ['claude-code', 'cursor', 'kimi-code'];
 const RETIRED_OUTPUTS = [
@@ -41,6 +41,7 @@ const RETIRED_OUTPUTS = [
   'rules/global/global-rules.md',
   'skills/handoff.md',
   'skills/iteration-limits.md',
+  ...HOSTS.map((host) => `integrations/${host}/README.md`),
 ];
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -341,12 +342,6 @@ const addUtilitySkills = (plan: Map<string, string>, input: Inputs): void => {
   }
 };
 
-const addIntegrationReadmes = (plan: Map<string, string>, input: Inputs): void => {
-  for (const host of HOSTS) {
-    addOutput(plan, `integrations/${host}/README.md`, document(input.contexts[host]));
-  }
-};
-
 const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   const routerPolicy = compose(input.roles.orchestrator, input.rules);
   const complete = compose(routerPolicy, ...MODES.map((mode) => input.modes[mode].body));
@@ -354,12 +349,11 @@ const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   addSessionContexts(plan, input, complete);
   addModeCommands(plan, input, routerPolicy);
   addUtilitySkills(plan, input);
-  addIntegrationReadmes(plan, input);
 };
 
 const validateManifestResources = (packageRoot: string, plan: Map<string, string>): void => {
-  for (const [, output] of MANIFESTS) {
-    const manifest: unknown = JSON.parse(plan.get(output) ?? '');
+  for (const output of ROOT_MANIFESTS) {
+    const manifest: unknown = JSON.parse(readInput(packageRoot, output));
     if (!isRecord(manifest)) {
       throw new Error(`Invalid plugin manifest: ${output}`);
     }
@@ -379,6 +373,8 @@ const validateManifestResources = (packageRoot: string, plan: Map<string, string
         }
         const normalized = relative.replace(/^\.\//u, '').replace(/\/$/u, '');
         assertContainedFile(packageRoot, normalized);
+        // Every selected resource must be a generated output, so a stale file left on disk
+        // cannot satisfy a manifest after the generator stops producing it.
         if (
           !plan.has(normalized) &&
           ![...plan.keys()].some((key) => key.startsWith(`${normalized}/`))
@@ -394,9 +390,6 @@ const outputPlan = (repoRoot: string): Map<string, string> => {
   const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
   const input = readCanonicalInputs(repoRoot);
   const plan = new Map<string, string>();
-  for (const [source, output] of MANIFESTS) {
-    addOutput(plan, output, readInput(packageRoot, source));
-  }
   addProfiles(plan, packageRoot, input);
   addContexts(plan, input);
   validateManifestResources(packageRoot, plan);

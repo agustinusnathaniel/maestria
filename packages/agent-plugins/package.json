@@ -33,8 +33,6 @@
     "skills",
     "agents",
     "assets",
-    "integrations/*/README.md",
-    "docs",
     "INSTALL.md",
     "README.md",
     "LICENSE",

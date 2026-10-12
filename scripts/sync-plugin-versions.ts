@@ -29,7 +29,7 @@
  *   previous release helper did.
  *
  * Targets:
- * - @maestria/agent-plugins -> generation manifest inputs and generated root manifests
+ * - @maestria/agent-plugins -> root manifests
  */
 
 import {
@@ -62,13 +62,6 @@ export const TARGETS: Target[] = [
   [
     path.join(ROOT, 'packages', 'agent-plugins'),
     [
-      'generation/manifests/plugin.json',
-      'generation/manifests/claude-code.json',
-      'generation/manifests/codex.json',
-      'generation/manifests/cursor.json',
-      'generation/manifests/devin.json',
-      'generation/manifests/zcode.json',
-      'generation/manifests/kimi.plugin.json',
       'plugin.json',
       '.claude-plugin/plugin.json',
       '.codex-plugin/plugin.json',

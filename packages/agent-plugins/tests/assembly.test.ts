@@ -38,7 +38,7 @@ describe('consolidated plugin assembly', () => {
   it('reports drift without writing and repairs only owned outputs idempotently', () => {
     const root = fixture();
     const packageRoot = path.join(root, 'packages/agent-plugins');
-    const target = path.join(packageRoot, 'integrations/omp/README.md');
+    const target = path.join(packageRoot, 'rules/global.md');
     const stale = path.join(packageRoot, 'skills/handoff.md');
     const native = path.join(packageRoot, 'generation/profiles.json');
     const nativeBefore = fs.readFileSync(native, 'utf-8');
@@ -46,7 +46,7 @@ describe('consolidated plugin assembly', () => {
     fs.writeFileSync(target, 'drift\n');
     fs.writeFileSync(stale, 'stale\n');
 
-    expect(syncConsolidatedPlugin(root, true)).toContain('integrations/omp/README.md');
+    expect(syncConsolidatedPlugin(root, true)).toContain('rules/global.md');
     expect(syncConsolidatedPlugin(root, true)).toContain('skills/handoff.md');
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
     expect(fs.existsSync(stale)).toBe(true);
@@ -55,14 +55,14 @@ describe('consolidated plugin assembly', () => {
     expect(syncConsolidatedPlugin(root, true)).toEqual([]);
     expect(syncConsolidatedPlugin(root)).toEqual([]);
     expect(fs.existsSync(stale)).toBe(false);
-    expect(fs.readFileSync(target, 'utf-8')).toContain('OMP Integration');
+    expect(fs.readFileSync(target, 'utf-8')).toContain('maestria global policy');
     expect(fs.readFileSync(native, 'utf-8')).toBe(nativeBefore);
   });
 
   it('fails before writes or cleanup when a required native resource is missing', () => {
     const root = fixture();
     const packageRoot = path.join(root, 'packages/agent-plugins');
-    const target = path.join(packageRoot, 'integrations/omp/README.md');
+    const target = path.join(packageRoot, 'rules/global.md');
     const stale = path.join(packageRoot, 'skills/handoff.md');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
@@ -116,7 +116,7 @@ describe('consolidated plugin assembly', () => {
   it('rejects a missing canonical role before changing outputs', () => {
     const root = fixture();
     const packageRoot = path.join(root, 'packages/agent-plugins');
-    const target = path.join(packageRoot, 'integrations/omp/README.md');
+    const target = path.join(packageRoot, 'rules/global.md');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
     fs.rmSync(path.join(root, 'packages/core/agent-directives/specialists/writer.md'));

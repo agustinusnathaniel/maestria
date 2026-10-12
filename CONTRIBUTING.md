@@ -88,7 +88,7 @@ Choose the path that matches how the host consumes maestria.
 **Declarative host in `@maestria/agent-plugins`** (manifest and file conventions only, no runtime source):
 
 1. Keep canonical text in `packages/core/agent-directives/`; do not add host-specific methodology.
-2. Add the host's manifest and profile inputs under `packages/agent-plugins/generation/manifests/`, and extend the generator `scripts/sync-consolidated-plugin.ts` for any new output.
+2. Edit the host manifest directly at the package root and keep profile inputs in `packages/agent-plugins/generation/profiles.json`, and extend the generator `scripts/sync-consolidated-plugin.ts` for any new output.
 3. Add docs under `apps/docs/src/content/docs/agent-plugins/<host>/`.
 
 Either way, run `scripts/check-sync` and the full quality gates. Do not register a platform by editing generated output or by copying another platform's runtime assumptions.

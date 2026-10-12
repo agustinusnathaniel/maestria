@@ -187,22 +187,7 @@ describe('published consolidated plugin', () => {
         const text = fs.readFileSync(path.join(temporary, entry), 'utf-8');
         expect(text, entry).not.toContain('!`');
       }
-      for (const host of [
-        'claude-code',
-        'cursor',
-        'codex',
-        'devin',
-        'zcode',
-        'kimi-code',
-        'hermes',
-        'omp',
-      ]) {
-        const guide = fs.readFileSync(
-          path.join(packedRoot, `integrations/${host}/README.md`),
-          'utf-8',
-        );
-        expect(guide).toContain('Integration');
-      }
+      expect(entries.some((entry) => entry.startsWith('package/integrations/'))).toBe(false);
       const evidence = path.join(repoRoot, 'artifacts/plugin-pack-evidence.json');
       fs.mkdirSync(path.dirname(evidence), { recursive: true });
       fs.writeFileSync(

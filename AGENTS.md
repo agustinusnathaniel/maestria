@@ -3,7 +3,7 @@
 
 ## Project and Ownership
 
-maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, installation resources and host manifests are generated directly at the package root; edit its release metadata, `generation/` manifest/config inputs, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
+maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, installation resources are generated directly at the package root; edit its host manifests (root `plugin.json`, `.<host>-plugin/plugin.json`, `kimi.plugin.json`) directly, `generation/profiles.json` for profile metadata, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
 ## Engineering Boundaries
 
