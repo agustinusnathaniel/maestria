@@ -160,12 +160,9 @@ describe('published consolidated plugin', () => {
       expect(entries).toContain('package/AGENTS.md');
       expect(manifests[1].skills).toBeUndefined();
       expect(manifests[1].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
-      expect(manifests[5].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
-      expect(manifests[5].commands).toEqual([
-        './commands/fein.md',
-        './commands/sonar.md',
-        './commands/blitz.md',
-      ]);
+      // ZCode reads agent and command selectors as directories only.
+      expect(manifests[5].agents).toBe('./agents/');
+      expect(manifests[5].commands).toBe('./commands/');
       expect(manifests[6].agents).toBe('./agents/');
       expect(manifests[6].skills).toBe('./skills/');
       expect(manifests[6].commands).toBe('./commands/');
@@ -185,6 +182,11 @@ describe('published consolidated plugin', () => {
       expect(entries).toContain('package/rules/cursor/maestria-global.mdc');
       expect(entries).toContain('package/rules/codex/instructions/AGENTS.md');
       assertNativeMetadata(packedRoot);
+      // `!` followed by a backtick is inline shell expansion in ZCode and Claude Code commands.
+      for (const entry of entries.filter((item) => /\.(?:md|mdc|toml)$/u.test(item))) {
+        const text = fs.readFileSync(path.join(temporary, entry), 'utf-8');
+        expect(text, entry).not.toContain('!`');
+      }
       for (const host of [
         'claude-code',
         'cursor',

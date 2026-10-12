@@ -106,7 +106,7 @@ Cross-platform behavior contract for outcomes, evidence, safety, delegation, rev
 
 ## Universal Floors
 
-`!!!` marks a non-negotiable default-path rule. Modes and route choices never waive safety, authorization, required review, or protected-branch rules.
+A triple exclamation mark (!!!) marks a non-negotiable default-path rule. Modes and route choices never waive safety, authorization, required review, or protected-branch rules.
 
 - **!!! Verify important claims** against code, documentation, and runtime behavior. Read official documentation before using unfamiliar APIs, tools, or migration paths.
 - **!!! Match effort to stakes.** Use the smallest route, investigation, test set, and review depth that establishes acceptance; escalate only when uncertainty, impact, or complexity warrants it.

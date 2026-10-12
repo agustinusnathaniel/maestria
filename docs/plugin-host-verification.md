@@ -48,7 +48,17 @@ A live probe on Cursor CLI 2026.10.01 (2026-10-12) asked read-only roles to writ
 
 ## Kimi tool names
 
-Kimi v0.38.0 source registers its tools as `Write` and `Edit`. The `WriteFile` and `StrReplaceFile` names shipped earlier matched nothing, so the read-only denylist was ineffective; profiles now use `disallowedTools: [Write, Edit]`. Kimi ignores unknown keys (`readonly`, `model`) and substitutes `$ARGUMENTS` in plugin commands. This is source inspection only; Kimi was not live-run.
+Kimi v0.38.0 and v2.1.1 source registers its tools as `Write` and `Edit`. The `WriteFile` and `StrReplaceFile` names shipped earlier matched nothing, so the read-only denylist was ineffective; profiles now use `disallowedTools: [Write, Edit]`. Kimi ignores unknown keys (`readonly`, `model`) and substitutes `$ARGUMENTS` in plugin commands. This is source inspection only; Kimi was not live-run.
+
+The same holds in the Kimi 2.1.1 source (2026-10-12): plugin agent and command discovery reads only `.md` files (`app/plugin/manifest.ts`), unknown frontmatter fields are ignored, and plugin commands substitute `$ARGUMENTS` (`app/plugin/commands.ts`). A live run on Kimi CLI 2.1.1 was not possible: the account has no Kimi Code subscription (403), and the configured OpenCode Go route is rejected by the CLI.
+
+## Devin plugin discovery
+
+Devin CLI 3000.11.3 (2026-10-12): `devin plugins install --local -y ./packages/agent-plugins`, then `devin plugins info maestria`. It listed seven agents (`maestria:adventurer` through `maestria:writer`), the two utility skills, `AGENTS.md (always on)`, and `rules/global.md`. Before `trigger: manual` was added, `rules/global.md` was listed as agent-decided, which could add a second policy copy with OMP-only dispatch text; afterwards it is listed as manual. The `.toml` profiles and the per-host rule folders were not loaded. The probe install was removed afterwards. No agent task was run.
+
+## ZCode source
+
+ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agree. The plugin loader reads `.zcode-plugin/plugin.json`; `agents`, `commands`, and `skills` selectors are directories (file-list entries are ignored), the default directories load automatically, and only `.md` agents are read, so the Codex TOMLs are skipped. There is no plugin rules component. The subagent parser reads `name`, `description`, `model`, `tools`, `disallowedTools`, `skills`, `permissionMode`, and a few display fields, and drops other keys. At runtime `disallowedTools` entries are subtracted from the subagent's tool allowlist, matched exactly against the registered `Write` and `Edit` tools; Bash and MCP tools remain. An omitted `model` inherits the parent model. Command files substitute `$ARGUMENTS`, name commands by filename, and run `` !`command` `` inline shell expansion, so shipped Markdown must never contain an exclamation mark directly before a backtick (guarded by the packed-artifact test). No live ZCode run was performed: it is desktop-only.
 
 ## Codex multiline settings preservation
 
@@ -64,7 +74,7 @@ Evidence and baseline failing tests are under ignored `artifacts/codex-toml-repa
 
 - Claude's explicit agent-file form passes strict validation; directory form is rejected. Acceptance of extra frontmatter does not establish runtime enforcement.
 - Kimi native profiles, command/bootstrap resources, and size limits have package/schema evidence; live dispatch and reload remain unverified.
-- Cursor plugin agents do not enforce `readonly` (see above). Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist, so their read-only roles are prompt-level. ZCode `disallowedTools` is documented but not live-run.
+- Cursor plugin agents do not enforce `readonly` (see above). Devin discovery is verified, but Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist, so their read-only roles are prompt-level. ZCode removes `disallowedTools` from subagent tools per its source, but no live ZCode run was performed.
 - Codex marketplace exposes only utility skills; its complete agent/policy/mode context is supplied by the managed CLI path.
 - Hermes portable installation is utility-only. Optional manual project context obeys the host's first-match precedence; delegated children require explicit context handoff.
 - A doctor check or install dry-run is not proof of a plugin loading, and earlier fourteen-skill/zero-command and eight-profile probes describe retired layouts.

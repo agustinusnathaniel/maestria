@@ -18,14 +18,6 @@
     "specialists"
   ],
   "skills": "./skills/",
-  "agents": [
-    "./agents/adventurer.md",
-    "./agents/architect.md",
-    "./agents/builder.md",
-    "./agents/diagnose.md",
-    "./agents/planner.md",
-    "./agents/reviewer.md",
-    "./agents/writer.md"
-  ],
-  "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
+  "agents": "./agents/",
+  "commands": "./commands/"
 }

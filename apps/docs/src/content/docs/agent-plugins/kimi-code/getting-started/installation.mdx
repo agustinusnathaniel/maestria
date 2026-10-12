@@ -38,7 +38,7 @@ The integration uses neither `sessionStart.skill` nor `skillInstructions`. Nativ
 
 ## Tool and Model Boundaries
 
-Adventurer, architect, planner, and reviewer profiles use `disallowedTools` to deny `Write` and `Edit`, the tool names registered by Kimi `v0.38.0` source. Earlier releases of this package listed `WriteFile` and `StrReplaceFile`, which matched nothing, so read-only was not effective before. Kimi ignores the other hosts' `readonly` and `model` keys, and substitutes `$ARGUMENTS` in plugin commands. This native tool filter is not a shell sandbox and has not been live-run. Kimi owns permission decisions and execution safety. The plugin-agent format has no per-agent model field, so the host selects the model. The package adds no executable hooks or MCP server.
+Adventurer, architect, planner, and reviewer profiles use `disallowedTools` to deny `Write` and `Edit`, the tool names registered by Kimi `v0.38.0` and `v2.1.1` source. Earlier releases of this package listed `WriteFile` and `StrReplaceFile`, which matched nothing, so read-only was not effective before. Kimi ignores the other hosts' `readonly` and `model` keys, and substitutes `$ARGUMENTS` in plugin commands. This native tool filter is not a shell sandbox and has not been live-run. Kimi owns permission decisions and execution safety. The plugin-agent format has no per-agent model field, so the host selects the model. The package adds no executable hooks or MCP server.
 
 ## Troubleshooting
 

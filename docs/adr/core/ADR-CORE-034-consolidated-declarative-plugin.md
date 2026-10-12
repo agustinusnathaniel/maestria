@@ -54,7 +54,7 @@ Earlier sessions kept per-host copies on the assumption that hosts reject one an
 - Native dispatch, permissions, persistence, and trust remain host-owned; a portable package does not establish runtime parity.
 - Existing users update through their host installer or the maestria CLI; package names and source layout change.
 - More resources ship in one archive, so packed-artifact validation must check containment, reachability, and metadata, not just source-tree existence.
-- Devin and ZCode start as documented candidates. Live host verification remains separate from manifest and package validation.
+- Devin and ZCode began as documented candidates; Devin discovery and ZCode loading are now evidenced in the capability contract. Live host verification remains separate from manifest and package validation.
 - Hermes loses adapter-level enforcement and mode persistence; its host owns trust and lifecycle. The former Python package also carried host-version coupling and subprocess-boundary maintenance, now removed with the adapter.
 
 ## Alternatives Considered

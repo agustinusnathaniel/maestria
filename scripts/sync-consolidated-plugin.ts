@@ -300,7 +300,8 @@ const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy:
     addOutput(
       plan,
       `commands/${mode}.md`,
-      document(command, { description: metadata.description, name: mode }),
+      // Hosts name commands by filename; ZCode warns on an unknown `name` key.
+      document(command, { description: metadata.description }),
     );
   }
 };

@@ -44,6 +44,6 @@ In local CLI and Desktop sessions, dispatch native specialist profiles through D
 
 ## Limits
 
-Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but their presence does not add native plugin subagents there. Devin offers an `allowed-tools` allowlist but no denylist or read-only field, so read-only roles are prompt-level only. No executable adapter, hooks, MCP server, or automation ships here. Live Devin loading remains unverified; package checks establish shipped resources only.
+Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but their presence does not add native plugin subagents there. Devin offers an `allowed-tools` allowlist but no denylist or read-only field, so read-only roles are prompt-level only. No executable adapter, hooks, MCP server, or automation ships here. Devin CLI 3000.11.3 (`devin plugins info`, 2026-10-12) lists the seven profiles, the two utilities, and `AGENTS.md` as always on; it ignores the `.toml` profiles and the per-host rule folders, and lists `rules/global.md` as manual. Agent task execution was not run.
 
 See [compatibility](/agent-plugins/compatibility/), [specialist roles](/core/agents/), and the [package guide](/agent-plugins/).
