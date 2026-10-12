@@ -20,7 +20,10 @@
     "defaultPrompt": [
       "Prepare a concise handoff with evidence and next steps.",
       "Define a stopping condition and bounded repair limit."
-    ]
+    ],
+    "privacyPolicyURL": "https://maestria.sznm.dev/privacy/",
+    "brandColor": "#6c63ff",
+    "logo": "./assets/logo.svg"
   },
   "skills": "./skills/"
 }

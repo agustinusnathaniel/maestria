@@ -18,6 +18,14 @@ Roles, modes, dispatch, and policy are not published as root skills. Full native
 
 Each profile's frontmatter carries every Markdown host's keys at once, and each host reads only its own: `readonly` (Cursor), `disallowedTools: [Write, Edit]` (Claude Code, Kimi Code, ZCode), and `subagents: []` (Kimi). Profiles omit `model`, so hosts use the main conversation's model. Primary-session routing comes from each host's always-on rule, context, or companion installation, not from a dispatcher profile.
 
+## Install
+
+On a host with a managed flow, run `npx maestria install <host>` (`claude-code`, `cursor`, `codex`, `kimi-code`, `omp`, or `hermes`). In Claude Code 2.1.275 or later you can also install it from the maestria marketplace in one step:
+
+```text
+/plugin install maestria --marketplace agustinusnathaniel/maestria
+```
+
 ## Host mappings
 
 Supports Claude Code, Cursor, Codex, Kimi Code, Devin, ZCode, OMP, and Hermes, plus portable utility clients. Follow the public [installation](https://maestria.sznm.dev/agent-plugins/installation/), [usage](https://maestria.sznm.dev/agent-plugins/usage/), and [compatibility](https://maestria.sznm.dev/agent-plugins/compatibility/) pages for per-host setup and support boundaries.
