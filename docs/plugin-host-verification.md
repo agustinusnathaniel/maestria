@@ -100,6 +100,7 @@ The projection baseline is local `codex 0.145.0` (`rust-v0.145.0`, commit `25af1
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-CODEX-CLI-17 | Codex CLI | Portable skill discovery | The version-matched loader fixes portable skill discovery to root `skills/`; the overlay does not redirect it. Full native methodology is supplied by the companion installer. Model preservation is tested independently against actual generated TOML prompts (see the multiline settings probe above). | Codex CLI `0.153.4` (`rust-v0.153.4`) | See Sources table (loader source and custom-agents doc) | 2026-10-12 | tested: source inspection + package/unit tests |
+| E-CODEX-CLI-18 | Codex CLI | Companion installer from the packed archive | With an isolated `CODEX_HOME`, `installCodexManagedAgents` wrote seven `maestria-<role>.toml` profiles (all parse as TOML) with `sandbox_mode = "read-only"` on adventurer, architect, planner, and reviewer only, and one marked instruction block in `AGENTS.md` after existing user text. A second run changed nothing; removal deleted only managed files and the marked block, preserving a pre-seeded user agent and user instructions. No Codex session was started. | Codex CLI `0.153.4` | This register | 2026-10-13 | tested: real installer code against the packed archive |
 
 ### Capability vs control
 
@@ -170,13 +171,13 @@ The probe ran `devin plugins install --local -y ./packages/agent-plugins`, then 
 
 ## ZCode
 
-ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agree. The plugin loader reads `.zcode-plugin/plugin.json`; `agents`, `commands`, and `skills` selectors are directories (file-list entries are ignored) and the default directories load automatically, so the Codex TOMLs are skipped. The subagent parser reads `name`, `description`, `model`, `tools`, `disallowedTools`, `skills`, `permissionMode`, and a few display fields. Bash and MCP tools remain after `disallowedTools` is applied. An omitted `model` inherits the parent model. Command files substitute `$ARGUMENTS`, name commands by filename, and run inline shell expansion. Shipped Markdown must therefore never contain an exclamation mark directly before a backtick, because ZCode and Claude Code commands run that as inline shell; the packed-artifact test enforces it. No live ZCode run was performed: it is desktop-only.
+ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agree. The plugin loader reads `.zcode-plugin/plugin.json`; `commands` and `skills` selectors are directories (file-list entries are ignored) and the default directories load automatically, so the Codex TOMLs are skipped. The subagent parser reads `name`, `description`, `model`, `tools`, `disallowedTools`, `skills`, `permissionMode`, and a few display fields. Bash and MCP tools remain after `disallowedTools` is applied. An omitted `model` inherits the parent model. Command files substitute `$ARGUMENTS`, name commands by filename, and run inline shell expansion. Shipped Markdown must therefore never contain an exclamation mark directly before a backtick, because ZCode and Claude Code commands run that as inline shell; the packed-artifact test enforces it. No live ZCode run was performed: it is desktop-only.
 
 ### Evidence (reviewed 2026-10-12)
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-ZCODE-PLUGIN-01 | ZCode | Agent loading and `disallowedTools` | Directory selectors, `.md`-only agents, no rules component; `disallowedTools` is subtracted from the subagent's tool allowlist (exact `Write`/`Edit` names; shell remains); unknown keys dropped. Not live-run. | ZCode source `main`, installed desktop build | This register (ZCode source and shipped bundle) | 2026-10-12 | tested: shipped code inspection |
+| E-ZCODE-PLUGIN-01 | ZCode | Agent loading and `disallowedTools` | Directory selectors for commands and skills, conventional `agents/` discovery (the `agents` key is diagnostic-only), `.md`-only agents, no rules component; `disallowedTools` is subtracted from the subagent's tool allowlist (exact `Write`/`Edit` names; shell remains); unknown keys dropped. Not live-run. | ZCode source `main`, installed desktop build | This register (ZCode source and shipped bundle) | 2026-10-12 | tested: shipped code inspection |
 
 ## OMP
 
@@ -190,9 +191,9 @@ pnpm exec bun scripts/e2e/omp-plugin-discovery.ts --host-root /absolute/path/to/
 
 This packs and extracts the plugin, then uses actual capability providers and installed-loader code against both the Git root and archive. On 2026-10-12 (OMP 18.4.8, archive and git root), discovery returned 7 agents, 3 commands, 1 rule, and 2 skills; `.toml` files are not loaded. The metadata registration fixture is distinct from a real installation transaction.
 
-### Real isolated installation and prepared prompts (superseded layout)
+### Real isolated installation and prepared prompts
 
-The 2026-10-11 probe covered the previous eight-profile layout and was not re-run for seven. It uses the pinned 18.4.8 bundled CLI with a temporary host home/configuration, local archive input, and no provider configuration. Its native payload was compared between source and archive: 52 files matched. The 41 checks cover real install, disable, reinstall, local-source remote-upgrade refusal, uninstall cleanup, default installed discovery, slash argument expansion, full global-rule system-prompt injection, and all eight task-role template compositions.
+Re-run 2026-10-13 on the seven-profile layout (`d47c2c91`): the same harness, adapted to seven profiles, passed 39 of 39 checks with no network requests. Install, disable, reinstall, enable, and uninstall succeeded; the local-source upgrade was refused as expected; default installed discovery found 7 agents, 3 commands, 1 always-apply rule, and 2 skills, with no extension modules, tools, hooks, or MCP servers; the full global rule was injected into the system prompt; all seven role-template compositions passed. The harness lives only under ignored `artifacts/` and must be adapted to the current profile count. The 2026-10-11 run covered the previous eight-profile layout. It uses the pinned 18.4.8 bundled CLI with a temporary host home/configuration, local archive input, and no provider configuration. In that 2026-10-11 eight-profile run, the native payload was compared between source and archive (52 files matched), and its 41 checks covered real install, disable, reinstall, local-source remote-upgrade refusal, uninstall cleanup, default installed discovery, slash argument expansion, full global-rule system-prompt injection, and all eight task-role template compositions; the 2026-10-13 run above replaces it for the current layout.
 
 The reproduction inputs and results are preserved under ignored `artifacts/omp-actual-host-proof/`: `run-proof.py`, `probe.ts`, `proof.json`, `source-archive-identity.json`, and the prepared prompt. The local setup uses `/tmp/maestria-omp-root-verification/transaction`; with that pinned host fixture available, reproduce with:
 
@@ -209,11 +210,15 @@ No inference or actual task spawn occurs. Generic profiles have no `tools`, `spa
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-OMP-PLUGIN-01 | OMP | Current native resource discovery | Source (git root) and archive discovery expose seven task profiles, two utility skills, three commands, and one always-apply global rule; `.toml` files are not loaded. The previous fourteen-skill/zero-command fixture and the 2026-10-11 eight-profile result describe retired layouts. | Host 18.4.8 | `scripts/e2e/omp-plugin-discovery.ts`; this register | 2026-10-12 | tested: actual capability providers, source/archive payload |
-| E-OMP-PLUGIN-02 | OMP | Real installed lifecycle and prepared context | An isolated local-archive CLI installation, disable, reinstall, upgrade refusal for a local source, and uninstall passed. Default installed discovery, command expansion, global system-prompt injection, and all eight task-template compositions passed against the previous eight-profile layout (superseded; not re-run for seven). No inference or actual task spawn was performed. | Host 18.4.8 | `artifacts/omp-actual-host-proof/`; this register | 2026-10-11 | tested: real bundled CLI and native prompt/discovery APIs |
+| E-OMP-PLUGIN-02 | OMP | Real installed lifecycle and prepared context | An isolated local-archive CLI installation, disable, reinstall, enable, upgrade refusal for a local source, and uninstall passed (39 of 39 checks, no network). Default installed discovery (7 agents, 3 commands, 1 always-apply rule, 2 skills), global system-prompt injection, and all seven task-template compositions passed on the seven-profile layout. No inference or actual task spawn was performed. | Host 18.4.8 | `artifacts/omp-actual-host-proof/` (ignored, adapted harness); this register | 2026-10-13 | tested: real bundled CLI and native prompt/discovery APIs |
 
 ## Hermes
 
 The Hermes loader supplies skills and optional MCP resources. Portable installation is utility-only. Full manual methodology context is separate: the first matching project-context type wins, and delegated children can skip those files, so they require explicit context handoff. Docs-only; see Sources.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-HERMES-PLUGIN-01 | Hermes | Portable install and discovery | With an isolated `HERMES_HOME`, the packed archive (served as a local git source, since Hermes does not take plain local paths) installed and enabled; `hermes plugins list` and `doctor` passed. Hermes discovered exactly the two utilities as `agent-plugin-maestria-<hash>:handoff` and `:iteration-limits`; no agents, commands, rules, hooks, or MCP servers loaded. Disable and remove left no plugin files. No inference was run. | Hermes 0.21.3 | This register | 2026-10-13 | tested: live Hermes CLI (isolated home) |
 
 ## Remaining evidence boundaries
 
@@ -247,8 +252,10 @@ Run the completion gates as well as these probes. Regenerate affected evidence w
 | E-CODEX-CLI-07, E-CODEX-CLI-08, E-CODEX-CLI-09, E-CODEX-CLI-10, E-CODEX-CLI-11 | Pinned `rust-v0.145.0` sources and working-tree snapshot; see Evidence rows | 2026-08-13 | tested (see Evidence rows) |
 | E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15, E-CODEX-CLI-16 | Upstream docs, pinned host source, and working-tree implementation; see Evidence rows | 2026-08-26 | tested (see Evidence rows) |
 | E-OMP-PLUGIN-01 | This register; `scripts/e2e/omp-plugin-discovery.ts`; installed `18.4.8` loader and capability-provider source; https://omp.sh/docs/plugins; https://omp.sh/docs/subagent-authoring | 2026-10-12 | tested: packed discovery fixture; no `PluginManager.install`, `omp plugin install`, or task-execution E2E |
-| E-OMP-PLUGIN-02 | `artifacts/omp-actual-host-proof/`; this register | 2026-10-11 | tested: real bundled CLI and native prompt/discovery APIs |
+| E-OMP-PLUGIN-02 | `artifacts/omp-actual-host-proof/` (ignored, adapted harness); this register | 2026-10-13 | tested: real bundled CLI and native prompt/discovery APIs |
 | E-CODEX-CLI-17 | https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/core-plugins/src/agent_plugin_manifest.rs#L166; https://learn.chatgpt.com/docs/agent-configuration/subagents | 2026-10-12 | tested: source inspection + package/unit tests |
+| E-CODEX-CLI-18 | This register; `apps/maestria-cli/src/lib/codex-managed-agents.ts` (`installCodexManagedAgents`, removal) run against the packed archive with an isolated `CODEX_HOME` | 2026-10-13 | tested: real installer code against the packed archive |
+| E-HERMES-PLUGIN-01 | This register; Hermes 0.21.3 CLI (`hermes plugins install/list/doctor/disable/remove`) with an isolated `HERMES_HOME` | 2026-10-13 | tested: live Hermes CLI (isolated home) |
 | Hermes section (no evidence ID) | https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages; https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly | 2026-10-12 | docs-only |
 
 Upstream sources above are research-only (`unpinned - reverify before implementation`); E-CLAUDE-08 is a local working-tree package snapshot (`Working-tree package snapshot; verify at landing`), not an upstream research source. Reverify material claims before implementation, promotion, or re-promotion.

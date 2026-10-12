@@ -320,7 +320,7 @@ Changes apply to new sessions. Use **Reindex plugins** on Devin's Customize page
 
 ## ZCode
 
-The ZCode manifest (`.zcode-plugin/plugin.json`) selects the shared `agents/`, `commands/`, and `skills/` directories: seven specialist profiles, three native commands, and two utilities. They are the same files other Markdown hosts use. ZCode ignores file lists and loads only `.md` agents, so the manifest uses directory selectors.
+The ZCode manifest (`.zcode-plugin/plugin.json`) selects the shared `commands/` and `skills/` directories, and ZCode discovers `agents/` by convention: seven specialist profiles, three native commands, and two utilities. They are the same files other Markdown hosts use. ZCode ignores file lists and loads only `.md` agents, so the manifest uses directory selectors.
 
 **Install.** Stage the plugin in a directory beside a ZCode marketplace file:
 
@@ -393,7 +393,7 @@ Or remove the package with `omp plugin uninstall @maestria/agent-plugins`. If th
 
 Profiles, commands, and rules are generated from canonical sources and shared with other Markdown hosts, so no role or global-rules skill preload is needed. By default, profiles inherit the parent model.
 
-**Limits.** The data-only integration declares no executable extension, task wrapper, lifecycle hook, review interceptor, goal wrapper, automation, or MCP server; the retired runtime's enforcement does not carry over. OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced and read-only is prompt-level. A real OMP `18.4.8` loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-12) on the packed archive and a git root found 7 agents, 3 commands, 1 rule, and 2 skills, and did not load `.toml` files. An earlier isolated install lifecycle probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran, so model judgment and runtime permission enforcement are unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). For the separate Pi runtime extension, use the [Pi reference](/pi/reference/).
+**Limits.** The data-only integration declares no executable extension, task wrapper, lifecycle hook, review interceptor, goal wrapper, automation, or MCP server; the retired runtime's enforcement does not carry over. OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced and read-only is prompt-level. A real OMP `18.4.8` loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-12) on the packed archive and a git root found 7 agents, 3 commands, 1 rule, and 2 skills, and did not load `.toml` files. A real isolated install lifecycle run (2026-10-13) passed 39 of 39 checks on the seven-profile layout; an earlier probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran, so model judgment and runtime permission enforcement are unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). For the separate Pi runtime extension, use the [Pi reference](/pi/reference/).
 
 ## Hermes
 

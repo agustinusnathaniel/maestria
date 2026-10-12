@@ -32,7 +32,7 @@ The portable v1 manifest exposes utilities. It does not establish native agents,
 | ChatGPT / generic portable clients | No portable role component | No portable mode or policy component | Utility-only discovery; no implied companion installation |
 | Kimi Code | Seven shared profiles | Shared commands and complete systemPromptPath bootstrap | `disallowedTools: [Write, Edit]` (tool names are in the [register](plugin-host-verification.md#kimi-code)); unknown keys ignored; no built-in-profile remapping; no agent model field |
 | Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; no plugin commands component, so modes use keywords such as `fein: <task>` | Manifest selects only `skills`; no denylist, so read-only is prompt-level; no invented commands/agents selector |
-| ZCode | Seven shared profiles (directory selector) | Three shared commands, with policy in their context | `disallowedTools` removes `Write`/`Edit` from subagent tools per ZCode source, not live-run; ZCode has no plugin rules component |
+| ZCode | Seven shared profiles (discovered from `agents/`) | Three shared commands, with policy in their context | `disallowedTools` removes `Write`/`Edit` from subagent tools per ZCode source, not live-run; ZCode has no plugin rules component |
 | OMP | Seven shared task profiles | Three shared commands and one always-apply `rules/global.md` | No denylist; read-only is prompt-level; `.toml` files not loaded |
 | Hermes | No portable native profiles | Optional manual project context, separate from utility installation | No Python route; project-context precedence and subagent context skipping matter |
 
