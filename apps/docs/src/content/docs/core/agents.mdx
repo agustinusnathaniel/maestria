@@ -59,7 +59,7 @@ Agents load these skills when the assignment calls for them. Every one is option
 These live in the maestria repository and carry maestria-specific procedures. `maestria install` and `setup` install `create-pull-request` and `docs-update` for each detected agent by default, and `update` keeps your recorded selection (an older install with no record keeps only `create-pull-request`). Choose with `--skills` and `--exclude-skills` (see the [CLI reference](/cli/commands/)).
 
 - **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
-- **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/skills/docs-update/SKILL.md)** - Documentation update procedure. Load it when docs work applies and follow it; ordinary docs work proceeds without it.
+- **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/skills/docs-update/SKILL.md)** - Documentation and changeset procedure. Agents load it before finishing a change to behavior, interfaces, configuration, or user-facing workflows, and follow it to classify and update affected docs; ordinary docs work proceeds without it.
 
 ### Generic engineering skills
 
