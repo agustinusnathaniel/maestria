@@ -34,7 +34,7 @@ export interface Platform {
 }
 
 /**
- * All nine entries in homepage grid order. `/ecosystem/` closes the grid
+ * All entries in homepage grid order. `/ecosystem/` closes the grid
  * with shared companion tooling.
  */
 export const platforms: Platform[] = [
@@ -102,6 +102,22 @@ export const platforms: Platform[] = [
     installArgs: 'install hermes',
     mark: 'hermes',
     name: 'Maestria for Hermes',
+  },
+  {
+    blurb: 'Complete local custom agents and always-on policy for Devin.',
+    href: '/agent-plugins/devin/',
+    id: 'devin',
+    installArgs: '',
+    mark: 'devin',
+    name: 'Maestria for Devin',
+  },
+  {
+    blurb: 'Native profiles and workflow commands with embedded policy for ZCode.',
+    href: '/agent-plugins/zcode/',
+    id: 'zcode',
+    installArgs: '',
+    mark: 'zcode',
+    name: 'Maestria for ZCode',
   },
   {
     auxiliary: true,

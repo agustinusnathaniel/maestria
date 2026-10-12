@@ -3,7 +3,7 @@
 ## Start Here
 
 ```bash
-# Prerequisites: Node 24.16+, pnpm 11.8+, Python 3.11+, ruff
+# Prerequisites: Node 24.16+, pnpm 11.8+
 vp install
 vp check
 ```
@@ -16,7 +16,8 @@ Treat shared toolchain upgrades as deliberate reviewed changes. Keep related Vit
 
 ```text
 packages/core/agent-directives/  canonical agent prompts and rules
-packages/<platform>/             platform projections and adapters
+packages/<name>/                 native adapters (OpenCode, Pi)
+packages/agent-plugins/          declarative host plugin bundle
 packages/shared/                 host-neutral shared code
 apps/docs/                       Astro + Starlight documentation site
 apps/maestria-cli/               CLI for managing integrations
@@ -76,14 +77,21 @@ Agent prompts should describe the agent's behavior, not the history of the promp
 
 ## Add a Platform Plugin
 
-1. Create `packages/<name>/` with its manifest and package metadata.
-2. Add `sync.config.ts` when the platform consumes generated directives.
-3. Implement the native adapter when the platform needs runtime behavior. A declarative package may not need runtime source.
-4. Add the platform's user-facing docs under `apps/docs/src/content/docs/<name>/`.
-5. Add tests or validation for the platform's actual boundary.
-6. Run `scripts/check-sync` and the full quality gates.
+Choose the path that matches how the host consumes maestria.
 
-The root `scripts/sync-all` discovers package sync configs automatically. Do not register a platform by editing generated output or by copying another platform's runtime assumptions.
+**Native adapter package** (runtime code, like `opencode` and `pi`):
+
+1. Create `packages/<name>/` with its manifest, package metadata, and runtime source.
+2. Add `sync.config.ts` for the generated directives it consumes; `scripts/sync-all` discovers it automatically.
+3. Add user-facing docs under `apps/docs/src/content/docs/<name>/` and tests for the platform's actual boundary.
+
+**Declarative host in `@maestria/agent-plugins`** (manifest and file conventions only, no runtime source):
+
+1. Keep canonical text in `packages/core/agent-directives/`; do not add host-specific methodology.
+2. Add the host's manifest and profile inputs under `packages/agent-plugins/generation/manifests/`, and extend the generator `scripts/sync-consolidated-plugin.ts` for any new output.
+3. Add docs under `apps/docs/src/content/docs/agent-plugins/<host>/`.
+
+Either way, run `scripts/check-sync` and the full quality gates. Do not register a platform by editing generated output or by copying another platform's runtime assumptions.
 
 ## Platform Development Reference
 

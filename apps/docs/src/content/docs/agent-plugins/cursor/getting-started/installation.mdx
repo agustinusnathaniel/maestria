@@ -47,15 +47,27 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 
 ## What gets installed
 
-| Path                               | Purpose                                |
-| ---------------------------------- | -------------------------------------- |
-| `.cursor-plugin/plugin.json`       | Plugin manifest                        |
-| `agents/cursor/*.md`               | 7 complete specialist Task agents      |
-| `skills/*/SKILL.md`                | handoff and iteration-limits utilities |
-| `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing |
-| `commands/cursor/*.md`             | Complete workflow slash commands       |
+| Path                               | Purpose                                                 |
+| ---------------------------------- | ------------------------------------------------------- |
+| `.cursor-plugin/plugin.json`       | Plugin manifest                                         |
+| `agents/*.md`                      | 7 complete specialist Task agents (shared across hosts) |
+| `skills/*/SKILL.md`                | handoff and iteration-limits utilities                  |
+| `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing                  |
+| `commands/*.md`                    | Complete workflow slash commands (shared)               |
 
-The manifest explicitly selects Cursor resources. Native profiles embed complete role and global policy; no orchestrator or role skill preload is needed. Package and sync checks verify these files, while live Cursor loading remains unverified. See the [compatibility matrix](/agent-plugins/compatibility/).
+Profiles embed complete role and global policy; no role skill preload is needed. Other hosts' frontmatter keys do not affect Cursor loading.
+
+<Aside type="caution" title="Read-only is not enforced for plugin agents">
+  The profiles declare `readonly: true` for adventurer, planner, and reviewer. In a 2026-10-12 probe
+  on Cursor CLI `2026.10.01`, plugin-supplied agents did not enforce it (a write succeeded), while a
+  project `.cursor/agents/` profile with `readonly: true` was blocked. Run `maestria configure
+  cursor` at project level to write copies into `.cursor/agents/`, where it is enforced. Cursor
+  desktop was not tested. See the [compatibility matrix](/agent-plugins/compatibility/).
+</Aside>
+
+### Models
+
+`maestria configure cursor` at global level edits `~/.cursor/plugins/local/maestria/agents/<role>.md`. `maestria update cursor` carries configured models over, reading the shared profile first and falling back to a legacy `agents/cursor/` copy from earlier installs.
 
 ## Uninstall
 

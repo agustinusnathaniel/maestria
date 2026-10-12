@@ -32,15 +32,13 @@ The collection keeps consequential architectural choices. Procedures and documen
 | OpenCode permissions and workflow modes | [OpenCode ADRs](adr/opencode/) |
 | Kimi Code distribution and integration | [Kimi Code ADRs](adr/kimi-code/) |
 | Cursor integration | [Cursor ADRs](adr/cursor/) |
-| Hermes portable integration | [Hermes guide](hermes-maestria-plugin.md) |
-| Pi and Oh My Pi ecosystem and lifecycle | [Pi ADRs](adr/pi/) |
+| Consolidated declarative plugin (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes) | [CORE-034](adr/core/ADR-CORE-034-consolidated-declarative-plugin.md) and the [package README](../packages/agent-plugins/README.md) |
+| Pi ecosystem and lifecycle | [Pi ADRs](adr/pi/) |
 
 ## Plans
 
-[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [consolidated package README](../packages/agent-plugins/README.md) for installation and current user guidance.
+[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. Use the [consolidated package README](../packages/agent-plugins/README.md) for installation and current user guidance.
 
 ## Next Step
 
 Choose the document for your task above. When adding a new engineering guide, link it here if it provides a new entry point.
-
-The declarative plugin ownership decision is recorded in [CORE-034](adr/core/ADR-CORE-034-consolidated-declarative-plugin.md).

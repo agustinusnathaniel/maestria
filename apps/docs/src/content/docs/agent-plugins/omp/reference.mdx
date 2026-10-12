@@ -5,23 +5,22 @@ description: Native task profiles, workflow commands, policy discovery, and host
 
 ## Native Resources
 
-As of 2026-10-11, the package supplies eight root task profiles, three root commands, one always-apply root rule, and two utility skills for OMP `18.4.8`. The empty `package.json#omp` entry registers this data-only package. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) for the isolated real-CLI install and context-composition results and limits.
+As of 2026-10-12, OMP `18.4.8` discovers seven task profiles, three commands, one always-apply rule, and two utility skills from the package, through conventional discovery on both the archive and a git root. `.toml` files are not loaded. The empty `package.json#omp` entry registers this data-only package. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) for the loader probe and its limits.
 
 | Resource                      | Purpose                                                     |
 | ----------------------------- | ----------------------------------------------------------- |
-| `agents/orchestrator.md`      | Dispatcher task profile; does not replace the main agent    |
-| Seven specialist profiles     | Complete role and global policy for native tasks            |
+| `agents/<role>.md`            | Seven specialist profiles with complete role and policy     |
 | `/fein`, `/sonar`, `/blitz`   | Complete native mode commands with routing and policy       |
 | `rules/global.md`             | Always-apply global policy and routing for the main session |
 | `handoff`, `iteration-limits` | Portable utilities                                          |
 
-Root profiles, commands, and rules are generated from canonical sources. No role, orchestrator, or global-rules skill preload is required.
+Root profiles, commands, and rules are generated from canonical sources and shared with other Markdown hosts. No role or global-rules skill preload is required.
 
 ## Specialist Dispatch
 
 OMP exposes native `task(agent, task)` delegation. Use `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, or `writer` as the agent identity. Profiles embed methodology; task prompts supply the outcome, constraints, and acceptance evidence.
 
-Keep maker and checker independent. By default, root profiles inherit the parent model. Their read-only instructions are advisory, and generic root metadata does not enforce per-role tool denial. OMP owns permissions and task tool exposure. The real-CLI probe verified resource and child-template composition without inference or task spawning; it does not establish model behavior or runtime isolation.
+Keep maker and checker independent. By default, root profiles inherit the parent model. Read-only is prompt-level only: OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced. OMP owns permissions and task tool exposure. The loader probe verified resource discovery without inference or task spawning; it does not establish model behavior or runtime isolation.
 
 ## Workflow Modes
 

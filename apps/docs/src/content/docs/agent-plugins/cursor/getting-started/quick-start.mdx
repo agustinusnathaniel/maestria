@@ -5,7 +5,7 @@ description: Your first session with @maestria/agent-plugins - specialists, orch
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-After installing and reloading the plugin, the selected always-apply native rule supplies complete routing and global policy. Native profiles and commands embed their full methodology; no orchestrator or role skill preload is needed.
+After installing and reloading the plugin, the selected always-apply native rule supplies complete routing and global policy. Profiles and commands embed their full methodology; no role skill preload is needed.
 
 <Aside type="caution" title="Full orchestration is not always the best path">
   Direct execution or one specialist is often better for small changes and expensive models. Read
@@ -44,13 +44,13 @@ Expected sequence:
 <Steps>
 
 1. `diagnose` - find the root cause, apply the confirmed minimal fix, and verify it
-2. `reviewer` - independent validation (read-only; must not edit)
+2. `reviewer` - independent validation (declared read-only; see the [installation note](/agent-plugins/cursor/getting-started/installation/) on enforcement)
 
 </Steps>
 
 Never ask the same agent that implemented to review its own work.
 
-The two utility skills are `handoff` and `iteration-limits`. Native resource loading is documented and package-checked; live Cursor verification remains open.
+The two utility skills are `handoff` and `iteration-limits`. Read-only enforcement for plugin agents is not confirmed; see [compatibility](/agent-plugins/compatibility/).
 
 ## Next
 

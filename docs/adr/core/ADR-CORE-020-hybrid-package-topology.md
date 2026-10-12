@@ -6,7 +6,7 @@ Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-d
 
 ## Context
 
-Canonical methodology already had one projection pipeline, but host-neutral mode mechanics, Pi/OMP validators, and adapter helpers were duplicated. The CLI also maintained a platform-ID list separately from its authoritative handler registry. These copies could drift even when every host still built.
+Canonical methodology already had one projection pipeline, but host-neutral mode mechanics, Pi-family validators, and adapter helpers were duplicated. The CLI also maintained a platform-ID list separately from its authoritative handler registry. These copies could drift even when every host still built.
 
 A universal runtime would remove some duplication by coupling incompatible host SDKs, manifests, install paths, peer dependencies, and Node/Python distributions. Sharing must follow demonstrated common behavior rather than a presumed cross-host abstraction.
 
@@ -18,7 +18,7 @@ Share pure host-neutral mechanics through narrow private workspace modules under
 
 The mode-sharing decision preserves case-insensitive word boundaries, priority, disabled keywords, code-span exclusion, stripping, section extraction, and the accepted unclosed-fence false-positive behavior recorded in [OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md). Share tested mechanics without imposing one adapter's strictness or mode lifetime on another.
 
-Share Pi/OMP filesystem/frontmatter validation as development tooling while retaining its output, exit status, and strictness. Prime's stricter validator, pinned fork types, and fail-closed verified extension subset remain independent under [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md). At the time of this decision Hermes used a native Python adapter; CORE-034 later retired it in favor of the consolidated declarative package.
+Share Pi-family filesystem/frontmatter validation as development tooling while retaining its output, exit status, and strictness. Runtimes whose types or extension subsets are not shown equivalent remain independent under [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md). Distribution topology for Hermes, OMP, and Prime Agent was later superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md).
 
 The management CLI remains a separate distribution. Derive platform validation from its handler registry while preserving ordering, messages, and public types, without importing effectful handlers into validation or creating cycles. Shared batch mechanics keep sequencing and result handling consistent while individual commands retain choices and messages.
 
@@ -39,7 +39,7 @@ Share demonstrated adapter surfaces directly: narrow installers accept what they
 - **One shared core runtime for every host mechanic:** rejected because pure mode functions do not establish common state, compaction, dispatch, or Python behavior.
 - **One universal bundle:** rejected because it conflates host SDKs, marketplace manifests, runtime languages, peer dependencies, and install paths.
 - **Compatibility shims for unused private APIs:** rejected because no consumer requires them and they prolong dead surface.
-- **Merge Prime or all Pi/OMP wrappers wholesale:** rejected because pinned Prime semantics and host-specific types and lifecycle payloads have not been shown equivalent.
+- **Merge host wrappers wholesale:** rejected because host-specific types and lifecycle payloads have not been shown equivalent.
 
 ## Related Decisions
 

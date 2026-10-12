@@ -9,16 +9,16 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/agent-plugins` is a declarative Claude Code plugin: a `.claude-plugin/plugin.json` manifest, native agent profiles, three native workflow commands, and the two utility skills. No build step or runtime code is required.
+`@maestria/agent-plugins` is a declarative Claude Code plugin: a `.claude-plugin/plugin.json` manifest that lists the seven shared `agents/<role>.md` profiles and three shared `commands/*.md` workflows explicitly (Claude rejects directory agent selectors), and the two utility skills. No build step or runtime code is required.
 
 See the host-side model in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
 
 <Aside type="caution" title="CLI evidence is scoped">
-  Strict plugin validation passes. An offline fixture on Claude Code `2.1.217` verifies complete
-  reviewer role and global policy in the native child request, a tool schema without Write or Edit,
-  and return of the child result. It does not test model judgment, shell-mediated editing, every
-  specialist, other CLI versions, account plugin sync, Cowork, or Desktop Code. See the [host
-  verification
+  Strict plugin validation passes on Claude Code `2.1.295`. An offline fixture (2026-10-12) loaded
+  the reviewer from the shared `agents/reviewer.md` with Write and Edit unavailable and the full
+  role and global policy in the child context. It does not test model judgment, shell-mediated
+  editing, every specialist, other CLI versions, account plugin sync, Cowork, or Desktop Code. See
+  the [host verification
   record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md).
 </Aside>
 
@@ -98,7 +98,7 @@ Profiles and commands embed the complete canonical methodology. They do not prel
 
 ## Tool Restrictions
 
-Native `disallowedTools: Write, Edit` metadata filters those tools for adventurer, planner, and reviewer. Role and policy text remains guidance; shell-mediated writes are outside this filter. The host controls permission decisions and lifecycle.
+Native `disallowedTools: Write, Edit` metadata filters those tools for adventurer, planner, and reviewer. Role and policy text remains guidance; shell-mediated writes are outside this filter. The host controls permission decisions and lifecycle. Profiles set no `model`, so Claude uses the main conversation's model.
 
 Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents. Maestria ships no executable hooks or MCP server and does not modify `CLAUDE.md`.
 

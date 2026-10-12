@@ -1,20 +1,20 @@
-# ADR-OC-006: Read-Only Bash Boundary for the Shared Pi/OMP Interceptor
+# ADR-OC-006: Read-Only Bash Boundary for the Shared Pi Interceptor
 
 ## Status
 
-Accepted (2026-09-24), Confidence: High
+Accepted (2026-09-24), Confidence: High. Amended 2026-10-12: the OMP consumer was retired with the native OMP package; the decision now covers the shared Pi interceptor. The filename keeps its original slug so incoming references stay valid.
 
 ## Context
 
-This decision was taken inside [ADR-OC-001](ADR-OC-001-tool-permission-design.md) and extracted into its own record on 2026-09-28, because it decides a different subject from that record: the shared Pi and OMP command interceptor, not the OpenCode agent permission design. The 2026-09-24 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
+This decision was taken inside [ADR-OC-001](ADR-OC-001-tool-permission-design.md) and extracted into its own record on 2026-09-28, because it decides a different subject from that record: the shared Pi command interceptor (the retired OMP package consumed it until 2026-10-12), not the OpenCode agent permission design. The 2026-09-24 date is the date the decision was made. Extracting it changed neither the decision, its rationale, nor its consequences.
 
-The shared Pi/OMP tool interceptor recognized a broad command-prefix list. That list included `find` and package-manager test forms. `find` can execute or delete through flags, and package-manager test or run forms can execute lifecycle scripts and mutate a workspace. A prefix check also does not by itself establish that every shell segment, substitution, redirect, or lookalike command is safe. `[verified]`
+The shared Pi tool interceptor recognized a broad command-prefix list. That list included `find` and package-manager test forms. `find` can execute or delete through flags, and package-manager test or run forms can execute lifecycle scripts and mutate a workspace. A prefix check also does not by itself establish that every shell segment, substitution, redirect, or lookalike command is safe. `[verified]`
 
 The decision narrowed the shared policy before the implementation owner wrote remediation tests. It did not change the historical OpenCode decisions in ADR-OC-001, and it does not claim that an OpenCode host enforces the same command parser at runtime.
 
 ## Decision
 
-The shared Pi/OMP read-only Bash policy uses a small positive allowlist. A command is allowed only when its executable and, for Git, its subcommand are recognized exactly, every option is safe for that command, and every pipeline segment is independently safe.
+The shared Pi read-only Bash policy uses a small positive allowlist. A command is allowed only when its executable and, for Git, its subcommand are recognized exactly, every option is safe for that command, and every pipeline segment is independently safe.
 
 The allowlist covers exact filesystem, text, location, and executable queries, plus the normalized read-only Git commands decided in [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Every command token, option, and pipeline segment must pass the shared parser, so a safe prefix cannot hide a later mutation. Standard-stream duplication such as `2>&1` is allowed only as a parsed file-descriptor operation, never as permission to write a file.
 
@@ -86,17 +86,17 @@ The source amendment in [ADR-OC-001](ADR-OC-001-tool-permission-design.md) recor
 
 ## Verification
 
-Run the shared parser, Pi, and OMP package tests, and `pnpm e2e:fail-closed` for sampled integrated behavior. The E2E command writes one evidence file at `artifacts/fail-closed-evidence.json`; it is not proof of every inventory row. A live OpenCode host probe remains necessary before any enforcement claim.
+Run the shared parser and Pi package tests, and `pnpm e2e:fail-closed` for sampled integrated behavior. The E2E command writes one evidence file at `artifacts/fail-closed-evidence.json`; it is not proof of every inventory row. A live OpenCode host probe remains necessary before any enforcement claim.
 
 ## Related Decisions
 
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): the pre-code failure-mode inventory this decision's cases come from.
-- [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): shared Pi/OMP adapter ownership.
+- [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): shared Pi adapter ownership.
 - [Testing Philosophy](../../testing.md): behavior-test selection and evidence requirements.
 
 ## Supersession
 
-Extends [ADR-OC-001](ADR-OC-001-tool-permission-design.md), which keeps its original context, decision, consequences, and date. ADR-OC-001 continues to own the OpenCode agent permission design; this record owns the shared Pi/OMP read-only Bash boundary that its 2026-09-24 amendment introduced. ADR-OC-001's Status line names this record as the successor for that amendment.
+Extends [ADR-OC-001](ADR-OC-001-tool-permission-design.md), which keeps its original context, decision, consequences, and date. ADR-OC-001 continues to own the OpenCode agent permission design; this record owns the shared Pi read-only Bash boundary that its 2026-09-24 amendment introduced. ADR-OC-001's Status line names this record as the successor for that amendment.
 
 ## Date
 

@@ -20,11 +20,11 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 | --- | --- | --- |
 | Claude Code | Seven native specialists, three native workflow commands, two utilities | [Claude Code](/agent-plugins/claude-code/) |
 | Codex | Two plugin utilities; companion CLI installs seven native agents and global routing instructions | [Codex](/agent-plugins/codex/) |
-| Cursor | Seven native specialists, workflow commands, always-apply policy and routing, two utilities | [Cursor](/agent-plugins/cursor/) |
-| Kimi Code | Seven native specialists, workflow commands, session bootstrap, two utilities | [Kimi Code](/agent-plugins/kimi-code/) |
-| Devin | Root agent profiles and policy; two utilities plus three host-specific workflow skill exports | [Devin](/agent-plugins/devin/) |
-| ZCode | Selected native profiles and workflow commands, two utilities | [ZCode](/agent-plugins/zcode/) |
-| Oh My Pi | Eight task profiles, three commands, always-apply policy and routing, two utilities | [Oh My Pi](/agent-plugins/omp/) |
+| Cursor | Seven native specialists, three workflow commands, always-apply policy and routing, two utilities | [Cursor](/agent-plugins/cursor/) |
+| Kimi Code | Seven native specialists, three workflow commands, session bootstrap, two utilities | [Kimi Code](/agent-plugins/kimi-code/) |
+| Devin | Seven root agent profiles and always-on policy; two utilities; modes by keyword | [Devin](/agent-plugins/devin/) |
+| ZCode | Seven native specialists, three workflow commands, two utilities | [ZCode](/agent-plugins/zcode/) |
+| Oh My Pi | Seven task profiles, three commands, always-apply policy and routing, two utilities | [Oh My Pi](/agent-plugins/omp/) |
 | Hermes | Two portable utilities; optional manual host context configuration | [Hermes](/agent-plugins/hermes/) |
 
 [OpenCode](/opencode/) and [Pi](/pi/) retain their separate native runtime packages. The [compatibility matrix](/agent-plugins/compatibility/) distinguishes documented resources, package validation, loader probes, and live runtime verification.
@@ -66,7 +66,7 @@ The checkout and extracted npm archive share the same installation root. Follow 
 
 ## Runtime Boundaries
 
-Native profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
+Markdown hosts share one profile per role in `agents/<role>.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. Rules stay per host because host formats differ. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
 
 If utilities do not appear, confirm the selected directory contains `plugin.json` and `skills/`, check host trust settings, and reload discovery. For native resources, use the host guide's verification steps.
 

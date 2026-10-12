@@ -25,17 +25,16 @@ Runtime hosts reread full content at model/turn time so edits do not require a r
 | Host | Root authority | Present-but-unusable file |
 | --- | --- | --- |
 | OpenCode | SDK worktree, then worktree path, then session directory; skip `/` sentinel | Throw from the system transform, failing the model call |
-| Pi, OMP, Prime | Host-selected session cwd | Notify and inject a STOP banner; throwing is unsafe where the host swallows hook exceptions |
-| Hermes | Process cwd at call time, retargeted by host resume | Inject an error banner and log a warning; the hook is inject-only and fail-open |
+| Pi | Host-selected session cwd | Notify and inject a STOP banner; throwing is unsafe where the host swallows hook exceptions |
 | Declarative hosts | Project root through host tools | Disclose unreadability and request needed content instead of inventing or silently overriding it |
 
 Diagnostics expose only relative file and failure kind, never raw cause or content. Canonicalize symlink roots and require regular-file targets with containment checks. Reads observe the filesystem at call time rather than an atomic snapshot; residual TOCTOU remains, with no sandbox promise.
 
-OpenCode's pinned pipeline covered primary and child model calls. Pi-family child injection was unverified, and Hermes had no separate child-turn guarantee; delegation briefs must still carry constraints. Fresh runtime reads cover later/post-compaction turns without promising durable project-content persistence. Current host versions, source evidence, and verification limits live in the [runtime support matrix](../../runtime-support-matrix.md).
+OpenCode's pinned pipeline covered primary and child model calls. Pi child injection was unverified; delegation briefs must still carry constraints. Fresh runtime reads cover later/post-compaction turns without promising durable project-content persistence. Current host versions, source evidence, and verification limits live in the [runtime support matrix](../../runtime-support-matrix.md).
 
 ### Shared implementation
 
-Use a narrow private Node loader under `packages/shared/project-config/`, bundled into public host builds, for the common filesystem contract. Host adapters keep root selection and error presentation. The loader imports no host SDK and stays outside browser-safe core because it requires Node filesystem APIs. Hermes retains a separate native Python implementation.
+Use a narrow private Node loader under `packages/shared/project-config/`, bundled into public host builds, for the common filesystem contract. Host adapters keep root selection and error presentation. The loader imports no host SDK and stays outside browser-safe core because it requires Node filesystem APIs. Declarative hosts ship no executable loader; the retired Hermes Python adapter's separate loader was removed with it ([CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md), 2026-10-10).
 
 Shared real-filesystem tests own missing/empty files, order, freshness, symlinks, containment, file kinds, and safe diagnostics. Host tests own wrappers and injection. These checks establish the adapter boundary rather than an untested live-host guarantee.
 
@@ -53,13 +52,14 @@ Shared real-filesystem tests own missing/empty files, order, freshness, symlinks
 - **Package project workflows as orchestrator skills:** rejected in the original design because it needed new loading infrastructure instead of two project files.
 - **Discover custom mode keywords:** rejected because it requires cross-platform registries and type/config expansion for a problem local prose solves.
 - **Keep duplicated Node loaders:** rejected because identical security-sensitive filesystem checks can diverge; share the contract and preserve host wrappers.
-- **Move the loader into core or share it with Python:** rejected by browser-safe core and native host boundaries.
+- **Move the loader into core:** rejected by the browser-safe core boundary.
 
 ## Related Decisions
 
 - [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): shared directive projection.
 - [CORE-019](ADR-CORE-019-directive-simplification.md): ownership and authorization precedence.
 - [CORE-020](ADR-CORE-020-hybrid-package-topology.md): narrow private sharing.
+- [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md): declarative hosts and Hermes adapter retirement.
 - [OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md): the mode system this protocol complements.
 
 ## Date

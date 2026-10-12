@@ -14,7 +14,7 @@ Literal replacements introduced another risk: an anchor could disappear or be re
 
 ### Ownership and projection
 
-Author shared prompts, rules, workflow modes, and skills only in `packages/core/agent-directives/`. Keep prose readable Markdown with canonical role tokens; host-specific tool syntax, frontmatter, and layouts belong in each package's `sync.config.ts`. The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the maintained source layout.
+Author shared prompts, rules, workflow modes, and skills only in `packages/core/agent-directives/`. Keep prose readable Markdown with canonical role tokens; host-specific tool syntax, frontmatter, and layouts belong in the native adapter packages' `sync.config.ts` (OpenCode and Pi) or, for declarative hosts, in the consolidated generator's manifest inputs (see [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md)). The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the maintained source layout.
 
 One monorepo-internal TypeScript sync tool derives host artifacts through declarative string replacements, content composition, frontmatter serialization, generated provenance, and normalized output. Configs support defaults plus explicit per-file overrides and preserved host-local content; the engine does not know platform identities. Static frontmatter avoids another dynamic extension surface. Library YAML quoting is sufficient unless a host demonstrates a stricter need.
 
@@ -28,7 +28,7 @@ The tool is not published: it runs only within this monorepo, so a publish/consu
 
 ### Consolidated compositions and whole-run preflight (2026-10-11)
 
-The consolidated plugin compiler composes multiple canonical role, policy, router and mode inputs into native resources while retaining core ownership and shared normalization/frontmatter helpers. Generic sync configs remain in use for native adapters. The root wrapper freezes the discovered config list and validates every entry with a read-only dry-run before any write. Detected processing errors return failure in dry-run and write modes as well as check mode, so output-file errors cannot silently bypass the preflight.
+The consolidated plugin compiler (`scripts/sync-consolidated-plugin.ts`) composes multiple canonical role, policy, router and mode inputs into native resources while retaining core ownership and shared normalization/frontmatter helpers. Generic sync configs remain in use for the native adapters only. The root wrapper freezes the discovered config list and validates every entry with a read-only dry-run before any write. Detected processing errors return failure in dry-run and write modes as well as check mode, so output-file errors cannot silently bypass the preflight.
 
 ### Shared source plan and no-write preflight
 

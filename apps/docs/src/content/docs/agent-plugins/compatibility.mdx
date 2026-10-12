@@ -7,37 +7,24 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-Evidence updated: 2026-10-11. Package validation confirms shipped files and manifest contracts. Loader probes confirm the specific resources and tool schemas they observe. Neither establishes model judgment, live behavior across versions, or enforcement beyond the host's controls. The [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) record reproducible methods and limits.
+Evidence updated: 2026-10-12. Package validation confirms shipped files and manifest contracts. Loader probes confirm the specific resources and tool schemas they observe. Neither establishes model judgment, live behavior across versions, or enforcement beyond the host's controls. The [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) record reproducible methods and limits.
 
 ## Current Package Contracts
 
 | Host or surface | Packaged contract | Verification boundary |
 | --- | --- | --- |
 | Portable Agent Plugins v1 | `handoff` and `iteration-limits`; no MCP server | Package and archive validation. The portable format does not declare native profiles, commands, rules, or hooks. |
-| Claude Code | Seven complete native specialists and three complete native workflow commands; two utilities | Strict validation and the `2.1.217` offline CLI fixture verify the complete reviewer role and policy in its native child request, absence of Write/Edit, and return of the result. Model judgment, shell isolation, other roles, account sync, Cowork, Chat, and Desktop behavior remain unverified. |
-| Cursor | Seven complete isolated profiles, native commands and always-apply policy and routing; two utilities | Package and schema checks. Live loading and enforcement unverified. |
+| Claude Code | Seven shared specialists (`agents/<role>.md`) and three shared commands, listed explicitly in the manifest; two utilities | `claude plugin validate --strict` passes on `2.1.295`. The offline CLI fixture (`scripts/e2e/claude-skill-preload.ts`, 2026-10-12) loaded the reviewer from the shared profile with Write and Edit unavailable and the full role and global policy in the child context. Model judgment, shell isolation, other roles, account sync, Cowork, Chat, and Desktop behavior remain unverified. |
+| Cursor | Seven shared profiles, three shared commands, always-apply rule (`rules/cursor/`); two utilities | Live probe on Cursor CLI `2026.10.01` (2026-10-12): plugin-supplied agents did not enforce `readonly` (a write succeeded), while a project `.cursor/agents/` profile with `readonly: true` was blocked. Other hosts' frontmatter keys do not affect loading. Cursor desktop untested. |
 | Codex CLI `0.153.4` | Two marketplace utilities; companion CLI installs complete native TOMLs and marked global instructions | Inspected AgentPlugin loader discovers root `skills/` and ignores the overlay selector. Package and installer tests cover companion payloads. Fresh consolidated-package CLI model E2E unverified. |
 | Codex desktop | Two marketplace utilities | Documented personal npm marketplace setup. Native companion and desktop behavior unverified. |
-| Kimi Code | Seven native specialists, complete commands and `systemPromptPath` bootstrap; two utilities | Documented native contract and package checks. No per-agent model field. Live loading unverified. |
-| Devin | Root agents and `AGENTS.md`; two utilities and three selected workflow compatibility skills | Documented skills selector array and package checks. Native plugin agents are local CLI/Desktop only. Live loading unverified. |
-| ZCode | Explicit native specialist and command selectors; two utilities | Documented commands and package checks. Plugin rule-selector support and live loading unverified. |
-| OMP `18.4.8` | Eight task profiles, three commands, one always-apply rule, two utilities | An isolated real-CLI probe installed the packed archive, disabled, reinstalled, and uninstalled it. It checked exact native bodies, command arguments, main policy injection, and all eight child-template compositions. No inference or actual task spawning ran; runtime tool denial and model judgment remain unverified. |
+| Kimi Code | Seven shared specialists, three shared commands and `systemPromptPath` bootstrap; two utilities | Documented native contract and package checks. Read-only roles deny `Write` and `Edit`, the tool names registered by Kimi `v0.38.0` source; earlier `WriteFile`/`StrReplaceFile` names matched nothing. Unknown keys are ignored. No per-agent model field. Not live-run. |
+| Devin | Root agents and `AGENTS.md`; two utilities. No plugin commands component, so modes are triggered by keywords | Documented conventions and package checks. Native plugin agents are local CLI/Desktop only. No denylist field; read-only is prompt-level. Live loading unverified. |
+| ZCode | Seven shared specialists and three shared commands listed explicitly; two utilities | Documented `disallowedTools` support and package checks; unknown keys are ignored. Plugin rule-selector support and live loading unverified. |
+| OMP `18.4.8` | Seven task profiles, three commands, one always-apply rule, two utilities | The real OMP loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-12) on archive and git root found 7 agents, 3 commands, 1 rule, and 2 skills; `.toml` files are not loaded. An earlier isolated install lifecycle probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran; no denylist, so read-only is prompt-level. |
 | Hermes | Two portable utilities; optional manually configured host context | Documented portable and context-loader contracts. Current two-utility archive smoke requires separate evidence. Context is not automatically imported and does not register specialists. |
 
 OpenCode and Pi retain their separate native packages and guides. The Agent Plugins archive intentionally ships no executable adapter, hooks, automation, or MCP server; this does not imply those capabilities are unsupported by a host.
-
-## Historical Checks
-
-These checks predate the current semantic split. They cannot validate the current profiles, commands, or two-utility layout.
-
-| Client or fixture | Historical result | Scope |
-| --- | --- | --- |
-| Claude Code `2.1.217` | Offline fixture passed | Earlier reviewer wrapper preloaded role and policy skills; its child schema omitted Write and Edit. |
-| OMP `18.4.8` | Packed discovery passed | Earlier archive exposed 14 skills, seven profiles, no commands, and no rules. |
-| Hermes consolidated archive, 2026-10-10 | Isolated-home smoke passed | Earlier 14-skill archive loaded and plugin doctor passed; host version was not pinned in the public summary. |
-| Hermes `0.20.3` | Live smoke passed | Former standalone portable artifact loaded in an isolated home. |
-| Grok Bot CLI `1.0.0` | Live smoke passed | Former standalone portable artifact installed and validated in an isolated home. |
-| Codex CLI `0.145.0` | Marketplace smoke passed | Former standalone package; no current consolidated archive claim. |
 
 <Aside type="caution" title="Activation remains client-owned">
   Follow the selected host guide, enable the plugin when required, and start a fresh session.

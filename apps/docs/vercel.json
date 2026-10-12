@@ -1,14 +1,121 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
-    { "source": "/pi", "destination": "/pi-omp/", "permanent": true },
-    { "source": "/pi/", "destination": "/pi-omp/", "permanent": true },
-    { "source": "/omp", "destination": "/pi-omp/", "permanent": true },
-    { "source": "/omp/", "destination": "/pi-omp/", "permanent": true },
-    { "source": "/pi.md", "destination": "/pi-omp.md", "permanent": true },
-    { "source": "/omp.md", "destination": "/pi-omp.md", "permanent": true },
-    { "source": "/agent-plugin", "destination": "/agent-plugins/", "permanent": true },
-    { "source": "/agent-plugin/", "destination": "/agent-plugins/", "permanent": true },
+    {
+      "source": "/claude-code",
+      "destination": "/agent-plugins/claude-code/",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code/:path*",
+      "destination": "/agent-plugins/claude-code/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/claude-code.md",
+      "destination": "/agent-plugins/claude-code.md",
+      "permanent": true
+    },
+    {
+      "source": "/codex",
+      "destination": "/agent-plugins/codex/",
+      "permanent": true
+    },
+    {
+      "source": "/codex/:path*",
+      "destination": "/agent-plugins/codex/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/codex.md",
+      "destination": "/agent-plugins/codex.md",
+      "permanent": true
+    },
+    {
+      "source": "/cursor",
+      "destination": "/agent-plugins/cursor/",
+      "permanent": true
+    },
+    {
+      "source": "/cursor/:path*",
+      "destination": "/agent-plugins/cursor/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/cursor.md",
+      "destination": "/agent-plugins/cursor.md",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code",
+      "destination": "/agent-plugins/kimi-code/",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code/:path*",
+      "destination": "/agent-plugins/kimi-code/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/kimi-code.md",
+      "destination": "/agent-plugins/kimi-code.md",
+      "permanent": true
+    },
+    {
+      "source": "/hermes",
+      "destination": "/agent-plugins/hermes/",
+      "permanent": true
+    },
+    {
+      "source": "/hermes/:path*",
+      "destination": "/agent-plugins/hermes/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/hermes.md",
+      "destination": "/agent-plugins/hermes.md",
+      "permanent": true
+    },
+    {
+      "source": "/omp",
+      "destination": "/agent-plugins/omp/",
+      "permanent": true
+    },
+    {
+      "source": "/omp/:path*",
+      "destination": "/agent-plugins/omp/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/omp.md",
+      "destination": "/agent-plugins/omp.md",
+      "permanent": true
+    },
+    {
+      "source": "/pi-omp",
+      "destination": "/pi/",
+      "permanent": true
+    },
+    {
+      "source": "/pi-omp/:path*",
+      "destination": "/pi/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/pi-omp.md",
+      "destination": "/pi.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugin",
+      "destination": "/agent-plugins/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugin/",
+      "destination": "/agent-plugins/",
+      "permanent": true
+    },
     {
       "source": "/agent-plugin/compatibility",
       "destination": "/agent-plugins/compatibility/",
@@ -19,10 +126,144 @@
       "destination": "/agent-plugins/compatibility/",
       "permanent": true
     },
-    { "source": "/agent-plugin.md", "destination": "/agent-plugins.md", "permanent": true },
+    {
+      "source": "/agent-plugin.md",
+      "destination": "/agent-plugins.md",
+      "permanent": true
+    },
     {
       "source": "/agent-plugin/compatibility.md",
       "destination": "/agent-plugins/compatibility.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/contributing",
+      "destination": "/agent-plugins/contributing/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/contributing.md",
+      "destination": "/agent-plugins/contributing.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/claude-code/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/codex/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/cursor/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/kimi-code/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/changelog",
+      "destination": "/agent-plugins/legacy-changelog/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/omp/changelog.md",
+      "destination": "/agent-plugins/legacy-changelog.md",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/commands",
+      "destination": "/agent-plugins/hermes/getting-started/quick-start/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-plugins/hermes/commands.md",
+      "destination": "/agent-plugins/hermes/getting-started/quick-start.md",
       "permanent": true
     }
   ],
@@ -34,8 +275,14 @@
           "key": "Strict-Transport-Security",
           "value": "max-age=31536000; includeSubDomains; preload"
         },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"

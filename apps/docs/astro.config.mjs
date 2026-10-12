@@ -14,13 +14,13 @@ export default defineConfig({
       },
       customCss: ['./src/styles/global.css'],
       description:
-        'Portable AI engineering workflows for OpenCode, Claude Code, Codex CLI, and beyond.',
+        'Portable AI engineering workflows for OpenCode, Pi, Claude Code, Codex CLI, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes, and beyond.',
       disable404Route: true,
       head: [
         {
           attrs: {
             content:
-              'maestria, maestria AI engineering workflows, maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
+              'maestria, maestria AI engineering workflows, maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Devin, ZCode, OMP, Pi, Hermes',
             name: 'keywords',
           },
           tag: 'meta',
@@ -128,7 +128,9 @@ export default defineConfig({
           items: [
             { label: 'Overview', link: '/agent-plugins/' },
             { label: 'Compatibility', link: '/agent-plugins/compatibility/' },
+            { label: 'Contributing', link: '/agent-plugins/contributing/' },
             { label: 'Changelog', link: '/agent-plugins/changelog/' },
+            { label: 'Legacy Changelog', link: '/agent-plugins/legacy-changelog/' },
             {
               items: [
                 { label: 'Overview', link: '/agent-plugins/claude-code/' },
@@ -138,8 +140,6 @@ export default defineConfig({
                   ],
                   label: 'Getting Started',
                 },
-                { label: 'Changelog', link: '/agent-plugins/claude-code/changelog/' },
-                { label: 'Contributing', link: '/agent-plugins/claude-code/contributing/' },
               ],
               label: 'Claude Code',
             },
@@ -150,8 +150,6 @@ export default defineConfig({
                   items: [{ autogenerate: { directory: 'agent-plugins/codex/getting-started' } }],
                   label: 'Getting Started',
                 },
-                { label: 'Changelog', link: '/agent-plugins/codex/changelog/' },
-                { label: 'Contributing', link: '/agent-plugins/codex/contributing/' },
               ],
               label: 'Codex',
             },
@@ -162,8 +160,6 @@ export default defineConfig({
                   items: [{ autogenerate: { directory: 'agent-plugins/cursor/getting-started' } }],
                   label: 'Getting Started',
                 },
-                { label: 'Changelog', link: '/agent-plugins/cursor/changelog/' },
-                { label: 'Contributing', link: '/agent-plugins/cursor/contributing/' },
               ],
               label: 'Cursor',
             },
@@ -180,8 +176,6 @@ export default defineConfig({
                   ],
                   label: 'Getting Started',
                 },
-                { label: 'Changelog', link: '/agent-plugins/kimi-code/changelog/' },
-                { label: 'Contributing', link: '/agent-plugins/kimi-code/contributing/' },
               ],
               label: 'Kimi Code',
             },
@@ -192,9 +186,6 @@ export default defineConfig({
                   items: [{ autogenerate: { directory: 'agent-plugins/hermes/getting-started' } }],
                   label: 'Getting Started',
                 },
-                { label: 'Commands', link: '/agent-plugins/hermes/commands/' },
-                { label: 'Changelog', link: '/agent-plugins/hermes/changelog/' },
-                { label: 'Contributing', link: '/agent-plugins/hermes/contributing/' },
               ],
               label: 'Hermes',
             },
@@ -206,8 +197,6 @@ export default defineConfig({
                   label: 'Getting Started',
                 },
                 { label: 'Reference', link: '/agent-plugins/omp/reference/' },
-                { label: 'Changelog', link: '/agent-plugins/omp/changelog/' },
-                { label: 'Contributing', link: '/agent-plugins/omp/contributing/' },
               ],
               label: 'Oh My Pi',
             },

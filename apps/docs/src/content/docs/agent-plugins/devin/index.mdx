@@ -1,11 +1,11 @@
 ---
 title: Maestria for Devin
-description: Use complete local Devin agents, always-on policy, and host-specific workflow skill exports.
+description: Use complete local Devin agents, always-on policy, and keyword-triggered workflow modes.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-Devin reads `@maestria/agent-plugins` through `.devin-plugin/plugin.json`. The package supplies complete conventional root agent profiles and always-on policy and routing in root `AGENTS.md`. The manifest's supported skills selector array adds two utilities and three Devin-specific workflow compatibility exports.
+Devin reads `@maestria/agent-plugins` through `.devin-plugin/plugin.json`. The package supplies complete conventional root agent profiles and always-on policy and routing in root `AGENTS.md`. The manifest declares only `skills`, which adds the two utilities.
 
 ## Install
 
@@ -30,19 +30,20 @@ Changes apply to new sessions. Use **Reindex plugins** on Devin's Customize page
 
 ## Use
 
-| Skill entry point             | Purpose                                 |
-| ----------------------------- | --------------------------------------- |
-| `/maestria:fein <goal>`       | Full route with independent review      |
-| `/maestria:sonar <goal>`      | Research and stop before implementation |
-| `/maestria:blitz <goal>`      | Smallest safe implementation route      |
-| `handoff`, `iteration-limits` | Context transfer and bounded repair     |
+Devin has no plugin commands component, so there are no `/maestria:fein` style commands. Trigger a mode with a natural-language keyword that the always-on policy routes:
 
-The three workflow exports carry complete mode, router, and policy. They live outside root `skills/`, keeping portable discovery limited to utilities. There are no role, orchestrator, or global-rules skill facades, and the manifest declares no undocumented command selector.
+| Mode keyword    | Purpose                                 |
+| --------------- | --------------------------------------- |
+| `fein: <goal>`  | Full route with independent review      |
+| `sonar: <goal>` | Research and stop before implementation |
+| `blitz: <goal>` | Smallest safe implementation route      |
 
-In local CLI and Desktop sessions, dispatch native specialist profiles through Devin's subagent controls. Each profile includes complete role and global policy; carry task constraints and evidence in the handoff. Root `orchestrator` is a dispatcher profile, not a primary-agent override.
+The `handoff` and `iteration-limits` utilities load as skills. Root `AGENTS.md` carries the router, mode definitions, and global policy; there are no role or global-rules skill facades.
+
+In local CLI and Desktop sessions, dispatch native specialist profiles through Devin's subagent controls. Each profile includes complete role and global policy; carry task constraints and evidence in the handoff.
 
 ## Limits
 
-Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but their presence does not add native plugin subagents there. Root profiles provide advisory guidance and make no tool-denial or sandbox claim. No executable adapter, hooks, MCP server, or automation ships here. Live Devin loading remains unverified; package checks establish shipped resources only.
+Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but their presence does not add native plugin subagents there. Devin offers an `allowed-tools` allowlist but no denylist or read-only field, so read-only roles are prompt-level only. No executable adapter, hooks, MCP server, or automation ships here. Live Devin loading remains unverified; package checks establish shipped resources only.
 
 See [compatibility](/agent-plugins/compatibility/), [specialist roles](/core/agents/), and the [package guide](/agent-plugins/).

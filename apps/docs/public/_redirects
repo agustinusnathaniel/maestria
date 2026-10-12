@@ -30,3 +30,31 @@
 /agent-plugin/compatibility/ /agent-plugins/compatibility/ 301
 /agent-plugin.md /agent-plugins.md 301
 /agent-plugin/compatibility.md /agent-plugins/compatibility.md 301
+
+# Per-host contributing, changelog, and Hermes utility pages were consolidated.
+/agent-plugins/claude-code/contributing /agent-plugins/contributing/ 301
+/agent-plugins/claude-code/contributing.md /agent-plugins/contributing.md 301
+/agent-plugins/codex/contributing /agent-plugins/contributing/ 301
+/agent-plugins/codex/contributing.md /agent-plugins/contributing.md 301
+/agent-plugins/cursor/contributing /agent-plugins/contributing/ 301
+/agent-plugins/cursor/contributing.md /agent-plugins/contributing.md 301
+/agent-plugins/kimi-code/contributing /agent-plugins/contributing/ 301
+/agent-plugins/kimi-code/contributing.md /agent-plugins/contributing.md 301
+/agent-plugins/hermes/contributing /agent-plugins/contributing/ 301
+/agent-plugins/hermes/contributing.md /agent-plugins/contributing.md 301
+/agent-plugins/omp/contributing /agent-plugins/contributing/ 301
+/agent-plugins/omp/contributing.md /agent-plugins/contributing.md 301
+/agent-plugins/claude-code/changelog /agent-plugins/legacy-changelog/ 301
+/agent-plugins/claude-code/changelog.md /agent-plugins/legacy-changelog.md 301
+/agent-plugins/codex/changelog /agent-plugins/legacy-changelog/ 301
+/agent-plugins/codex/changelog.md /agent-plugins/legacy-changelog.md 301
+/agent-plugins/cursor/changelog /agent-plugins/legacy-changelog/ 301
+/agent-plugins/cursor/changelog.md /agent-plugins/legacy-changelog.md 301
+/agent-plugins/kimi-code/changelog /agent-plugins/legacy-changelog/ 301
+/agent-plugins/kimi-code/changelog.md /agent-plugins/legacy-changelog.md 301
+/agent-plugins/hermes/changelog /agent-plugins/legacy-changelog/ 301
+/agent-plugins/hermes/changelog.md /agent-plugins/legacy-changelog.md 301
+/agent-plugins/omp/changelog /agent-plugins/legacy-changelog/ 301
+/agent-plugins/omp/changelog.md /agent-plugins/legacy-changelog.md 301
+/agent-plugins/hermes/commands /agent-plugins/hermes/getting-started/quick-start/ 301
+/agent-plugins/hermes/commands.md /agent-plugins/hermes/getting-started/quick-start.md 301

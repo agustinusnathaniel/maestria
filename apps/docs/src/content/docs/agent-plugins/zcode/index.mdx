@@ -5,7 +5,7 @@ description: Use complete native Maestria profiles and workflow commands in ZCod
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-The ZCode integration uses the `@maestria/agent-plugins` package. Its `.zcode-plugin/plugin.json` manifest explicitly selects seven complete root specialist profiles, the three root native workflow commands, and the two utility skills. Profiles embed role and policy; commands embed mode, router, and policy.
+The ZCode integration uses the `@maestria/agent-plugins` package. Its `.zcode-plugin/plugin.json` manifest explicitly selects seven complete root specialist profiles, the three root native workflow commands, and the two utility skills. Profiles embed role and policy; commands embed mode, router, and policy. They are the same `agents/<role>.md` and `commands/*.md` files other Markdown hosts use.
 
 ## Install
 
@@ -45,4 +45,4 @@ See the [specialist reference](/core/agents/) for role guidance and the [portabl
 
 ## Limits
 
-The native commands are explicitly enabled in the manifest. The package adds no MCP server, hooks, or executable runtime extension. Plugin rule-selector support is unverified, so profiles and commands carry their own complete policy instead of depending on a separately loaded rule. The specialist profiles are advisory and do not enforce tool denial or a sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).
+The native commands are explicitly enabled in the manifest. The package adds no MCP server, hooks, or executable runtime extension. Plugin rule-selector support is unverified, so profiles and commands carry their own complete policy instead of depending on a separately loaded rule. Adventurer, planner, and reviewer declare `disallowedTools: [Write, Edit]`, which ZCode's documentation supports and which has not been live-run; ZCode ignores unknown keys. Profiles set no `model`, so ZCode uses the main conversation's model. There is no sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).

@@ -140,6 +140,137 @@ from = "/agent-plugin/compatibility.md"
 to = "/agent-plugins/compatibility.md"
 status = 301
 
+# Per-host contributing, changelog, and Hermes utility pages were consolidated.
+[[redirects]]
+from = "/agent-plugins/claude-code/contributing"
+to = "/agent-plugins/contributing/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/claude-code/contributing.md"
+to = "/agent-plugins/contributing.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/codex/contributing"
+to = "/agent-plugins/contributing/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/codex/contributing.md"
+to = "/agent-plugins/contributing.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/cursor/contributing"
+to = "/agent-plugins/contributing/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/cursor/contributing.md"
+to = "/agent-plugins/contributing.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/kimi-code/contributing"
+to = "/agent-plugins/contributing/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/kimi-code/contributing.md"
+to = "/agent-plugins/contributing.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/hermes/contributing"
+to = "/agent-plugins/contributing/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/hermes/contributing.md"
+to = "/agent-plugins/contributing.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/omp/contributing"
+to = "/agent-plugins/contributing/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/omp/contributing.md"
+to = "/agent-plugins/contributing.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/claude-code/changelog"
+to = "/agent-plugins/legacy-changelog/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/claude-code/changelog.md"
+to = "/agent-plugins/legacy-changelog.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/codex/changelog"
+to = "/agent-plugins/legacy-changelog/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/codex/changelog.md"
+to = "/agent-plugins/legacy-changelog.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/cursor/changelog"
+to = "/agent-plugins/legacy-changelog/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/cursor/changelog.md"
+to = "/agent-plugins/legacy-changelog.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/kimi-code/changelog"
+to = "/agent-plugins/legacy-changelog/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/kimi-code/changelog.md"
+to = "/agent-plugins/legacy-changelog.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/hermes/changelog"
+to = "/agent-plugins/legacy-changelog/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/hermes/changelog.md"
+to = "/agent-plugins/legacy-changelog.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/omp/changelog"
+to = "/agent-plugins/legacy-changelog/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/omp/changelog.md"
+to = "/agent-plugins/legacy-changelog.md"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/hermes/commands"
+to = "/agent-plugins/hermes/getting-started/quick-start/"
+status = 301
+
+[[redirects]]
+from = "/agent-plugins/hermes/commands.md"
+to = "/agent-plugins/hermes/getting-started/quick-start.md"
+status = 301
+
 [build.environment]
 NODE_VERSION = "24"
 COREPACK_INTEGRITY_KEYS = "0"

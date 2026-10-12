@@ -171,4 +171,27 @@ describe('platform guide routes', () => {
     expect(netlify).toContain('to = "/agent-plugins/codex/:splat"');
     expect(netlify).not.toContain('from = "/pi"');
   });
+
+  it('redirects consolidated per-host pages to their shared replacements', async () => {
+    const redirects = await readFile(
+      path.resolve(__dirname, '..', 'public', '_redirects'),
+      'utf-8',
+    );
+    const netlify = await readFile(path.resolve(__dirname, '..', 'netlify.toml'), 'utf-8');
+
+    for (const host of ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp']) {
+      expect(redirects).toContain(
+        `/agent-plugins/${host}/contributing /agent-plugins/contributing/ 301`,
+      );
+      expect(redirects).toContain(
+        `/agent-plugins/${host}/changelog /agent-plugins/legacy-changelog/ 301`,
+      );
+      expect(netlify).toContain(`from = "/agent-plugins/${host}/contributing"`);
+      expect(netlify).toContain(`from = "/agent-plugins/${host}/changelog"`);
+    }
+    expect(redirects).toContain(
+      '/agent-plugins/hermes/commands /agent-plugins/hermes/getting-started/quick-start/ 301',
+    );
+    expect(netlify).toContain('from = "/agent-plugins/hermes/commands"');
+  });
 });

@@ -19,7 +19,7 @@ import { marks } from '@/data/marks.js';
 
   <div class="home-inner">
     <PlatformHero
-      eyebrow="@MAESTRIA/PLUGIN"
+      eyebrow="@MAESTRIA/AGENT-PLUGINS"
       title="One bundle for IDE and CLI."
       lead="Install one plugin. Get 7 specialist agents, complete routing, always-apply rules, and fein/sonar/blitz commands."
       mark={marks.cursorMark}
@@ -37,11 +37,11 @@ import { marks } from '@/data/marks.js';
       <FeatureGrid
         items={[
           { title: '7 specialist agents', desc: 'adventurer, architect, builder, diagnose, planner, reviewer, and writer run as Cursor Task agents.' },
-          { title: 'Always-on global rules', desc: 'The selected native rule carries complete routing and global policy with alwaysApply: true.' },
+          { title: 'Always-on global rules', desc: 'The rule in rules/cursor/ carries complete routing and global policy with alwaysApply: true.' },
           { title: 'Complete specialists', desc: 'Every native profile embeds its role and global policy without skill preloads.' },
           { title: 'Workflow mode commands', desc: '/fein, /sonar, and /blitz select the pipeline depth from Agent chat.' },
           { title: 'One install, both surfaces', desc: 'One plugin drives Cursor IDE and Cursor CLI.' },
-          { title: 'Explicit native resources', desc: 'The manifest selects Cursor profiles, commands, rules, and the two utility skills.' },
+          { title: 'Shared resources', desc: 'The manifest points at the shared agents/ and commands/ directories, the Cursor rule, and the two utility skills.' },
         ]}
       />
     </PluginSection>
@@ -50,8 +50,8 @@ import { marks } from '@/data/marks.js';
       links={[
         { label: 'Specialist reference', href: '/core/agents/' },
         { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
-        { label: 'Changelog', href: '/agent-plugins/cursor/changelog/' },
-        { label: 'Contributing', href: '/agent-plugins/cursor/contributing/' },
+        { label: 'Changelog', href: '/agent-plugins/changelog/' },
+        { label: 'Contributing', href: '/agent-plugins/contributing/' },
       ]}
     />
 

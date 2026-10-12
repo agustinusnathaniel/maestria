@@ -3,7 +3,12 @@ title: Quick Start
 description: Discover and use Maestria's two portable utilities in Hermes.
 ---
 
-After [installation](/agent-plugins/hermes/getting-started/installation/), enable the plugin and start a fresh session. Ask Hermes to call `skills_list`, then `skill_view` with the discovered qualified name of `handoff` or `iteration-limits`.
+After [installation](/agent-plugins/hermes/getting-started/installation/), enable the plugin and start a fresh session. Ask Hermes to call `skills_list`, then `skill_view` with the discovered qualified name of `handoff` or `iteration-limits`. Hermes derives an `agent-plugin-<slug>-<hash>` namespace, so do not assume `maestria:<skill>`.
+
+| Skill              | Purpose                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| `handoff`          | Preserve outcome, constraints, evidence, blockers, and next step |
+| `iteration-limits` | Bound repair and review loops with termination conditions        |
 
 ## Transfer a Task
 
@@ -19,7 +24,7 @@ Use the installed iteration-limits utility to define when this repair
 is complete and when repeated failures should be reported as blocked.
 ```
 
-These utilities provide guidance. They do not activate the Maestria router, register specialists, create workflow commands, or restrict tools.
+These utilities provide guidance. Portable installation supplies no specialist, global-rules, fein, sonar, or blitz skills, and does not activate routing or register native profiles or workflow commands. They do not restrict tools. The former Python adapter's `/mode`, `/mode-clear`, and workflow commands are retired.
 
 ## Optional Methodology Context
 
