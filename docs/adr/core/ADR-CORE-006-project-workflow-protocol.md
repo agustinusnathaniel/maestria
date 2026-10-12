@@ -30,7 +30,7 @@ Runtime hosts reread full content at model/turn time so edits do not require a r
 
 Diagnostics expose only relative file and failure kind, never raw cause or content. Canonicalize symlink roots and require regular-file targets with containment checks. Reads observe the filesystem at call time rather than an atomic snapshot; residual TOCTOU remains, with no sandbox promise.
 
-OpenCode's pinned pipeline covered primary and child model calls. Pi child injection was unverified; delegation briefs must still carry constraints. Fresh runtime reads cover later/post-compaction turns without promising durable project-content persistence. Current host versions, source evidence, and verification limits live in the [runtime support matrix](../../runtime-support-matrix.md).
+OpenCode's pinned pipeline covered primary and child model calls. Pi child injection was unverified; delegation briefs must still carry constraints. Fresh runtime reads cover later/post-compaction turns without promising durable project-content persistence. Current host versions, source evidence, and verification limits live in the [runtime support matrix](../../runtime-support-matrix.md) and, for plugin hosts, the [host verification register](../../plugin-host-verification.md).
 
 ### Shared implementation
 

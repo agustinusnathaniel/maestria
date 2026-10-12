@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects native profiles, complete workflow commands, primary-session policy, and utility skills from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [consolidated compiler](../../../scripts/sync-consolidated-plugin.ts). Live dispatch and reload remain unverified; see the [runtime support matrix](../../runtime-support-matrix.md).
+Accepted (2026-06-12; revised 2026-06-17). Consolidated 2026-10-10: Kimi now selects native profiles, complete workflow commands, primary-session policy, and utility skills from `@maestria/agent-plugins`. Current behavior is defined by the [Kimi integration source](../../../packages/core/agent-directives/integrations/kimi-code.md), [manifest](../../../packages/agent-plugins/kimi.plugin.json), and [consolidated compiler](../../../scripts/sync-consolidated-plugin.ts). Live dispatch and reload remain unverified; see the [host verification register](../../plugin-host-verification.md#kimi-code).
 
 ## Context
 
@@ -19,7 +19,7 @@ Do not treat specialist names or prompt text as host-enforced permission identit
 - The declarative integration avoids a runtime adapter and duplicate skill corpus.
 - The native profiles supply distinct specialist identities. Write-tool exclusions name Kimi's current `Write` and `Edit` tools (the earlier `WriteFile` and `StrReplaceFile` names matched nothing, corrected 2026-10-12); they are filters rather than shell sandboxes, and Kimi ignores model frontmatter.
 - Permission and lifecycle guarantees remain host-owned; prompt guidance cannot establish runtime enforcement.
-- Host schema changes can affect manifest fields, so current support claims remain bounded by the runtime support matrix.
+- Host schema changes can affect manifest fields, so current support claims remain bounded by the [host verification register](../../plugin-host-verification.md#kimi-code).
 
 ## Alternatives Considered
 

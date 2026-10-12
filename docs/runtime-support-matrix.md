@@ -2,15 +2,11 @@
 
 Maintainer evidence ledger supporting [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md): runtime capabilities, enforcement, and promotion gates. It records dated research evidence, not a public support promise.
 
-Every row is a dated snapshot as of its review date, not a maintenance obligation; reverification timing is governed by [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). Start with the [snapshot](#snapshot) for support decisions, then follow each Evidence ID to its runtime section for sources and verification limits.
+Every row is a dated snapshot as of its review date, not a maintenance obligation; reverification timing is governed by [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). Start with the [snapshot](#snapshot) for support decisions, then follow each Evidence ID to its section here for non-plugin runtimes or to the [host verification register](plugin-host-verification.md) for plugin hosts.
 
 ## Consolidated distribution (2026-10-12)
 
-`@maestria/agent-plugins` owns the declarative distributions for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and portable clients. The root portable skill surface is limited to handoff and iteration-limit utilities. Native roles, modes and policy use the selected host mechanisms recorded in the [component capability contract](agent-plugin-capabilities.md).
-
-Markdown hosts (Claude Code, Cursor, Kimi Code, ZCode, OMP) share seven `agents/<role>.md` profiles and one `commands/` set; Devin auto-discovers the same root `agents/` and `AGENTS.md`; there is no orchestrator profile. Kimi adds a primary bootstrap. Codex marketplace installation is utility-only; the companion CLI installs complete native TOMLs and marked primary instructions. Hermes portable installation is utility-only, with optional manual host context setup. OpenCode and Pi retain native runtime adapters; OMP, Prime Agent and Hermes's former executable adapters remain retired.
-
-Current validation (2026-10-12): Claude 2.1.295 strict validation and the offline reviewer fixture passed against the shared profile. OMP 18.4.8 loader discovery passed on archive and git root with seven agents, three commands, one rule and two skills. A Cursor CLI 2026.10.01 probe showed `readonly` is not enforced for plugin-supplied agents but is for project `.cursor/agents/` profiles. Kimi read-only now uses the tool names `Write` and `Edit`. None of this proves model obedience; no actual OMP task spawn was performed. Devin CLI 3000.11.3 discovery lists seven agents, two utilities, `AGENTS.md` always on and `rules/global.md` manual. ZCode source shows `disallowedTools` removes `Write`/`Edit` from subagent tools. Devin and ZCode task execution, and Kimi live runs, remain unverified. Earlier fourteen-skill and eight-profile results are historical and do not establish current activation. See [host verification](plugin-host-verification.md) for reproduction, artifacts and limits.
+`@maestria/agent-plugins` owns the declarative distributions for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and portable clients. What ships per host is defined by the [component capability contract](agent-plugin-capabilities.md); dated plugin-host evidence lives in the [host verification register](plugin-host-verification.md). OpenCode and Pi retain native runtime adapters; OMP, Prime Agent and Hermes's former executable adapters remain retired.
 
 ## How to read this document
 
@@ -21,7 +17,7 @@ Current validation (2026-10-12): Claude 2.1.295 strict validation and the offlin
 - **Control** (`Enforced`, `Trust-gated`, `Ignored`, `Advisory`, `Not a sandbox`, `Unsupported`) records what a runtime actually enforces. Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled `Enforced` as security controls.
 - **Test status** is `tested` or `not tested`, qualified by the verification boundary; none implies a live runtime end-to-end test. `tested: source inspection` = pinned upstream source read, no runtime execution; `tested: package/unit tests` = tests against a fake host API; `tested: built-artifact smoke` = compiled artifact built and its behavior exercised.
 - **Pinned state:** the exact release/version/immutable commit/docs revision per record, or the exact text `unpinned - reverify before implementation`.
-- **Evidence ID:** links each row to a complete per-runtime Evidence record through one or more IDs (for example `E-CLAUDE-01`); the record carries runtime/surface, claim, pinned state, source URL/path, review date, and test status. Records are self-contained: do not infer runtime, date, or source from the section heading.
+- **Evidence ID:** links each row to a complete per-runtime Evidence record through one or more IDs (for example `E-CLAUDE-01`); the record carries runtime/surface, claim, pinned state, source URL/path, review date, and test status. Records are self-contained: do not infer runtime, date, or source from the section heading. Plugin-host records live in the [host verification register](plugin-host-verification.md).
 
 ## maestria CLI adapter evidence (reviewed 2026-08-13)
 
@@ -37,132 +33,20 @@ CLI adapters wrap host-native capabilities: they stage the published npm package
 
 | Runtime | Support level | Delivery | Disposition | Rationale | Evidence ID | Reviewed |
 | --- | --- | --- | --- | --- | --- | --- |
-| Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 | 2026-08-11 |
+| Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review; detail in [register](plugin-host-verification.md#claude-code) | [E-CLAUDE-01](plugin-host-verification.md#claude-code) | 2026-08-11 |
 | Prime Agent | Withdrawn | None | withdrawn 2026-10-09: package and CLI platform removed; evidence pruned 2026-10-12 | See Prime Agent section | 2026-10-12 |
-| Codex CLI | Native | Plugin + CLI-managed native agents/instructions | shipped native CLI adapter | Verified plugin skills, native custom agents, automatic primary-session orchestration guidance, model configuration, and idempotent install/update/uninstall against Codex CLI 0.145.0 and current upstream source | E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15 | 2026-08-26 |
-| Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 | 2026-08-11 |
+| Codex CLI | Native | Plugin + CLI-managed native agents/instructions | shipped native CLI adapter | Verified plugin skills, native custom agents, automatic primary-session orchestration guidance, model configuration, and idempotent install/update/uninstall; evidence, versions, and sources in the [register](plugin-host-verification.md#codex-cli) | [E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15](plugin-host-verification.md#codex-cli) | 2026-08-26 |
+| Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim; detail in [register](plugin-host-verification.md#codex-desktop) | [E-CODEX-DESKTOP-01](plugin-host-verification.md#codex-desktop) | 2026-08-11 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 | 2026-08-11 |
 | Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 | 2026-08-11 |
 
-The per-runtime sections below are dated evidence snapshots as of their review dates, not maintenance obligations; each runtime's disposition is set by this table.
-
----
-
-## Claude Code
-
-### Evidence (baseline reviewed 2026-08-11; package evidence through 2026-10-12)
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CLAUDE-01 | Claude Code | Plugin layout | Plugins are self-contained directories with skills, agents, hooks, or a `.claude-plugin/plugin.json` manifest; skills in `skills/<name>/SKILL.md`, agents in `agents/`, hooks in `hooks/hooks.json` | unpinned - reverify before implementation | https://code.claude.com/docs/en/plugins | 2026-08-11 | not tested |
-| E-CLAUDE-02 | Claude Code | Plugin skills | Plugin skills are namespaced as `/plugin-name:skill-name` | unpinned - reverify before implementation | https://code.claude.com/docs/en/plugins | 2026-08-11 | not tested |
-| E-CLAUDE-03 | Claude Code | Plugin distribution | Plugin distribution uses plugin marketplaces | unpinned - reverify before implementation | https://code.claude.com/docs/en/plugin-marketplaces | 2026-08-11 | not tested |
-| E-CLAUDE-04 | Claude Code | Hooks | A matching `PreToolUse` hook handler that returns `hookSpecificOutput.permissionDecision: "deny"` can block the matched call conditionally on event, matcher, handler, decision format, and active installation scope; best-effort `if` filters can fail open. Hooks run at lifecycle points including `PreToolUse`, `PostToolUse`, `SessionStart`, `SessionEnd`, `SubagentStart`, `SubagentStop`, `Stop`, and `PreCompact`/`PostCompact`; handlers support command, HTTP, MCP tool, prompt, and agent types | unpinned - reverify before implementation | https://code.claude.com/docs/en/hooks | 2026-08-11 | not tested |
-| E-CLAUDE-05 | Claude Code | Plugin hooks | Plugin `hooks/hooks.json` is a supported shareable resource and runs with the same event schema as settings hooks when enabled; presence alone is not enforcement, a matching blocking handler is required | unpinned - reverify before implementation | https://code.claude.com/docs/en/hooks | 2026-08-11 | not tested |
-| E-CLAUDE-06 | Claude Code | Plugin subagents | Plugin subagents are loaded from a plugin's `agents/` directory with a scoped identifier | unpinned - reverify before implementation | https://code.claude.com/docs/en/sub-agents | 2026-08-11 | not tested |
-| E-CLAUDE-07 | Claude Code | Plugin-subagent frontmatter | For security reasons, plugin subagents do not support the `hooks`, `mcpServers`, or `permissionMode` frontmatter fields; these fields are ignored when loading agents from a plugin. To use them, copy the agent file into `.claude/agents/` or `~/.claude/agents/` | unpinned - reverify before implementation | https://code.claude.com/docs/en/sub-agents | 2026-08-11 | not tested |
-| E-CLAUDE-08 | Claude Code | First separate `@maestria/claude-code` package (historical) | The first package shipped no `hooks/` directory or package-level hook resources; that historical fact does not establish the consolidated package's current contents or downgrade Claude Code capability | Historical working-tree package snapshot | Prior package snapshot, 2026-08-12; current package support is documented in [plugin-host-verification.md](plugin-host-verification.md) | 2026-08-12 | tested |
-| E-CLAUDE-09 | Claude Code | Native child skill preload and tool schema | A deterministic CLI fixture loaded the thin reviewer profile, reached both reviewer and global-rules skills in the child request, and observed a child tool schema without Write/Edit. This verifies that role's native preload and declared tool boundary, not model judgment, shell-mediated editing, every specialist, or other CLI versions | Claude Code `2.1.217` | `docs/plugin-host-verification.md`; `scripts/e2e/claude-skill-preload.ts`; `packages/agent-plugins/tests/claude-loading.test.ts` | 2026-10-10 | tested: native CLI fixture; no paid inference |
-| E-CLAUDE-10 | Claude Code | Full native child context | The real offline CLI fixture reached complete reviewer and global-policy instructions without role-skill preloads, excluded Write/Edit from the child tool schema, and returned its result to the parent. Superseded by E-CLAUDE-11 for the current layout. | Claude Code 2.1.217 | `docs/plugin-host-verification.md`; `scripts/e2e/claude-skill-preload.ts` | 2026-10-11 | tested: native CLI fixture; no paid inference |
-| E-CLAUDE-11 | Claude Code | Shared-profile child context and strict validation | `claude plugin validate --strict` passed. The offline fixture loaded the reviewer from the shared `agents/reviewer.md` (no per-host copy), Write and Edit were unavailable, and the full role and global policy reached the child context. | Claude Code 2.1.295 | `docs/plugin-host-verification.md`; `scripts/e2e/claude-skill-preload.ts` | 2026-10-12 | tested: native CLI fixture; no paid inference |
-
-### Capability vs control
-
-| Evidence ID | Mechanism | Capability | Control | Note |
-| --- | --- | --- | --- | --- |
-| E-CLAUDE-06 | Plugin subagent loading | Supported | Advisory | Loading is not itself a security control |
-| E-CLAUDE-07 | `permissionMode`, `hooks`, `mcpServers` on plugin subagents | Unavailable | Ignored | Must move to project/user agent files if needed |
-| E-CLAUDE-04 | Matching `PreToolUse` handler returning `hookSpecificOutput.permissionDecision: "deny"` | Supported | Enforced | Blocking is conditional; best-effort `if` filters can fail open |
-| E-CLAUDE-05 | Plugin `hooks/hooks.json` resource | Supported | Advisory | Presence alone is not enforcement; a matching blocking handler is required |
-| E-CLAUDE-08 | First separate `@maestria/claude-code` package hook resources (historical) | Unavailable | Advisory | Historical package snapshot only; use current package evidence for present contents |
-| E-CLAUDE-11 | Complete reviewer/policy context and Write/Edit tool-schema exclusion | Supported | Enforced | Verified for the reviewer child from the shared profile in Claude Code 2.1.295 (E-CLAUDE-10 on 2.1.217 is superseded); does not establish shell isolation, model obedience or all-agent coverage |
-
-### Statuses and gates
-
-- **Promotion:** the repaired docs pass blind review; a plugin package ships via the core sync pipeline (ADR-CORE-005) with `scripts/check-sync` passing; the ADR-CORE-014 gates are verified. The native-candidate implementation may already exist; gates precede promotion or landing.
-- **Withdrawal:** if the plugin-subagent field limitation cannot be worked around without dropping the plugin distribution shape, downgrade or remove the plugin delivery, capability, and control claims. The project/user agent file workaround is a promotion-gate item, not an open question; rollback and re-promotion follow ADR-CORE-014.
+The per-runtime sections below are dated evidence snapshots as of their review dates, not maintenance obligations; each listed runtime's disposition is set by this table. Plugin-host detail for Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes lives in the [host verification register](plugin-host-verification.md) under the [component capability contract](agent-plugin-capabilities.md).
 
 ---
 
 ## Prime Agent
 
 > Withdrawn 2026-10-09; evidence ledger (E-PRIME-01 through E-PRIME-11) removed 2026-10-12. The `@maestria/prime-agent` package and CLI `prime-agent` platform no longer exist, and no host-support claim remains. Prior evidence is retained in Git history; any re-promotion restarts qualification under [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md).
-
----
-
-## Codex CLI
-
-### Evidence (reviewed 2026-08-11)
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CODEX-CLI-01 | Codex CLI | Identity | Codex CLI is a local coding agent, distinct from the desktop app (`codex app`), the IDE extension, and the cloud-based Codex Web (`chatgpt.com/codex`) | unpinned - reverify before implementation | https://github.com/openai/codex | 2026-08-11 | not tested |
-| E-CODEX-CLI-02 | Codex CLI | Surface scope | Codex supports AGENTS.md, subagents, config files, skills, plugins, and hooks | unpinned - reverify before implementation | https://developers.openai.com/codex | 2026-08-11 | not tested |
-| E-CODEX-CLI-03 | Codex CLI | Hook trust | Non-managed command hooks must be reviewed and trusted before they run; Codex records trust against the hook's current hash; new or changed hooks are skipped until trusted | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-CLI-04 | Codex CLI | Hook types | Only `type: "command"` hook handlers run today; `prompt` and `agent` handlers are parsed but skipped | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-CLI-05 | Codex CLI | Managed hook policy | Managed hooks are trusted by managed policy: they run under it rather than the per-hash trust review non-managed command hooks require, so they are not `Trust-gated` like non-managed hooks | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-CLI-06 | Codex CLI | Trust-bypass | A documented trust-bypass configuration lets hooks run without the normal trust review; it is an explicit security exception, not an enforcement path | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-
-### Pinned re-verification (2026-08-13)
-
-The projection baseline is local `codex 0.145.0` (`rust-v0.145.0`, commit `25af12f`).
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CODEX-CLI-07 | Codex CLI | Version identity | The local CLI reports `codex 0.145.0`; the matching upstream release is `rust-v0.145.0` | `0.145.0`; commit `25af12f` | `codex --version`; https://github.com/openai/codex/releases/tag/rust-v0.145.0 | 2026-08-13 | tested |
-| E-CODEX-CLI-08 | Codex CLI | Plugin bundle | A plugin requires `.codex-plugin/plugin.json` and can expose skills from a `skills/` directory; the plugin name provides the component namespace | `rust-v0.145.0` plugin specification | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/skills/src/assets/samples/plugin-creator/references/plugin-json-spec.md; https://developers.openai.com/plugins/build/plugins | 2026-08-13 | tested |
-| E-CODEX-CLI-09 | Codex CLI | Hook handlers | The pinned source executes configured command handlers; prompt and agent handlers are parsed but skipped | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs | 2026-08-13 | tested: source inspection |
-| E-CODEX-CLI-10 | Codex CLI | Plugin hook trust | Non-managed plugin hooks require managed status, a matching trusted hash, or an explicit bypass before command execution | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs; https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/registry.rs | 2026-08-13 | tested: source inspection |
-| E-CODEX-CLI-11 | Codex CLI | maestria projection | At the 2026-08-13 review point, the package generated 14 skills and the separate maestria CLI provided npm-backed marketplace staging; native agents and automatic instructions were added in the subsequent re-verification | `packages/codex` on the 2026-08-13 snapshot | `packages/codex/sync.config.ts`; `packages/codex/skills/`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested after sync |
-
-### Current re-verification (2026-08-26)
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CODEX-CLI-12 | Codex CLI | Native custom agents | Codex discovers standalone custom-agent TOMLs from `~/.codex/agents/` and project agent directories, including `name`, `description`, `developer_instructions`, model, reasoning, sandbox, MCP, and skill configuration fields | Codex CLI `0.145.0`; current upstream source | https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/core/src/config/agent_roles.rs` | 2026-08-26 | tested: source inspection + package/unit tests |
-| E-CODEX-CLI-13 | Codex CLI | Delegation | Native subagent selection uses the `agent_type` role name, so maestria's `maestria-*` TOMLs are directly addressable by Codex's delegation runtime | Codex CLI `0.145.0`; current upstream source | https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/core/src/tools/handlers/multi_agents_spec.rs` | 2026-08-26 | tested: source inspection + package/unit tests |
-| E-CODEX-CLI-14 | Codex CLI | Global instructions | Codex loads global `AGENTS.override.md` or `AGENTS.md` from `$CODEX_HOME`; the maestria CLI manages a marked block in the active file and preserves unrelated instructions | Codex CLI `0.145.0`; current upstream source | https://learn.chatgpt.com/docs/config-file/config-reference; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/codex-home/src/instructions/mod.rs` | 2026-08-26 | tested: source inspection + package/unit tests |
-| E-CODEX-CLI-15 | Codex CLI | maestria integration | `maestria install codex` installs the skills plugin, seven native roles, model-preserving updates, and automatic orchestration guidance; uninstall removes only maestria-managed content | Working-tree implementation; Codex CLI `0.145.0` | `apps/maestria-cli/src/lib/platforms.ts`; `packages/codex/instructions/AGENTS.md`; `packages/codex/tests/plugin.test.ts` | 2026-08-26 | tested: package/unit tests + built package |
-| E-CODEX-CLI-16 | Codex CLI | Native marketplace | The repository marketplace entry maps `maestria@maestria` to the published `@maestria/codex` npm package; native `codex plugin marketplace add` followed by `codex plugin add maestria@maestria` installs the published plugin and skills | Codex CLI `0.145.0`; published `@maestria/codex@0.3.2` | `.agents/plugins/marketplace.json`; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/core-plugins/src/marketplace.rs`; isolated Codex smoke test | 2026-08-26 | tested: live host smoke |
-
-### Capability vs control
-
-| Evidence ID | Mechanism | Capability | Control | Note |
-| --- | --- | --- | --- | --- |
-| E-CODEX-CLI-10 | Non-managed plugin command hooks | Supported | Trust-gated | Require managed status, a matching trusted hash, or an explicit bypass |
-| E-CODEX-CLI-10 | Managed hook policy and trust bypass | Available | Advisory | Host controls and explicit exceptions, not maestria enforcement paths |
-| E-CODEX-CLI-09 | Hooks (prompt/agent types) | Unavailable | Unsupported | Parsed but skipped by the pinned source |
-| E-CODEX-CLI-08 | Plugin manifest and skills | Supported | Advisory | Skills are the bounded projection surface; they do not enforce delegation, role permissions, or review |
-| E-CODEX-CLI-12 | Native custom-agent TOMLs | Supported | Host-enforced where configured | Codex owns discovery, role selection, sandbox settings, and per-agent runtime configuration |
-| E-CODEX-CLI-14 | Global `AGENTS.md` instructions | Supported | Advisory | The managed block activates the workflow in the host-owned primary session; user and repository instructions still take precedence |
-
-### Statuses and gates
-
-- **Version sensitivity gate:** baseline pinned to `codex 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
-- **Integration boundary:** keep the plugin manifest skills-focused. Native custom agents, model configuration, and the marked global `AGENTS.md` block belong to the companion CLI; do not add hooks or MCP without a separate decision and security review.
-- **Promotion to `Native`:** resolved 2026-08-26 after docs/source re-verification, package tests, and full workspace checks. Reverify after material host changes; rollback and re-promotion follow ADR-CORE-014.
-
----
-
-## Codex desktop
-
-### Evidence (reviewed 2026-08-11)
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CODEX-DESKTOP-01 | Codex desktop | Surface identity | `[inferred]` Codex desktop means the hosted ChatGPT/Codex desktop surface, not an IDE integration. Evidence: the Codex docs list "ChatGPT desktop app" as a distinct surface alongside Codex CLI, Codex IDE extension, and Codex Web | unpinned - reverify before implementation | https://developers.openai.com/codex | 2026-08-11 | not tested |
-| E-CODEX-DESKTOP-02 | Codex desktop | Extension surface | `[inferred]` The CLI extension surface is unverified for the hosted desktop surface; no parity claim is made. Evidence: the CLI-only surfaces (hooks, config files, build plugins) are documented under Codex CLI / developers, while the desktop app is documented separately | unpinned - reverify before implementation | https://developers.openai.com/codex | 2026-08-11 | not tested |
-
-### Capability vs control
-
-| Evidence ID | Mechanism | Capability | Control | Note |
-| --- | --- | --- | --- | --- |
-| E-CODEX-DESKTOP-01, E-CODEX-DESKTOP-02 | Desktop/local parity with CLI | Unverified | Unsupported | The CLI extension surface is unverified for the hosted desktop surface; no parity claim is made |
-
-### Statuses and gates
-
-- **Deferred:** no implementation in the current batch.
-- **Promotion to `Native`:** separate from Codex CLI; first verify that a desktop extension surface exists. Only a common-subset projection is in scope, with no CLI parity claim; rollback and re-promotion follow ADR-CORE-014.
 
 ---
 
@@ -247,34 +131,6 @@ Dated evidence for the Pi tool-enforcement boundary. Enforcement here is host-ob
 
 ---
 
-## OMP
-
-Dated evidence for OMP's native declarative resources alongside portable utilities. The empty `package.json#omp` marker registers the data-only package; no executable extensions array is required. The retired executable adapter's hooks, interception, mode persistence, and goal mirroring remain historical. OMP has no tool denylist, so the shared profiles' read-only text is prompt-level.
-
-### Evidence (reviewed 2026-10-12)
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-OMP-PLUGIN-01 | OMP | Current native resource discovery | Source (git root) and archive discovery expose seven task profiles, two utility skills, three commands, and one always-apply global rule; `.toml` files are not loaded. The previous fourteen-skill/zero-command fixture and the 2026-10-11 eight-profile result describe retired layouts. | Host 18.4.8 | `scripts/e2e/omp-plugin-discovery.ts`; `docs/plugin-host-verification.md` | 2026-10-12 | tested: actual capability providers, source/archive payload |
-| E-OMP-PLUGIN-02 | OMP | Real installed lifecycle and prepared context | An isolated local-archive CLI installation, disable, reinstall, upgrade refusal for a local source, and uninstall passed. Default installed discovery, command expansion, global system-prompt injection, and all eight task-template compositions passed against the previous eight-profile layout (superseded; not re-run for seven). No inference or actual task spawn was performed. | Host 18.4.8 | `artifacts/omp-actual-host-proof/`; `docs/plugin-host-verification.md` | 2026-10-11 | tested: real bundled CLI and native prompt/discovery APIs |
-
----
-
-## Cursor and Kimi Code
-
-Dated evidence for the shared-profile layout. Plugin read-only metadata is host-dependent and recorded per host rather than assumed.
-
-### Evidence (reviewed 2026-10-12)
-
-| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CURSOR-PLUGIN-01 | Cursor | Plugin agent `readonly` | Plugin-supplied agents did not enforce `readonly: true` (a write succeeded, with or without other hosts' frontmatter keys present). A project `.cursor/agents/` profile with `readonly: true` was blocked ("cannot run non read-only tools"). Other hosts' keys do not affect Cursor loading. Cursor desktop was not tested. | Cursor CLI 2026.10.01 | `docs/plugin-host-verification.md` | 2026-10-12 | tested: live Cursor CLI; no desktop |
-| E-KIMI-PLUGIN-01 | Kimi Code | Tool names for `disallowedTools` | Kimi registers tools as `Write` and `Edit`; the previously shipped `WriteFile` and `StrReplaceFile` names matched nothing, so read-only was not effective before. Unknown keys (`readonly`, `model`) are ignored and `$ARGUMENTS` is substituted in plugin commands. Not live-run. | Kimi v0.38.0 and v2.1.1 | `docs/plugin-host-verification.md` | 2026-10-12 | tested: source inspection |
-| E-DEVIN-PLUGIN-01 | Devin | Plugin discovery | `devin plugins info` lists seven agents, two utilities, `AGENTS.md` always on and `rules/global.md` manual; `.toml` profiles and per-host rules are not loaded. No agent task run. | Devin CLI 3000.11.3 | `docs/plugin-host-verification.md` | 2026-10-12 | tested: live Devin CLI discovery |
-| E-ZCODE-PLUGIN-01 | ZCode | Agent loading and `disallowedTools` | Directory selectors, `.md`-only agents, no rules component; `disallowedTools` is subtracted from the subagent's tool allowlist (exact `Write`/`Edit` names; shell remains); unknown keys dropped. Not live-run. | ZCode source `main`, installed desktop build | `docs/plugin-host-verification.md` | 2026-10-12 | tested: shipped code inspection |
-
----
-
 ## Project customization loading (reviewed 2026-09-18)
 
 Dated evidence for root `.maestria/workflow.md` then `.maestria/rules.md` loading. Order is workflow first, then rules, on every engine. Scope is project root only with no ancestor or nested lookup. Absent or empty files leave defaults unchanged. Diagnostics name only the relative file and the failure kind. This section records loading evidence only; support levels in the [snapshot](#snapshot) are unchanged.
@@ -294,7 +150,7 @@ Capability notes: OpenCode transform injection is `Supported` and `Advisory`; Pi
 
 ## Cross-cutting boundaries
 
-This file is the dated evidence ledger. The controlled support vocabulary, capability-versus-control rules, package boundaries, promotion and withdrawal gates, and reverification triggers are defined in [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and [ADR-CORE-005](adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md).
+This file is the dated evidence ledger for non-plugin runtimes. Plugin-host evidence lives in the [host verification register](plugin-host-verification.md) under the [component capability contract](agent-plugin-capabilities.md). The controlled support vocabulary, capability-versus-control rules, package boundaries, promotion and withdrawal gates, and reverification triggers are defined in [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and [ADR-CORE-005](adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md).
 
 ---
 
@@ -302,22 +158,7 @@ This file is the dated evidence ledger. The controlled support vocabulary, capab
 
 | Evidence ID | Runtime | Source | Review date | Test status |
 | --- | --- | --- | --- | --- |
-| E-CLAUDE-01, E-CLAUDE-02 | Claude Code | https://code.claude.com/docs/en/plugins | 2026-08-11 | not tested |
-| E-CLAUDE-04, E-CLAUDE-05 | Claude Code | https://code.claude.com/docs/en/hooks | 2026-08-11 | not tested |
-| E-CLAUDE-06, E-CLAUDE-07 | Claude Code | https://code.claude.com/docs/en/sub-agents | 2026-08-11 | not tested |
-| E-CLAUDE-03 | Claude Code | https://code.claude.com/docs/en/plugin-marketplaces | 2026-08-11 | not tested |
-| E-CLAUDE-08 | Claude Code | historical first-package snapshot; see this record's original source notes | 2026-08-12 | tested |
-| E-CLAUDE-09 | Claude Code | `docs/plugin-host-verification.md`; `scripts/e2e/claude-skill-preload.ts` | 2026-10-10 | tested: native CLI fixture (superseded) |
-| E-CLAUDE-11 | Claude Code | `docs/plugin-host-verification.md`; `scripts/e2e/claude-skill-preload.ts` | 2026-10-12 | tested: native CLI fixture |
-| E-CURSOR-PLUGIN-01 | Cursor | `docs/plugin-host-verification.md` (live CLI probe) | 2026-10-12 | tested: live Cursor CLI |
-| E-KIMI-PLUGIN-01 | Kimi Code | Kimi `v0.38.0` and `v2.1.1` source tool registry | 2026-10-12 | tested: source inspection |
-| E-DEVIN-PLUGIN-01 | Devin | `docs/plugin-host-verification.md` (`devin plugins info`) | 2026-10-12 | tested: live Devin CLI discovery |
-| E-ZCODE-PLUGIN-01 | ZCode | `docs/plugin-host-verification.md` (ZCode source and shipped bundle) | 2026-10-12 | tested: source inspection |
-| E-PRIME-01 through E-PRIME-11 | Prime Agent | Withdrawn 2026-10-09; upstream and package sources removed 2026-10-12 (Git history) | 2026-10-12 | withdrawn |
-| E-CODEX-CLI-01 | Codex CLI | https://github.com/openai/codex | 2026-08-11 | not tested |
-| E-CODEX-CLI-02 | Codex CLI | https://developers.openai.com/codex (docs index) | 2026-08-11 | not tested |
-| E-CODEX-CLI-03, E-CODEX-CLI-04, E-CODEX-CLI-05, E-CODEX-CLI-06 | Codex CLI | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-DESKTOP-01, E-CODEX-DESKTOP-02 | Codex desktop | https://developers.openai.com/codex (docs index) | 2026-08-11 | not tested |
+| E-CLI-01, E-CLI-02, E-CLI-03 | Claude Code, Codex CLI | `claude plugin --help`, `codex plugin --help`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested |
 | E-JCODE-01, E-JCODE-03 | JCode | https://github.com/1jehuang/jcode | 2026-08-11 | not tested |
 | E-JCODE-02 | JCode | https://jcode.sh/sdk | 2026-08-11 | not tested |
 | E-CRUSH-01, E-CRUSH-02, E-CRUSH-03, E-CRUSH-04, E-CRUSH-05 | Crush | https://github.com/charmbracelet/crush | 2026-08-11 | not tested |
@@ -325,10 +166,10 @@ This file is the dated evidence ledger. The controlled support vocabulary, capab
 | E-PROJ-OC-01, E-PROJ-OC-02, E-PROJ-OC-03 | OpenCode | Pinned host `1.18.31` (`/tmp/opencode/src`) plus `packages/opencode/src/` | 2026-09-18 | tested: source inspection + package/unit tests (no live model run) |
 | E-PI-SUB-01, E-PI-SUB-02, E-PI-SUB-03, E-PI-SUB-04, E-PI-TOOLS-01 | Pi | `packages/pi/node_modules/@gotgenes/pi-subagents/dist/public.d.ts` and `package.json` (resolved `21.9.0`); `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.84.2_*/node_modules/@earendil-works/pi-coding-agent/dist/` (host `0.84.2` where those claims were read; `allToolNames` re-verified unchanged in the installed `1.0.1` host on 2026-10-05) | 2026-10-02 (claims); 2026-10-05 (`allToolNames` re-verification) | tested: source inspection + package/unit tests (no live runtime E2E) |
 | E-PROJ-PI-01 | Pi | `packages/pi/src/rules.ts`; `packages/shared/pi/src/project-config.ts`; `node_modules/.pnpm/@earendil-works+pi-coding-agent@1.0.1_*/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/runner.js` (`emitBeforeAgentStart`, `emitError`) (working-tree snapshot; package peer `^1.0.0`, resolved `1.0.1` 2026-10-05; swallowing path and whole-string `systemPrompt` return re-verified in installed 1.0.1 runner source) | 2026-10-05 | tested: installed 1.0.1 source inspection + package/unit tests against real 1.0 types (no live runtime E2E) |
-| E-OMP-PLUGIN-01 | OMP | `docs/plugin-host-verification.md`; `scripts/e2e/omp-plugin-discovery.ts`; installed `18.4.8` loader and capability-provider source | 2026-10-10 | tested: packed discovery fixture; no `PluginManager.install`, `omp plugin install`, or task-execution E2E |
 | E-PROJ-OMP-01 | OMP (retired native executable) | Retired 2026-10-12 with `@maestria/omp`; sources removed (Git history) | 2026-10-12 | retired |
 | E-PROJ-PRIME-01 | Prime Agent | Withdrawn 2026-10-09; sources removed 2026-10-12 (Git history) | 2026-10-12 | withdrawn |
 | E-PROJ-HERMES-01 | Hermes | Retired 2026-10-10 with the Python adapter; sources removed (Git history) | 2026-10-12 | retired |
 | E-PROJ-SHARED-01 | All engines | Working-tree loaders (see Evidence section) | 2026-09-18 | tested: package/unit tests |
+| E-PRIME-01 through E-PRIME-11 | Prime Agent | Withdrawn 2026-10-09; upstream and package sources removed 2026-10-12 (Git history) | 2026-10-12 | withdrawn |
 
-Upstream sources above are research-only (`unpinned - reverify before implementation`); E-CLAUDE-08 is a local working-tree package snapshot (`Working-tree package snapshot; verify at landing`), not an upstream research source. Reverify material claims before implementation, promotion, or re-promotion.
+Upstream sources above are research-only (`unpinned - reverify before implementation`). Reverify material claims before implementation, promotion, or re-promotion.
