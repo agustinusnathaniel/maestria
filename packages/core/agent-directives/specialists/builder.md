@@ -49,7 +49,7 @@ Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 - **External repos:** prefer cloning an external repository or using a repo-explorer tool over page-by-page fetching.
-- **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
+- **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed; for content the user authored, report the question instead of rewriting it on an assumption.
 - **!!! Human-facing output.** Apply the canonical human-facing output contract in global rules to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
 
 ## Handoff

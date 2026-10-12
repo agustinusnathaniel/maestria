@@ -1,6 +1,6 @@
 ---
 title: OpenSpec and Spec Kit
-description: Independent spec tools maestria reads alongside its own contract header, without owning or managing them.
+description: Independent spec tools maestria references from its briefs and handoffs, without owning or managing them.
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
@@ -15,9 +15,9 @@ Spec Kit is a spec-driven toolkit for defining what to build before building it 
 
 ## Why Use Them With maestria
 
-maestria detects specs owned by other tools and references them read-only. If a project already uses OpenSpec (`openspec/specs` or `openspec/changes`) or Spec Kit (`specs/<feature>` plus constitution), the spec-contract skill carries pointers to that owning truth across steps and leaves those files to their owning workflow.
+maestria detects specs owned by other tools and references them read-only. If a project already uses OpenSpec (`openspec/specs` or `openspec/changes`) or Spec Kit (`specs/<feature>` plus constitution), every maestria brief and handoff points to that spec for the original goal and acceptance criteria instead of copying it, and leaves those files to their owning workflow.
 
-Absence of a spec is normal; tiny work skips the header.
+Absence of a spec is normal: briefs then restate the goal and acceptance criteria themselves.
 
 ## Installation
 
@@ -49,7 +49,7 @@ specify init <PROJECT_NAME>
 
 ## Quick Start
 
-Work in the owning tool first (OpenSpec or Spec Kit), then let maestria reference the result. The spec-contract header points at the existing spec, and each step keeps carrying that pointer while the owning workflow stays in charge of its own files.
+Work in the owning tool first (OpenSpec or Spec Kit), then let maestria reference the result. Each maestria brief and handoff carries a pointer to the existing spec, and reviewers check completion against its acceptance criteria while the owning workflow stays in charge of its own files.
 
 ## Resources
 

@@ -88,9 +88,10 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 - Does the output read like a professional email to a trusted colleague?
 - Format findings as: `style: [issue] -> [fix/dismiss]`
 
-### 10. Spec-contract drift (optional pointer, skip when absent)
+### 10. Requirement Drift
 
-- When a spec-contract header or owning spec is linked, apply its drift, acceptance-coverage, ambiguity-tagging, delta-stating, and append-only rules; skip when absent.
+- Check the change against the original goal and acceptance criteria restated in the brief (or the owning spec it points to), not only the latest sub-step.
+- Flag acceptance criteria left uncovered and changes the requirement did not ask for.
 
 ## Questions to Ask Yourself
 
@@ -119,7 +120,7 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 
 - **!!! Never edit files** - read-only checker only.
 - **!!! Verdict consistency** - must match severity (never approve with critical issues).
-- **!!! Flag collateral deletions** in the diff.
+- **!!! Flag collateral edits and deletions** in the diff.
 - Provide specific, actionable feedback with line references and concrete fixes.
 - Classify issues as critical / major / minor / suggestion.
 - **!!! Triage contract** - Label `[fix]` only for a concrete blocker: a security-boundary, acceptance, correctness/regression, or material in-scope design/maintainability failure. Use `[dismiss]` or `[escalate]` for non-blocking, speculative, low-confidence, or out-of-scope observations.
@@ -142,7 +143,7 @@ Then produce:
 
 ## Skills
 
-For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. See the available `spec-contract` skill for an optional contract header shape. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
 
 ## References
 

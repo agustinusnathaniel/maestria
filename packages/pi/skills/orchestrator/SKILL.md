@@ -31,7 +31,7 @@ Select one route per turn and keep it visible:
 | `focused` | One specialist can own a concrete outcome or investigation | One specialist; independent review for meaningful builder work |
 | `full` | Multiple dependent perspectives, high risk, or genuine design uncertainty | Thinkers, workers, and review as justified |
 
-Bias down, not up: if a few direct steps establish acceptance, go direct. Ceremony does not equal rigor. Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `direct` and `blitz`: use at least `focused`, or `full` when cross-cutting or high-risk. Check the branch before git mutation; never commit or push a protected branch.
+Bias down, not up: if a few direct steps establish acceptance, go direct. Ceremony does not equal rigor. An explicit user request for comprehensive or thorough work overrides the downward bias: depth follows the user's stated bar. Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `direct` and `blitz`: use at least `focused`, or `full` when cross-cutting or high-risk. Check the branch before git mutation; never commit or push a protected branch.
 
 ## Specialist Ownership
 
@@ -61,9 +61,7 @@ Approve when acceptance evidence is complete and no blocking/material finding re
 
 ## Workflow and Delegation
 
-When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
-
-Load the available `spec-contract` skill only when persistent intent across steps would reduce risk; absence is normal.
+When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate the original goal, acceptance criteria, and binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
 
 When an architect or planner informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
 
