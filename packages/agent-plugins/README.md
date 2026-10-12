@@ -1,6 +1,6 @@
 # @maestria/agent-plugins
 
-maestria ships one directly installable plugin with native host components and two reusable utility skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
+maestria ships one directly installable plugin with native host components and four skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
 
 ## Component ownership
 
@@ -9,7 +9,7 @@ maestria ships one directly installable plugin with native host components and t
 | `agents/` | One profile per specialist for every Markdown host, plus a generated Codex TOML beside each | Core `specialists/` and `generation/profiles.json` |
 | `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
 | `rules/` | Global policy, plus one folder per host whose rule format differs | Core `rules.md` and integration notes |
-| `skills/` | Only `handoff` and `iteration-limits` reusable utilities | One core `rules.md` section each |
+| `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request` and `docs-update` methodology skills | One core `rules.md` section per utility; repository-root `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
 | `integrations/` | Generated host usage and capability guides | Core integration notes |
 | `generation/` | Development-only manifests and profile metadata | Hand-authored mechanical inputs |
 | `assets/`, `docs/` | Presentation and package usage documentation | Hand-authored package files |
@@ -28,9 +28,9 @@ On a host with a managed flow, run `npx maestria install <host>` (`claude-code`,
 
 ## Host mappings
 
-Supports Claude Code, Cursor, Codex, Kimi Code, Devin, ZCode, OMP, and Hermes, plus portable utility clients. Follow the public [installation](https://maestria.sznm.dev/agent-plugins/installation/), [usage](https://maestria.sznm.dev/agent-plugins/usage/), and [compatibility](https://maestria.sznm.dev/agent-plugins/compatibility/) pages for per-host setup and support boundaries.
+Supports Claude Code, Cursor, Codex, Kimi Code, Devin, ZCode, OMP, and Hermes, plus portable skill clients. Follow the public [installation](https://maestria.sznm.dev/agent-plugins/installation/), [usage](https://maestria.sznm.dev/agent-plugins/usage/), and [compatibility](https://maestria.sznm.dev/agent-plugins/compatibility/) pages for per-host setup and support boundaries.
 
-See [installation](INSTALL.md) and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; separately installable methodology skills remain under the repository's root `skills/`.
+See [installation](INSTALL.md) and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; the repository's root `skills/` holds the canonical methodology skills, which this package bundles and `skills.sh` serves to runtimes maestria does not package.
 
 ## Development and verification
 

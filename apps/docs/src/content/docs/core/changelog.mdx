@@ -5,13 +5,17 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-10-13
+
+- **Every package ships the skills the rules rely on.** `create-pull-request` and `docs-update` now come with `@maestria/agent-plugins` (all eight plugin hosts), `@maestria/opencode`, and `@maestria/pi`, so the rules never point an agent at a skill it does not have. The CLI no longer installs them separately; `maestria update` removes the copies it installed earlier. See [Skills](/core/agents/#skills).
+
 ## 2026-10-12
 
 - **Requirements survive every handoff.** Briefs and handoffs restate the original goal and acceptance criteria (or point to the OpenSpec or Spec Kit spec that owns them), completion claims are checked against them instead of the latest sub-step, and reviewers flag requirement drift. The optional `spec-contract` skill is retired because this is now always on.
 - **Fewer repeated corrections.** Agents read the references and requirement you supply in full, ask before rewriting prose or links you wrote, go as deep as you ask when you request thorough work, fix pre-existing issues in scope only when you say so (otherwise they report them), avoid edits and deletions outside the change, keep going through commit, push, and PR you already authorized instead of asking again, and explain results in plain language.
 - **Less repeated directive text.** Roles share one human-facing output rule, the orchestrator no longer repeats the mode table or the delivery and visual-evidence rules, the reviewer's unused lens catalog is one scope rule, and non-negotiable markers mark only safety and verification rules. The documentation skill now loads before finishing any behavior, interface, configuration, or workflow change, and every role sees the visual-evidence rule for rendered docs sites and CLI output.
 - **Portable utility skills match the global rules.** `handoff` and `iteration-limits` are now generated from the global rules sections they summarize instead of maintained as separate text. The rules gained the stop conditions the skill used to carry alone: define a verifiable termination condition before looping, treat only `[fix]` blockers as repair work, and stop after final verification instead of restarting a full review for a small fix.
-- **Optional skills are documented in one place.** The [Agent Reference](/core/agents/#optional-skills) lists the maestria methodology skills, how the CLI installs them, and where to get the generic engineering skills specialists name.
+- **Optional skills are documented in one place.** The [Agent Reference](/core/agents/#skills) lists the maestria methodology skills and where to get the generic engineering skills specialists name.
 
 ## 2026-09-30
 

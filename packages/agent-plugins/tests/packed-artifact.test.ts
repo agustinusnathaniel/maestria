@@ -124,12 +124,14 @@ describe('published consolidated plugin', () => {
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(2);
-      expect(skills).toHaveLength(2);
-      expect(skills.every((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry))).toBe(
-        true,
-      );
-      expect(new Set(skills.map((entry) => entry.split('/')[2])).size).toBe(2);
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(4);
+      // Generated utilities plus the methodology skills bundled from the repository root.
+      expect(skills.map((entry) => entry.split('/')[2]).toSorted()).toEqual([
+        'create-pull-request',
+        'docs-update',
+        'handoff',
+        'iteration-limits',
+      ]);
       const agentEntries = entries.filter((entry) => entry.startsWith('package/agents/'));
       expect(agentEntries.filter((entry) => entry.endsWith('.md'))).toHaveLength(roles.length);
       expect(agentEntries.filter((entry) => entry.endsWith('.toml'))).toHaveLength(roles.length);

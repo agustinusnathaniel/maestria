@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "version": "0.7.0",
-  "description": "Reusable handoff and iteration-limit utilities for Codex; full methodology is installed by the companion maestria CLI",
+  "description": "maestria handoff, iteration-limit, pull request, and documentation-update skills for Codex; full methodology is installed by the companion maestria CLI",
   "author": {
     "name": "agustinusnathaniel"
   },
@@ -11,8 +11,8 @@
   "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
   "interface": {
     "displayName": "maestria",
-    "shortDescription": "Handoff and iteration-limit utilities for Codex",
-    "longDescription": "Two reusable utilities for handoffs and bounded iteration. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
+    "shortDescription": "maestria handoff, iteration, PR, and docs skills for Codex",
+    "longDescription": "Four maestria skills: handoffs, bounded iteration, pull request drafts, and documentation updates. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],

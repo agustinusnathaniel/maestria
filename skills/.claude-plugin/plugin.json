@@ -1,9 +1,0 @@
-{
-  "name": "maestria-skills",
-  "description": "Optional maestria companion skills: pull request drafting and documentation updates",
-  "author": {
-    "name": "agustinusnathaniel",
-    "url": "https://github.com/agustinusnathaniel"
-  },
-  "skills": ["./create-pull-request", "./docs-update"]
-}

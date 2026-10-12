@@ -3,7 +3,7 @@ title: Usage
 description: Run maestria workflows, dispatch specialists, and use the utilities on any Agent Plugins host.
 ---
 
-Once [installed](/agent-plugins/installation/), hosts with native support offer the same three workflow modes and seven specialists; Hermes and marketplace-only Codex installs supply only the two utilities. The syntax differs by host; the [per-host table](#per-host-syntax) lists it. For small tasks, read [When to use maestria](/core/when-to-use/) before choosing the full route.
+Once [installed](/agent-plugins/installation/), hosts with native support offer the same three workflow modes and seven specialists; Hermes and marketplace-only Codex installs supply only the four skills. The syntax differs by host; the [per-host table](#per-host-syntax) lists it. For small tasks, read [When to use maestria](/core/when-to-use/) before choosing the full route.
 
 ## Run a workflow
 
@@ -51,7 +51,7 @@ None of these is a shell sandbox, and the host keeps control of permissions. See
 
 ## Utilities
 
-Two portable skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step, and `iteration-limits` bounds repair and review loops with explicit stop conditions. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
+Four portable skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step; `iteration-limits` bounds repair and review loops with explicit stop conditions; `create-pull-request` drafts PR titles and bodies; and `docs-update` keeps docs and changesets in step with a change. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
 
 ```text
 Use the handoff utility to summarize this task's outcome, constraints,

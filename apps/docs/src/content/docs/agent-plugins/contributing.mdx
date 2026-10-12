@@ -28,7 +28,7 @@ Package checks verify resource completeness, selected paths, and native metadata
 | Host | Also check |
 | --- | --- |
 | Claude Code | Run `claude plugin validate ./packages/agent-plugins --strict`. List the seven agent files and three commands explicitly, because Claude rejects directory agent selectors. Keep `model` out of profiles and preserve the read-only roles' `disallowedTools`. |
-| Codex | Run `pnpm --filter maestria test` for the companion installer. Native read-only sandbox metadata belongs in the agent TOMLs; marketplace installation supplies utilities only. |
+| Codex | Run `pnpm --filter maestria test` for the companion installer. Native read-only sandbox metadata belongs in the agent TOMLs; marketplace installation supplies the four skills only. |
 | Cursor | Preserve `readonly` metadata and the policy rule's `alwaysApply` setting. Plugin-supplied agents did not enforce `readonly` in the 2026-10-12 probe; project `.cursor/agents/` copies did. See the [official plugin reference](https://cursor.com/docs/reference/plugins.md). |
 | Kimi Code | Keep the bootstrap below the documented 32 KB limit and preserve `disallowedTools` (`Write`, `Edit`, the names Kimi registers) and `subagents` metadata. Do not add a model field the plugin-agent format does not support. See the [plugin-agent contract](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents). |
 | Devin | Keep root `AGENTS.md` and `agents/` conventional; the manifest declares only `skills`. Devin has no plugin commands component or denylist, so modes are keywords and read-only is prompt-level. |

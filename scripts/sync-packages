@@ -56,6 +56,9 @@ if [ "$HAD_ERROR" -eq 0 ]; then
   if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts "${1:---write}"); then
     HAD_ERROR=1
   fi
+  if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-bundled-skills.ts "${1:---write}"); then
+    HAD_ERROR=1
+  fi
 fi
 
 echo ""

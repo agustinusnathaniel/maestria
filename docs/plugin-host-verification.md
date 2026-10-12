@@ -4,7 +4,7 @@
 
 Single evidence register for declarative plugin hosts (Claude Code, Codex CLI and desktop, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes). Each host section holds its dated probes and results plus its evidence rows with pinned versions, dates, sources, and test status. The [capability contract](agent-plugin-capabilities.md) defines what ships per host; the [runtime support matrix](runtime-support-matrix.md) keeps non-plugin runtimes.
 
-Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is seven shared task profiles (`agents/<role>.md`, no orchestrator), three shared workflows, per-host global policy, and two root utility skills. Results dated before 2026-10-12 that cite eight profiles describe a superseded layout.
+Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is seven shared task profiles (`agents/<role>.md`, no orchestrator), three shared workflows, per-host global policy, and four root skills (two generated utilities and two methodology skills bundled from the repository root since 2026-10-13). Results dated before 2026-10-12 that cite eight profiles describe a superseded layout.
 
 ## Claude Code
 
@@ -35,6 +35,7 @@ Superseded run: Claude Code 2.1.217 passed ten checks against the former per-hos
 | E-CLAUDE-09 | Claude Code | Native child skill preload and tool schema | A deterministic CLI fixture loaded the thin reviewer profile, reached both reviewer and global-rules skills in the child request, and observed a child tool schema without Write/Edit. This verifies that role's native preload and declared tool boundary, not model judgment, shell-mediated editing, every specialist, or other CLI versions | Claude Code `2.1.217` | This register; `scripts/e2e/claude-skill-preload.ts`; `packages/agent-plugins/tests/claude-loading.test.ts` | 2026-10-10 | tested: native CLI fixture; no paid inference |
 | E-CLAUDE-10 | Claude Code | Full native child context | The real offline CLI fixture reached complete reviewer and global-policy instructions without role-skill preloads, excluded Write/Edit from the child tool schema, and returned its result to the parent. Superseded by E-CLAUDE-11 for the current layout. | Claude Code 2.1.217 | This register; `scripts/e2e/claude-skill-preload.ts` | 2026-10-11 | tested: native CLI fixture; no paid inference |
 | E-CLAUDE-11 | Claude Code | Shared-profile child context and strict validation | `claude plugin validate --strict` passed. The offline fixture loaded the reviewer from the shared `agents/reviewer.md` (no per-host copy), Write and Edit were unavailable, and the full role and global policy reached the child context. | Claude Code 2.1.295 | This register; `scripts/e2e/claude-skill-preload.ts` | 2026-10-12 | tested: native CLI fixture; no paid inference |
+| E-CLAUDE-12 | Claude Code | Bundled skill discovery | With `create-pull-request` and `docs-update` bundled in `skills/`, `claude plugin validate --strict` passed and the offline fixture's parent request listed `maestria:create-pull-request`, `maestria:docs-update`, `maestria:handoff`, and `maestria:iteration-limits` beside the seven agents and three commands. Skill invocation by a model was not exercised. | Claude Code 2.1.295 | This register; `scripts/e2e/claude-skill-preload.ts` with a local request-capture patch | 2026-10-13 | tested: native CLI fixture; no paid inference |
 
 ### Capability vs control
 
@@ -167,7 +168,7 @@ The probe ran `devin plugins install --local -y ./packages/agent-plugins`, then 
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-DEVIN-PLUGIN-01 | Devin | Plugin discovery | `devin plugins info` lists seven agents, two utilities, `AGENTS.md` always on and `rules/global.md` manual; `.toml` profiles and per-host rules are not loaded. No agent task run. | Devin CLI 3000.11.3 | This register (`devin plugins info`) | 2026-10-12 | tested: live Devin CLI discovery |
+| E-DEVIN-PLUGIN-01 | Devin | Plugin discovery | `devin plugins info` lists seven agents, four skills (two utilities on 2026-10-12; four after bundling, rechecked 2026-10-13), `AGENTS.md` always on and `rules/global.md` manual; `.toml` profiles and per-host rules are not loaded. No agent task run. | Devin CLI 3000.11.3 | This register (`devin plugins info`) | 2026-10-12 | tested: live Devin CLI discovery |
 
 ## ZCode
 
@@ -189,7 +190,7 @@ With Bun and OMP 18.4.8 sources installed, run:
 pnpm exec bun scripts/e2e/omp-plugin-discovery.ts --host-root /absolute/path/to/@oh-my-pi/pi-coding-agent --out artifacts/omp-plugin-discovery.json
 ```
 
-This packs and extracts the plugin, then uses actual capability providers and installed-loader code against both the Git root and archive. On 2026-10-12 (OMP 18.4.8, archive and git root), discovery returned 7 agents, 3 commands, 1 rule, and 2 skills; `.toml` files are not loaded. The metadata registration fixture is distinct from a real installation transaction.
+This packs and extracts the plugin, then uses actual capability providers and installed-loader code against both the Git root and archive. On 2026-10-12 (OMP 18.4.8, archive and git root), discovery returned 7 agents, 3 commands, 1 rule, and 2 skills; `.toml` files are not loaded. On 2026-10-13, after the methodology skills were bundled, it returned 7 agents, 3 commands, 1 rule, and 4 skills on both. The metadata registration fixture is distinct from a real installation transaction.
 
 ### Real isolated installation and prepared prompts
 
@@ -209,8 +210,8 @@ No inference or actual task spawn occurs. Generic profiles have no `tools`, `spa
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-OMP-PLUGIN-01 | OMP | Current native resource discovery | Source (git root) and archive discovery expose seven task profiles, two utility skills, three commands, and one always-apply global rule; `.toml` files are not loaded. The previous fourteen-skill/zero-command fixture and the 2026-10-11 eight-profile result describe retired layouts. | Host 18.4.8 | `scripts/e2e/omp-plugin-discovery.ts`; this register | 2026-10-12 | tested: actual capability providers, source/archive payload |
-| E-OMP-PLUGIN-02 | OMP | Real installed lifecycle and prepared context | An isolated local-archive CLI installation, disable, reinstall, enable, upgrade refusal for a local source, and uninstall passed (39 of 39 checks, no network). Default installed discovery (7 agents, 3 commands, 1 always-apply rule, 2 skills), global system-prompt injection, and all seven task-template compositions passed on the seven-profile layout. No inference or actual task spawn was performed. | Host 18.4.8 | `artifacts/omp-actual-host-proof/` (ignored, adapted harness); this register | 2026-10-13 | tested: real bundled CLI and native prompt/discovery APIs |
+| E-OMP-PLUGIN-01 | OMP | Current native resource discovery | Source (git root) and archive discovery expose seven task profiles, four skills, three commands, and one always-apply global rule; `.toml` files are not loaded. The previous fourteen-skill/zero-command fixture and the 2026-10-11 eight-profile result describe retired layouts. | Host 18.4.8 | `scripts/e2e/omp-plugin-discovery.ts`; this register | 2026-10-13 | tested: actual capability providers, source/archive payload |
+| E-OMP-PLUGIN-02 | OMP | Real installed lifecycle and prepared context | An isolated local-archive CLI installation, disable, reinstall, enable, upgrade refusal for a local source, and uninstall passed (39 of 39 checks, no network). Default installed discovery (7 agents, 3 commands, 1 always-apply rule, 2 skills, before the methodology skills were bundled), global system-prompt injection, and all seven task-template compositions passed on the seven-profile layout. No inference or actual task spawn was performed. | Host 18.4.8 | `artifacts/omp-actual-host-proof/` (ignored, adapted harness); this register | 2026-10-13 | tested: real bundled CLI and native prompt/discovery APIs |
 
 ## Hermes
 
@@ -240,7 +241,7 @@ Run the completion gates as well as these probes. Regenerate affected evidence w
 | E-CLAUDE-03 | https://code.claude.com/docs/en/plugin-marketplaces | 2026-08-11 | not tested |
 | E-CLAUDE-08 | Working-tree package snapshot; verify at landing (historical first-package snapshot) | 2026-08-12 | tested |
 | E-CLAUDE-09 | This register; `scripts/e2e/claude-skill-preload.ts` | 2026-10-10 | tested: native CLI fixture (superseded) |
-| E-CLAUDE-10, E-CLAUDE-11 | This register; `scripts/e2e/claude-skill-preload.ts`; https://code.claude.com/docs/en/plugins/components; https://claude.com/docs/plugins/platform-support | 2026-10-12 (E-CLAUDE-10 reviewed 2026-10-11) | tested: native CLI fixture |
+| E-CLAUDE-10, E-CLAUDE-11, E-CLAUDE-12 | This register; `scripts/e2e/claude-skill-preload.ts`; https://code.claude.com/docs/en/plugins/components; https://claude.com/docs/plugins/platform-support | 2026-10-12 (E-CLAUDE-10 reviewed 2026-10-11) | tested: native CLI fixture |
 | E-CURSOR-PLUGIN-01 | This register (live CLI probe); https://cursor.com/docs/reference/plugins; https://cursor.com/docs/subagents | 2026-10-12 | tested: live Cursor CLI |
 | E-KIMI-PLUGIN-01 | Kimi `v0.38.0` and `v2.1.1` source tool registry; https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents | 2026-10-12 | tested: source inspection |
 | E-DEVIN-PLUGIN-01 | This register (`devin plugins info`); https://docs.devin.ai/cli/extensibility/plugins/overview | 2026-10-12 | tested: live Devin CLI discovery |

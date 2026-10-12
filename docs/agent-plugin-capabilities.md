@@ -29,7 +29,7 @@ The portable v1 manifest exposes utilities. It does not establish native agents,
 | Claude Cowork / Chat | Availability differs; Chat ignores plugin agents | Commands and utilities are supported | Do not promise Code's agents/settings/hooks on every Claude surface |
 | Cursor | Seven shared profiles (`agents/`) | Shared commands (`commands/`) and always-applied `rules/cursor/` rule | `readonly` is declared but not enforced for plugin-supplied agents; enforced for project `.cursor/agents/` copies written by `maestria configure cursor` at project level |
 | Codex CLI / local desktop | Companion-installed complete TOMLs from `agents/maestria-<role>.toml` (plugins cannot ship agents); `sandbox_mode = "read-only"` on adventurer, architect, planner, reviewer | Companion-managed marked AGENTS block includes router, policy, and per-turn mode keywords | Portable marketplace installation alone exposes utilities |
-| ChatGPT / generic portable clients | No portable role component | No portable mode or policy component | Utility-only discovery; no implied companion installation |
+| ChatGPT / generic portable clients | No portable role component | No portable mode or policy component | Skill-only discovery; no implied companion installation |
 | Kimi Code | Seven shared profiles | Shared commands and complete systemPromptPath bootstrap | `disallowedTools: [Write, Edit]` (tool names are in the [register](plugin-host-verification.md#kimi-code)); unknown keys ignored; no built-in-profile remapping; no agent model field |
 | Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; no plugin commands component, so modes use keywords such as `fein: <task>` | Manifest selects only `skills`; no denylist, so read-only is prompt-level; no invented commands/agents selector |
 | ZCode | Seven shared profiles (discovered from `agents/`) | Three shared commands, with policy in their context | `disallowedTools` removes `Write`/`Edit` from subagent tools per ZCode source, not live-run; ZCode has no plugin rules component |
@@ -48,7 +48,7 @@ Evidence detail, versions, and dates live in the [host verification register](pl
 - **Devin:** live discovery; task execution not run. See [Devin](plugin-host-verification.md#devin).
 - **ZCode:** source inspection; not live-run. See [ZCode](plugin-host-verification.md#zcode).
 - **OMP:** live loader probe plus a superseded-layout install lifecycle probe; no task spawn. See [OMP](plugin-host-verification.md#omp).
-- **Hermes:** docs-only portable contract; utility-only installation. See [Hermes](plugin-host-verification.md#hermes).
+- **Hermes:** docs-only portable contract; skill-only installation. See [Hermes](plugin-host-verification.md#hermes).
 
 A doctor command, dry-run installation, accepted unknown frontmatter, or resolved selector is insufficient proof of activation or enforcement. Historical fourteen-skill/zero-command and eight-profile probes describe retired layouts and are not current acceptance evidence.
 

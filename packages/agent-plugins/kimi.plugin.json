@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "maestria Agent Pack",
     "shortDescription": "Native specialists and workflow commands for Kimi Code",
-    "longDescription": "Seven native specialist profiles, complete primary-session policy and routing, three workflow commands, and two reusable utilities. Models, tool authority, and session lifecycle remain Kimi-owned.",
+    "longDescription": "Seven native specialist profiles, complete primary-session policy and routing, three workflow commands, and four maestria skills. Models, tool authority, and session lifecycle remain Kimi-owned.",
     "developerName": "Agustinus Nathaniel",
     "websiteURL": "https://github.com/agustinusnathaniel/maestria"
   },

@@ -34,7 +34,12 @@ describe('Agent Plugin validation', () => {
 
     expect(report.valid).toBe(true);
     expect(report.name).toBe('maestria');
-    expect(report.skillNames).toEqual(['handoff', 'iteration-limits']);
+    expect(report.skillNames).toEqual([
+      'create-pull-request',
+      'docs-update',
+      'handoff',
+      'iteration-limits',
+    ]);
     expect(report.errors).toEqual([]);
   });
 

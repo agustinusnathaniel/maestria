@@ -48,20 +48,28 @@ Where keyword detection is supported, mode keywords are recognized anywhere in a
 
 ## Portable Utilities
 
-The consolidated [Agent Plugins package](/agent-plugins/) exports two portable utilities: `handoff` for transferring task context and `iteration-limits` for bounding repair loops. Each is generated from the matching section of the global rules, so it always states the same policy the full integrations carry. Full methodology uses host-specific native profiles, commands, and policy entry points. Portable utilities alone do not activate this roster or its modes.
+The consolidated [Agent Plugins package](/agent-plugins/) exports two portable utilities, `handoff` for transferring task context and `iteration-limits` for bounding repair loops, alongside the [bundled methodology skills](#bundled-methodology-skills). Each is generated from the matching section of the global rules, so it always states the same policy the full integrations carry. Full methodology uses host-specific native profiles, commands, and policy entry points. Portable utilities alone do not activate this roster or its modes.
 
-## Optional Skills
+## Skills
 
-Agents load these skills when the assignment calls for them. Every one is optional: a missing skill never blocks the work, and the core directives still apply.
+### Bundled methodology skills
 
-### maestria methodology skills
+The global rules name two maestria-specific skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, and `@maestria/pi`. They update with the package; there is nothing extra to install or select.
 
-These live in the maestria repository and carry maestria-specific procedures. `maestria install` and `setup` install `create-pull-request` and `docs-update` for each detected agent by default, and `update` keeps your recorded selection (an older install with no record keeps only `create-pull-request`). Choose with `--skills` and `--exclude-skills` (see the [CLI reference](/cli/commands/)).
-
-- **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
+- **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Agents load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
 - **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/skills/docs-update/SKILL.md)** - Documentation and changeset procedure. Agents load it before finishing a change to behavior, interfaces, configuration, or user-facing workflows, and follow it to classify and update affected docs; ordinary docs work proceeds without it.
 
-### Generic engineering skills
+For an agent maestria does not package, install them from the repository with [skills.sh](https://skills.sh):
+
+```bash
+npx skills add agustinusnathaniel/maestria
+```
+
+Earlier CLI versions installed these two skills separately for each agent. `maestria update` and `maestria uninstall` now remove the copies the CLI installed, and `maestria doctor` lists any that remain; copies you installed yourself are left alone.
+
+### Optional engineering skills
+
+Agents load these when the assignment calls for them. Every one is optional: a missing skill never blocks the work, and the core directives still apply.
 
 The architect loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. After installing a maestria platform, add that repository for your agents with `setup` (use `:project` instead of `:global` to install into the current project):
 

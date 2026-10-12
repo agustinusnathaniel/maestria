@@ -1,30 +1,15 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import fs, { readdirSync, readFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vite-plus/test';
+import { afterEach, describe, expect, it } from 'vite-plus/test';
+
+import { syncBundledSkills } from '../../../scripts/sync-bundled-skills.js';
 
 const SKILLS_DIR = path.join(import.meta.dirname, '..', '..', '..', 'skills');
 const REPO_ROOT = path.join(SKILLS_DIR, '..');
 
 const FRONTMATTER_RE = /^---\n(?<body>[\s\S]*?)\n---/u;
 const SKILL_NAME_RE = /^name:\s*(?<name>.+)$/mu;
-const RELATIVE_PREFIX_RE = /^\.\//u;
-
-interface StandaloneSkillsManifest {
-  name: string;
-  skills: string[];
-}
-
-const isManifest = (value: unknown): value is StandaloneSkillsManifest => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const { name, skills } = value as { name?: unknown; skills?: unknown };
-  return (
-    name === 'maestria-skills' &&
-    Array.isArray(skills) &&
-    skills.every((entry) => typeof entry === 'string')
-  );
-};
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -38,73 +23,93 @@ const readSkillName = (dir: string): string => {
   return SKILL_NAME_RE.exec(frontmatter)?.groups?.name?.trim() ?? '';
 };
 
-describe('standalone skills plugin manifest', () => {
-  it('lists exactly the skill directories under skills/', () => {
-    const parsed: unknown = JSON.parse(
-      readFileSync(path.join(SKILLS_DIR, '.claude-plugin', 'plugin.json'), 'utf-8'),
-    );
-    expect(isManifest(parsed)).toBe(true);
-    if (!isManifest(parsed)) {
-      throw new Error('skills plugin manifest has an unexpected shape');
-    }
+const skillDirs = (): string[] =>
+  readdirSync(SKILLS_DIR, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .toSorted();
 
-    const registered = parsed.skills
-      .map((entry) => entry.replace(RELATIVE_PREFIX_RE, ''))
-      .toSorted();
-    const onDisk = readdirSync(SKILLS_DIR, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .filter((name) => existsSync(path.join(SKILLS_DIR, name, 'SKILL.md')))
-      .toSorted();
-
-    expect(registered).toEqual(onDisk);
-
-    for (const dir of onDisk) {
+describe('canonical methodology skills', () => {
+  it('name each skill after its directory', () => {
+    expect(skillDirs()).toEqual(['create-pull-request', 'docs-update']);
+    for (const dir of skillDirs()) {
       expect(readSkillName(dir)).toBe(dir);
     }
   });
 
-  it('lists only installed skills in skills.sh.json groupings', () => {
+  it('lists exactly the skills under skills/ in skills.sh.json groupings', () => {
     const parsed: unknown = JSON.parse(
       readFileSync(path.join(REPO_ROOT, 'skills.sh.json'), 'utf-8'),
     );
-    expect(isRecord(parsed)).toBe(true);
-    if (!isRecord(parsed)) {
-      throw new TypeError('skills.sh.json must be a JSON object');
+    if (!isRecord(parsed) || !Array.isArray(parsed.groupings)) {
+      throw new TypeError('skills.sh.json must be an object with a groupings array');
     }
-    const groupings: unknown = parsed.groupings;
-    expect(Array.isArray(groupings)).toBe(true);
-    if (!Array.isArray(groupings)) {
-      throw new TypeError('skills.sh.json groupings must be an array');
-    }
-    expect(groupings.length).toBeGreaterThan(0);
+    const grouped = parsed.groupings.flatMap((grouping: unknown) => {
+      if (!isRecord(grouping) || typeof grouping.title !== 'string' || grouping.title === '') {
+        throw new TypeError('skills.sh.json grouping needs a title');
+      }
+      return Array.isArray(grouping.skills) ? grouping.skills.map(String) : [];
+    });
+    expect(grouped.map(normalizeSkillSlug).toSorted()).toEqual(skillDirs());
+  });
+});
 
-    const onDisk = new Set(
-      readdirSync(SKILLS_DIR, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name.toLowerCase()),
+const target = (root: string, name: string): string =>
+  path.join(root, 'packages', 'pi', 'skills', name, 'SKILL.md');
+
+describe('bundled skill copies', () => {
+  const temporary: string[] = [];
+  afterEach(() => {
+    for (const root of temporary.splice(0)) {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  const fixture = (): string => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'maestria-bundled-skills-'));
+    temporary.push(root);
+    fs.mkdirSync(path.join(root, 'skills', 'demo'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'skills', 'demo', 'SKILL.md'),
+      '---\nname: demo\ndescription: Demo skill\n---\n\n# Demo\n\nBody.\n',
     );
+    return root;
+  };
 
-    for (const grouping of groupings) {
-      if (!isRecord(grouping)) {
-        throw new TypeError('skills.sh.json grouping must be an object');
-      }
-      const title: unknown = grouping.title;
-      const skills: unknown = grouping.skills;
-      expect(typeof title === 'string' && title.trim().length > 0).toBe(true);
-      expect(Array.isArray(skills) && skills.length > 0).toBe(true);
-      if (!Array.isArray(skills)) {
-        throw new TypeError('skills.sh.json grouping skills must be an array');
-      }
-      for (const skill of skills) {
-        expect(typeof skill === 'string').toBe(true);
-        if (typeof skill !== 'string') {
-          continue;
-        }
-        const dir = normalizeSkillSlug(skill);
-        expect(onDisk.has(dir)).toBe(true);
-        expect(readSkillName(dir)).toBe(dir);
-      }
+  it('copies each skill into every package with frontmatter first and a provenance notice', () => {
+    const root = fixture();
+    syncBundledSkills(root);
+
+    for (const pkg of ['agent-plugins', 'opencode', 'pi']) {
+      const copy = readFileSync(path.join(root, 'packages', pkg, 'skills/demo/SKILL.md'), 'utf-8');
+      expect(copy).toBe(
+        '---\nname: demo\ndescription: Demo skill\n---\n\n' +
+          '<!-- Bundled from skills/demo/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->\n\n' +
+          '# Demo\n\nBody.\n',
+      );
     }
+    expect(syncBundledSkills(root, true)).toEqual([]);
+  });
+
+  it('reports drift in check mode and removes copies whose source skill is gone', () => {
+    const root = fixture();
+    syncBundledSkills(root);
+    fs.appendFileSync(target(root, 'demo'), 'hand edit\n');
+    expect(syncBundledSkills(root, true)).toEqual([
+      { action: 'write', relative: 'packages/pi/skills/demo/SKILL.md' },
+    ]);
+
+    fs.rmSync(path.join(root, 'skills', 'demo'), { recursive: true });
+    syncBundledSkills(root);
+    expect(fs.existsSync(path.dirname(target(root, 'demo')))).toBe(false);
+  });
+
+  it('refuses to overwrite a package-owned skill of the same name', () => {
+    const root = fixture();
+    fs.mkdirSync(path.dirname(target(root, 'demo')), { recursive: true });
+    fs.writeFileSync(target(root, 'demo'), '---\nname: demo\n---\n\nPackage-owned.\n');
+
+    expect(() => syncBundledSkills(root)).toThrow(/would overwrite a package-owned skill/u);
+    expect(readFileSync(target(root, 'demo'), 'utf-8')).toContain('Package-owned.');
   });
 });

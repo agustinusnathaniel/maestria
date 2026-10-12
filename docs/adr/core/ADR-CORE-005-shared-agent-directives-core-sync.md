@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-23), Confidence: High. Consolidated 2026-10-03 with root-resolved tooling (2026-08-12), anchor preflight (2026-09-10), and fail-closed source resolution (2026-09-11). Amended 2026-10-12 with skill ownership tiers.
+Accepted (2026-06-23), Confidence: High. Consolidated 2026-10-03 with root-resolved tooling (2026-08-12), anchor preflight (2026-09-10), and fail-closed source resolution (2026-09-11). Amended 2026-10-12 with skill ownership tiers and 2026-10-13 with bundled methodology skills.
 
 ## Context
 
@@ -36,12 +36,12 @@ Resolve one ordered plan for validation and processing: primary Markdown in walk
 
 Validate anchors before processing, counting matches immediately before each ordered replacement. A default operation must match somewhere across its swept files; a file operation must match in its own file. Empty and identity replacements are invalid even when they match. Dead and shadowed anchors produce deterministic diagnostics naming config, scope, file, anchor, and match count, with no output mutation. Scope remains internal to resolution rather than becoming another authoring field.
 
-### Skill ownership tiers (2026-10-12)
+### Skill ownership tiers (2026-10-12, amended 2026-10-13)
 
 Every skill has one owner and one install path:
 
 - **Core utility skills** (`handoff`, `iteration-limits`) are projections, not authored files. Each is generated from one `rules.md` section through one shared section extractor: the generic engine selects it with a per-file `section` option, the consolidated compiler with its own utility-to-section map. A missing heading fails before any write. Hand-authored copies had drifted: Pi still described a seven-field handoff contract after the fixed schema was retired, and `iteration-limits` carried stop rules the global policy lacked.
-- **Standalone methodology companions** (for example `create-pull-request`, `docs-update`) live once at the repository root `skills/`. The CLI installs them from this repository through the pinned `skills` CLI; core keeps the obligation and a pointer, and a missing companion never blocks the work.
+- **Bundled methodology skills** (`create-pull-request`, `docs-update`) live once at the repository root `skills/`. `scripts/sync-bundled-skills.ts` copies each into every maestria package (`@maestria/agent-plugins`, `@maestria/opencode`, `@maestria/pi`) with a provenance notice, and `scripts/check-sync` guards the copies, so they version with each package and no host has a directive pointing at a missing skill. The OpenCode plugin registers its copy through `skills.paths` in its config hook. Runtimes maestria does not package install them from the root through `skills.sh`. Until 2026-10-13 the CLI installed them as optional companions through the pinned `skills` CLI; that left marketplace, Devin, ZCode, and Hermes users without skills the core rules name, and needed a second, unversioned Claude manifest. The CLI now only removes copies it installed earlier, using its ownership record.
 - **Generic engineering skills** live in their own repositories (for example `agustinusnathaniel/skills`). Directives may name them as on-trigger loads, users install them, and maestria never vendors them.
 
 Anything every role needs stays inline in core policy; a skill tier is never the only home of a cross-role obligation ([CORE-019](ADR-CORE-019-directive-simplification.md)).
@@ -53,6 +53,7 @@ Anything every role needs stays inline in core policy; a skill tier is never the
 - Fail-closed resolution and ordered preflight prevent silent or partial projections. Conditional replacements that stop matching now need an explicit config update.
 - Validation adds source reads and configs add a navigation hop; those costs buy evidence that the actual resolved transforms apply.
 - Root tooling avoids registry fallback and runner drift while depending on the workspace's package manager and installation.
+- Bundled skills add two generated copies per package to every release and make the packages larger; a change to a root skill ships only when each package releases.
 - Utility skills read as policy sections rather than curated checklists, and whatever a skill-only host needs from them must live in the source section, which keeps always-on policy slightly larger. Section headings become a generation contract.
 - Historical migrations needed careful preservation of host-specific patches; a mechanical projection does not establish equivalent runtime enforcement across hosts.
 
@@ -69,7 +70,8 @@ Anything every role needs stays inline in core policy; a skill tier is never the
 - **Keep configurable provenance or compatibility aliases without consumers:** rejected because unused private surface creates obligations without preserving a public contract.
 - **Git submodule or vendored copies of external skill repositories:** rejected because they couple releases to unrelated skills and repeat the copy layouts this generator already retired.
 - **Hand-authored utility skills beside the rules:** rejected because the two homes drifted.
-- **Move the standalone companions to the generic skills repository:** rejected because the CLI install path, tests, and docs depend on this repository's source, and the companions are maestria-specific.
+- **Move the methodology skills to the generic skills repository:** rejected because they are maestria-specific and the core rules depend on them.
+- **CLI-installed optional companions:** retired 2026-10-13 because hosts the CLI does not manage never received them, and a selection record, ownership preflight, and separate manifest existed only to work around that.
 
 ## Related Decisions
 
@@ -79,4 +81,4 @@ Anything every role needs stays inline in core policy; a skill tier is never the
 
 ## Date
 
-2026-06-23; consolidated 2026-10-03; amended 2026-10-12.
+2026-06-23; consolidated 2026-10-03; amended 2026-10-12 and 2026-10-13.

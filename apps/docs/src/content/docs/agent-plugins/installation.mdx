@@ -22,7 +22,7 @@ The command prints a staged directory for your client's installer or local-plugi
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
 
-A successful check reports a valid manifest and the two utility skills. Use `--json` for a machine-readable report.
+A successful check reports a valid manifest and the four skills. Use `--json` for a machine-readable report.
 
 The command is intentionally namespaced as `maestria plugin ...`: `maestria install` manages runtime integrations and host installation flows; `maestria plugin` validates and stages artifacts.
 
@@ -38,7 +38,7 @@ If utilities do not appear, confirm the selected directory contains `plugin.json
 
 ## Claude Code
 
-`@maestria/agent-plugins` is a declarative Claude Code plugin. Its `.claude-plugin/plugin.json` manifest lists the seven shared `agents/<role>.md` profiles and the three shared `commands/*.md` workflows explicitly, because Claude rejects directory agent selectors, and adds the two utility skills. No build step or runtime code is required. The host-side model is described in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
+`@maestria/agent-plugins` is a declarative Claude Code plugin. Its `.claude-plugin/plugin.json` manifest lists the seven shared `agents/<role>.md` profiles and the three shared `commands/*.md` workflows explicitly, because Claude rejects directory agent selectors, and Claude Code adds the four skills from `skills/` by convention. No build step or runtime code is required. The host-side model is described in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
 
 **Prerequisites.** Claude Code with the `claude` CLI on `PATH`, and Node.js with npm for `maestria install claude-code`. Node.js and pnpm are needed only to regenerate files from the canonical directives.
 
@@ -111,7 +111,7 @@ Codex plugins cannot ship agents, so a full setup has two parts. The Codex plugi
 | Install path | You get |
 | --- | --- |
 | `maestria install codex` (Codex CLI) | Plugin utilities, seven agent TOMLs, and a managed routing block in global instructions |
-| `codex plugin add` or a marketplace (CLI or desktop) | The two plugin utilities only |
+| `codex plugin add` or a marketplace (CLI or desktop) | The four plugin skills only |
 
 ### Codex CLI
 
@@ -154,7 +154,7 @@ codex plugin marketplace add agustinusnathaniel/maestria
 codex plugin add maestria@maestria
 ```
 
-`codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation adds only the plugin and its two utilities: it does not copy the agent TOMLs or modify global `AGENTS.md`. Codex `0.153.4` discovers the conventional root `skills/` directory, and its AgentPlugin loader ignores the overlay skills selector, so that selector cannot turn commands or agents into skills. The `.codex-plugin/plugin.json` compatibility manifest supplies presentation metadata.
+`codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct installation adds only the plugin and its four skills: it does not copy the agent TOMLs or modify global `AGENTS.md`. Codex `0.153.4` discovers the conventional root `skills/` directory, and its AgentPlugin loader ignores the overlay skills selector, so that selector cannot turn commands or agents into skills. The `.codex-plugin/plugin.json` compatibility manifest supplies presentation metadata.
 
 **Evidence.** Package and installer tests cover the companion payloads. The 2026-08-26 marketplace smoke used Codex CLI `0.145.0` and the former standalone package; no fresh CLI end-to-end run covers the consolidated archive. See [compatibility](/agent-plugins/compatibility/).
 
@@ -253,7 +253,7 @@ Profiles embed complete role and global policy, so no role skill preload is need
 
 ## Kimi Code
 
-The Kimi manifest points at the seven shared profiles in `agents/`, the three shared commands in `commands/`, and the session bootstrap in `rules/kimi-code/bootstrap.md`. Root `skills/` carries the two utilities.
+The Kimi manifest points at the seven shared profiles in `agents/`, the three shared commands in `commands/`, and the session bootstrap in `rules/kimi-code/bootstrap.md`. Root `skills/` carries the four skills.
 
 **Prerequisites.** A Kimi Code version that supports native plugin agents, commands, and `systemPromptPath` (see the [official plugin guide](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html)), and Node.js 22.12 or later with npm for the maestria CLI.
 
@@ -285,7 +285,7 @@ Updates replace the managed package, so back up local changes first. Your own pe
 | Seven native specialists | Complete role and global policy for adventurer, architect, builder, diagnose, planner, reviewer, and writer |
 | Three native commands | Complete fein, sonar, and blitz workflows with task arguments (`$ARGUMENTS` is substituted) |
 | `systemPromptPath` bootstrap | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
-| Two utilities | `handoff` and `iteration-limits` |
+| Four skills | `handoff`, `iteration-limits`, `create-pull-request`, `docs-update` |
 
 The integration uses neither `sessionStart.skill` nor `skillInstructions`. Native specialists replace the former mapping to the built-in coder, explore, and plan agents. Child methodology does not depend on a parent loading role skills.
 
@@ -303,7 +303,7 @@ The integration uses neither `sessionStart.skill` nor `skillInstructions`. Nativ
 
 ## Devin
 
-Devin reads `@maestria/agent-plugins` through `.devin-plugin/plugin.json`. The package supplies conventional root agent profiles and always-on policy and routing in root `AGENTS.md`. The manifest declares only `skills`, which adds the two utilities. Devin has no plugin commands component, so there are no slash commands; use [mode keywords](/agent-plugins/usage/#per-host-syntax) instead.
+Devin reads `@maestria/agent-plugins` through `.devin-plugin/plugin.json`. The package supplies conventional root agent profiles and always-on policy and routing in root `AGENTS.md`. The manifest declares only `skills`, which adds the four skills. Devin has no plugin commands component, so there are no slash commands; use [mode keywords](/agent-plugins/usage/#per-host-syntax) instead.
 
 **Install.** Stage a validated package, then install the printed directory through Devin:
 
@@ -322,11 +322,11 @@ devin plugins install agustinusnathaniel/maestria#packages/agent-plugins
 
 Changes apply to new sessions. Use **Reindex plugins** on Devin's Customize page to refresh the web listing. See the [official installation formats](https://docs.devin.ai/cli/extensibility/plugins/overview) and [Customize guide](https://docs.devin.ai/product-guides/plugins).
 
-**Limits.** Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but that does not add plugin subagents there. Devin offers an `allowed-tools` allowlist but no denylist or read-only field, so read-only roles are prompt-level only. No hooks, MCP server, or automation ship here. Devin CLI 3000.11.3 (`devin plugins info`, 2026-10-12) lists the seven profiles, the two utilities, and `AGENTS.md` as always on; it ignores the `.toml` profiles and the per-host rule folders, and lists `rules/global.md` as manual. Agent task execution was not run. See [compatibility](/agent-plugins/compatibility/).
+**Limits.** Native plugin agents load in local CLI and Desktop sessions, not cloud sessions. Personal plugins can supply the selected skills and policy to cloud sessions, but that does not add plugin subagents there. Devin offers an `allowed-tools` allowlist but no denylist or read-only field, so read-only roles are prompt-level only. No hooks, MCP server, or automation ship here. Devin CLI 3000.11.3 (`devin plugins info`, 2026-10-12) lists the seven profiles, the four skills (rechecked 2026-10-13), and `AGENTS.md` as always on; it ignores the `.toml` profiles and the per-host rule folders, and lists `rules/global.md` as manual. Agent task execution was not run. See [compatibility](/agent-plugins/compatibility/).
 
 ## ZCode
 
-The ZCode manifest (`.zcode-plugin/plugin.json`) selects the shared `commands/` and `skills/` directories, and ZCode discovers `agents/` by convention: seven specialist profiles, three native commands, and two utilities. They are the same files other Markdown hosts use. ZCode ignores file lists and loads only `.md` agents, so the manifest uses directory selectors.
+The ZCode manifest (`.zcode-plugin/plugin.json`) selects the shared `commands/` and `skills/` directories, and ZCode discovers `agents/` by convention: seven specialist profiles, three native commands, and four skills. They are the same files other Markdown hosts use. ZCode ignores file lists and loads only `.md` agents, so the manifest uses directory selectors.
 
 **Install.** Stage the plugin in a directory beside a ZCode marketplace file:
 
@@ -360,7 +360,7 @@ In ZCode, open a workspace, then choose **Settings → Plugins → Create → Ad
 
 ## OMP
 
-Oh My Pi (OMP) uses conventional discovery on the package: seven task profiles (`agents/<role>.md`), three commands, one always-apply rule (`rules/global.md`), and two utilities. An empty `package.json#omp` entry registers the data-only package. OMP owns plugin activation, task execution, permissions, and session behavior.
+Oh My Pi (OMP) uses conventional discovery on the package: seven task profiles (`agents/<role>.md`), three commands, one always-apply rule (`rules/global.md`), and four skills. An empty `package.json#omp` entry registers the data-only package. OMP owns plugin activation, task execution, permissions, and session behavior.
 
 **Install.**
 
@@ -399,11 +399,11 @@ Or remove the package with `omp plugin uninstall @maestria/agent-plugins`. If th
 
 Profiles, commands, and rules are generated from canonical sources and shared with other Markdown hosts, so no role or global-rules skill preload is needed. By default, profiles inherit the parent model.
 
-**Limits.** The data-only integration declares no executable extension, task wrapper, lifecycle hook, review interceptor, goal wrapper, automation, or MCP server; the retired runtime's enforcement does not carry over. OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced and read-only is prompt-level. A real OMP `18.4.8` loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-12) on the packed archive and a git root found 7 agents, 3 commands, 1 rule, and 2 skills, and did not load `.toml` files. A real isolated install lifecycle run (2026-10-13) passed 39 of 39 checks on the seven-profile layout; an earlier probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran, so model judgment and runtime permission enforcement are unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). For the separate Pi runtime extension, use the [Pi reference](/pi/reference/).
+**Limits.** The data-only integration declares no executable extension, task wrapper, lifecycle hook, review interceptor, goal wrapper, automation, or MCP server; the retired runtime's enforcement does not carry over. OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced and read-only is prompt-level. A real OMP `18.4.8` loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-13) on the packed archive and a git root found 7 agents, 3 commands, 1 rule, and 4 skills, and did not load `.toml` files. A real isolated install lifecycle run (2026-10-13) passed 39 of 39 checks on the seven-profile layout; an earlier probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran, so model judgment and runtime permission enforcement are unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). For the separate Pi runtime extension, use the [Pi reference](/pi/reference/).
 
 ## Hermes
 
-Hermes consumes the root portable manifest and the `handoff` and `iteration-limits` skills in `@maestria/agent-plugins`. It needs a Hermes version that supports [portable Agent Plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages). Portable installation supplies only the two utilities; full routing needs the optional [manual context](#hermes-manual-context) below.
+Hermes consumes the root portable manifest and the four skills in `@maestria/agent-plugins`. It needs a Hermes version that supports [portable Agent Plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages). Portable installation supplies only the four skills; full routing needs the optional [manual context](#hermes-manual-context) below.
 
 **Install.**
 

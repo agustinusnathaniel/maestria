@@ -1,4 +1,6 @@
 import type { Config } from '@opencode-ai/plugin';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { pluginInput } from './helpers.js';
@@ -6,6 +8,8 @@ import { pluginInput } from './helpers.js';
 import { MaestriaPlugin } from '@/index.js';
 
 type AgentConfig = NonNullable<NonNullable<Config['agent']>[string]>;
+// The plugin SDK's v1 Config type predates `skills`; OpenCode reads `skills.paths` at runtime.
+type SkillsConfig = Config & { skills?: { paths?: string[]; urls?: string[] } };
 
 const getAgentConfig = (config: Config, name: string): AgentConfig => {
   const agent = config.agent?.[name];
@@ -97,5 +101,32 @@ describe('plugin structure', () => {
     for (const command of ['pnpm*', 'npm*']) {
       expect(builderBash[command]).toBeUndefined();
     }
+  });
+});
+
+describe('bundled skills', () => {
+  it('registers the package skills directory once, after user skill paths', async () => {
+    const plugin = await MaestriaPlugin(pluginInput);
+    const config: SkillsConfig = { agent: {}, skills: { paths: ['~/my-skills'], urls: ['u'] } };
+    await plugin.config?.(config);
+    await plugin.config?.(config);
+
+    const paths = config.skills?.paths ?? [];
+    expect(paths).toHaveLength(2);
+    expect(paths[0]).toBe('~/my-skills');
+    expect(config.skills?.urls).toEqual(['u']);
+    const bundled = paths[1] ?? '';
+    expect(path.isAbsolute(bundled)).toBe(true);
+    for (const skill of ['create-pull-request', 'docs-update']) {
+      expect(existsSync(path.join(bundled, skill, 'SKILL.md'))).toBe(true);
+    }
+  });
+
+  it('creates the skills config when the user has none', async () => {
+    const plugin = await MaestriaPlugin(pluginInput);
+    const config: SkillsConfig = { agent: {} };
+    await plugin.config?.(config);
+
+    expect(config.skills?.paths).toHaveLength(1);
   });
 });
