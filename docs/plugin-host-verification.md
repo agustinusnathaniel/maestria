@@ -215,11 +215,11 @@ No inference or actual task spawn occurs. Generic profiles have no `tools`, `spa
 
 ## Hermes
 
-The Hermes loader supplies skills and optional MCP resources. Portable installation is utility-only. Full manual methodology context is separate: the first matching project-context type wins, and delegated children can skip those files, so they require explicit context handoff. Docs-only; see Sources.
+The Hermes loader supplies skills and optional MCP resources. Portable installation is skills-only. Full manual methodology context is separate: the first matching project-context type wins, and delegated children can skip those files, so they require explicit context handoff. Docs-only; see Sources.
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-HERMES-PLUGIN-01 | Hermes | Portable install and discovery | With an isolated `HERMES_HOME`, the packed archive (served as a local git source, since Hermes does not take plain local paths) installed and enabled; `hermes plugins list` and `doctor` passed. Hermes discovered exactly the two utilities as `agent-plugin-maestria-<hash>:handoff` and `:iteration-limits`; no agents, commands, rules, hooks, or MCP servers loaded. Disable and remove left no plugin files. No inference was run. | Hermes 0.21.3 | This register | 2026-10-13 | tested: live Hermes CLI (isolated home) |
+| E-HERMES-PLUGIN-01 | Hermes | Portable install and discovery | With an isolated `HERMES_HOME`, the packed archive (served as a local git source, since Hermes does not take plain local paths) installed and enabled; `hermes plugins list` and `doctor` passed. Re-run on the bundled-skills package (`ebf9e511`, Hermes 0.21.7): Hermes discovered exactly four skills as `agent-plugin-maestria-<hash>:create-pull-request`, `:docs-update`, `:handoff`, and `:iteration-limits`; no agents, commands, rules, tools, hooks, or MCP servers loaded. Disable and remove left no plugin files. An earlier 2026-10-13 run on Hermes 0.21.3, before bundling, discovered exactly the two utilities. No inference was run. | Hermes 0.21.7 | This register | 2026-10-13 | tested: live Hermes CLI (isolated home) |
 
 ## Remaining evidence boundaries
 
@@ -256,7 +256,7 @@ Run the completion gates as well as these probes. Regenerate affected evidence w
 | E-OMP-PLUGIN-02 | `artifacts/omp-actual-host-proof/` (ignored, adapted harness); this register | 2026-10-13 | tested: real bundled CLI and native prompt/discovery APIs |
 | E-CODEX-CLI-17 | https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/core-plugins/src/agent_plugin_manifest.rs#L166; https://learn.chatgpt.com/docs/agent-configuration/subagents | 2026-10-12 | tested: source inspection + package/unit tests |
 | E-CODEX-CLI-18 | This register; `apps/maestria-cli/src/lib/codex-managed-agents.ts` (`installCodexManagedAgents`, removal) run against the packed archive with an isolated `CODEX_HOME` | 2026-10-13 | tested: real installer code against the packed archive |
-| E-HERMES-PLUGIN-01 | This register; Hermes 0.21.3 CLI (`hermes plugins install/list/doctor/disable/remove`) with an isolated `HERMES_HOME` | 2026-10-13 | tested: live Hermes CLI (isolated home) |
+| E-HERMES-PLUGIN-01 | This register; Hermes 0.21.7 CLI (`hermes plugins install/list/doctor/disable/remove`) with an isolated `HERMES_HOME` | 2026-10-13 | tested: live Hermes CLI (isolated home) |
 | Hermes section (no evidence ID) | https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages; https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly | 2026-10-12 | docs-only |
 
 Upstream sources above are research-only (`unpinned - reverify before implementation`); E-CLAUDE-08 is a local working-tree package snapshot (`Working-tree package snapshot; verify at landing`), not an upstream research source. Reverify material claims before implementation, promotion, or re-promotion.

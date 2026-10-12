@@ -106,7 +106,7 @@ The native commands work in Claude Code, Desktop Code, and Cowork. Claude accoun
 
 ## Codex
 
-Codex plugins cannot ship agents, so a full setup has two parts. The Codex plugin supplies the `handoff` and `iteration-limits` utilities. A companion install adds the seven native agents and the routing instructions. Which parts you get depends on how you install:
+Codex plugins cannot ship agents, so a full setup has two parts. The Codex plugin supplies the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`). A companion install adds the seven native agents and the routing instructions. Which parts you get depends on how you install:
 
 | Install path | You get |
 | --- | --- |
@@ -160,7 +160,7 @@ codex plugin add maestria@maestria
 
 ### Codex desktop
 
-This setup installs only `handoff` and `iteration-limits` in Codex in the ChatGPT desktop app. It does not install the agent TOMLs or the managed routing instructions; use the [Codex CLI](#codex-cli) path for those.
+This setup installs only the four skills in Codex in the ChatGPT desktop app. It does not install the agent TOMLs or the managed routing instructions; use the [Codex CLI](#codex-cli) path for those.
 
 Create `~/.agents/plugins/marketplace.json` with this entry:
 
@@ -234,7 +234,7 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 | --- | --- |
 | `.cursor-plugin/plugin.json` | Plugin manifest |
 | `agents/*.md` | Seven complete specialist Task agents (shared across hosts) |
-| `skills/*/SKILL.md` | `handoff` and `iteration-limits` utilities |
+| `skills/*/SKILL.md` | `handoff` and `iteration-limits` utilities and the bundled `create-pull-request` and `docs-update` skills |
 | `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing (`alwaysApply: true`) |
 | `commands/*.md` | Complete workflow slash commands (shared) |
 

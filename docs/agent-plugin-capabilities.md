@@ -13,13 +13,13 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | Agents | Seven complete specialists, one shared `agents/<role>.md` per role for every Markdown host (no per-host copies, no orchestrator profile); generated Codex TOMLs beside them as `agents/maestria-<role>.toml` |
 | Commands | Three complete modes in one shared `commands/` set, including parent routing, policy, and argument preservation |
 | Rules | Per host because formats differ: `rules/global.md` (OMP), `rules/cursor/`, `rules/kimi-code/`, `rules/codex/`, `rules/hermes/`, and root `AGENTS.md` (Devin) |
-| Skills | Only reusable handoff and iteration-limit utilities |
+| Skills | The `handoff` and `iteration-limits` utilities and the bundled `create-pull-request` and `docs-update` methodology skills; no role, command, or policy facades |
 | Integrations | Host usage and capability guides, not build configs or disguised commands |
 | Generation | Development-only manifests, profile metadata, and native template metadata |
 | CLI | Standalone companion in `apps/maestria-cli`, not an executable plugin component |
 | Hooks, automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
 
-The portable v1 manifest exposes utilities. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
+The portable v1 manifest exposes the four skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
 
 ## Native mappings
 
@@ -34,7 +34,7 @@ The portable v1 manifest exposes utilities. It does not establish native agents,
 | Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; no plugin commands component, so modes use keywords such as `fein: <task>` | Manifest selects only `skills`; no denylist, so read-only is prompt-level; no invented commands/agents selector |
 | ZCode | Seven shared profiles (discovered from `agents/`) | Three shared commands, with policy in their context | `disallowedTools` removes `Write`/`Edit` from subagent tools per ZCode source, not live-run; ZCode has no plugin rules component |
 | OMP | Seven shared task profiles | Three shared commands and one always-apply `rules/global.md` | No denylist; read-only is prompt-level; `.toml` files not loaded |
-| Hermes | No portable native profiles | Optional manual project context, separate from utility installation | No Python route; project-context precedence and subagent context skipping matter |
+| Hermes | No portable native profiles | Optional manual project context, separate from skill installation | No Python route; project-context precedence and subagent context skipping matter |
 
 ## Verification levels
 

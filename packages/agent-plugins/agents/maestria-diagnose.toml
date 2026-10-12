@@ -201,7 +201,7 @@ The CLI installs complete native TOML profiles in `$CODEX_HOME/agents/`: `maestr
 
 ### Plugin boundary
 
-Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only `handoff` and `iteration-limits`; orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
+Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`); orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
 
 See [Codex custom agents](https://developers.openai.com/codex/subagents) and [plugin packaging](https://developers.openai.com/plugins/build/plugins).
 """
