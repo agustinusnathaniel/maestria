@@ -75,26 +75,6 @@ describe('canonical directive behavioral contracts', () => {
     }
   });
 
-  it('covers delivery-facing text in every specialist directive', () => {
-    const deliveryDirectives = [
-      'adventurer',
-      'architect',
-      'builder',
-      'diagnose',
-      'orchestrator',
-      'planner',
-      'reviewer',
-      'writer',
-    ].map((role) => readDirective('specialists', `${role}.md`));
-
-    for (const directive of deliveryDirectives) {
-      expect(directive).toMatch(
-        /(?:human[- ]facing|delivery[- ]facing)[\s\S]{0,240}(?:commit messages?|PR\s+(?:titles?|descriptions?))|(?:commit messages?|PR\s+(?:titles?|descriptions?))[\s\S]{0,240}(?:human[- ]facing|delivery[- ]facing)/iu,
-      );
-      expect(directive).toMatch(/U\+2014|EM DASH/iu);
-    }
-  });
-
   it('keeps mode semantics distinct without weakening universal floors', () => {
     const rules = readDirective('rules.md');
     const fein = readDirective('commands', 'fein.md');
@@ -146,8 +126,10 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/empty, malformed, or incomplete.*recovery attempt/iu);
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/iu);
     expect(rules).toMatch(/do not reset a review or repair budget/iu);
-    expect(orchestrator).toMatch(/parent session owns continuation until.*terminal artifact/iu);
-    expect(orchestrator).toMatch(/freeze the outcome, acceptance, non-goals, and repair limits/iu);
+    expect(orchestrator).toMatch(/you own continuation and the delivery path/iu);
+    expect(orchestrator).toMatch(
+      /incomplete todos or specialist handoffs are not user checkpoints/iu,
+    );
     expect(iteration).toMatch(/same user outcome/iu);
     expect(iteration).toMatch(/adjacent findings as follow-ups/iu);
   });
@@ -162,10 +144,10 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
-    expect(orchestrator).toMatch(/for implementation work, own the delivery path/iu);
     expect(orchestrator).toMatch(
-      /follow the global delivery contract through the complete PR set/iu,
+      /for implementation work, you own continuation and the delivery path/iu,
     );
+    expect(orchestrator).toMatch(/push and open the PRs without routine approval asks/iu);
   });
 
   it('supports verified incremental commits and reviewable PR slices', () => {
@@ -247,7 +229,6 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps rendered evidence distinct from builds and attachment support', () => {
     const rules = readDirective('rules.md');
-    const orchestrator = readDirective('specialists', 'orchestrator.md');
     const builder = readDirective('specialists', 'builder.md');
     const rootSkill = readFileSync(
       path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
@@ -256,12 +237,11 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
     expect(rules).toMatch(/do not waive an explicit user or project evidence requirement/iu);
-    // Core keeps the compact router: scope, briefs trigger, and skill pointer.
-    expect(orchestrator).toMatch(/documentation sites and visible CLI output/iu);
-    expect(orchestrator).toMatch(
-      /include the evidence requirement in implementation and review briefs/iu,
-    );
-    expect(orchestrator).toMatch(/load the available `create-pull-request` skill/iu);
+    // Core keeps the compact router for every role: scope, briefs trigger, and skill pointer.
+    expect(rules).toMatch(/rendered changes \(UI, documentation sites, visible CLI output\)/iu);
+    expect(rules).toMatch(/through implementation and review briefs to delivery/iu);
+    expect(rules).toMatch(/`create-pull-request` methodology skill holds the capture/iu);
+    expect(rules).toMatch(/missing skill never waives required evidence/iu);
     // The capture/publication detail lives once in the root skill.
     expect(rootSkill).toMatch(/headless capture/iu);
     expect(rootSkill).toMatch(/terminal transcript/iu);
@@ -298,7 +278,7 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(rules).toMatch(/security.*boundaries are mandatory stops/iu);
     expect(rules).toMatch(/ordinary in-scope security defects may be repaired autonomously/iu);
-    expect(orchestrator).toMatch(/complete PR set without asking for routine approval/iu);
+    expect(orchestrator).toMatch(/without routine approval asks/iu);
   });
 
   it('states precedence, pause naming, and output economy', () => {

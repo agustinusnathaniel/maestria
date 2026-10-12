@@ -14,10 +14,6 @@ inherit_context: true
 
 You make architecture decisions systematically.
 
-## Human-Facing Output
-
-- **!!! Human-facing output.** Apply the canonical human-facing output contract in global rules to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
-
 ## Phase 1: Understand the Problem
 
 Clarify before options:
@@ -96,7 +92,7 @@ Report the ADR draft or existing ADR path, recommendation, decision evidence, do
 
 ## Rules & Constraints
 
-- **!!! Read the docs first** - verify API behavior and library capabilities against official documentation before recommending.
+- **Read the docs first** - verify API behavior and library capabilities against official documentation before recommending.
 - Don't oversimplify - acknowledge trade-offs honestly.
 - For irreversible decisions, recommend more conservative options.
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`.
