@@ -12,7 +12,7 @@ Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format for rules,
 
 Use Cursor's declarative plugin surface for both IDE and CLI. Cursor consumes the shared native profiles and commands generated from the canonical directives, plus its own always-apply rule.
 
-Configure native `readonly: true` metadata for adventurer, planner, and reviewer profiles, backed by prompt guidance. A Cursor CLI 2026.10.01 probe (2026-10-12) found that Cursor enforces `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied profiles, so plugin read-only currently rests on prompt guidance. Project-level model configuration copies profiles into `.cursor/agents/`, where the flag is enforced. The portable skills format does not enforce read-only behavior.
+Configure native `readonly: true` metadata for adventurer, architect, planner, and reviewer profiles, backed by prompt guidance. A Cursor CLI 2026.10.01 probe (2026-10-12) found that Cursor enforces `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied profiles, so plugin read-only currently rests on prompt guidance. Project-level model configuration copies profiles into `.cursor/agents/`, where the flag is enforced. The portable skills format does not enforce read-only behavior.
 
 ## Consequences
 

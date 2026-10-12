@@ -1,5 +1,5 @@
 ---
-description: Research only - read-only adventurer/planner specialists, STOP before implementation
+description: Research only - read-only adventurer/architect/planner specialists, STOP before implementation
 name: sonar
 ---
 

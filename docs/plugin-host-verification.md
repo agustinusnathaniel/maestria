@@ -38,7 +38,7 @@ The reproduction inputs and results are preserved under ignored `artifacts/omp-a
 python3 /tmp/maestria-omp-root-verification/transaction/run-proof.py
 ```
 
-The source SDK's direct PluginManager import hit an upstream module-resolution ambiguity; installation was exercised through the shipped bundled CLI instead. This is not treated as a Maestria failure. Prompt preparation uses native formatter/template APIs; formatting may normalize Markdown table padding.
+The source SDK's direct PluginManager import hit an upstream module-resolution ambiguity; installation was exercised through the shipped bundled CLI instead. This is not treated as a maestria failure. Prompt preparation uses native formatter/template APIs; formatting may normalize Markdown table padding.
 
 No inference or actual task spawn occurs. Generic profiles have no `tools`, `spawns`, or model override metadata, so read-only role text remains advisory. No executable modules, hooks, custom tools, or MCP servers were discovered. These results do not establish enforcement, other host versions, or provider behavior.
 

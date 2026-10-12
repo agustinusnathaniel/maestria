@@ -1,6 +1,6 @@
 ---
 title: Installation & Setup
-description: Install the consolidated Maestria plugin through Hermes portable Agent Plugins support.
+description: Install the consolidated maestria plugin through Hermes portable Agent Plugins support.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
@@ -37,7 +37,7 @@ Manual context remains advisory. It does not register native specialist profiles
 
 ## Migrate the Python adapter
 
-The Maestria installer disables `maestria-hermes` after the replacement installs successfully. A failed install leaves the old adapter enabled. For direct installation, disable the old adapter yourself after verifying the new plugin:
+The maestria installer disables `maestria-hermes` after the replacement installs successfully. A failed install leaves the old adapter enabled. For direct installation, disable the old adapter yourself after verifying the new plugin:
 
 ```bash
 hermes plugins disable maestria-hermes
@@ -52,7 +52,7 @@ hermes plugins update maestria
 hermes plugins remove maestria
 ```
 
-The equivalent Maestria commands remain `update hermes` and `uninstall hermes`. Git-based installation does not support npm version pinning.
+The equivalent maestria commands remain `update hermes` and `uninstall hermes`. Git-based installation does not support npm version pinning.
 
 ## Next steps
 

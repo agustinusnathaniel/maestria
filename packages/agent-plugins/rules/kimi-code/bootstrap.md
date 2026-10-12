@@ -227,7 +227,7 @@ Reuse valid context and completed checks. If evidence reveals an unknown root ca
 
 The Kimi manifest selects the shared root `agents/` directory, whose seven native Markdown profiles embed the complete role and global policy. Dispatch through Kimi's native Agent tool using the selected specialist identity: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, or `writer`. Carry the task constraints and complete handoff; neither parent skill loading nor built-in coder/plan/explore mappings supply these identities.
 
-Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Research and review profiles deny `Write` and `Edit`, and every profile sets `subagents: []` so specialists do not delegate further. This is a tool filter, not a shell sandbox. Profiles set no model; Kimi ignores keys meant for other hosts, such as `readonly`, and the active host chooses the model.
+Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Research, architecture, and review profiles deny `Write` and `Edit`, and every profile sets `subagents: []` so specialists do not delegate further. This is a tool filter, not a shell sandbox. Profiles set no model; Kimi ignores keys meant for other hosts, such as `readonly`, and the active host chooses the model.
 
 ## Session instructions and modes
 

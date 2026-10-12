@@ -70,7 +70,7 @@ const runCli = async (
       '--print',
       '--output-format',
       'json',
-      'Call the Maestria reviewer subagent for a one-line native context probe.',
+      'Call the maestria reviewer subagent for a one-line native context probe.',
     ],
     { cwd, env, stdio: 'ignore' },
   );

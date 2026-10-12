@@ -1,6 +1,6 @@
 ---
-title: Maestria for ZCode
-description: Use complete native Maestria profiles and workflow commands in ZCode.
+title: maestria for ZCode
+description: Use complete native maestria profiles and workflow commands in ZCode.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
@@ -45,4 +45,4 @@ See the [specialist reference](/core/agents/) for role guidance and the [portabl
 
 ## Limits
 
-The native commands are explicitly enabled in the manifest. The package adds no MCP server, hooks, or executable runtime extension. Plugin rule-selector support is unverified, so profiles and commands carry their own complete policy instead of depending on a separately loaded rule. Adventurer, planner, and reviewer declare `disallowedTools: [Write, Edit]`, which ZCode's documentation supports and which has not been live-run; ZCode ignores unknown keys. Profiles set no `model`, so ZCode uses the main conversation's model. There is no sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).
+The native commands are explicitly enabled in the manifest. The package adds no MCP server, hooks, or executable runtime extension. Plugin rule-selector support is unverified, so profiles and commands carry their own complete policy instead of depending on a separately loaded rule. Adventurer, architect, planner, and reviewer declare `disallowedTools: [Write, Edit]`, which ZCode's documentation supports and which has not been live-run; ZCode ignores unknown keys. Profiles set no `model`, so ZCode uses the main conversation's model. There is no sandbox. A plugin installed locally does not follow a remote workspace by default; use ZCode's **Sync Plugin** control for that workspace. Live ZCode loading is unverified, so package and sync checks confirm shipped files only. See the [compatibility notes](/agent-plugins/compatibility/).

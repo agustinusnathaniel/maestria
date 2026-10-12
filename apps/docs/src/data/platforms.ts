@@ -53,7 +53,7 @@ export const platforms: Platform[] = [
     id: 'claude-code',
     installArgs: 'install claude-code',
     mark: 'claudeCode',
-    name: 'Maestria for Claude Code',
+    name: 'maestria for Claude Code',
   },
   {
     blurb: 'Native agents and global routing through the CLI; two plugin utilities.',
@@ -61,7 +61,7 @@ export const platforms: Platform[] = [
     id: 'codex',
     installArgs: 'install codex',
     mark: 'codex',
-    name: 'Maestria for Codex',
+    name: 'maestria for Codex',
   },
   {
     blurb: 'Native Kimi specialists, commands, and complete session instructions.',
@@ -69,7 +69,7 @@ export const platforms: Platform[] = [
     id: 'kimi-code',
     installArgs: 'install kimi-code',
     mark: 'kimiCode',
-    name: 'Maestria for Kimi Code',
+    name: 'maestria for Kimi Code',
   },
   {
     blurb: 'Complete profiles, commands, and always-apply routing for Cursor IDE and CLI.',
@@ -77,7 +77,7 @@ export const platforms: Platform[] = [
     id: 'cursor',
     installArgs: 'install cursor',
     mark: 'cursorMark',
-    name: 'Maestria for Cursor',
+    name: 'maestria for Cursor',
   },
   {
     blurb: '7 specialist subagents with native workflow modes and session tracking for Pi.',
@@ -93,7 +93,7 @@ export const platforms: Platform[] = [
     id: 'omp',
     installArgs: 'install omp',
     mark: 'piOmp',
-    name: 'Maestria for Oh My Pi',
+    name: 'maestria for Oh My Pi',
   },
   {
     blurb: 'Two portable utilities, with optional manual methodology context for Hermes.',
@@ -101,7 +101,7 @@ export const platforms: Platform[] = [
     id: 'hermes',
     installArgs: 'install hermes',
     mark: 'hermes',
-    name: 'Maestria for Hermes',
+    name: 'maestria for Hermes',
   },
   {
     blurb: 'Complete local custom agents and always-on policy for Devin.',
@@ -109,7 +109,7 @@ export const platforms: Platform[] = [
     id: 'devin',
     installArgs: '',
     mark: 'devin',
-    name: 'Maestria for Devin',
+    name: 'maestria for Devin',
   },
   {
     blurb: 'Native profiles and workflow commands with embedded policy for ZCode.',
@@ -117,7 +117,7 @@ export const platforms: Platform[] = [
     id: 'zcode',
     installArgs: '',
     mark: 'zcode',
-    name: 'Maestria for ZCode',
+    name: 'maestria for ZCode',
   },
   {
     auxiliary: true,

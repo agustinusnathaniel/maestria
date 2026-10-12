@@ -1,6 +1,6 @@
 ---
 title: Claude Code installation
-description: Install and use the Maestria plugin in Claude Code CLI or the Desktop Code tab.
+description: Install and use the maestria plugin in Claude Code CLI or the Desktop Code tab.
 ---
 
 This integration ships in the shared `@maestria/agent-plugins` package. The `claude-code` CLI identifier and host-specific installation behavior remain unchanged. The former standalone source package has been removed.
@@ -46,7 +46,7 @@ Claude Code's marketplace update path selects the latest package. Exact version 
 
 Claude Code Desktop shares configuration with the CLI for local sessions. For an existing CLI installation, open a **local** or **SSH** Code session in Desktop; the plugin manager can show, enable, disable, or uninstall plugins from configured marketplaces.
 
-To install from the Desktop UI, first add the Maestria marketplace in the CLI:
+To install from the Desktop UI, first add the maestria marketplace in the CLI:
 
 ```bash
 claude plugin marketplace add agustinusnathaniel/maestria
@@ -98,13 +98,13 @@ Profiles and commands embed the complete canonical methodology. They do not prel
 
 ## Tool Restrictions
 
-Native `disallowedTools: Write, Edit` metadata filters those tools for adventurer, planner, and reviewer. Role and policy text remains guidance; shell-mediated writes are outside this filter. The host controls permission decisions and lifecycle. Profiles set no `model`, so Claude uses the main conversation's model.
+Native `disallowedTools: Write, Edit` metadata filters those tools for adventurer, architect, planner, and reviewer. Role and policy text remains guidance; shell-mediated writes are outside this filter. The host controls permission decisions and lifecycle. Profiles set no `model`, so Claude uses the main conversation's model.
 
-Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents. Maestria ships no executable hooks or MCP server and does not modify `CLAUDE.md`.
+Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents. maestria ships no executable hooks or MCP server and does not modify `CLAUDE.md`.
 
 ## Claude Chat and Cowork
 
-The same package includes native commands supported by Claude Code, Desktop Code, and Cowork. Claude account plugins can expose commands and utility skills in Chat; Chat ignores native agents. Cowork supports plugin agents, while Maestria's account-sync and Cowork behavior remain unverified. Account plugins sync into Claude Code when signed in with the same account on Claude Code `2.1.273` or later. See [Claude's plugin surface guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+The same package includes native commands supported by Claude Code, Desktop Code, and Cowork. Claude account plugins can expose commands and utility skills in Chat; Chat ignores native agents. Cowork supports plugin agents, while maestria's account-sync and Cowork behavior remain unverified. Account plugins sync into Claude Code when signed in with the same account on Claude Code `2.1.273` or later. See [Claude's plugin surface guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
 
 ## Uninstalling
 

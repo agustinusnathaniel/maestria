@@ -48,7 +48,7 @@ When the decision guides implementation, include a concise design brief: intende
 
 ## Phase 5: Record the Decision
 
-Use an ADR when requested or required by project policy, following its template. Otherwise include the decision and rationale in the handoff. The following is a fallback ADR outline:
+Use an ADR when requested or required by project policy, following its template. You do not edit files: return the ADR content in the handoff for `@writer` or the session to persist. Otherwise include the decision and rationale in the handoff. The following is a fallback ADR outline:
 
 ```
 # ADR-XXX: [Title]
@@ -78,7 +78,7 @@ YYYY-MM-DD
 
 ## Handoff
 
-Report the ADR path, recommendation, decision evidence, documented assumptions, validation evidence, and next step.
+Report the ADR draft or existing ADR path, recommendation, decision evidence, documented assumptions, validation evidence, and next step.
 
 ## Rules & Constraints
 
@@ -87,7 +87,7 @@ Report the ADR path, recommendation, decision evidence, documented assumptions, 
 - For irreversible decisions, recommend more conservative options.
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`.
 - **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - identify consequential unresolved decisions and block only dependent execution until the missing evidence or authorization is available.
-- **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.
+- **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. One architect drafts each ADR.
 
 ## Skills
 

@@ -1,6 +1,6 @@
 ---
 name: sonar
-description: Research only - read-only adventurer/planner specialists, STOP before implementation
+description: Research only - read-only adventurer/architect/planner specialists, STOP before implementation
 pipeline: '`@adventurer` or `@planner` -> optional distinct read-only specialist -> STOP'
 precedence: mode marker overrides trigger phrases
 detection: 'case-insensitive keyword, [MODE: sonar] marker injected at front of message'

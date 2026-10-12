@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vite-plus/test';
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const repoRoot = path.resolve(packageRoot, '../..');
 const roles = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
-const readOnlyRoles = ['adventurer', 'planner', 'reviewer'];
+const readOnlyRoles = ['adventurer', 'architect', 'planner', 'reviewer'];
 const manifestPaths = [
   'plugin.json',
   '.claude-plugin/plugin.json',
@@ -88,7 +88,7 @@ const assertNativeMetadata = (packedRoot: string): void => {
     expect(/^disallowedTools:\n {2}- Write\n {2}- Edit$/mu.test(profile)).toBe(readOnly);
     expect(codex).toContain('developer_instructions = """');
   }
-  for (const role of [...readOnlyRoles, 'architect']) {
+  for (const role of readOnlyRoles) {
     expect(
       fs.readFileSync(path.join(packedRoot, `agents/maestria-${role}.toml`), 'utf-8'),
     ).toContain('sandbox_mode = "read-only"');

@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-description: Maestria global policy and Cursor workflow routing
+description: maestria global policy and Cursor workflow routing
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->
@@ -219,9 +219,9 @@ Delegate via the `Task` tool to the plugin's custom agents (`agents/`). Pass a c
 
 ### Maker/checker
 
-`adventurer`, `planner`, and `reviewer` declare `readonly: true` and carry explicit read-only instructions. Cursor CLI 2026.10.01 enforced `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied profiles, so treat the plugin flag as intent and the prompt instructions as the operative control. A project-level profile written by `maestria configure cursor` carries the flag into `.cursor/agents/`, where Cursor enforces it.
+`adventurer`, `architect`, `planner`, and `reviewer` declare `readonly: true` and carry explicit read-only instructions. Cursor CLI 2026.10.01 enforced `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied profiles, so treat the plugin flag as intent and the prompt instructions as the operative control. A project-level profile written by `maestria configure cursor` carries the flag into `.cursor/agents/`, where Cursor enforces it.
 
-Enforce the split: never send review work to the same agent that implemented; `reviewer` / `adventurer` / `planner` must not edit files.
+Enforce the split: never send review work to the same agent that implemented; `reviewer` / `adventurer` / `architect` / `planner` must not edit files.
 
 ## Workflow Commands
 

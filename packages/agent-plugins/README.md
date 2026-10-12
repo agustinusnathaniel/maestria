@@ -1,6 +1,6 @@
 # @maestria/agent-plugins
 
-Maestria ships one directly installable plugin with native host components and two reusable utility skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
+maestria ships one directly installable plugin with native host components and two reusable utility skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
 
 ## Component ownership
 
@@ -22,14 +22,14 @@ Each profile's frontmatter carries every Markdown host's keys at once, and each 
 
 | Host/surface | Installation resources | Boundary |
 | --- | --- | --- |
-| Claude Code and Desktop Code | Explicit native agent files, three native commands, two utilities | Research/review profiles exclude Write/Edit; shell-mediated editing is not a sandbox guarantee |
+| Claude Code and Desktop Code | Explicit native agent files, three native commands, two utilities | Research, architecture, and review profiles exclude Write/Edit; shell-mediated editing is not a sandbox guarantee |
 | Claude Cowork / Chat | Shared command/utility resources | Native component availability differs by surface; Chat does not load plugin agents |
 | Cursor | Shared native agents and commands, always-applied policy, two utilities | Cursor CLI 2026.10.01 does not enforce `readonly` on plugin profiles (it does for project `.cursor/agents/`); read-only rests on prompt guidance |
 | Codex CLI / local desktop | Utilities through the plugin; full TOMLs and marked global instructions through `maestria install codex` | Marketplace-only installation does not activate routing, roles, or modes; companion instructions support per-turn FEIN/SONAR/BLITZ keywords |
 | ChatGPT plugin surfaces / portable v1 clients | Two root utilities | No portable native-agent, command, policy, or runtime-enforcement contract |
-| Kimi Code | Shared native profiles and commands, complete primary-session bootstrap, two utilities | Research/review profiles deny `Write`/`Edit`; the host chooses models |
+| Kimi Code | Shared native profiles and commands, complete primary-session bootstrap, two utilities | Research, architecture, and review profiles deny `Write`/`Edit`; the host chooses models |
 | Devin | Root agents, root `AGENTS.md` policy, two utilities | No plugin commands: mode keywords route through the always-on policy. Custom plugin agents load locally in CLI/Desktop, not cloud sessions; no denylist field |
-| ZCode | Shared full native profiles and commands, utilities | Policy is embedded in agent/command context; research/review profiles deny `Write`/`Edit` |
+| ZCode | Shared full native profiles and commands, utilities | Policy is embedded in agent/command context; research, architecture, and review profiles deny `Write`/`Edit` |
 | OMP | Root task profiles, commands, one always-apply rule, two utilities | Roles provide advisory boundaries rather than per-role tool enforcement |
 | Hermes | Two portable utilities; optional manual host context from `rules/hermes/context.md` | No Python adapter; installation alone does not activate orchestration, modes, or named agents |
 

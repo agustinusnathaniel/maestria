@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Record the complete component audit for the consolidated package, reviewed 2026-10-12. Component support, selected resources, loader verification, and model behavior are separate claims. A runtime supporting a component does not require Maestria to ship an unused hook, MCP service, or scheduled task.
+Record the complete component audit for the consolidated package, reviewed 2026-10-12. Component support, selected resources, loader verification, and model behavior are separate claims. A runtime supporting a component does not require maestria to ship an unused hook, MCP service, or scheduled task.
 
 ## Semantic ownership
 

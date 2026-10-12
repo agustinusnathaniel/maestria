@@ -11,7 +11,7 @@
   "architect": {
     "name": "architect",
     "description": "Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.",
-    "readOnly": false,
+    "readOnly": true,
     "codex": {
       "description": "maestria architecture specialist for comparing approaches, boundaries, and trade-offs.",
       "sandboxMode": "read-only"

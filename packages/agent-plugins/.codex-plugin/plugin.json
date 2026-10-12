@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "version": "0.7.0",
-  "description": "Reusable handoff and iteration-limit utilities for Codex; full methodology is installed by the companion Maestria CLI",
+  "description": "Reusable handoff and iteration-limit utilities for Codex; full methodology is installed by the companion maestria CLI",
   "author": {
     "name": "agustinusnathaniel"
   },
@@ -12,7 +12,7 @@
   "interface": {
     "displayName": "maestria",
     "shortDescription": "Handoff and iteration-limit utilities for Codex",
-    "longDescription": "Two reusable utilities for handoffs and bounded iteration. Full Maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
+    "longDescription": "Two reusable utilities for handoffs and bounded iteration. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],

@@ -54,7 +54,9 @@ describe('Claude Code native plugin loading', () => {
     for (const role of roles) {
       const agentPath = path.join(pluginRoot, `agents/${role}.md`);
       const { body, metadata } = parseFrontmatter(fs.readFileSync(agentPath, 'utf-8'), agentPath);
-      const expectedDisallowedTools = ['adventurer', 'planner', 'reviewer'].includes(role)
+      const expectedDisallowedTools = ['adventurer', 'architect', 'planner', 'reviewer'].includes(
+        role,
+      )
         ? ['Write', 'Edit']
         : undefined;
 

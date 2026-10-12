@@ -260,9 +260,12 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   addOutput(
     plan,
     'rules/global.md',
+    // OMP applies this root rule; Devin also discovers flat rules/*.md, and `trigger: manual`
+    // keeps it from loading this OMP copy next to its own always-on AGENTS.md.
     document(compose(routerPolicy, input.contexts.omp), {
       alwaysApply: true,
-      description: 'Maestria global policy and main-session workflow routing',
+      description: 'maestria global policy and main-session workflow routing',
+      trigger: 'manual',
     }),
   );
   addOutput(
@@ -270,7 +273,7 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
     'rules/cursor/maestria-global.mdc',
     document(compose(routerPolicy, input.contexts.cursor), {
       alwaysApply: true,
-      description: 'Maestria global policy and Cursor workflow routing',
+      description: 'maestria global policy and Cursor workflow routing',
     }),
   );
 };

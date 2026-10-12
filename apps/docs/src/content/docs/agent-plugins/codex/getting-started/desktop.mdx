@@ -1,6 +1,6 @@
 ---
 title: Codex desktop setup
-description: Install the two Maestria utility skills through a Codex desktop marketplace.
+description: Install the two maestria utility skills through a Codex desktop marketplace.
 ---
 
 This setup installs only the `handoff` and `iteration-limits` utility skills in Codex in the ChatGPT desktop app. It does not install the native `maestria-*` agent TOML files or managed global orchestration instructions. To install these companion-managed resources, use the [Codex CLI setup](/agent-plugins/codex/getting-started/installation/).
@@ -39,4 +39,4 @@ The marketplace file is user-scoped. The npm source requires the `npm` CLI to be
 2. Open the Plugins Directory, choose the **Maestria** marketplace, and install `maestria`.
 3. Start a new Codex chat and confirm `$maestria:handoff` and `$maestria:iteration-limits` appear. Invoke `$maestria:handoff` with a task whose outcome and evidence should be transferred.
 
-The desktop marketplace installs the two utility skills. Full routing, modes, and native profiles require the companion CLI installation; this marketplace path does not activate them. Codex's runtime still owns permissions, approvals, and sandbox behavior. This app setup is documented from the host's local-marketplace flow; Maestria has not been runtime-tested in the desktop app. See the [compatibility notes](/agent-plugins/compatibility/).
+The desktop marketplace installs the two utility skills. Full routing, modes, and native profiles require the companion CLI installation; this marketplace path does not activate them. Codex's runtime still owns permissions, approvals, and sandbox behavior. This app setup is documented from the host's local-marketplace flow; maestria has not been runtime-tested in the desktop app. See the [compatibility notes](/agent-plugins/compatibility/).

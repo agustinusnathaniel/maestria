@@ -58,11 +58,12 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 Profiles embed complete role and global policy; no role skill preload is needed. Other hosts' frontmatter keys do not affect Cursor loading.
 
 <Aside type="caution" title="Read-only is not enforced for plugin agents">
-  The profiles declare `readonly: true` for adventurer, planner, and reviewer. In a 2026-10-12 probe
-  on Cursor CLI `2026.10.01`, plugin-supplied agents did not enforce it (a write succeeded), while a
-  project `.cursor/agents/` profile with `readonly: true` was blocked. Run `maestria configure
-  cursor` at project level to write copies into `.cursor/agents/`, where it is enforced. Cursor
-  desktop was not tested. See the [compatibility matrix](/agent-plugins/compatibility/).
+  The profiles declare `readonly: true` for adventurer, architect, planner, and reviewer. In a
+  2026-10-12 probe on Cursor CLI `2026.10.01`, plugin-supplied agents did not enforce it (a write
+  succeeded), while a project `.cursor/agents/` profile with `readonly: true` was blocked. Run
+  `maestria configure cursor` at project level to write copies into `.cursor/agents/`, where it is
+  enforced. Cursor desktop was not tested. See the [compatibility
+  matrix](/agent-plugins/compatibility/).
 </Aside>
 
 ### Models

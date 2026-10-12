@@ -1,6 +1,7 @@
 ---
 alwaysApply: true
-description: Maestria global policy and main-session workflow routing
+description: maestria global policy and main-session workflow routing
+trigger: manual
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

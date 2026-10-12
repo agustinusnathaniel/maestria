@@ -5,7 +5,7 @@ import { parse } from 'yaml';
 
 const root = path.resolve(import.meta.dirname, '..');
 const roles = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
-const readOnlyRoles = new Set(['adventurer', 'planner', 'reviewer']);
+const readOnlyRoles = new Set(['adventurer', 'architect', 'planner', 'reviewer']);
 const modes = ['fein', 'sonar', 'blitz'];
 
 type Manifest = Record<string, unknown>;
