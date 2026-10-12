@@ -1,6 +1,7 @@
 ---
 name: diagnose
 description: Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

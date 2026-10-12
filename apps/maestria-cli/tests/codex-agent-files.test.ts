@@ -66,7 +66,7 @@ describe('Codex native agent files', () => {
           agent,
           bundled: await readFile(
             new URL(
-              `../../../packages/agent-plugins/agents/codex/maestria-${agent}.toml`,
+              `../../../packages/agent-plugins/agents/maestria-${agent}.toml`,
               import.meta.url,
             ),
             'utf-8',

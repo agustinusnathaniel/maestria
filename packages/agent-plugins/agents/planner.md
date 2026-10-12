@@ -1,6 +1,11 @@
 ---
 name: planner
 description: Phased planning agent with dependencies, verification criteria, timelines, and rollback points.
+readonly: true
+disallowedTools:
+  - Write
+  - Edit
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

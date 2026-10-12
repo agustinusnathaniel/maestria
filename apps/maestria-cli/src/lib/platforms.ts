@@ -740,7 +740,9 @@ const hermes: PlatformDefinition = {
 
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
-const CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents/cursor`;
+const CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents`;
+// Installs before the shared-profile layout kept configured models in a Cursor-only copy.
+const LEGACY_CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents/cursor`;
 
 /** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
 const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandError> =>
@@ -754,23 +756,26 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
       const { readFile } = await import('node:fs/promises');
       const entries = await Promise.all(
         MAESTRIA_AGENTS.map(async (agent) => {
-          try {
-            const content = await readFile(`${CURSOR_AGENT_DIR}/${agent}.md`, 'utf-8').catch(
-              async (error: unknown) => {
-                if (!isFileNotFound(error)) {
-                  throw error;
-                }
-                return await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
-              },
-            );
-            const model = parseAgentFrontmatterModel(content, { unquote: true });
-            return model === undefined || model === '' ? null : ([agent, model] as const);
-          } catch (error) {
-            if (isFileNotFound(error)) {
-              return null;
+          const readModel = async (directory: string): Promise<string | undefined> => {
+            try {
+              const content = await readFile(`${directory}/${agent}.md`, 'utf-8');
+              const model = parseAgentFrontmatterModel(content, { unquote: true });
+              return model === '' ? undefined : model;
+            } catch (error) {
+              if (isFileNotFound(error)) {
+                return undefined;
+              }
+              throw error;
             }
-            throw error;
-          }
+          };
+          // The shared profile wins when it carries a model; otherwise fall back to the
+          // Cursor-only copy that earlier consolidated installs configured.
+          const [shared, legacy] = await Promise.all([
+            readModel(CURSOR_AGENT_DIR),
+            readModel(LEGACY_CURSOR_AGENT_DIR),
+          ]);
+          const model = shared ?? legacy;
+          return model === undefined ? null : ([agent, model] as const);
         }),
       );
       return Object.fromEntries(entries.filter((entry) => entry !== null));

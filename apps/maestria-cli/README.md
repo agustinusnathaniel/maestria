@@ -19,7 +19,7 @@ npx maestria status
 | `maestria check <platform>` | Verify a platform installation |
 | `maestria doctor` | Diagnose skill setup without changing anything (read-only) |
 | `maestria setup [--ecosystem ...] [--xtarterize-skills] [--skill-source ...]` | Coordinate optional setup across ecosystem tools and skills (nothing runs before confirm) |
-| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi); `--set` configures non-interactively |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi); `--set` configures non-interactively. Cursor global configuration edits the installed plugin's `agents/<role>.md`, and `maestria update cursor` carries configured models over |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the maestria cache or an explicit destination |
 
@@ -48,7 +48,7 @@ The CLI uses each host's installation mechanism and manages native agent/model c
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install, Cursor plugin directory, Claude Code/Codex marketplaces and native Codex agent files).
+- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi package installer, OMP plugin installer, Kimi Code managed install, Cursor plugin directory, Hermes, Claude Code/Codex marketplaces and native Codex agent files). Devin and ZCode have no `install` target; stage the package with `maestria plugin install` and use the host's own installer.
 - **Portable artifact workflow** - validates Agent Plugins v1 manifests, skills, MCP configuration, and path containment, then stages a package for a compatible client's own installer or directory loader.
 
 ## Support / Platform Notes

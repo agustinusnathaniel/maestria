@@ -251,7 +251,7 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
   // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator orchestrates the same atomic Codex transaction; splitting the generator would duplicate manifest/sourceFiles/targetDir closure and hide the linear install steps. Kept intact for cohesion.
   Effect.gen(function* installCodexManagedAgentsEffect() {
     const manifest = yield* readCodexManagedAgentManifest();
-    const sourceDir = `${packageRoot}/agents/codex`;
+    const sourceDir = `${packageRoot}/agents`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
     const sourceInstructionsPath = `${packageRoot}/rules/codex/instructions/AGENTS.md`;

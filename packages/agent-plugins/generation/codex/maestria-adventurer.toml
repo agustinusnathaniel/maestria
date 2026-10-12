@@ -1,3 +1,0 @@
-name = "maestria-adventurer"
-description = "maestria codebase reconnaissance specialist for mapping unfamiliar code and tracing execution paths."
-sandbox_mode = "read-only"

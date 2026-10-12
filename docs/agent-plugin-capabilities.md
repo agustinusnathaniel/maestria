@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Record the complete component audit for the consolidated package, reviewed 2026-10-11. Component support, selected resources, loader verification, and model behavior are separate claims. A runtime supporting a component does not require Maestria to ship an unused hook, MCP service, or scheduled task.
+Record the complete component audit for the consolidated package, reviewed 2026-10-12. Component support, selected resources, loader verification, and model behavior are separate claims. A runtime supporting a component does not require Maestria to ship an unused hook, MCP service, or scheduled task.
 
 ## Semantic ownership
 
@@ -10,12 +10,11 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 
 | Component | Package contract |
 | --- | --- |
-| Agents | Dispatcher plus seven complete specialist definitions; schema-specific profiles where native metadata differs |
-| Commands | Three complete modes, including parent routing, policy, and argument preservation |
-| Rules | Global policy plus supported host activation and bootstrap resources |
+| Agents | Seven complete specialists, one shared `agents/<role>.md` per role for every Markdown host (no per-host copies, no orchestrator profile); generated Codex TOMLs beside them as `agents/maestria-<role>.toml` |
+| Commands | Three complete modes in one shared `commands/` set, including parent routing, policy, and argument preservation |
+| Rules | Per host because formats differ: `rules/global.md` (OMP), `rules/cursor/`, `rules/kimi-code/`, `rules/codex/`, `rules/hermes/`, and root `AGENTS.md` (Devin) |
 | Skills | Only reusable handoff and iteration-limit utilities |
 | Integrations | Host usage and capability guides, not build configs or disguised commands |
-| Compatibility | Devin-only generated workflow skill transport selected outside root skills |
 | Generation | Development-only manifests, profile metadata, and native template metadata |
 | CLI | Standalone companion in `apps/maestria-cli`, not an executable plugin component |
 | Hooks, automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
@@ -26,29 +25,29 @@ The portable v1 manifest exposes utilities. It does not establish native agents,
 
 | Host/surface | Roles | Workflows and parent policy | Selection / limitation |
 | --- | --- | --- | --- |
-| Claude Code / Desktop Code | Seven explicit full profiles | Three explicit native commands carry complete context | Agent-directory selectors are rejected by the tested validator; Write/Edit exclusion is not a shell sandbox |
+| Claude Code / Desktop Code | Seven shared profiles, listed explicitly | Three shared commands carry complete context | Agent-directory selectors are rejected by the validator; `disallowedTools` Write/Edit exclusion is enforced but is not a shell sandbox; no `model` key |
 | Claude Cowork / Chat | Availability differs; Chat ignores plugin agents | Commands and utilities are supported | Do not promise Code's agents/settings/hooks on every Claude surface |
-| Cursor | Seven selected native profiles | Selected commands and always-applied rule | Retain native readonly metadata and model-management paths |
-| Codex CLI / local desktop | Companion-installed complete TOMLs | Companion-managed marked AGENTS block includes router, policy, and per-turn mode keywords | Portable marketplace installation alone exposes utilities |
+| Cursor | Seven shared profiles (`agents/`) | Shared commands (`commands/`) and always-applied `rules/cursor/` rule | `readonly` is declared but not enforced for plugin-supplied agents; enforced for project `.cursor/agents/` copies written by `maestria configure cursor` at project level |
+| Codex CLI / local desktop | Companion-installed complete TOMLs from `agents/maestria-<role>.toml` (plugins cannot ship agents); `sandbox_mode = "read-only"` on adventurer, architect, planner, reviewer | Companion-managed marked AGENTS block includes router, policy, and per-turn mode keywords | Portable marketplace installation alone exposes utilities |
 | ChatGPT / generic portable clients | No portable role component | No portable mode or policy component | Utility-only discovery; no implied companion installation |
-| Kimi Code | Seven selected native profiles | Native commands and complete systemPromptPath bootstrap | No built-in-profile remapping; no unsupported sessionStart.command or agent model field |
-| Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; three mode skills selected from compatibility exports | Skills-directory array replaces default selection; no invented commands/agents selector |
-| ZCode | Explicit native profiles | Explicit commands, with policy in their context | Plugin rule selection is unverified, not declared unsupported |
-| OMP | Eight root task profiles | Three root commands and one always-apply global rule | Dispatcher profile does not replace main agent; generic role tool permissions remain advisory |
+| Kimi Code | Seven shared profiles | Shared commands and complete systemPromptPath bootstrap | `disallowedTools: [Write, Edit]` (names registered by Kimi v0.38.0); unknown keys ignored; no built-in-profile remapping; no agent model field |
+| Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; no plugin commands component, so modes use keywords such as `fein: <task>` | Manifest selects only `skills`; no denylist, so read-only is prompt-level; no invented commands/agents selector |
+| ZCode | Seven shared profiles, listed explicitly | Three shared commands, with policy in their context | `disallowedTools` supported per docs, not live-run; plugin rule selection is unverified, not declared unsupported |
+| OMP | Seven shared task profiles | Three shared commands and one always-apply `rules/global.md` | No denylist; read-only is prompt-level; `.toml` files not loaded |
 | Hermes | No portable native profiles | Optional manual project context, separate from utility installation | No Python route; project-context precedence and subagent context skipping matter |
 
 ## Evidence and unresolved surfaces
 
-- **Claude 2.1.217:** strict plugin validation and an offline real-CLI reviewer child prove native context loading, Write/Edit tool-schema exclusion, and parent return. Other specialists, model judgment, shell-mediated writes, and hosted Claude surfaces are outside that probe. [Components](https://code.claude.com/docs/en/plugins/components), [platform support](https://claude.com/docs/plugins/platform-support).
+- **Claude 2.1.295 (2026-10-12):** strict plugin validation and an offline real-CLI reviewer child, loaded from the shared `agents/reviewer.md`, prove native context loading, Write/Edit tool-schema exclusion, and parent return. Other specialists, model judgment, shell-mediated writes, and hosted Claude surfaces are outside that probe. [Components](https://code.claude.com/docs/en/plugins/components), [platform support](https://claude.com/docs/plugins/platform-support).
 - **Codex 0.153.4:** the version-matched loader fixes portable skills to root `skills/`; the overlay does not redirect that discovery. Native full methodology is supplied by the companion installer. Its model preservation is tested independently against actual generated TOML prompts. [Loader source](https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/core-plugins/src/agent_plugin_manifest.rs#L166), [custom agents](https://learn.chatgpt.com/docs/agent-configuration/subagents).
-- **Cursor:** selectors and readonly metadata are documented; live native task/reload behavior is unverified here. [Plugin reference](https://cursor.com/docs/reference/plugins), [subagents](https://cursor.com/docs/subagents).
-- **Kimi:** official native-agent and prompt-bootstrap schemas support the emitted resources. Archive/schema checks do not establish live dispatch, tool filtering, or reload. [Plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
-- **Devin:** documented always-on policy and custom skill-directory selection are used. Local/cloud distinctions are preserved; native task execution and recursive foreign-profile exclusion require live host evidence. [Plugin format](https://docs.devin.ai/cli/extensibility/plugins/overview).
-- **ZCode:** documented explicit agent/command selection is used; live native loading and policy enforcement remain unverified. [Plugin reference](https://zcode.z.ai/en/docs/plugin).
-- **OMP 18.4.8:** source/archive discovery, a real isolated archive installation lifecycle, command expansion, global prompt injection, and all eight task-template compositions were exercised without inference. The source/packaged native payloads match. No actual task spawn or model obedience is proved. [Plugins](https://omp.sh/docs/plugins), [subagents](https://omp.sh/docs/subagent-authoring).
+- **Cursor CLI 2026.10.01 (2026-10-12):** a live probe showed plugin-supplied agents did not enforce `readonly` (a write succeeded, with or without other hosts' keys present), while a project `.cursor/agents/` profile with `readonly: true` was blocked. Other hosts' keys do not affect loading. Cursor desktop is untested. [Plugin reference](https://cursor.com/docs/reference/plugins), [subagents](https://cursor.com/docs/subagents).
+- **Kimi:** official native-agent and prompt-bootstrap schemas support the emitted resources. Kimi v0.38.0 source registers tools as `Write` and `Edit`, so the earlier `WriteFile`/`StrReplaceFile` denylist matched nothing; `$ARGUMENTS` is substituted in plugin commands. Not live-run. [Plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
+- **Devin:** documented always-on policy and conventional root discovery are used; there is no denylist or commands component. Local/cloud distinctions are preserved; native task execution and recursive foreign-profile exclusion require live host evidence. [Plugin format](https://docs.devin.ai/cli/extensibility/plugins/overview).
+- **ZCode:** documented explicit agent/command selection and `disallowedTools` are used; live native loading and enforcement remain unverified. [Plugin reference](https://zcode.z.ai/en/docs/plugin).
+- **OMP 18.4.8 (2026-10-12):** the real loader probe on the archive and git root found 7 agents, 3 commands, 1 rule, and 2 skills, and did not load `.toml` files. An earlier install lifecycle probe (2026-10-11) covered the superseded eight-profile layout. No actual task spawn or model obedience is proved. [Plugins](https://omp.sh/docs/plugins), [subagents](https://omp.sh/docs/subagent-authoring).
 - **Hermes:** the portable loader supplies skills and optional MCP resources. Full manual methodology context is separate; the first matching project-context type wins, and delegated children can skip those files. [Portable plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages), [prompt assembly](https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly).
 
-See [host verification](plugin-host-verification.md) for reproduction and artifacts. A doctor command, dry-run installation, accepted unknown frontmatter, or resolved selector is insufficient proof of activation or enforcement. Historical fourteen-skill/zero-command probes describe the retired layout and are not current acceptance evidence.
+See [host verification](plugin-host-verification.md) for reproduction and artifacts. A doctor command, dry-run installation, accepted unknown frontmatter, or resolved selector is insufficient proof of activation or enforcement. Historical fourteen-skill/zero-command and eight-profile probes describe retired layouts and are not current acceptance evidence.
 
 ## Whole-package acceptance
 

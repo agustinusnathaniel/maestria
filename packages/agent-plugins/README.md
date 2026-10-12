@@ -6,18 +6,17 @@ Maestria ships one directly installable plugin with native host components and t
 
 | Package folder | Contents | Canonical input |
 | --- | --- | --- |
-| `agents/` | Dispatcher and seven specialist definitions, plus schema-specific native profiles | Core `specialists/` |
-| `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points and native host projections | Core `commands/`, dispatcher, policy, and integration notes |
-| `rules/` | Global policy and supported host bootstrap/instruction resources | Core `rules.md` and integration notes |
+| `agents/` | One profile per specialist for every Markdown host, plus a generated Codex TOML beside each | Core `specialists/` and `generation/profiles.json` |
+| `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
+| `rules/` | Global policy, plus one folder per host whose rule format differs | Core `rules.md` and integration notes |
 | `skills/` | Only `handoff` and `iteration-limits` reusable utilities | Core `skills/` |
 | `integrations/` | Generated host usage and capability guides | Core integration notes |
-| `compatibility/devin/skills/` | Generated workflow transport for Devin's skill-based command loader | The same canonical workflow compositions |
-| `generation/` | Development-only manifests, profile metadata, and native TOML metadata | Hand-authored mechanical inputs |
+| `generation/` | Development-only manifests and profile metadata | Hand-authored mechanical inputs |
 | `assets/`, `docs/` | Presentation and package usage documentation | Hand-authored package files |
 
-Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, router, policy, and argument contract without loading removed skills. Schema-specific profiles share canonical bodies; native formats, model settings, and tool restrictions stay host-specific.
+Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, router, policy, and argument contract without loading removed skills.
 
-The dispatcher profile does not automatically replace a host's primary agent. Host command, policy, or companion installation determines how primary-session routing is activated.
+Each profile's frontmatter carries every Markdown host's keys at once, and each host reads only its own: `readonly` (Cursor), `disallowedTools: [Write, Edit]` (Claude Code, Kimi Code, ZCode), and `subagents: []` (Kimi). Profiles omit `model`, so hosts use the main conversation's model. Primary-session routing comes from each host's always-on rule, context, or companion installation, not from a dispatcher profile.
 
 ## Host mappings
 
@@ -25,13 +24,13 @@ The dispatcher profile does not automatically replace a host's primary agent. Ho
 | --- | --- | --- |
 | Claude Code and Desktop Code | Explicit native agent files, three native commands, two utilities | Research/review profiles exclude Write/Edit; shell-mediated editing is not a sandbox guarantee |
 | Claude Cowork / Chat | Shared command/utility resources | Native component availability differs by surface; Chat does not load plugin agents |
-| Cursor | Selected native agents, commands, always-applied policy, two utilities | Cursor owns native readonly enforcement and reload behavior |
+| Cursor | Shared native agents and commands, always-applied policy, two utilities | Cursor CLI 2026.10.01 does not enforce `readonly` on plugin profiles (it does for project `.cursor/agents/`); read-only rests on prompt guidance |
 | Codex CLI / local desktop | Utilities through the plugin; full TOMLs and marked global instructions through `maestria install codex` | Marketplace-only installation does not activate routing, roles, or modes; companion instructions support per-turn FEIN/SONAR/BLITZ keywords |
 | ChatGPT plugin surfaces / portable v1 clients | Two root utilities | No portable native-agent, command, policy, or runtime-enforcement contract |
-| Kimi Code | Seven native profiles, three commands, complete primary-session bootstrap, two utilities | No built-in persona remapping or removed role-skill preloads; the host chooses models |
-| Devin | Root agents, root `AGENTS.md` policy, utilities and three selected workflow compatibility exports | Custom plugin agents load locally in CLI/Desktop, not cloud sessions |
-| ZCode | Selected full native profiles, three commands, utilities | Policy is embedded in agent/command context; a plugin rules selector is unverified |
-| OMP | Eight task profiles, three commands, one always-apply rule, two utilities | Dispatcher is a task profile; generic roles provide advisory boundaries rather than per-role tool enforcement |
+| Kimi Code | Shared native profiles and commands, complete primary-session bootstrap, two utilities | Research/review profiles deny `Write`/`Edit`; the host chooses models |
+| Devin | Root agents, root `AGENTS.md` policy, two utilities | No plugin commands: mode keywords route through the always-on policy. Custom plugin agents load locally in CLI/Desktop, not cloud sessions; no denylist field |
+| ZCode | Shared full native profiles and commands, utilities | Policy is embedded in agent/command context; research/review profiles deny `Write`/`Edit` |
+| OMP | Root task profiles, commands, one always-apply rule, two utilities | Roles provide advisory boundaries rather than per-role tool enforcement |
 | Hermes | Two portable utilities; optional manual host context from `rules/hermes/context.md` | No Python adapter; installation alone does not activate orchestration, modes, or named agents |
 
 See [installation](INSTALL.md), [support boundaries](docs/support.md), and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; separately installable methodology skills remain under the repository's root `skills/`.

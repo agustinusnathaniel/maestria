@@ -1,6 +1,11 @@
 ---
 name: reviewer
 description: Independent review agent covering correctness, security, performance, maintainability, and quality gates.
+readonly: true
+disallowedTools:
+  - Write
+  - Edit
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

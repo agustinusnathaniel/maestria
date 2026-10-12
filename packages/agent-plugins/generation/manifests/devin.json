@@ -17,5 +17,5 @@
     "pipeline",
     "specialists"
   ],
-  "skills": ["./skills/", "./compatibility/devin/skills/"]
+  "skills": "./skills/"
 }

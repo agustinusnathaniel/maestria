@@ -4,11 +4,11 @@ Use `@maestria/agent-plugins`. Extract the npm archive or run `maestria plugin i
 
 For Git/local loaders, select `packages/agent-plugins/`. All host manifests and generated resources are at this directly installable root. A local npm package with explicit `files` metadata stages its npm publish selection without running lifecycle scripts. Directory-only plugins retain their legitimate resources. Existing destination directories are never silently overwritten.
 
-Use `maestria install claude-code`, `cursor`, `codex`, `kimi-code`, `omp`, or `hermes` for the existing managed host flows. Select the matching [public host guide](https://maestria.sznm.dev/agent-plugins/) for its activation, trust, reload, update, and removal steps. Do not enable both this plugin and a superseded package in the same host namespace.
+Use `maestria install claude-code`, `cursor`, `codex`, `kimi-code`, `omp`, or `hermes` for the existing managed host flows. Devin and ZCode have no managed flow; stage the package and use their host installers. Select the matching [public host guide](https://maestria.sznm.dev/agent-plugins/) for its activation, trust, reload, update, and removal steps. Do not enable both this plugin and a superseded package in the same host namespace.
 
 ## Full methodology and utility-only installations
 
-Claude Code, Cursor, Kimi Code, ZCode, and OMP use native workflow commands with complete context. Devin exposes the workflows through its explicitly selected compatibility skill directory. The root `skills/` contains only `handoff` and `iteration-limits`.
+Claude Code, Cursor, Kimi Code, ZCode, and OMP use the shared native workflow commands with complete context. Devin has no plugin commands; its always-on `AGENTS.md` routes the FEIN, SONAR, and BLITZ mode keywords. The root `skills/` contains only `handoff` and `iteration-limits`.
 
 Codex marketplace installation supplies those two utilities. `maestria install codex` additionally installs complete native agent TOMLs and a marked global instruction block containing policy, routing, and FEIN/SONAR/BLITZ mode definitions. Invoke mode keywords or markers in the user prompt. `maestria configure codex` changes native model settings; updates preserve user-selected runtime settings and unrelated instructions. Start a new/reloaded session for changed instructions according to the host lifecycle.
 

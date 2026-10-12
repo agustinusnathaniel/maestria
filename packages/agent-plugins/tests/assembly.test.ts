@@ -40,7 +40,7 @@ describe('consolidated plugin assembly', () => {
     const packageRoot = path.join(root, 'packages/agent-plugins');
     const target = path.join(packageRoot, 'integrations/omp/README.md');
     const stale = path.join(packageRoot, 'skills/handoff.md');
-    const native = path.join(packageRoot, 'generation/codex/maestria-reviewer.toml');
+    const native = path.join(packageRoot, 'generation/profiles.json');
     const nativeBefore = fs.readFileSync(native, 'utf-8');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
@@ -67,10 +67,10 @@ describe('consolidated plugin assembly', () => {
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
     fs.writeFileSync(stale, 'stale\n');
-    fs.rmSync(path.join(packageRoot, 'generation/codex/maestria-writer.toml'));
+    fs.rmSync(path.join(packageRoot, 'generation/profiles.json'));
 
     expect(main(['--preflight'], root)).toBe(2);
-    expect(() => syncConsolidatedPlugin(root)).toThrow(/maestria-writer\.toml/u);
+    expect(() => syncConsolidatedPlugin(root)).toThrow(/profiles\.json/u);
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
     expect(fs.readFileSync(stale, 'utf-8')).toBe('stale\n');
   });
@@ -89,13 +89,24 @@ describe('consolidated plugin assembly', () => {
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, 'preserve this note\n');
     }
-    const obsolete = path.join(packageRoot, 'commands/modes/fein.md');
-    fs.mkdirSync(path.dirname(obsolete), { recursive: true });
-    fs.writeFileSync(obsolete, 'obsolete generated resource\n');
+    const obsoletes = [
+      'commands/modes/fein.md',
+      'agents/cursor/reviewer.md',
+      'agents/codex/maestria-reviewer.toml',
+      'commands/kimi-code/fein.md',
+      'compatibility/devin/skills/fein/SKILL.md',
+    ];
+    for (const obsolete of obsoletes) {
+      fs.mkdirSync(path.dirname(path.join(packageRoot, obsolete)), { recursive: true });
+      fs.writeFileSync(path.join(packageRoot, obsolete), 'obsolete generated resource\n');
+    }
 
-    expect(syncConsolidatedPlugin(root, true)).toContain('commands/modes/fein.md');
+    expect(syncConsolidatedPlugin(root, true)).toEqual(expect.arrayContaining(obsoletes));
     syncConsolidatedPlugin(root);
-    expect(fs.existsSync(obsolete)).toBe(false);
+    for (const obsolete of obsoletes) {
+      expect(fs.existsSync(path.join(packageRoot, obsolete))).toBe(false);
+    }
+    expect(fs.existsSync(path.join(packageRoot, 'compatibility'))).toBe(false);
     expect(syncConsolidatedPlugin(root, true)).toEqual([]);
     for (const note of notes) {
       expect(fs.readFileSync(path.join(packageRoot, note), 'utf-8')).toBe('preserve this note\n');

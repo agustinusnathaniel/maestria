@@ -18,7 +18,7 @@ The format defines an artifact shape, not whether each compatible client discove
 
 The original decision published `@maestria/agent-plugin` as an additive, generated projection of the canonical directives. CORE-034 supersedes that package identity and topology; the portable projection remains generated, with host-specific behavior owned by native integrations.
 
-Limit the portable package to the v1 `plugin.json` manifest and generated Agent Skills. It does not declare MCP configuration, executable agent identities, commands, hooks, or client-specific extensions. The current consolidated portable projection exports only handoff and iteration-limit utilities. Roles, workflow modes, and policy remain native resources; they are not converted into portable skills.
+Limit the portable package to the v1 `plugin.json` manifest and generated Agent Skills. It does not declare MCP configuration, executable agent identities, commands, hooks, or client-specific extensions. Roles, workflow modes, and policy remain native resources; they are not converted into portable skills.
 
 Generate the projection from `packages/core/agent-directives/`; do not maintain a second hand-authored skills tree. The maestria CLI may validate a package and stage it in its cache or a chosen destination. Staging does not install, register, or activate it in a client.
 

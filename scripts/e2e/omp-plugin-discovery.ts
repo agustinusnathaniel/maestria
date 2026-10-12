@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Real-source discovery probe for the pinned OMP 18.4.8 host.
 // Run with: pnpm exec bun scripts/e2e/omp-plugin-discovery.ts
-// Optional: --host-root <installed OMP package directory> --out <artifact path>
+// Required: --host-root <installed OMP package directory>. Optional: --out <artifact path>
 
 import fs from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,14 +11,15 @@ import { loadPackedPlugin } from './omp-plugin-package.ts';
 
 const EXPECTED_HOST_VERSION = '18.4.8';
 const PLUGIN_NAME = '@maestria/agent-plugins';
-const EXPECTED_PLUGIN_COUNTS = { agents: 8, commands: 3, rules: 1, skills: 2 } as const;
-const EXPECTED_AGENT_NAMES =
-  'adventurer architect builder diagnose orchestrator planner reviewer writer'.split(' ');
+const EXPECTED_PLUGIN_COUNTS = { agents: 7, commands: 3, rules: 1, skills: 2 } as const;
+const EXPECTED_AGENT_NAMES = 'adventurer architect builder diagnose planner reviewer writer'.split(
+  ' ',
+);
 const EXPECTED_SKILL_NAMES = ['handoff', 'iteration-limits'];
 const scriptDir = import.meta.dirname;
 const repoRoot = path.resolve(scriptDir, '../..');
 const usage =
-  'usage: bun scripts/e2e/omp-plugin-discovery.ts [--host-root <installed OMP package directory>] [--out <artifact path>]';
+  'usage: bun scripts/e2e/omp-plugin-discovery.ts --host-root <installed OMP package directory> [--out <artifact path>]';
 
 interface ProbeCheck {
   detail: string;
@@ -90,10 +91,12 @@ const parseOptions = (argv: string[]): Options => {
     index += 1;
   }
 
+  // The retired native OMP package used to provide a default host root.
+  if (hostRoot === undefined) {
+    throw new Error(`${usage}\nmissing required --host-root`);
+  }
   return {
-    hostRoot: path.resolve(
-      hostRoot ?? path.join(repoRoot, 'packages/omp/node_modules/@oh-my-pi/pi-coding-agent'),
-    ),
+    hostRoot: path.resolve(hostRoot),
     outPath: path.resolve(outPath ?? path.join(repoRoot, 'artifacts/omp-plugin-discovery.json')),
   };
 };

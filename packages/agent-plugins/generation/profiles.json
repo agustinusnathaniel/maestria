@@ -1,34 +1,62 @@
 {
   "adventurer": {
     "name": "adventurer",
-    "description": "Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes."
+    "description": "Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.",
+    "readOnly": true,
+    "codex": {
+      "description": "maestria codebase reconnaissance specialist for mapping unfamiliar code and tracing execution paths.",
+      "sandboxMode": "read-only"
+    }
   },
   "architect": {
     "name": "architect",
-    "description": "Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions."
+    "description": "Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.",
+    "readOnly": false,
+    "codex": {
+      "description": "maestria architecture specialist for comparing approaches, boundaries, and trade-offs.",
+      "sandboxMode": "read-only"
+    }
   },
   "builder": {
     "name": "builder",
-    "description": "Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor."
+    "description": "Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.",
+    "readOnly": false,
+    "codex": {
+      "description": "maestria focused implementation specialist for one atomic, verifiable unit of work."
+    }
   },
   "diagnose": {
     "name": "diagnose",
-    "description": "Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention."
+    "description": "Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.",
+    "readOnly": false,
+    "codex": {
+      "description": "maestria diagnosis specialist for tracing regressions from symptoms to root cause and prevention."
+    }
   },
   "planner": {
     "name": "planner",
-    "description": "Phased planning agent with dependencies, verification criteria, timelines, and rollback points."
+    "description": "Phased planning agent with dependencies, verification criteria, timelines, and rollback points.",
+    "readOnly": true,
+    "codex": {
+      "description": "maestria planning specialist for sequencing complex work with verification and rollback criteria.",
+      "sandboxMode": "read-only"
+    }
   },
   "reviewer": {
     "name": "reviewer",
-    "description": "Independent review agent covering correctness, security, performance, maintainability, and quality gates."
+    "description": "Independent review agent covering correctness, security, performance, maintainability, and quality gates.",
+    "readOnly": true,
+    "codex": {
+      "description": "maestria independent reviewer for correctness, security, performance, and missing-test risks.",
+      "sandboxMode": "read-only"
+    }
   },
   "writer": {
     "name": "writer",
-    "description": "Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records."
-  },
-  "orchestrator": {
-    "name": "orchestrator",
-    "description": "Workflow dispatcher task profile that selects routes, coordinates specialists, and preserves evidence"
+    "description": "Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.",
+    "readOnly": false,
+    "codex": {
+      "description": "maestria documentation specialist for READMEs, API docs, architecture records, and changelogs."
+    }
   }
 }

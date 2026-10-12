@@ -17,7 +17,7 @@
   "homepage": "https://github.com/agustinusnathaniel/maestria",
   "license": "MIT",
   "skills": "./skills/",
-  "commands": "./commands/kimi-code/",
+  "commands": "./commands/",
   "systemPromptPath": "./rules/kimi-code/bootstrap.md",
   "interface": {
     "displayName": "maestria Agent Pack",
@@ -26,5 +26,5 @@
     "developerName": "Agustinus Nathaniel",
     "websiteURL": "https://github.com/agustinusnathaniel/maestria"
   },
-  "agents": "./agents/kimi-code/"
+  "agents": "./agents/"
 }

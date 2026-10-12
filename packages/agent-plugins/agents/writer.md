@@ -1,6 +1,7 @@
 ---
 name: writer
 description: Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

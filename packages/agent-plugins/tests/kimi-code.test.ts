@@ -5,7 +5,7 @@ import { parse } from 'yaml';
 
 const root = path.resolve(import.meta.dirname, '..');
 const roles = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
-const readOnlyRoles = ['adventurer', 'planner', 'reviewer'];
+const readOnlyRoles = new Set(['adventurer', 'planner', 'reviewer']);
 const modes = ['fein', 'sonar', 'blitz'];
 
 type Manifest = Record<string, unknown>;
@@ -30,9 +30,9 @@ const profileMetadata = (profile: string): Manifest => {
 };
 
 describe('Kimi native methodology loading', () => {
-  it('selects only complete Kimi native profiles', async () => {
+  it('selects the shared complete native profiles', async () => {
     const config = await manifest();
-    expect(config.agents).toBe('./agents/kimi-code/');
+    expect(config.agents).toBe('./agents/');
     expect(config.sessionStart).toBeUndefined();
     expect(config.skillInstructions).toBeUndefined();
     const profiles = await Promise.all(
@@ -41,7 +41,7 @@ describe('Kimi native methodology loading', () => {
           path.join(root, `../core/agent-directives/specialists/${role}.md`),
           'utf-8',
         ),
-        profile: await readFile(path.join(root, `agents/kimi-code/${role}.md`), 'utf-8'),
+        profile: await readFile(path.join(root, `agents/${role}.md`), 'utf-8'),
         role,
       })),
     );
@@ -52,6 +52,7 @@ describe('Kimi native methodology loading', () => {
       const metadata = profileMetadata(profile);
       expect(metadata.name).toBe(role);
       expect(metadata.model).toBeUndefined();
+      expect(metadata.subagents).toEqual([]);
     }
   });
 
@@ -68,31 +69,33 @@ describe('Kimi native methodology loading', () => {
     expect(bootstrap.isFile()).toBe(true);
   });
 
-  it('preserves native read-only metadata for research and review', async () => {
+  it('denies the current Kimi write tools for research and review only', async () => {
     const profiles = await Promise.all(
-      readOnlyRoles.map(
-        async (role) => await readFile(path.join(root, `agents/kimi-code/${role}.md`), 'utf-8'),
-      ),
+      roles.map(async (role) => ({
+        metadata: profileMetadata(await readFile(path.join(root, `agents/${role}.md`), 'utf-8')),
+        role,
+      })),
     );
-    for (const profile of profiles) {
-      expect(profile).toContain('disallowedTools:');
-      expect(profile).toContain('WriteFile');
-      expect(profile).toContain('StrReplaceFile');
+    for (const { metadata, role } of profiles) {
+      // Kimi registers its file tools as Write and Edit; WriteFile/StrReplaceFile match nothing.
+      expect(metadata.disallowedTools).toEqual(
+        readOnlyRoles.has(role) ? ['Write', 'Edit'] : undefined,
+      );
     }
   });
 
   it('carries complete context and arguments in each native mode command', async () => {
     const config = await manifest();
-    expect(config.commands).toBe('./commands/kimi-code/');
+    expect(config.commands).toBe('./commands/');
     const commands = await Promise.all(
       modes.map(async (mode) => ({
-        command: await readFile(path.join(root, `commands/kimi-code/${mode}.md`), 'utf-8'),
+        command: await readFile(path.join(root, `commands/${mode}.md`), 'utf-8'),
         mode,
       })),
     );
     for (const { command, mode } of commands) {
       expect(command).toContain(`[MODE: ${mode}]`);
-      expect(command).toContain('arguments');
+      expect(command).toContain('$ARGUMENTS');
       expect(command).toContain('## Routing');
       expect(command).toContain('## Universal Floors');
     }

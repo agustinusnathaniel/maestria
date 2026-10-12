@@ -63,7 +63,7 @@ describe('canonical specialist roster', () => {
     expect(delegableNames).toHaveLength(7);
   });
 
-  it('keeps the consolidated profile registry aligned with canonical specialists', () => {
+  it('keeps the consolidated profile registry aligned with the delegable roles', () => {
     const registry: unknown = JSON.parse(
       readFileSync(
         path.join(import.meta.dirname, '../../agent-plugins/generation/profiles.json'),
@@ -73,12 +73,10 @@ describe('canonical specialist roster', () => {
     if (!isRecord(registry)) {
       throw new Error('Expected profile registry object');
     }
-    expect(
-      findViolations(
-        canonicalFiles.map((file) => file.replace(/\.md$/u, '')),
-        Object.keys(registry),
-      ),
-    ).toEqual({ extra: [], missing: [] });
+    expect(findViolations(delegableNames, Object.keys(registry))).toEqual({
+      extra: [],
+      missing: [],
+    });
   });
 
   it('keeps ALLOWED_AGENTS aligned with the delegable roster', () => {

@@ -13,12 +13,9 @@ Delegate via the `Task` tool to the plugin's custom agents (`agents/`). Pass a c
 2. Call `Task` with the specialist agent name and a full handoff: Goal, Context, Requirements, Known problems, Assumptions, Success criteria, Next step.
 3. For parallel independent work, launch multiple `Task` calls in one turn.
 
-### Maker/checker (two-layer enforcement)
+### Maker/checker
 
-Cursor agents use a two-layer maker/checker split:
-
-1. **Runtime enforcement** - `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** - Agent prompts also include explicit read-only instructions as a backup.
+`adventurer`, `planner`, and `reviewer` declare `readonly: true` and carry explicit read-only instructions. Cursor CLI 2026.10.01 enforced `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied profiles, so treat the plugin flag as intent and the prompt instructions as the operative control. A project-level profile written by `maestria configure cursor` carries the flag into `.cursor/agents/`, where Cursor enforces it.
 
 Enforce the split: never send review work to the same agent that implemented; `reviewer` / `adventurer` / `planner` must not edit files.
 
@@ -32,4 +29,4 @@ Users can trigger modes with slash commands from this plugin:
 | `/sonar` | Research only: adventurer → architect/planner → STOP |
 | `/blitz` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
 
-The Cursor Integration manifest selects native `agents/cursor/` profiles, shared `skills/`, and the Cursor command and rule paths.
+The Cursor Integration manifest selects the shared root `agents/` profiles and `commands/`, shared `skills/`, and the Cursor rule under `rules/cursor/`. Profile keys meant for other hosts (`disallowedTools`, `subagents`) do not affect Cursor loading.

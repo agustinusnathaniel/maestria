@@ -49,18 +49,18 @@ describe('Claude Code native plugin loading', () => {
     const manifest = readManifest();
     const agentPaths = manifest.agents;
 
-    expect(agentPaths).toEqual(roles.map((role) => `./agents/claude-code/${role}.md`));
+    expect(agentPaths).toEqual(roles.map((role) => `./agents/${role}.md`));
 
     for (const role of roles) {
-      const agentPath = path.join(pluginRoot, `agents/claude-code/${role}.md`);
+      const agentPath = path.join(pluginRoot, `agents/${role}.md`);
       const { body, metadata } = parseFrontmatter(fs.readFileSync(agentPath, 'utf-8'), agentPath);
       const expectedDisallowedTools = ['adventurer', 'planner', 'reviewer'].includes(role)
-        ? 'Write, Edit'
+        ? ['Write', 'Edit']
         : undefined;
 
       expect(metadata.name).toBe(role);
-      expect(metadata.model).toBe('inherit');
-      expect(metadata.disallowedTools).toBe(expectedDisallowedTools);
+      expect(metadata.model).toBeUndefined();
+      expect(metadata.disallowedTools).toEqual(expectedDisallowedTools);
       expect(metadata.skills).toBeUndefined();
       const core = path.resolve(packageRoot, '../core/agent-directives');
       expect(body).toContain(

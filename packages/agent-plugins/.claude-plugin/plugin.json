@@ -20,13 +20,13 @@
     "specialists"
   ],
   "agents": [
-    "./agents/claude-code/adventurer.md",
-    "./agents/claude-code/architect.md",
-    "./agents/claude-code/builder.md",
-    "./agents/claude-code/diagnose.md",
-    "./agents/claude-code/planner.md",
-    "./agents/claude-code/reviewer.md",
-    "./agents/claude-code/writer.md"
+    "./agents/adventurer.md",
+    "./agents/architect.md",
+    "./agents/builder.md",
+    "./agents/diagnose.md",
+    "./agents/planner.md",
+    "./agents/reviewer.md",
+    "./agents/writer.md"
   ],
   "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
 }

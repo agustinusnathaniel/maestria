@@ -10,14 +10,14 @@ Kimi Code exposes a declarative plugin format, unlike the OpenCode runtime SDK. 
 
 ## Decision
 
-Use Kimi's declarative plugin surface. The original integration mapped maestria specialists onto Kimi's built-in profiles and loaded an orchestrator skill at session start. The current consolidated package explicitly selects seven native profiles with complete role and policy instructions, three full commands, and a systemPromptPath bootstrap within the documented size limit. It does not suppress native agents or depend on removed role skills, session-start skills, or built-in persona remapping.
+Use Kimi's declarative plugin surface. The original integration mapped maestria specialists onto Kimi's built-in profiles and loaded an orchestrator skill at session start. The consolidated package selects the shared native profiles with complete role and policy instructions, the shared full commands, and a systemPromptPath bootstrap within the documented size limit. It does not suppress native agents or depend on removed role skills, session-start skills, or built-in persona remapping.
 
 Do not treat specialist names or prompt text as host-enforced permission identities. Kimi's historical profile limits made some safety constraints prompt-level, and the consolidated integration still depends on host behavior for child permissions and manifest support.
 
 ## Consequences
 
 - The declarative integration avoids a runtime adapter and duplicate skill corpus.
-- The native profile projection supplies seven distinct specialist identities. Write-tool exclusions are filters rather than shell sandboxes, and per-profile model frontmatter is not supported.
+- The native profiles supply distinct specialist identities. Write-tool exclusions name Kimi's current `Write` and `Edit` tools (the earlier `WriteFile` and `StrReplaceFile` names matched nothing, corrected 2026-10-12); they are filters rather than shell sandboxes, and Kimi ignores model frontmatter.
 - Permission and lifecycle guarantees remain host-owned; prompt guidance cannot establish runtime enforcement.
 - Host schema changes can affect manifest fields, so current support claims remain bounded by the runtime support matrix.
 

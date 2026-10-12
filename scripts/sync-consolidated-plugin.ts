@@ -23,9 +23,15 @@ const MANIFESTS = [
   ['generation/manifests/zcode.json', '.zcode-plugin/plugin.json'],
   ['generation/manifests/kimi.plugin.json', 'kimi.plugin.json'],
 ] as const;
+const RETIRED_HOST_COPIES = ['claude-code', 'cursor', 'kimi-code'];
 const RETIRED_OUTPUTS = [
   ...[...ROLES, ...MODES, 'orchestrator', 'global-rules'].map((name) => `skills/${name}/SKILL.md`),
   ...MODES.map((mode) => `commands/modes/${mode}.md`),
+  'agents/orchestrator.md',
+  ...RETIRED_HOST_COPIES.flatMap((host) => ROLES.map((role) => `agents/${host}/${role}.md`)),
+  ...ROLES.map((role) => `agents/codex/maestria-${role}.toml`),
+  ...['cursor', 'kimi-code'].flatMap((host) => MODES.map((mode) => `commands/${host}/${mode}.md`)),
+  ...MODES.map((mode) => `compatibility/devin/skills/${mode}/SKILL.md`),
   'rules/global/global-rules.md',
   'skills/handoff.md',
   'skills/iteration-limits.md',
@@ -164,73 +170,88 @@ const addOutput = (plan: Map<string, string>, relative: string, content: string)
   plan.set(relative, content);
 };
 
-const profileMetadata = (packageRoot: string): Record<string, Record<string, unknown>> => {
+interface Profile {
+  codex: { description: string; sandboxMode?: string };
+  description: string;
+  name: string;
+  readOnly: boolean;
+}
+
+const profileMetadata = (packageRoot: string): Record<string, Profile> => {
   const value: unknown = JSON.parse(readInput(packageRoot, 'generation/profiles.json'));
   if (!isRecord(value)) {
     throw new Error('Invalid profile registry');
   }
-  const profiles: Record<string, Record<string, unknown>> = {};
-  for (const role of [...ROLES, 'orchestrator']) {
+  const profiles: Record<string, Profile> = {};
+  for (const role of ROLES) {
     const profile = value[role];
-    if (!isRecord(profile) || profile.name !== role || typeof profile.description !== 'string') {
+    if (
+      !isRecord(profile) ||
+      profile.name !== role ||
+      typeof profile.description !== 'string' ||
+      typeof profile.readOnly !== 'boolean' ||
+      !isRecord(profile.codex) ||
+      typeof profile.codex.description !== 'string' ||
+      !['string', 'undefined'].includes(typeof profile.codex.sandboxMode)
+    ) {
       throw new Error(`Invalid profile metadata: ${role}`);
     }
-    profiles[role] = profile;
+    profiles[role] = {
+      codex: {
+        description: profile.codex.description,
+        ...(typeof profile.codex.sandboxMode === 'string'
+          ? { sandboxMode: profile.codex.sandboxMode }
+          : {}),
+      },
+      description: profile.description,
+      name: role,
+      readOnly: profile.readOnly,
+    };
   }
   return profiles;
 };
 
+// One profile serves every Markdown host: each loader reads its own keys and ignores the rest
+// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents).
+// Entries keep the emitted YAML in reading order: identity first, then host controls.
+const nativeMetadata = (profile: Profile): Record<string, unknown> => {
+  const readOnly: [string, unknown][] = profile.readOnly
+    ? [
+        ['readonly', true],
+        ['disallowedTools', ['Write', 'Edit']],
+      ]
+    : [];
+  return Object.fromEntries<unknown>([
+    ['name', profile.name],
+    ['description', profile.description],
+    ...readOnly,
+    ['subagents', []],
+  ]);
+};
+
+const codexProfile = (profile: Profile, instructions: string): string => {
+  if (instructions.includes('"""')) {
+    throw new Error(`Unsupported TOML instruction delimiter: ${profile.name}`);
+  }
+  const header = [
+    `name = ${JSON.stringify(`maestria-${profile.name}`)}`,
+    `description = ${JSON.stringify(profile.codex.description)}`,
+    ...(profile.codex.sandboxMode === undefined
+      ? []
+      : [`sandbox_mode = ${JSON.stringify(profile.codex.sandboxMode)}`]),
+  ];
+  return `${header.join('\n')}\n\n# Generated from canonical core directives.\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`;
+};
+
 const addProfiles = (plan: Map<string, string>, packageRoot: string, input: Inputs): void => {
   const profiles = profileMetadata(packageRoot);
-  for (const role of [...ROLES, 'orchestrator']) {
-    addOutput(
-      plan,
-      `agents/${role}.md`,
-      document(compose(input.roles[role], input.rules), profiles[role]),
-    );
-    if (role === 'orchestrator') {
-      continue;
-    }
-    const readOnly = ['adventurer', 'planner', 'reviewer'].includes(role);
+  for (const role of ROLES) {
     const body = compose(input.roles[role], input.rules);
+    addOutput(plan, `agents/${role}.md`, document(body, nativeMetadata(profiles[role])));
     addOutput(
       plan,
-      `agents/claude-code/${role}.md`,
-      document(body, {
-        ...profiles[role],
-        model: 'inherit',
-        ...(readOnly ? { disallowedTools: 'Write, Edit' } : {}),
-      }),
-    );
-    addOutput(
-      plan,
-      `agents/cursor/${role}.md`,
-      document(body, { ...profiles[role], ...(readOnly ? { readonly: true } : {}) }),
-    );
-    addOutput(
-      plan,
-      `agents/kimi-code/${role}.md`,
-      document(body, {
-        ...profiles[role],
-        ...(readOnly ? { disallowedTools: ['WriteFile', 'StrReplaceFile'] } : {}),
-        subagents: [],
-      }),
-    );
-    const native = readInput(packageRoot, `generation/codex/maestria-${role}.toml`);
-    if (
-      !native.includes(`name = "maestria-${role}"`) ||
-      native.includes('developer_instructions')
-    ) {
-      throw new Error(`Invalid native Codex metadata: ${role}`);
-    }
-    const instructions = compose(body, input.contexts.codex);
-    if (instructions.includes('"""')) {
-      throw new Error(`Unsupported TOML instruction delimiter: ${role}`);
-    }
-    addOutput(
-      plan,
-      `agents/codex/maestria-${role}.toml`,
-      `${native.trim()}\n\n# Generated from canonical core directives.\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`,
+      `agents/maestria-${role}.toml`,
+      codexProfile(profiles[role], compose(body, input.contexts.codex)),
     );
   }
 };
@@ -277,24 +298,6 @@ const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy:
       plan,
       `commands/${mode}.md`,
       document(command, { description: metadata.description, name: mode }),
-    );
-    for (const host of ['cursor', 'kimi-code']) {
-      addOutput(
-        plan,
-        `commands/${host}/${mode}.md`,
-        document(compose(command, input.contexts[host]), {
-          description: metadata.description,
-          name: mode,
-        }),
-      );
-    }
-    addOutput(
-      plan,
-      `compatibility/devin/skills/${mode}/SKILL.md`,
-      document(compose(command, input.contexts.devin), {
-        description: metadata.description,
-        name: mode,
-      }),
     );
   }
 };

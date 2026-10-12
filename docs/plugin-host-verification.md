@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is eight root task profiles, three workflows, global policy, and two root utility skills.
+Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is seven shared task profiles (`agents/<role>.md`, no orchestrator), three shared workflows, per-host global policy, and two root utility skills. Results dated before 2026-10-12 that cite eight profiles describe a superseded layout.
 
 ## Claude Code native child
 
@@ -14,7 +14,9 @@ node --experimental-strip-types scripts/e2e/claude-skill-preload.ts --out artifa
 
 The legacy script filename is retained for reproduction, but the probe now checks complete native context rather than role-skill preloading. It launches the real CLI with temporary configuration/workspace, disabled persistence and nonessential traffic, and a local Anthropic-compatible fixture using a dummy credential. Digests and request diagnostics are recorded instead of credentials or full request prompts.
 
-Claude Code 2.1.217 passed ten checks: native dispatch was exposed, the complete reviewer profile and canonical global policy reached the child, Write/Edit were absent from its tool schema, and the result returned to the parent. This proves the tested role's native context and tool-schema filtering. It does not prove model judgment, every specialist, shell-mediated read-only enforcement, or hosted Claude surfaces. The probe loads the checkout; separate archive checks verify the packaged resource paths.
+Superseded run: Claude Code 2.1.217 passed ten checks against the former per-host layout: native dispatch was exposed, the complete reviewer profile and canonical global policy reached the child, Write/Edit were absent from its tool schema, and the result returned to the parent. This proved the tested role's native context and tool-schema filtering.
+
+**2026-10-12 (current):** on Claude Code 2.1.295 the same offline fixture loaded the reviewer from the shared `agents/reviewer.md`; Write and Edit were unavailable and the full role plus global policy reached the child context. `claude plugin validate --strict` also passes on 2.1.295. It does not prove model judgment, every specialist, shell-mediated read-only enforcement, or hosted Claude surfaces. The probe loads the checkout; separate archive checks verify the packaged resource paths.
 
 ## OMP source and archive discovery
 
@@ -24,11 +26,11 @@ With Bun and OMP 18.4.8 sources installed, run:
 pnpm exec bun scripts/e2e/omp-plugin-discovery.ts --host-root /absolute/path/to/@oh-my-pi/pi-coding-agent --out artifacts/omp-plugin-discovery.json
 ```
 
-This packs and extracts the plugin, then uses actual capability providers and installed-loader code against both the Git root and archive. Current discovery returns eight task profiles, two utilities, three commands, and one always-apply rule. The metadata registration fixture is distinct from a real installation transaction.
+This packs and extracts the plugin, then uses actual capability providers and installed-loader code against both the Git root and archive. On 2026-10-12 (OMP 18.4.8, archive and git root), discovery returned 7 agents, 3 commands, 1 rule, and 2 skills; `.toml` files are not loaded. The metadata registration fixture is distinct from a real installation transaction.
 
-## OMP real isolated installation and prepared prompts
+## OMP real isolated installation and prepared prompts (superseded layout)
 
-The 2026-10-11 probe uses the pinned 18.4.8 bundled CLI with a temporary host home/configuration, local archive input, and no provider configuration. Its native payload was compared between source and archive: 52 files matched. The 41 checks cover real install, disable, reinstall, local-source remote-upgrade refusal, uninstall cleanup, default installed discovery, slash argument expansion, full global-rule system-prompt injection, and all eight task-role template compositions.
+The 2026-10-11 probe covered the previous eight-profile layout and was not re-run for seven. It uses the pinned 18.4.8 bundled CLI with a temporary host home/configuration, local archive input, and no provider configuration. Its native payload was compared between source and archive: 52 files matched. The 41 checks cover real install, disable, reinstall, local-source remote-upgrade refusal, uninstall cleanup, default installed discovery, slash argument expansion, full global-rule system-prompt injection, and all eight task-role template compositions.
 
 The reproduction inputs and results are preserved under ignored `artifacts/omp-actual-host-proof/`: `run-proof.py`, `probe.ts`, `proof.json`, `source-archive-identity.json`, and the prepared prompt. The local setup uses `/tmp/maestria-omp-root-verification/transaction`; with that pinned host fixture available, reproduce with:
 
@@ -39,6 +41,14 @@ python3 /tmp/maestria-omp-root-verification/transaction/run-proof.py
 The source SDK's direct PluginManager import hit an upstream module-resolution ambiguity; installation was exercised through the shipped bundled CLI instead. This is not treated as a Maestria failure. Prompt preparation uses native formatter/template APIs; formatting may normalize Markdown table padding.
 
 No inference or actual task spawn occurs. Generic profiles have no `tools`, `spawns`, or model override metadata, so read-only role text remains advisory. No executable modules, hooks, custom tools, or MCP servers were discovered. These results do not establish enforcement, other host versions, or provider behavior.
+
+## Cursor read-only enforcement
+
+A live probe on Cursor CLI 2026.10.01 (2026-10-12) asked read-only roles to write a file. Plugin-supplied agents did not enforce `readonly` (the write succeeded, with or without other hosts' frontmatter keys present). A project `.cursor/agents/` profile with `readonly: true` was blocked ("cannot run non read-only tools"). Other hosts' keys do not affect Cursor loading. `maestria configure cursor` at project level writes copies into `.cursor/agents/`, where the metadata is enforced. Cursor desktop was not tested. No claim that plugin `readonly` blocks write tools at runtime is supported.
+
+## Kimi tool names
+
+Kimi v0.38.0 source registers its tools as `Write` and `Edit`. The `WriteFile` and `StrReplaceFile` names shipped earlier matched nothing, so the read-only denylist was ineffective; profiles now use `disallowedTools: [Write, Edit]`. Kimi ignores unknown keys (`readonly`, `model`) and substitutes `$ARGUMENTS` in plugin commands. This is source inspection only; Kimi was not live-run.
 
 ## Codex multiline settings preservation
 
@@ -54,9 +64,9 @@ Evidence and baseline failing tests are under ignored `artifacts/codex-toml-repa
 
 - Claude's explicit agent-file form passes strict validation; directory form is rejected. Acceptance of extra frontmatter does not establish runtime enforcement.
 - Kimi native profiles, command/bootstrap resources, and size limits have package/schema evidence; live dispatch and reload remain unverified.
-- Cursor, Devin, and ZCode native task execution remains unverified; static selectors and documented support do not prove live behavior.
+- Cursor plugin agents do not enforce `readonly` (see above). Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist, so their read-only roles are prompt-level. ZCode `disallowedTools` is documented but not live-run.
 - Codex marketplace exposes only utility skills; its complete agent/policy/mode context is supplied by the managed CLI path.
 - Hermes portable installation is utility-only. Optional manual project context obeys the host's first-match precedence; delegated children require explicit context handoff.
-- A doctor check or install dry-run is not proof of a plugin loading, and earlier fourteen-skill/zero-command probes describe the retired layout.
+- A doctor check or install dry-run is not proof of a plugin loading, and earlier fourteen-skill/zero-command and eight-profile probes describe retired layouts.
 
 Run the completion gates as well as these probes. Regenerate affected evidence when native contexts, selectors, or installation behavior changes; unchanged source bodies and metadata-only descriptions do not require repeating provider-independent lifecycle work without a named concern.

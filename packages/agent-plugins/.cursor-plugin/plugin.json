@@ -10,8 +10,8 @@
   "license": "MIT",
   "keywords": ["maestria", "orchestration", "pipeline", "specialists"],
   "logo": "assets/cursor/logo.svg",
-  "agents": "./agents/cursor/",
-  "commands": "./commands/cursor/",
+  "agents": "./agents/",
+  "commands": "./commands/",
   "rules": "./rules/cursor/",
   "skills": "./skills/"
 }

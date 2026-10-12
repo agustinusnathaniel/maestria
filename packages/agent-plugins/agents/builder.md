@@ -1,6 +1,7 @@
 ---
 name: builder
 description: Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

@@ -1,6 +1,7 @@
 ---
 name: architect
 description: Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

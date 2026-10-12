@@ -16,13 +16,13 @@ The former Hermes adapter added Python and host-version maintenance to provide t
 
 ## Decision
 
-Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. The package root is directly installable, with host manifests beside generated components, following the PostHog/Pstack structure. Its portable root manifest and native host manifests identify the same versioned product. Native agent, command, and policy compositions carry methodology; the root skill surface contains only reusable handoff and iteration-limit utilities. Kimi selects seven native profiles and complete primary-session instructions. Native schemas and metadata preserve each host contract.
+Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. The package root is directly installable, with host manifests beside generated components, following the PostHog/Pstack structure. Its portable root manifest and native host manifests identify the same versioned product. Native agent, command, and policy compositions carry methodology; the root skill surface contains only reusable handoff and iteration-limit utilities. Native schemas and metadata preserve each host contract.
 
 Canonical shared methodology remains in `packages/core/agent-directives/`. Host-specific profile/native metadata and manifest inputs live in the development-only `generation/` directory. The consolidated compiler is their sole resource writer and composes complete contexts from canonical core sources. Host guidance stays canonical in core; package integrations contain generated runtime guides. Sync checks cover projections and derived installation resources. No host-specific directory becomes a second methodology source.
 
 Start the consolidated version line above every retired package version so ordinary updates are not rejected as downgrades. Keep the existing maestria CLI platform identifiers. Their installers consume the consolidated package while retaining host-native installation and managed-file ownership behavior. Remove the old source package directories and version targets; previously published packages and installed user content are not deleted by this repository migration.
 
-Core separates semantic ownership: specialists own roles, commands own workflow definitions, rules own shared policy, and skills own reusable utility guidance. The installable root respects those semantic classes: roles in agents, modes in commands, policy in rules, and utilities in skills. Role, mode, dispatcher, and global-policy root SKILL exports are retired. Devin alone receives separately selected workflow skill transport because its documented plugin command mechanism uses skills. These projections do not become a second methodology source. Describing a future hook, automation, or command in documentation does not implement or activate it; runtime behavior requires an explicit package resource and host configuration. The standalone CLI remains in `apps/maestria-cli`.
+Core separates semantic ownership: specialists own roles, commands own workflow definitions, rules own shared policy, and skills own reusable utility guidance. The installable root respects those semantic classes: roles in agents, modes in commands, policy in rules, and utilities in skills. Role, mode, dispatcher, and global-policy root SKILL exports are retired. These projections do not become a second methodology source. Describing a future hook, automation, or command in documentation does not implement or activate it; runtime behavior requires an explicit package resource and host configuration. The standalone CLI remains in `apps/maestria-cli`.
 
 Hermes consumes the portable root manifest and discovers qualified skills through its host tools. Retire the Hermes Python adapter, its role gating, mode commands, subprocess bridge, and lifecycle hooks. On migration, disable the old adapter only after the replacement installs successfully; keep legacy files and user data intact.
 
@@ -34,16 +34,23 @@ This amendment replaces the earlier source/bundle split that introduced a nested
 
 ### Complete native mappings amendment (2026-10-11)
 
-Audit every supported surface independently. Claude uses explicit full agent profiles and native commands; Cursor uses native agents, commands and policy; Kimi uses native profiles, commands and system-prompt bootstrap; ZCode uses selected agents/commands with embedded policy. Devin loads root AGENTS policy and local custom profiles, while its manifest selects utilities plus separate workflow skill transports. OMP loads eight task profiles, three commands, one always-apply global rule and two utilities, without an executable adapter.
+Audit every supported surface independently and map each to its native agent, command, and policy mechanisms; the current per-host mapping lives in the [capability contract](../../agent-plugin-capabilities.md), not in this record. OMP and Devin load native resources without an executable adapter.
 
-Codex 0.153.4 fixes portable discovery to root skills and does not activate native workflow files through the overlay selector. Marketplace installation therefore exposes utilities; the existing companion CLI installs complete TOMLs and a marked full policy/router/mode instruction block. Hermes retains the non-Python portable path with utility-only installation and optional manual host context setup. These are explicit capabilities, not implied parity.
+Codex fixes portable discovery to root skills and does not activate native workflow files through the overlay selector. Marketplace installation therefore exposes utilities; the existing companion CLI installs complete TOMLs and a marked full policy/router/mode instruction block. Hermes retains the non-Python portable path with utility-only installation and optional manual host context setup. These are explicit capabilities, not implied parity.
 
 The source/bundle detour and its root fourteen-skill compatibility layout are superseded. Supported but unused hooks, automation facilities, settings, and MCP integrations are distinguished from unsupported or unverified component loading in the [capability contract](../../agent-plugin-capabilities.md). Do not add executable scaffolding merely because a host supports it.
+
+### Shared native profiles amendment (2026-10-12)
+
+Ship each role once as `agents/<role>.md`, and each workflow mode once as `commands/<mode>.md`, for every Markdown host. Read-only roles carry each host's control in one frontmatter block: `readonly` for Cursor, `disallowedTools: [Write, Edit]` for Claude Code, Kimi Code, and ZCode, and `subagents: []` for Kimi. Profiles omit `model`, which Claude Code, Cursor, and ZCode treat as the main conversation's model. Codex profiles are generated TOML beside the Markdown, because Codex loads only TOML agents installed by the companion CLI. Retire the per-host agent and command copies, the dispatcher-only `orchestrator` profile (a child profile cannot dispatch on most hosts, and the always-on context already routes), and Devin's mode skill transport (Devin has no plugin command component; its always-on policy routes mode keywords).
+
+Earlier sessions kept per-host copies on the assumption that hosts reject one another's keys and that Claude and Kimi tool names conflict. Evidence on 2026-10-12 disproved both: Claude Code and Kimi ignore unknown frontmatter fields, both accept a YAML tool list, and current Kimi names its file tools `Write` and `Edit` (the previously shipped `WriteFile` and `StrReplaceFile` matched nothing). A Cursor CLI probe loaded profiles carrying other hosts' keys unchanged. It also showed that Cursor does not enforce `readonly` for plugin-supplied profiles, although it does for project `.cursor/agents/` profiles, so Cursor plugin read-only is intent plus prompt guidance. Rules remain per host because their formats differ and OMP and Devin discover flat `rules/*.md`.
 
 ## Consequences
 
 - Users and maintainers share one declarative plugin identity and release lifecycle: `@maestria/agent-plugins`.
-- Explicit host paths prevent duplicate skill discovery and accidental loading of another host's agents or commands.
+- One shared profile and command set removes per-host copies; manifests select it explicitly where a host requires file lists, and per-host subfolders no longer exist to be swept by recursive discovery.
+- Host enforcement still differs: a shared key is a request that each host honors on its own terms, so the capability contract records which hosts enforce read-only.
 - Native dispatch, permissions, persistence, and trust remain host-owned; a portable package does not establish runtime parity.
 - Existing users update through their host installer or the maestria CLI; package names and source layout change.
 - More resources ship in one archive, so packed-artifact validation must check containment, reachability, and metadata, not just source-tree existence.
@@ -54,7 +61,7 @@ The source/bundle detour and its root fourteen-skill compatibility layout are su
 
 - **Keep independent declarative packages:** preserves old source paths but retains redundant release and discovery surfaces.
 - **One universal runtime adapter:** rejected because hosts expose different execution, permission, and lifecycle contracts.
-- **A shared folder of unqualified native resources:** rejected because default and recursive discovery can load incompatible components or duplicate names.
+- **Per-host copies of identical profiles:** retired on 2026-10-12. The copies differed only in frontmatter that every host reads selectively, and their subfolders were themselves exposed to recursive discovery. Rules keep host folders because their formats genuinely differ.
 - **Maintain compatibility packages indefinitely:** rejected by the owner because current adoption does not justify that additional maintenance surface.
 
 ## Supersession
@@ -72,4 +79,4 @@ The source/bundle detour and its root fourteen-skill compatibility layout are su
 
 ## Date
 
-2026-10-10
+2026-10-10; amended 2026-10-11 and 2026-10-12.

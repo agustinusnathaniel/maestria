@@ -1,6 +1,11 @@
 ---
 name: adventurer
 description: Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.
+readonly: true
+disallowedTools:
+  - Write
+  - Edit
+subagents: []
 ---
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->

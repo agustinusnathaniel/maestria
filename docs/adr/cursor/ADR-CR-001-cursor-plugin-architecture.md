@@ -10,16 +10,16 @@ Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format for rules,
 
 ## Decision
 
-Use Cursor's declarative plugin surface for both IDE and CLI. Generate shared methodology resources from the canonical directives and keep Cursor-specific aliases and native profiles in the Cursor integration. Current projections live in `packages/agent-plugins/agents/cursor/` and `packages/agent-plugins/integrations/cursor/`; CORE-034 supersedes the former standalone package layout.
+Use Cursor's declarative plugin surface for both IDE and CLI. Cursor consumes the shared native profiles and commands generated from the canonical directives, plus its own always-apply rule.
 
-Configure native `readonly: true` metadata for adventurer, planner, and reviewer profiles, backed by prompt guidance. This records the intended host control; package metadata does not by itself establish live runtime enforcement. The portable skills format does not enforce read-only behavior.
+Configure native `readonly: true` metadata for adventurer, planner, and reviewer profiles, backed by prompt guidance. A Cursor CLI 2026.10.01 probe (2026-10-12) found that Cursor enforces `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied profiles, so plugin read-only currently rests on prompt guidance. Project-level model configuration copies profiles into `.cursor/agents/`, where the flag is enforced. The portable skills format does not enforce read-only behavior.
 
 ## Consequences
 
 - One declarative integration serves Cursor IDE and CLI without a runtime adapter.
-- Native read-only metadata expresses a stronger maker/checker control than prompt guidance alone, but live enforcement must be verified against the host and is not established by this record.
+- Native read-only metadata is enforced only where Cursor honors it (project profiles at the probed version); plugin profiles rely on prompt guidance until Cursor enforces the flag for them.
 - Marketplace publication and programmatic hooks were outside the original decision; distribution and enforcement claims depend on Cursor's current host behavior.
-- Consolidation removes a separate package and release identity while preserving Cursor-specific projections.
+- Consolidation removes a separate package and release identity; Cursor-specific content is limited to its rule and manifest.
 
 ## Alternatives Considered
 
@@ -35,4 +35,4 @@ Configure native `readonly: true` metadata for adventurer, planner, and reviewer
 
 ## Date
 
-2026-07-21; consolidated 2026-10-10.
+2026-07-21; consolidated 2026-10-10; enforcement evidence 2026-10-12.
