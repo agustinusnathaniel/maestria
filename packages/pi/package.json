@@ -1,6 +1,6 @@
 {
   "name": "@maestria/pi",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "maestria extension for the Pi coding agent",
   "keywords": [
     "agent-orchestration",

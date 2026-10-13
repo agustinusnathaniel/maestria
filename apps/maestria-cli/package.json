@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "maestria CLI - manage runtime integrations and portable Agent Plugins",
   "keywords": [
     "agent-plugins",
@@ -9,8 +9,7 @@
     "kimi-code",
     "maestria",
     "opencode",
-    "pi",
-    "prime-agent"
+    "pi"
   ],
   "homepage": "https://maestria.sznm.dev/cli/",
   "bugs": "https://github.com/agustinusnathaniel/maestria/issues",

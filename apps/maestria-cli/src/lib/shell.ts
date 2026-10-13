@@ -7,10 +7,9 @@ import { promisify } from 'node:util';
 
 import { isRecord, parseJsonRecord } from '@/lib/primitives.js';
 
-// oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
+// oxlint-disable-next-line strict-void-return -- unused ChildProcess return.
 const execFileAsync = promisify(execFile);
 
-/** OS cache directory, respecting XDG_CACHE_HOME when set. */
 export const getCacheDir = (): string => {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
   if (xdg !== undefined && xdg !== '') {
@@ -19,10 +18,8 @@ export const getCacheDir = (): string => {
   return path.join(homedir(), '.cache');
 };
 
-/** maestria cache directory (e.g. ~/.cache/maestria). */
 export const getMaestriaCacheDir = (): string => path.join(getCacheDir(), 'maestria');
 
-/** User-preference directory (survives cache clears, unlike the cache directory). */
 export const getMaestriaConfigDir = (): string => {
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
   const base = xdg !== undefined && xdg !== '' ? xdg : path.join(homedir(), '.config');
@@ -47,8 +44,7 @@ const readFailureField = (error: unknown, field: string): string => {
 };
 
 /**
- * Actionable message from an execFile rejection. Timeout kills carry no
- * stderr, so attached child output is used when present.
+ * Timeout kills carry no stderr, so attached child output is used when present.
  */
 const describeRunFailure = (timeoutMs: number, error: unknown): string => {
   const stderr = readFailureField(error, 'stderr');
@@ -69,11 +65,6 @@ const describeRunFailure = (timeoutMs: number, error: unknown): string => {
   return suffix === '' ? fallback : `${fallback}${suffix}`;
 };
 
-/**
- * Run a command with an optional working directory. Callers isolating a
- * command (e.g. Prime's cwd-scoped package commands) pass an empty temp dir;
- * callers driving host installers pass an explicit timeout.
- */
 export const run = (
   cmd: string,
   args: string[],
@@ -131,7 +122,6 @@ const parseVersionCache = (text: string): VersionCache => {
   return cache;
 };
 
-/** Read cached package versions, tolerating a missing or invalid file. */
 const cachedVersions = (): Effect.Effect<VersionCache> =>
   readTextFile(getVersionCacheFile()).pipe(
     Effect.map(parseVersionCache),
@@ -154,7 +144,6 @@ export const npmViewVersion = (pkg: string): Effect.Effect<string> =>
     return version || (cache[pkg]?.version ?? '');
   });
 
-/** Invalidate the version cache for a package after a successful update. */
 export const invalidateVersionCache = (pkg: string): Effect.Effect<void> =>
   readTextFile(getVersionCacheFile()).pipe(
     Effect.flatMap((out) =>

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vite-plus/test';
 const SKILLS_DIR = path.join(import.meta.dirname, '..', 'skills');
 
 describe('skills', () => {
-  const skills = ['handoff', 'iteration-limits'];
+  const skills = ['create-pull-request', 'docs-update', 'handoff', 'iteration-limits'];
 
   for (const name of skills) {
     it(`${name}/SKILL.md exists and has valid frontmatter`, () => {

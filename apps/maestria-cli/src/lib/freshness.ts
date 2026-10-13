@@ -1,13 +1,8 @@
 import { compareVersions } from '@/lib/version.js';
 
-/** How an installed version relates to the latest published version. */
 export type Freshness = 'current' | 'outdated' | 'unknown';
 
-/**
- * Classify an installed version against latest. Newer-than-latest (a local/dev
- * build ahead of the registry) is 'current', never outdated. Uncomparable
- * sides ('', 'unknown', non-semver) are 'unknown'.
- */
+/** Ahead-of-latest (local/dev build) is 'current', never outdated. */
 export const freshnessOf = (installedVersion: string, latestVersion: string): Freshness => {
   const comparison = compareVersions(installedVersion, latestVersion);
   if (comparison === null) {
@@ -22,11 +17,7 @@ export const freshnessOf = (installedVersion: string, latestVersion: string): Fr
   return 'current';
 };
 
-/**
- * Whether an install needs an update: strictly BEHIND latest. Ahead-of-latest
- * never needs one, mirroring freshnessOf(), so `maestria check` and update
- * paths agree on the same machine state.
- */
+/** Strictly BEHIND latest, mirroring freshnessOf() so check and update agree. */
 export const needsUpdateOf = (installedVersion: string, latestVersion: string): boolean =>
   compareVersions(installedVersion, latestVersion) === -1;
 

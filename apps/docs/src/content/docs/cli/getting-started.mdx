@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install and use maestria to manage runtime integrations and portable Agent Plugins across supported coding agent platforms.
+description: Install and use maestria to manage host integrations and portable Agent Plugins across supported coding agent platforms.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
@@ -15,7 +15,7 @@ The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: 
 
 This checks which supported coding-agent CLIs are on your PATH and whether maestria is installed for each one. With no command, maestria defaults to status.
 
-### Install a Runtime Integration
+### Install a Host Integration
 
 Install all detected platforms:
 
@@ -33,7 +33,7 @@ Use the plugin namespace when the client supports Agent Plugins v1:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. The client controls activation, permissions, trust, and session behavior.
+The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. Portable discovery supplies the four skills (handoff, iteration-limits, create-pull-request, docs-update); full methodology uses the selected host's native resources. The client controls activation, permissions, trust, and session behavior.
 
 For a local package:
 
@@ -75,18 +75,6 @@ Check methodology skill state without changing anything:
 
 This reports the skill record path, per-platform plugin state, recorded selections, and observed skills with next steps. See the [doctor reference](/cli/commands/#doctor).
 
-### Coordinate Project Setup
-
-Check ecosystem tools and reconcile skills for a project:
-
-<AllPackageManagers
-  type="dlx"
-  pkg="maestria@latest"
-  args="setup --ecosystem codegraph,opensrc --yes"
-/>
-
-Setup is read-only until the final confirmation. Ecosystem tools are detection plus manual steps only; the CLI never installs them automatically. Use `--skills` and `--exclude-skills` to select the `create-pull-request` and `docs-update` methodology skills. See the [setup reference](/cli/commands/#setup).
-
 ## Prerequisites
 
 - Node.js 22.12 or later
@@ -101,7 +89,6 @@ The CLI detects runtime platforms by their executable:
 | OpenCode     | opencode              |
 | Pi           | pi                    |
 | Oh My Pi     | omp                   |
-| Prime Agent  | prime-agent           |
 | Kimi Code    | kimi                  |
 | Hermes Agent | hermes                |
 | Claude Code  | claude                |
@@ -112,4 +99,4 @@ The CLI detects runtime platforms by their executable:
 
 - [Command Reference](/cli/commands/) for every command, flag, JSON schema, and exit code
 - [Platform guides](/) for host-specific installation and usage
-- [Portable Agent Plugin](/agent-plugin/) for client-owned activation and permissions
+- [Portable Agent Plugin](/agent-plugins/) for client-owned activation and permissions

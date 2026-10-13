@@ -30,7 +30,7 @@ The project root resolves from the SDK project worktree, then the worktree path,
 ## Support / Platform Notes
 
 - OpenCode-specific; Kimi Code, Hermes, Cursor, and other adaptations ship as separate `@maestria` packages.
-- Does not bundle skills; domain skills are installed separately via the skills CLI.
+- Bundles the `create-pull-request` and `docs-update` skills the global rules name and registers them through `skills.paths` in the plugin's `config` hook; other domain skills are installed separately.
 - Rules are advisory prompt guidance, not a sandbox. The only structural enforcement is OpenCode's `permission` frontmatter (for example, the orchestrator cannot edit).
 
 ## Documentation and Changelog

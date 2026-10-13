@@ -1,12 +1,12 @@
 ---
 title: 'maestria'
-description: Manage native maestria integrations across coding agent platforms, or validate and stage portable Agent Plugins for compatible clients.
+description: Manage maestria installations across coding agent platforms, or validate and stage portable Agent Plugins for compatible clients.
 template: splash
 editUrl: false
 lastUpdated: false
 hero:
   title: 'One CLI for Native and Portable'
-  tagline: 'Install and update native integrations, or stage portable Agent Plugins for compatible clients.'
+  tagline: 'Install and update host integrations, or stage portable Agent Plugins for compatible clients.'
   actions:
     - text: Get Started
       icon: right-arrow
@@ -20,34 +20,34 @@ hero:
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`maestria` ships maestria's AI engineering methodology to multiple coding agent platforms, wrapping their native integrations behind one CLI. It also validates and stages portable Agent Plugins for compatible clients.
+`maestria` ships maestria's AI engineering methodology to multiple coding agent platforms, using each host's installation flow through one CLI. It also validates and stages portable Agent Plugins for compatible clients.
 
-## Install Native Integrations
+## Install for Your Host
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
-Or select one with `maestria install <platform>`. Supported platforms: OpenCode, Kimi Code, Pi, Oh My Pi, Cursor, Hermes, Prime Agent, Claude Code, and Codex CLI. See the [command reference](/cli/commands/#install) for platform IDs and package details.
+Or select one with `maestria install <platform>`. Supported platforms: OpenCode, Kimi Code, Pi, Oh My Pi, Cursor, Hermes, Claude Code, and Codex CLI. See the [command reference](/cli/commands/#install) for platform IDs and package details.
 
 ## Stage a portable Agent Plugin
 
-Portable packages are artifacts, not runtime platforms: they do not appear in `maestria status`, and `maestria install` does not activate them. `plugin validate` checks a package, and `plugin install` stages it for a compatible client's own installer. See the [portable Agent Plugin guide](/agent-plugin/).
+Portable packages are artifacts, not runtime platforms: they do not appear in `maestria status`, and `maestria install` does not activate them. `plugin validate` checks a package, and `plugin install` stages it for a compatible client's own installer. See the [portable Agent Plugin guide](/agent-plugins/).
 
 ## Explore the Docs
 
 <CardGrid>
   <LinkCard
     title="Getting Started"
-    description="Installation and common usage patterns - status checks, installs, updates, per-agent model config, skill diagnostics, and project setup."
+    description="Installation and common usage patterns - status checks, installs, updates, per-agent model config, and skill diagnostics."
     href="/cli/getting-started/"
   />
   <LinkCard
     title="Command Reference"
-    description="Full reference for status, install, portable plugin, update, configure, doctor, and setup commands with flags."
+    description="Full reference for status, install, portable plugin, update, configure, and doctor commands with flags."
     href="/cli/commands/"
   />
   <LinkCard
     title="Portable Agent Plugin"
-    description="Stage the skills-only package for clients that support Agent Plugins v1."
-    href="/agent-plugin/"
+    description="Stage the consolidated archive; portable clients discover its four skills."
+    href="/agent-plugins/"
   />
 </CardGrid>

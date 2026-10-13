@@ -14,23 +14,22 @@ describe('validation', () => {
     ).rejects.toMatchObject({
       exitCode: 1,
       message:
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex",
     });
   });
-  it('accepts prime-agent as a valid platform', async () => {
-    expect(await Effect.runPromise(validation.validatePlatform('prime-agent'))).toBe('prime-agent');
-    expect(await Effect.runPromise(validation.validatePlatforms('opencode,prime-agent'))).toEqual([
+  it('accepts omp as a valid platform', async () => {
+    expect(await Effect.runPromise(validation.validatePlatform('omp'))).toBe('omp');
+    expect(await Effect.runPromise(validation.validatePlatforms('opencode,omp'))).toEqual([
       'opencode',
-      'prime-agent',
+      'omp',
     ]);
   });
 
-  it('VALID_PLATFORMS preserves legacy exact order (opencode, omp, pi, prime-agent, ...)', () => {
+  it('VALID_PLATFORMS preserves legacy exact order (opencode, omp, pi, kimi-code, ...)', () => {
     expect(validation.VALID_PLATFORMS).toEqual([
       'opencode',
       'omp',
       'pi',
-      'prime-agent',
       'kimi-code',
       'hermes',
       'cursor',
@@ -44,20 +43,6 @@ describe('validation', () => {
     expect(await Effect.runPromise(validation.validatePlatform('PI'))).toBe('pi');
   });
 
-  it('validation rejects unknown platform with message listing valid platforms in legacy order', async () => {
-    const result = await Effect.runPromiseExit(validation.validatePlatform('unknown'));
-    expect(result._tag).toBe('Failure');
-    if (result._tag === 'Failure') {
-      const { Cause } = await import('effect');
-      const fail = result.cause.reasons.find(Cause.isFailReason) as
-        | { error: { message: string } }
-        | undefined;
-      expect(fail?.error.message).toBe(
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
-      );
-    }
-  });
-
   it('validatePlatforms error message preserves legacy ordering', async () => {
     const result = await Effect.runPromiseExit(validation.validatePlatforms('opencode,unknown'));
     expect(result._tag).toBe('Failure');
@@ -67,7 +52,7 @@ describe('validation', () => {
         | { error: { message: string } }
         | undefined;
       expect(fail?.error.message).toBe(
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex",
       );
     }
   });

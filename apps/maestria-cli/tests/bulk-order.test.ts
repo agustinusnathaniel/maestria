@@ -91,7 +91,6 @@ describe('bulk CLI side-effect ordering', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'maestria-bulk-record-'));
     configDirs.push(dir);
     vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
-    vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
     platformMocks.getPlatform.mockImplementation((id: string) =>
       testPlatforms.find((platform) => platform.id === id),
     );

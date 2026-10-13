@@ -1,4 +1,3 @@
-/** Kimi-code plugin registry helpers. */
 import { Effect } from 'effect';
 import { homedir } from 'node:os';
 
@@ -122,7 +121,7 @@ export const registerKimiPlugin = (): Effect.Effect<void, CommandError> =>
       enabled: current?.enabled ?? true,
       id: MAESTRIA_PLUGIN,
       installedAt: current?.installedAt ?? now,
-      originalSource: '@maestria/kimi-code',
+      originalSource: '@maestria/agent-plugins',
       root: kimiManagedPluginDir(),
       source: 'local-path',
       updatedAt: now,

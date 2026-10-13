@@ -2,7 +2,7 @@
  * Shared compaction handlers for maestria platform packages.
  *
  * Pure TypeScript - no platform-specific dependencies.
- * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
+ * Imported by @maestria/pi.
  *
  * @module
  */
@@ -38,16 +38,8 @@ export interface TreeResult {
   };
 }
 
-export type CompactionOn = (
-  ...args:
-    | ['session_before_compact', (event: CompactionEvent) => CompactionResult]
-    | ['session_before_tree', (event: TreeEvent) => TreeResult | undefined]
-) => void;
-
 /**
- * Event registration surface shared by the pi-family hosts. Declared as
- * overloaded call signatures (matching the host `ExtensionAPI.on` shape) so
- * both hosts satisfy it structurally without casts.
+ * Event registration surface matching the host `ExtensionAPI.on` shape.
  */
 export interface CompactionPi {
   on: {

@@ -3,8 +3,10 @@ import { defineCommand } from 'citty';
 
 import {
   assertInteractiveTerminal,
+  batchCommandResult,
   detectWithSpinner,
   resolveBatchQuiet,
+  runBatchSelected,
 } from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
@@ -12,19 +14,15 @@ import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { installOne } from '@/lib/platform-transaction.js';
-import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
-import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
+import { assertNoRemovedSkillFlags } from '@/lib/skill-reconcile.js';
 import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
 
 export interface InstallArgs {
   all?: boolean;
   compact?: boolean;
-  excludeSkills?: string;
   json?: boolean;
   platform?: string;
   quiet?: boolean;
-  skills?: string;
-  yes?: boolean;
 }
 
 const collectInstallTargets = async (
@@ -77,20 +75,20 @@ const collectInstallTargets = async (
 };
 
 export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult> => {
-  const args = normalizeSkillArgs(rawArgs);
-  const isQuiet = resolveBatchQuiet(args);
+  assertNoRemovedSkillFlags(rawArgs);
+  const isQuiet = resolveBatchQuiet(rawArgs);
   let platformIds: string[] | undefined;
-  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
-    platformIds = await validateOrThrow(validatePlatforms(args.platform));
+  if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {
+    platformIds = await validateOrThrow(validatePlatforms(rawArgs.platform));
   }
-  const record = await readSkillsRecord();
-  validateSkillFlags(platformIds ?? [], args, record);
 
-  const targets = await collectInstallTargets(platformIds, args.all === true, isQuiet);
+  const targets = await collectInstallTargets(platformIds, rawArgs.all === true, isQuiet);
   if (!Array.isArray(targets)) {
     return targets;
   }
-  return await runSkillBatch(targets, record, 'Install', args, isQuiet, installOne);
+  // Packages bundle their own skills, so no companion-skill step remains.
+  const results = await runBatchSelected(targets, isQuiet, installOne);
+  return batchCommandResult(results, rawArgs);
 };
 
 export const installCommand = defineCommand({
@@ -105,12 +103,6 @@ export const installCommand = defineCommand({
       default: false,
       description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       type: 'boolean',
-    },
-    'exclude-skills': {
-      description:
-        'Methodology skills to skip (CSV). Never touches independently installed copies.',
-      required: false,
-      type: 'string',
     },
     json: {
       default: false,
@@ -130,19 +122,6 @@ export const installCommand = defineCommand({
       default: false,
       description:
         'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      type: 'boolean',
-    },
-    skills: {
-      description:
-        "Methodology skills to activate (CSV, or 'none' for no skills). Default: create-pull-request, docs-update. Known: create-pull-request, docs-update. Validated before any change.",
-      required: false,
-      type: 'string',
-    },
-    yes: {
-      alias: 'y',
-      default: false,
-      description:
-        'Confirm skill selection non-interactively (required for non-TTY when it changes).',
       type: 'boolean',
     },
   },

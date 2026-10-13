@@ -71,13 +71,13 @@ const captureSnapshot = (
   );
 };
 
-// oxlint-disable-next-line max-lines-per-function -- updateOne orchestrates the per-platform update transaction (snapshot capture, version checks, preflight, downgrade guard, spinner, cache invalidation) as a single atomic flow; splitting would obscure the sequential transaction and create single-use helpers.
+// oxlint-disable-next-line max-lines-per-function -- atomic per-platform update flow, keep intact.
 export const updateOne = (
   platform: PlatformHandler,
   quiet: boolean,
   version?: string,
 ): Effect.Effect<PlatformResult> =>
-  // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
+  // oxlint-disable-next-line max-lines-per-function -- shares the transaction closure above.
   Effect.gen(function* updateOneEffect() {
     if (isSpecified(version) && platform.supportsVersionPinning === false) {
       return {
@@ -140,7 +140,7 @@ export const updateOne = (
       } satisfies PlatformResult;
     }
     const spinner = createSpinner(quiet);
-    // Name the updated plugin package, not the host runtime (Hermes has none: keep its label).
+    // Hermes has no package: keep its label.
     const packageRef = platform.npmPackage ?? platform.label;
     spinner.start(`Updating ${packageRef}: ${prevVersion} → ${targetVersion}...`);
     const errorMessage: string | null = yield* platform.update(version, snapshot ?? undefined).pipe(

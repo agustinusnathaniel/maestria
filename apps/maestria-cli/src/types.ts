@@ -1,14 +1,9 @@
-// ── Types ────────────────────────────────────────────
 export interface PlatformStatus {
   readonly id: string;
   readonly label: string;
-  /** Whether the platform's CLI tool is available on this machine */
   readonly available: boolean;
-  /** Whether maestria is installed for this platform */
   readonly installed: boolean;
-  /** Installed version string (empty if not installed) */
   readonly installedVersion: string;
-  /** Latest version available (empty if check failed) */
   readonly latestVersion: string;
 }
 
@@ -16,7 +11,6 @@ export interface StatusOutput {
   readonly platforms: PlatformStatus[];
 }
 
-/** Result for one platform in install/update commands */
 export interface PlatformResult {
   readonly id: string;
   readonly label: string;
@@ -24,6 +18,6 @@ export interface PlatformResult {
   readonly message: string;
   readonly prevVersion?: string;
   readonly nextVersion?: string;
-  /** Active skill selection applied by this operation (absent when untouched). */
+  /** Legacy CLI-managed skill state left by this operation (absent when untouched). */
   readonly skills?: string[];
 }

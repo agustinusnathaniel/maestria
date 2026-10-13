@@ -4,12 +4,9 @@
 // Usage: pnpm e2e:fail-closed (node --experimental-strip-types
 //   scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json)
 //
-// Four sections: permission narrowing plus guarded recon restoration,
-// fail-closed modes, safety/state + guarded-git + trust + subprocess
-// dry-run, and sync mechanics. Every section asserts failure modes before
-// positive behavior. Output JSON is
-// deterministic: sorted keys, 2-space indent, LF endings, temp paths
-// normalized to <TMP>, no timestamps. Exit 0 only when every check passes.
+// Retained native-adapter evidence: permission narrowing, state/guarded Git,
+// and sync mechanics. Hermes Python probes were retired with its adapter.
+// Output is deterministic, with normalized temporary paths and no timestamps.
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -32,17 +29,8 @@ interface EvidenceSection {
   name: string;
 }
 
-interface ProbeCheck {
-  detail: string;
-  name: string;
-  pass: boolean;
-}
-
 const scriptDir = import.meta.dirname;
 const repoRoot = path.resolve(scriptDir, '../..');
-const probePath = path.join(scriptDir, 'fixtures/hermes_probe.py');
-const goodProject = path.join(scriptDir, 'fixtures/project-good');
-const brokenProject = path.join(scriptDir, 'fixtures/project-broken');
 
 const outArg = process.argv[process.argv.indexOf('--out') + 1];
 if (outArg === undefined || outArg === '') {
@@ -52,13 +40,6 @@ if (outArg === undefined || outArg === '') {
 const outPath = path.resolve(repoRoot, outArg);
 
 const tmpRoot = fs.mkdtempSync(path.join(tmpdir(), 'fail-closed-'));
-const hermesHome = path.join(tmpRoot, 'hermes-home');
-fs.mkdirSync(hermesHome, { recursive: true });
-// Bare working directory (no .maestria files) so context-sensitive probes
-// observe absence instead of this repository's own customization.
-const bareWorkDir = path.join(tmpRoot, 'work');
-fs.mkdirSync(bareWorkDir, { recursive: true });
-
 const sections: EvidenceSection[] = [];
 
 const normalize = (value: string): string => value.split(tmpRoot).join('<TMP>');
@@ -250,62 +231,7 @@ const sectionPermissionNarrowing = (): void => {
   });
 };
 
-// ── Python probe driver (sections 2 and 3) ──
-
-const toProbeChecks = (value: unknown): ProbeCheck[] => {
-  if (!isRecord(value) || !Array.isArray(value.checks)) {
-    return [];
-  }
-  return value.checks.map((item): ProbeCheck => {
-    if (!isRecord(item) || typeof item.name !== 'string' || typeof item.pass !== 'boolean') {
-      return { detail: '', name: 'malformed probe check', pass: false };
-    }
-    return {
-      detail: typeof item.detail === 'string' ? item.detail : '',
-      name: item.name,
-      pass: item.pass,
-    };
-  });
-};
-
-const probeEnv = (): Record<string, string> => ({
-  HERMES_HOME: hermesHome,
-  PHASE_B_TMP: tmpRoot,
-  PYTHONDONTWRITEBYTECODE: '1',
-  PYTHONPATH: path.join(repoRoot, 'packages/hermes/src'),
-});
-
-const probeChecks = (section: string, cwd: string): EvidenceCheck[] => {
-  const result = run('python3', [probePath, section], { cwd, env: probeEnv() });
-  if (result.exit !== 0) {
-    return [check(`${section} probe ran`, false, (result.stderr || result.stdout).slice(-2000))];
-  }
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(result.stdout);
-  } catch {
-    parsed = null;
-  }
-  const checks = toProbeChecks(parsed).map((item) => check(item.name, item.pass, item.detail));
-  if (checks.length === 0) {
-    return [check(`${section} probe emitted checks`, false, result.stdout.slice(-1000))];
-  }
-  return checks;
-};
-
-const sectionFailClosedModes = (): void => {
-  sections.push({
-    checks: [
-      ...probeChecks('failclosed', bareWorkDir),
-      ...probeChecks('gateway', bareWorkDir),
-      ...probeChecks('project', goodProject),
-      ...probeChecks('project-broken', brokenProject),
-    ],
-    name: 'fail-closed-modes',
-  });
-};
-
-// ── Section 3: safety/state + guarded-git (node) + trust/subprocess (probe) ──
+// Safety, state, and guarded Git evidence for retained native adapters.
 
 const GUARDED_GIT =
   'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
@@ -385,14 +311,8 @@ const persistedStateChecks = (): EvidenceCheck[] => {
 
 const sectionSafetyState = (): void => {
   sections.push({
-    checks: [
-      ...deniedCommands(),
-      ...allowedCommands(),
-      ...persistedStateChecks(),
-      ...probeChecks('trust', bareWorkDir),
-      ...probeChecks('subprocess', bareWorkDir),
-    ],
-    name: 'safety-state-git-trust-subprocess',
+    checks: [...deniedCommands(), ...allowedCommands(), ...persistedStateChecks()],
+    name: 'safety-state-git',
   });
 };
 
@@ -446,7 +366,6 @@ interface EvidenceReport {
 
 const main = (): void => {
   sectionPermissionNarrowing();
-  sectionFailClosedModes();
   sectionSafetyState();
   sectionSync();
 

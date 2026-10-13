@@ -1,8 +1,8 @@
-# ADR-OC-007: Normalized Read-Only Git Boundary for the Shared Pi/OMP Interceptor
+# ADR-OC-007: Normalized Read-Only Git Boundary for the Shared Pi Interceptor
 
 ## Status
 
-Accepted (2026-09-24), Confidence: High
+Accepted (2026-09-24), Confidence: High. Amended 2026-10-12: the OMP consumer was retired with the native OMP package; the decision now covers the shared Pi interceptor. The filename keeps its original slug so incoming references stay valid.
 
 ## Context
 
@@ -51,7 +51,7 @@ The case IDs below retain the planned boundary contract. The [shared parser test
 
 - The read-only Git surface becomes explicit and reproducible, but callers must use the normalized command form, which is long and easy to get wrong.
 - Fixed configuration controls reduce repository-dependent behavior at the cost of maintaining a narrow safe-option matrix.
-- OpenCode globs remain useful coarse configuration, while token-level safety stays in the shared Pi/OMP parser and is not overstated as host enforcement.
+- OpenCode globs remain useful coarse configuration, while token-level safety stays in the shared Pi parser and is not overstated as host enforcement.
 - A live OpenCode probe is a separate evidence requirement, not an assumption made by this decision.
 
 ### Neutral
@@ -76,7 +76,7 @@ The source repair amendment in [ADR-OC-001](ADR-OC-001-tool-permission-design.md
 
 ## Verification
 
-Run the shared Pi/OMP tests and `pnpm e2e:fail-closed` for sampled behavior. A live host probe is required before using the phrase host-enforced.
+Run the shared Pi tests and `pnpm e2e:fail-closed` for sampled behavior. A live host probe is required before using the phrase host-enforced.
 
 ## Related Decisions
 

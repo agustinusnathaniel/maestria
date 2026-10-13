@@ -1,9 +1,10 @@
-/** Codex native-agent files and managed-instruction install transaction. */
 import { Effect } from 'effect';
 
 import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
   CODEX_GLOBAL_INSTRUCTION_FILENAMES,
+  CODEX_MANAGED_INSTRUCTIONS_END,
+  CODEX_MANAGED_INSTRUCTIONS_START,
   hasCodexManagedInstructions,
   removeCodexManagedInstructions,
   upsertCodexManagedInstructions,
@@ -14,10 +15,8 @@ import { isFileNotFound, parseJsonRecord } from '@/lib/primitives.js';
 import type { JsonRecord } from '@/lib/primitives.js';
 import { CommandError } from '@/lib/shell.js';
 
-// Codex plugin manifests do not declare custom agents or primary-session
-// instructions. The published maestria package carries native agent TOMLs and
-// a managed AGENTS.md block as companion payloads, and the CLI owns copying
-// them into Codex's documented locations.
+// Codex manifests declare neither custom agents nor session instructions;
+// the package carries them as companion payloads copied into place.
 const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
 
 interface CodexManagedAgentManifest {
@@ -246,17 +245,18 @@ const syncCodexGlobalInstructions = async (
   };
 };
 
-// oxlint-disable-next-line max-lines-per-function -- installCodexManagedAgents is a single atomic Codex install transaction (read manifest, validate instructions, copy agent TOMLs with merge, clean stale files, sync global instructions). Splitting would obscure the required sequential ordering and create single-use helpers that hurt discoverability of the transaction flow. Cohesion is around one install operation.
+// oxlint-disable-next-line max-lines-per-function -- atomic Codex install transaction, keep intact.
 export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<void, CommandError> =>
-  // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator orchestrates the same atomic Codex transaction; splitting the generator would duplicate manifest/sourceFiles/targetDir closure and hide the linear install steps. Kept intact for cohesion.
+  // oxlint-disable-next-line max-lines-per-function -- shares the transaction closure above.
   Effect.gen(function* installCodexManagedAgentsEffect() {
     const manifest = yield* readCodexManagedAgentManifest();
     const sourceDir = `${packageRoot}/agents`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
-    const sourceInstructionsPath = `${packageRoot}/instructions/AGENTS.md`;
+    // Package AGENTS.md is shared; markers belong to this installer.
+    const sourceInstructionsPath = `${packageRoot}/AGENTS.md`;
 
-    const sourceInstructions = yield* Effect.tryPromise({
+    const sourceContext = yield* Effect.tryPromise({
       catch: (error) =>
         new CommandError({ command: 'read codex instructions', message: String(error) }),
       try: async () => {
@@ -264,14 +264,18 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
         return await readFile(sourceInstructionsPath, 'utf-8');
       },
     });
-    if (!hasCodexManagedInstructions(sourceInstructions)) {
+    if (
+      sourceContext.includes(CODEX_MANAGED_INSTRUCTIONS_START) ||
+      sourceContext.includes(CODEX_MANAGED_INSTRUCTIONS_END)
+    ) {
       yield* Effect.fail(
         new CommandError({
           command: 'validate codex instructions',
-          message: `missing maestria instruction markers in ${sourceInstructionsPath}`,
+          message: `unexpected maestria instruction markers in ${sourceInstructionsPath}`,
         }),
       );
     }
+    const sourceInstructions = `${CODEX_MANAGED_INSTRUCTIONS_START}\n\n${sourceContext}\n${CODEX_MANAGED_INSTRUCTIONS_END}\n`;
 
     yield* Effect.tryPromise({
       catch: (error) =>

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-13). The 2026-09-24 shared Pi/OMP Bash and Git decisions live in [OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Correction (2026-09-28): the historical `pwd` example below is not the live orchestrator policy; [the sync config](../../../packages/opencode/sync.config.ts) owns generated permissions. The orchestrator uses default deny with a narrow allow pattern, not that example's per-tool list.
+Accepted (2026-06-13). The 2026-09-24 shared Pi Bash and Git decisions live in [OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Correction (2026-09-28): the historical `pwd` example below is not the live orchestrator policy; [the sync config](../../../packages/opencode/sync.config.ts) owns generated permissions. The orchestrator uses default deny with a narrow allow pattern, not that example's per-tool list.
 
 ## Context
 
@@ -102,7 +102,7 @@ An OpenCode permission glob is coarse, non-token-level host configuration. A per
 
 Extended by two records, extracted on 2026-09-28, because each decides a subject other than this record's:
 
-- [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) owns the shared Pi/OMP read-only Bash boundary introduced by the 2026-09-24 amendment.
+- [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) owns the shared Pi read-only Bash boundary introduced by the 2026-09-24 amendment.
 - [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md) owns the normalized read-only Git boundary introduced by the 2026-09-24 repair amendment.
 
 This record keeps its original context, decision, consequences, and date, and continues to own the OpenCode agent permission design: the coarse-gate principle, the individual tool permissions, the audit that produced them, and the lessons learned. The failure inventories live with those two decisions; the host-enforcement boundary here constrains claims about OpenCode permission entries.

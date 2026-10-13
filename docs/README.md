@@ -16,7 +16,7 @@ Contributors, maintainers, and platform adapter authors. To install or use maest
 | Understand project goals and workflow patterns | [Vision](../VISION.md) and [Patterns](../PATTERNS.md) |
 | Work as an agent in this repository | [Repository instructions](../AGENTS.md) |
 | Edit prompts, rules, or workflow modes | [Canonical directive ownership](../packages/core/agent-directives/README.md) |
-| Check a platform's support boundary | [Runtime support matrix](runtime-support-matrix.md) |
+| Check a platform's support boundary | [Runtime support matrix](runtime-support-matrix.md) and [plugin host verification](plugin-host-verification.md) |
 | Choose verification for a change | [Testing philosophy](testing.md), [completion checklist](checklist.md), and [directive change review](directive-change-review.md) for canonical directive edits |
 | Write or revise documentation | [Documentation conventions](guides/doc-format.md) |
 
@@ -26,18 +26,18 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 
 The collection keeps consequential architectural choices. Procedures and documentation conventions live in the guides above; retired records remain in Git history. Numbering gaps are intentional. Use the [ADR criteria](guides/doc-format.md#new-adrs) before adding another record.
 
-| Area                                                      | Records                          |
-| --------------------------------------------------------- | -------------------------------- |
-| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/)           |
-| OpenCode permissions and workflow modes                   | [OpenCode ADRs](adr/opencode/)   |
-| Kimi Code distribution and integration                    | [Kimi Code ADRs](adr/kimi-code/) |
-| Cursor integration                                        | [Cursor ADRs](adr/cursor/)       |
-| Hermes integration and orchestration                      | [Hermes ADRs](adr/hermes/)       |
-| Pi and Oh My Pi ecosystem and lifecycle                   | [Pi ADRs](adr/pi/)               |
+| Area | Records |
+| --- | --- |
+| Shared methodology, sync, tooling, and package boundaries | [Core ADRs](adr/core/) |
+| OpenCode permissions and workflow modes | [OpenCode ADRs](adr/opencode/) |
+| Kimi Code distribution and integration | [Kimi Code ADRs](adr/kimi-code/) |
+| Cursor integration | [Cursor ADRs](adr/cursor/) |
+| Consolidated declarative plugin (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes) | [CORE-034](adr/core/ADR-CORE-034-consolidated-declarative-plugin.md) and the [package README](../packages/agent-plugins/README.md) |
+| Pi ecosystem and lifecycle | [Pi ADRs](adr/pi/) |
 
 ## Plans
 
-[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
+[Plans](plans/) are archival records of completed implementation work, not current instructions; confirm present behavior in ADRs, guides, and source. Use the [consolidated package README](../packages/agent-plugins/README.md) for installation and current user guidance.
 
 ## Next Step
 

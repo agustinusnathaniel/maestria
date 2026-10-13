@@ -1,5 +1,7 @@
 # Per-Agent Model Selection: `maestria configure`
 
+> **Note (2026-10-12):** OMP `configure` support was removed with the native OMP package. `configure` now supports opencode, codex, cursor, and pi; the OMP references below are historical.
+
 **Status:** Done; historical implementation record. The command shipped for OpenCode, Pi, OMP, Codex CLI, and Cursor. Current user guidance is in the [CLI command reference](https://maestria.sznm.dev/cli/commands/#configure).
 
 ## Durable decisions

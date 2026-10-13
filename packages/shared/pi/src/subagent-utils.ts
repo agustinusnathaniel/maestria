@@ -20,7 +20,6 @@ export const ALLOWED_AGENTS = [
   'writer',
 ] as const;
 
-/** A valid specialist agent name. */
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 
 /** Asserts that `agent` is a known maestria specialist. */

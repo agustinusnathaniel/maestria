@@ -8,7 +8,6 @@ interface DetectionOptions {
   readonly includeLatest?: boolean;
 }
 
-/** Check availability and installation, optionally fetching latest versions. */
 const detectOne = (
   platform: PlatformHandler,
   options: DetectionOptions = {},
@@ -47,7 +46,6 @@ export const detectAll = (options: DetectionOptions = {}): Effect.Effect<Platfor
     { concurrency: 'unbounded' },
   );
 
-/** Check availability, installation, and versions for a single platform. */
 export const detectSingle = (platformId: string): Effect.Effect<PlatformStatus> => {
   const handler = getPlatform(platformId);
   if (!handler) {
@@ -63,6 +61,5 @@ export const detectSingle = (platformId: string): Effect.Effect<PlatformStatus> 
   return detectOne(handler);
 };
 
-/** Platforms that are both available and have maestria installed. */
 export const detectInstalled = (options: DetectionOptions = {}): Effect.Effect<PlatformStatus[]> =>
   detectAll(options).pipe(Effect.map((stats) => stats.filter((s) => s.available && s.installed)));

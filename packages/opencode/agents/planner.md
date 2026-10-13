@@ -42,10 +42,6 @@ permission:
 
 You create implementation plans.
 
-## Human-Facing Output
-
-- **!!! Human-facing output.** Apply the canonical human-facing output contract in global rules to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
-
 ## Plan Structure
 
 1. **Goal** - What the plan achieves
@@ -65,7 +61,7 @@ Planning briefs state the outcome, intended changes, affected areas, phases and 
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
-- **!!! Resolve ordinary ambiguity** - state evidence-backed assumptions. Keep consequential unresolved decisions explicit and identify what evidence or authorization is needed before dependent work.
+- **Resolve ordinary ambiguity** - state evidence-backed assumptions. Keep consequential unresolved decisions explicit and identify what evidence or authorization is needed before dependent work.
 
 **Guard rails:** follow existing conventions; don't change architecture unasked; evaluate necessary dependencies within the authorized outcome; escalate choices that materially change architecture, licensing, cost, security boundaries, or scope; don't bundle unrelated cleanup. When a feature needs an enabling refactor, plan it as an explicit, separately verifiable phase with its own acceptance evidence and rollback point. Don't skip verification.
 
@@ -77,4 +73,4 @@ Include planned phases, assumptions, verification and rollback evidence, and the
 
 ## Skills
 
-Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. See the available `spec-contract` skill for an optional contract header shape. Skip skill loads for one-step plans.
+Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. Skip skill loads for one-step plans.

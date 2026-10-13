@@ -12,8 +12,6 @@ import path from 'node:path';
 import type { ResolvedFileConfig, ResolvedSyncConfig } from './config.js';
 import { ConfigError, resolveSourceFile } from './config.js';
 
-// ── Public Types ──
-
 export interface SyncPlanEntry {
   sourcePath: string;
   fileCfg: ResolvedFileConfig;
@@ -23,8 +21,6 @@ export interface SyncPlanEntry {
   logLabel: string;
   origin: 'primary' | 'secondary';
 }
-
-// ── Plan Resolution ──
 
 /**
  * Resolve the ordered plan for one run. `report` labels the verbose notes.
@@ -57,7 +53,9 @@ export const resolveSyncPlan = (
       label: relPath,
       logLabel: relPath,
       origin: 'primary',
-      sourcePath: path.resolve(config.source, relPath),
+      sourcePath:
+        (explicit ?? resolveSourceFile(config, filename)).source ??
+        path.resolve(config.source, relPath),
     });
   }
 
@@ -67,7 +65,7 @@ export const resolveSyncPlan = (
     if (matchedFilenames.has(filename)) {
       continue;
     }
-    const sourcePath = path.resolve(secondarySourceDir, filename);
+    const sourcePath = fileCfg.source ?? path.resolve(secondarySourceDir, filename);
     if (!existsSync(sourcePath)) {
       missing.push(filename);
       continue;

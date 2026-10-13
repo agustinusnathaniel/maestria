@@ -1,0 +1,88 @@
+---
+title: Usage
+description: Run maestria workflows, dispatch specialists, and use the skills on any Agent Plugins host.
+---
+
+Once [installed](/agent-plugins/installation/), hosts with native support offer the same three workflow modes and seven specialists; Hermes and marketplace-only Codex installs supply only the four skills. The syntax differs by host; the [per-host table](#per-host-syntax) lists it. For small tasks, read [When to use maestria](/core/when-to-use/) before choosing the full route.
+
+## Run a workflow
+
+Pick a mode and give it a concrete goal:
+
+| Mode    | Use                                                                                  |
+| ------- | ------------------------------------------------------------------------------------ |
+| `fein`  | Full route: reconnaissance, design, implementation, and independent review as needed |
+| `sonar` | Research and planning, then stop before implementation                               |
+| `blitz` | Smallest safe route for familiar work, keeping verification and required review      |
+
+Each command or keyword carries the complete routing, mode instructions, and global policy, so no skill preload is needed and your task arguments are preserved. For example, on Claude Code:
+
+```text
+/maestria:fein Add rate limiting to the API.
+```
+
+On Devin and Codex, which have no plugin slash commands, the same mode is a keyword such as `fein: <goal>` or `FEIN: <goal>`. See the table below.
+
+## Dispatch a specialist
+
+The seven specialists are `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`. Ask the host's main agent to delegate to one, naming a concrete outcome, the file scope, constraints, and acceptance evidence:
+
+```text
+Use the adventurer agent to trace authentication in src/auth/.
+Return the relevant files, call paths, and uncertainties without editing.
+```
+
+Each profile embeds its complete role and the global policy, so the child does not depend on the parent loading any skill. Pass the task details in the handoff, not the methodology.
+
+Keep maker and checker separate. After implementation, dispatch `reviewer` on its own; never ask the agent that made a change to approve it. For example, ask for a bug to be traced, fixed, and reviewed: `diagnose` finds the root cause and applies the minimal fix, then a separate `reviewer` validates it.
+
+## Read-only roles
+
+`adventurer`, `architect`, `planner`, and `reviewer` are meant to research, design, or review without editing. How strongly that holds depends on the host:
+
+| Enforcement | Hosts |
+| --- | --- |
+| Write and Edit tools removed or denied | Claude Code, Kimi Code, ZCode (shell stays available) |
+| Native read-only sandbox in the agent definition | Codex (companion CLI install) |
+| Declared but not enforced for plugin agents | Cursor (enforced for project `.cursor/agents/` copies written by `maestria configure cursor`) |
+| Prompt-level only | Devin, OMP |
+
+None of these is a shell sandbox, and the host keeps control of permissions. See [compatibility](/agent-plugins/compatibility/) for the evidence behind each row.
+
+## Skills
+
+Four portable skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step; `iteration-limits` bounds repair and review loops with explicit stop conditions; `create-pull-request` drafts PR titles and bodies; and `docs-update` keeps docs and changesets in step with a change. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
+
+```text
+Use the handoff utility to summarize this task's outcome, constraints,
+evidence, blockers, and next step.
+```
+
+## Per-host syntax
+
+| Host | Run a mode | Dispatch a specialist | Skills |
+| --- | --- | --- | --- |
+| Claude Code | `/maestria:fein <goal>`, `/maestria:sonar <goal>`, `/maestria:blitz <goal>` | Agent tool identities `maestria:<role>`, for example `maestria:adventurer` | `maestria:<skill>`, for example `maestria:handoff` |
+| Codex | Keywords `FEIN:`, `SONAR:`, `BLITZ:` (case-insensitive, per turn) or a marker such as `[MODE: sonar]`; needs the companion CLI install | `agent_type: "maestria-<role>"`, for example `maestria-adventurer` | `$maestria:<skill>`, for example `$maestria:handoff` |
+| Cursor | `/fein <goal>`, `/sonar <goal>`, `/blitz <goal>` in Agent chat (IDE or CLI) | Ask Agent chat to use a specialist, for example the builder agent; it runs as a Task agent | The four skills by name, for example `handoff` |
+| Kimi Code | Choose `fein`, `sonar`, or `blitz` from the command picker and add the task | Ask for a plugin agent by role name, for example the adventurer plugin agent | The four skills by name, for example `handoff` |
+| Devin | Keywords `fein: <goal>`, `sonar: <goal>`, `blitz: <goal>`; there are no plugin commands | Devin's subagent controls in local CLI and Desktop sessions only | The four skills by name, for example `handoff` |
+| ZCode | Choose the fein, sonar, or blitz command from the prompt picker | Native subagent controls with a complete task handoff | The four skills in the Skills group |
+| OMP | `/fein <goal>`, `/sonar <goal>`, `/blitz <goal>` | Native `task(agent, task)` with a role name as the agent | The four skills by name, for example `handoff` |
+| Hermes | None; manual context only | Delegate manually and pass the role guidance, policy, and constraints to each child | Qualified names from `skills_list`, loaded with `skill_view` |
+
+A few host details are worth knowing:
+
+- **Codex.** The modes are instruction entry points from the managed routing block, not installed skills or slash commands. Research, architecture, and review profiles keep Codex's read-only sandbox. A marketplace-only install has the utilities but no modes or agents.
+- **Cursor.** Profiles and commands embed their full methodology, and the always-apply rule supplies routing. Direct execution or one specialist is often better for small changes and expensive models.
+- **Kimi Code.** Kimi chooses the model because plugin profiles have no per-agent model field.
+- **Devin.** Root `AGENTS.md` carries the router, mode definitions, and policy. Cloud sessions can use the skills and policy but not plugin subagents.
+- **OMP.** Profiles inherit the parent model by default, and the package adds no persistent mode mechanism or session interception.
+- **Hermes.** Hermes derives an `agent-plugin-<slug>-<hash>` namespace for portable plugins, so do not assume `maestria:<skill>`. Native agent registration and delegation remain Hermes capabilities. To add routing and mode guidance, follow the [manual context setup](/agent-plugins/installation/#hermes-manual-context).
+- **Claude Code.** Commands and utilities can load in Claude Chat, but the full workflow needs delegation, which Chat lacks. See [Claude Chat and Cowork](/agent-plugins/installation/#claude-chat-and-cowork).
+
+## Next steps
+
+- [Specialist reference](/core/agents/)
+- [Workflow patterns](/core/workflow-patterns/)
+- [Pipeline and roles](/core/pipeline/)

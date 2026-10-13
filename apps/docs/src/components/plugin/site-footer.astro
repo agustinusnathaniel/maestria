@@ -26,7 +26,9 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
     head: 'Platforms',
     links: [
       { href: '/opencode/', title: 'OpenCode' },
-      { href: '/claude-code/', title: 'Claude Code' },
+      { href: '/pi/', title: 'Pi' },
+      { href: '/agent-plugins/', title: 'Agent Plugins' },
+      { href: '/agent-plugins/installation/', title: 'Install on a host' },
       // On the homepage this stays a same-page anchor; elsewhere route home.
       { href: Astro.url.pathname === '/' ? '#adapters' : '/#adapters', title: 'All platforms' },
     ],

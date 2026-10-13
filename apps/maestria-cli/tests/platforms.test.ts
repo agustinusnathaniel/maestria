@@ -3,7 +3,7 @@ import { tmpdir as osTmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { getPlatform, readPackageJsonVersion } from '@/lib/platforms.js';
+import { getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import * as shell from '@/lib/shell.js';
 
@@ -20,11 +20,10 @@ interface FsPromisesModule {
 }
 
 // State shared between the hoisted mock factory and the tests: the stubbed
-// `readFile` (the Prime version lookup reads package.json through Node's
+// `readFile` (installed version lookups read package.json through Node's
 // cross-platform fs/promises API, not a POSIX `cat`) plus the stubbed
-// `mkdtemp`/`rm` (the Prime handler creates and removes an isolated temp cwd
-// around every package command) and handles on the real implementations for
-// the helper test that exercises the actual filesystem.
+// `mkdtemp`/`rm` and handles on the real implementations for the helper test
+// that exercises the actual filesystem.
 const fsMocks = vi.hoisted(() => {
   let originalReadFile: ReadFile | undefined;
   let originalMkdtemp: Mkdtemp | undefined;
@@ -73,11 +72,9 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
   };
 });
 
-// The Prime adapter reads installed package versions through Node's
-// cross-platform fs/promises API and creates/removes an isolated temp cwd
-// around every package command. Stubbing those functions keeps the tests
-// deterministic without touching the real filesystem; the real reads are
-// proven by the readPackageJsonVersion test below.
+// Installed package versions are read through Node's cross-platform
+// fs/promises API. Stubbing those functions keeps the tests deterministic
+// without touching the real filesystem.
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<FsPromisesModule>();
   fsMocks.setOriginals(actual.readFile, actual.mkdtemp, actual.rm);
@@ -164,7 +161,7 @@ describe('pi and omp package commands', () => {
       .mock.calls.find(
         (call) => call[0] === 'omp' && call[1]?.[0] === 'plugin' && call[1]?.[1] === 'uninstall',
       );
-    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/omp']);
+    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/agent-plugins']);
 
     vi.clearAllMocks();
     const pi = requirePlatform('pi');
@@ -185,13 +182,45 @@ describe('pi and omp package commands', () => {
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi'], 120_000]);
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@latest'], 120_000]);
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@1.2.3'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@latest'], 120_000]);
-    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@1.2.3'], 120_000]);
+    expect(calls).toContainEqual([
+      'omp',
+      ['plugin', 'install', '@maestria/agent-plugins'],
+      120_000,
+    ]);
+    expect(calls).toContainEqual([
+      'omp',
+      ['plugin', 'install', '@maestria/agent-plugins@latest'],
+      120_000,
+    ]);
+    expect(calls).toContainEqual([
+      'omp',
+      ['plugin', 'install', '@maestria/agent-plugins@1.2.3'],
+      120_000,
+    ]);
   });
 });
 
-describe('hermes plugin command deadlines', () => {
+describe('hermes portable plugin commands', () => {
+  it('keeps the legacy adapter enabled when the replacement install fails', async () => {
+    vi.clearAllMocks();
+    vi.mocked(shell.run).mockImplementationOnce(() =>
+      Effect.fail(
+        new shell.CommandError({ command: 'hermes plugins install', message: 'install failed' }),
+      ),
+    );
+    await expect(Effect.runPromise(requirePlatform('hermes').install)).rejects.toBeDefined();
+    expect(vi.mocked(shell.run).mock.calls.some(([, args]) => args[1] === 'disable')).toBe(false);
+  });
+
+  it('reports the portable plugin identity without a Python adapter', async () => {
+    const hermes = requirePlatform('hermes');
+    expect(hermes.npmPackage).toBe('@maestria/agent-plugins');
+    expect(await Effect.runPromise(hermes.getInstalledVersion)).toBe('0.2.0');
+    vi.clearAllMocks();
+    await Effect.runPromise(hermes.uninstall);
+    expect(shell.run).toHaveBeenCalledWith('hermes', ['plugins', 'remove', 'maestria'], 15_000);
+  });
+
   it('gives the git-based install and update the same generous deadline', async () => {
     vi.clearAllMocks();
     const hermes = requirePlatform('hermes');
@@ -207,11 +236,12 @@ describe('hermes plugin command deadlines', () => {
     expect(calls).toContainEqual([
       'plugins',
       'install',
-      'agustinusnathaniel/maestria/packages/hermes',
+      'agustinusnathaniel/maestria/packages/agent-plugins',
       '--enable',
       120_000,
     ]);
-    expect(calls).toContainEqual(['plugins', 'update', 'maestria-hermes', 120_000]);
+    expect(calls).toContainEqual(['plugins', 'disable', 'maestria-hermes', 15_000]);
+    expect(calls).toContainEqual(['plugins', 'update', 'maestria', 120_000]);
   });
 });
 
@@ -245,12 +275,16 @@ describe('opencode platform update', () => {
 });
 
 describe('marketplace-backed platform handlers', () => {
-  it('registers Claude Code and Codex CLI with their published packages', () => {
+  it('registers the native adapters with the consolidated plugin package', () => {
     const claudeCode = getPlatform('claude-code');
     const codex = getPlatform('codex');
+    const cursor = getPlatform('cursor');
+    const kimiCode = getPlatform('kimi-code');
 
-    expect(claudeCode?.npmPackage).toBe('@maestria/claude-code');
-    expect(codex?.npmPackage).toBe('@maestria/codex');
+    expect(claudeCode?.npmPackage).toBe('@maestria/agent-plugins');
+    expect(codex?.npmPackage).toBe('@maestria/agent-plugins');
+    expect(cursor?.npmPackage).toBe('@maestria/agent-plugins');
+    expect(kimiCode?.npmPackage).toBe('@maestria/agent-plugins');
     expect(claudeCode?.supportsVersionPinning).toBe(false);
     expect(codex?.supportsVersionPinning).toBe(false);
   });
@@ -383,358 +417,5 @@ describe('Kimi Code platform registration', () => {
         process.env.KIMI_CODE_HOME = previousHome;
       }
     }
-  });
-});
-
-// `prime-agent package list` prints configured package sources from settings
-// grouped by scope: a "User packages:" section and a "Project packages:"
-// section. The handler parses only the user (global) section - the scope its
-// install/update/remove commands target - and reads the installed version from
-// the path line printed directly below each source line. Version reads go
-// through Node's cross-platform fs/promises API (readPackageJsonVersion), so
-// these tests stub that read rather than a POSIX `cat`; the helper itself is
-// exercised against the real filesystem in its own test below.
-describe('prime-agent platform handler', () => {
-  it('registers Prime Agent with the @maestria/prime-agent package, no version pinning, and an update preflight', () => {
-    const prime = getPlatform('prime-agent');
-    expect(prime).toBeDefined();
-    expect(prime?.npmPackage).toBe('@maestria/prime-agent');
-    expect(prime?.supportsVersionPinning).toBe(false);
-    // The preflight lets the update command block a version-pinned registration
-    // even before the "Already up to date" short-circuit.
-    expect(prime?.preflightUpdate).toBeDefined();
-  });
-
-  it('recognizes the installed package from `package list` and reads its version from the reported path', async () => {
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      [
-        'User packages:',
-        '  npm:@maestria/prime-agent',
-        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-      ].join('\n'),
-    );
-    fsMocks.readFile.mockResolvedValue(
-      JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
-    );
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
-    // The version is read via Node fs from the path Prime reports, not via a
-    // POSIX shell command.
-    expect(fsMocks.readFile).toHaveBeenCalledWith(
-      '/home/user/.npm-global/lib/node_modules/@maestria/prime-agent/package.json',
-      'utf-8',
-    );
-  });
-
-  it('still recognizes the package when its entry is filtered', async () => {
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      ['User packages:', '  npm:@maestria/prime-agent (filtered)'].join('\n'),
-    );
-
-    expect(await Effect.runPromise(requirePlatform('prime-agent').isInstalled)).toBe(true);
-  });
-
-  it('reports not installed when the package is absent from `package list`', async () => {
-    mockHostCommand('prime-agent', 'package list', 'No packages installed.');
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(false);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('unknown');
-  });
-
-  it('does not count a project-only registration as installed (global scope is managed)', async () => {
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      [
-        'Project packages:',
-        '  npm:@maestria/prime-agent',
-        '    /project/.prime/agent/npm/node_modules/@maestria/prime-agent',
-      ].join('\n'),
-    );
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(false);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('unknown');
-  });
-
-  it('recognizes a versioned npm source and reads the version from its own path', async () => {
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      [
-        'User packages:',
-        '  npm:@maestria/prime-agent@0.2.0',
-        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-      ].join('\n'),
-    );
-    fsMocks.readFile.mockResolvedValue(
-      JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
-    );
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
-  });
-
-  it('binds the version lookup to the current entry, not the next absolute path', async () => {
-    // The maestria entry has no installed path; the following entry does.
-    // Its absolute path must not be attributed to maestria.
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      [
-        'User packages:',
-        '  npm:@maestria/prime-agent',
-        '  npm:@other/plugin',
-        '    /home/user/.npm-global/lib/node_modules/@other/plugin',
-      ].join('\n'),
-    );
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('unknown');
-    const readPaths = fsMocks.readFile.mock.calls.map(([filePath]) => filePath);
-    expect(readPaths).not.toContain(
-      '/home/user/.npm-global/lib/node_modules/@other/plugin/package.json',
-    );
-  });
-
-  it('reads the version from the maestria entry even when a sibling entry precedes it', async () => {
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      [
-        'User packages:',
-        '  npm:@other/plugin',
-        '    /home/user/.npm-global/lib/node_modules/@other/plugin',
-        '  npm:@maestria/prime-agent',
-        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-      ].join('\n'),
-    );
-    fsMocks.readFile.mockImplementation((filePath: string) =>
-      JSON.stringify(
-        filePath.includes('@other/plugin')
-          ? { name: '@other/plugin', version: '9.9.9' }
-          : { name: '@maestria/prime-agent', version: '0.2.0' },
-      ),
-    );
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
-  });
-
-  it('does not run `package update` for a version-pinned registration and reports why', async () => {
-    vi.clearAllMocks();
-    mockHostCommand(
-      'prime-agent',
-      'package list',
-      [
-        'User packages:',
-        '  npm:@maestria/prime-agent@0.2.0',
-        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-      ].join('\n'),
-    );
-
-    const message = await Effect.runPromise(
-      requirePlatform('prime-agent')
-        .update()
-        .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message))),
-    );
-
-    // Prime skips `package update` for pinned registrations, so the update must
-    // fail with an accurate message instead of claiming success.
-    expect(message).toContain('version-pinned');
-    expect(message).toContain('npm:@maestria/prime-agent@0.2.0');
-
-    // The update command itself must not be issued (and the version cache must
-    // not be invalidated as a side effect of a fake success).
-    const updateCalls = vi
-      .mocked(shell.run)
-      .mock.calls.filter(
-        (call) =>
-          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
-      );
-    expect(updateCalls).toHaveLength(0);
-  });
-
-  it('routes a Windows-style absolute installed path to the cross-platform fs read', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@maestria/prime-agent',
-            '    C:\\Users\\user\\AppData\\Roaming\\npm\\node_modules\\@maestria\\prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
-    fsMocks.readFile.mockResolvedValue(
-      JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
-    );
-
-    const prime = requirePlatform('prime-agent');
-    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
-
-    // The Windows-style path is handed to the Node fs read (with the
-    // `/package.json` suffix appended) rather than to a POSIX `cat`/`ls`, so
-    // the same code path works on a Windows host without shell translation.
-    expect(fsMocks.readFile).toHaveBeenCalledWith(
-      'C:\\Users\\user\\AppData\\Roaming\\npm\\node_modules\\@maestria\\prime-agent/package.json',
-      'utf-8',
-    );
-    const posixShellCalls = vi
-      .mocked(shell.run)
-      .mock.calls.filter((call) => call[0] === 'cat' || call[0] === 'ls');
-    expect(posixShellCalls).toHaveLength(0);
-  });
-
-  it('reads package versions through the real filesystem via Node fs (no POSIX shell)', async () => {
-    const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
-    const { tmpdir } = await import('node:os');
-
-    const dir = await mkdtemp(path.join(tmpdir(), 'maestria-prime-test-'));
-    const packageJsonPath = path.join(dir, 'package.json');
-    const realReadFile = fsMocks.getOriginalReadFile();
-    try {
-      await writeFile(
-        packageJsonPath,
-        JSON.stringify({ name: '@maestria/prime-agent', version: '1.2.3' }),
-        'utf-8',
-      );
-      // Delegate the stubbed readFile to the real implementation for this test
-      // so the helper is proven against the actual filesystem.
-      // @ts-expect-error -- SAFETY: mock adapter bridges async real fs to sync mock signature for filesystem integration test, type mismatch is intentional for this test
-      fsMocks.readFile.mockImplementation(async (filePath: string) => {
-        if (realReadFile === undefined) {
-          throw new Error('original readFile unavailable');
-        }
-        return await realReadFile(filePath, 'utf-8');
-      });
-      expect(await Effect.runPromise(readPackageJsonVersion(packageJsonPath))).toBe('1.2.3');
-    } finally {
-      fsMocks.readFile.mockResolvedValue(JSON.stringify({ version: '0.2.0' }));
-      await rm(dir, { force: true, recursive: true });
-    }
-  });
-
-  it('uses the documented Prime package commands with the npm: source reference', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
-
-    await Effect.runPromise(requirePlatform('prime-agent').install);
-    await Effect.runPromise(requirePlatform('prime-agent').update());
-    await Effect.runPromise(requirePlatform('prime-agent').uninstall);
-
-    const calls = vi
-      .mocked(shell.run)
-      .mock.calls.filter((call) => call[0] === 'prime-agent')
-      .map(([, args]) => args);
-
-    expect(calls).toContainEqual(['package', 'install', 'npm:@maestria/prime-agent']);
-    expect(calls).toContainEqual(['package', 'update', 'npm:@maestria/prime-agent']);
-    expect(calls).toContainEqual(['package', 'remove', 'npm:@maestria/prime-agent']);
-  });
-
-  it('keeps install/remove global: exact native args without --local', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
-
-    await Effect.runPromise(requirePlatform('prime-agent').install);
-    await Effect.runPromise(requirePlatform('prime-agent').uninstall);
-
-    const calls = vi
-      .mocked(shell.run)
-      .mock.calls.filter((call) => call[0] === 'prime-agent')
-      .map((call) => call[1]);
-
-    // Without --local, `package install`/`remove` write to the default global
-    // (user) settings; the CLI must never flip them to project scope.
-    expect(calls).toEqual([
-      ['package', 'install', 'npm:@maestria/prime-agent'],
-      ['package', 'remove', 'npm:@maestria/prime-agent'],
-    ]);
-    expect(calls.flat().includes('--local')).toBe(false);
-  });
-
-  it('runs Prime package commands from an isolated temp cwd and removes it on success', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
-    fsMocks.mkdtemp.mockResolvedValueOnce('/tmp/maestria-prime-test-abc123');
-
-    await Effect.runPromise(requirePlatform('prime-agent').install);
-
-    // The install command was spawned with the isolated temp cwd, and the temp
-    // cwd was removed afterwards.
-    const installCalls = vi
-      .mocked(shell.run)
-      .mock.calls.filter((call) => call[0] === 'prime-agent' && call[1]?.[1] === 'install');
-    expect(installCalls).toHaveLength(1);
-    expect(installCalls[0][3]).toBe('/tmp/maestria-prime-test-abc123');
-    expect(fsMocks.rm).toHaveBeenCalledWith('/tmp/maestria-prime-test-abc123', {
-      force: true,
-      recursive: true,
-    });
-  });
-
-  it('removes the isolated temp cwd even when the Prime command fails', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@maestria/prime-agent@0.2.0',
-            '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
-    fsMocks.mkdtemp.mockResolvedValueOnce('/tmp/maestria-prime-test-def456');
-
-    // A direct update() on a version-pinned registration fails with a
-    // CommandError (Prime skips updates for pinned registrations) - but the
-    // temp cwd created for the registration check must still be cleaned up.
-    const message = await Effect.runPromise(
-      requirePlatform('prime-agent')
-        .update()
-        .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message))),
-    );
-    expect(message).toContain('version-pinned');
-    expect(fsMocks.rm).toHaveBeenCalledWith('/tmp/maestria-prime-test-def456', {
-      force: true,
-      recursive: true,
-    });
-  });
-
-  it('fails closed when the isolated temp cwd cannot be created', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
-    fsMocks.mkdtemp.mockRejectedValueOnce(new Error('ENOSPC'));
-
-    const message = await Effect.runPromise(
-      requirePlatform('prime-agent').install.pipe(
-        Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
-      ),
-    );
-
-    // No Prime command may run (nothing was spawned) and nothing can be
-    // cleaned up (no directory was created).
-    expect(message).toContain('Failed to create an isolated working directory');
-    const primeCalls = vi.mocked(shell.run).mock.calls.filter((call) => call[0] === 'prime-agent');
-    expect(primeCalls).toHaveLength(0);
-    expect(fsMocks.rm).not.toHaveBeenCalled();
   });
 });
