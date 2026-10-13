@@ -1,0 +1,29 @@
+{
+  "name": "maestria",
+  "version": "0.8.0",
+  "description": "maestria handoff, iteration-limit, pull request, and documentation-update skills for Codex; full methodology is installed by the companion maestria CLI",
+  "author": {
+    "name": "agustinusnathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
+  "interface": {
+    "displayName": "maestria",
+    "shortDescription": "maestria handoff, iteration, PR, and docs skills for Codex",
+    "longDescription": "Four maestria skills: handoffs, bounded iteration, pull request drafts, and documentation updates. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
+    "developerName": "agustinusnathaniel",
+    "category": "Developer Tools",
+    "capabilities": ["Skills"],
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
+    "defaultPrompt": [
+      "Prepare a concise handoff with evidence and next steps.",
+      "Define a stopping condition and bounded repair limit."
+    ],
+    "privacyPolicyURL": "https://maestria.sznm.dev/privacy/",
+    "brandColor": "#6c63ff",
+    "logo": "./assets/logo.svg"
+  },
+  "skills": "./skills/"
+}

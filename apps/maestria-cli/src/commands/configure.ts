@@ -42,7 +42,6 @@ const cancelAndExit = (): never => {
   throw new CliError('', 130);
 };
 
-/** Parse `--set adventurer=model,builder=` pairs. Empty model = inherit/unset. */
 const parseSetPairs = (input: string): AgentModels => {
   const models: AgentModels = {};
   for (const pair of input.split(',')) {
@@ -63,7 +62,6 @@ const parseSetPairs = (input: string): AgentModels => {
   return models;
 };
 
-/** Run an effect and throw the error message (or a generic fallback) as a CliError. */
 const runOrThrow = async <T>(effect: Effect.Effect<T, unknown>, fallback: string): Promise<T> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
@@ -278,7 +276,7 @@ const handleConfigureSet = async (
   return { exitCode: 0, output: renderModels(handler, level, models, isJson, isCompact) };
 };
 
-// oxlint-disable-next-line max-lines-per-function -- handleConfigureInteractive orchestrates the interactive model configuration flow (load models, read current, groupMultiselect, per-agent prompts, write) as a single cohesive interaction; splitting would fragment the prompt sequence and duplicate handler/level closure.
+// oxlint-disable-next-line max-lines-per-function -- single interactive configure flow, keep intact.
 const handleConfigureInteractive = async (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
@@ -381,14 +379,14 @@ export const configureCommand = defineCommand({
     },
     platform: {
       description:
-        'Platform to configure. One of: opencode, codex, cursor, pi, omp. Pass directly to skip interactive selection.',
+        'Platform to configure. One of: opencode, codex, cursor, pi. Pass directly to skip interactive selection.',
       required: false,
       type: 'positional',
     },
     project: {
       default: false,
       description:
-        'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, .pi/agents/, or .omp/agents/).',
+        'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, or .pi/agents/).',
       type: 'boolean',
     },
     quiet: {

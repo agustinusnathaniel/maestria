@@ -1,17 +1,9 @@
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import agentPluginConfig from '../../agent-plugin/sync.config.js';
-import claudeCodeConfig from '../../claude-code/sync.config.js';
-import codexConfig from '../../codex/sync.config.js';
-import cursorConfig from '../../cursor/sync.config.js';
-import hermesConfig from '../../hermes/sync.config.js';
-import kimiCodeConfig from '../../kimi-code/sync.config.js';
-import ompConfig from '../../omp/sync.config.js';
 import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
-import primeAgentConfig from '../../prime-agent/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
 import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
@@ -57,17 +49,12 @@ const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
   return ops;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 const syncConfigs: Record<string, SyncConfig> = {
-  'agent-plugin': agentPluginConfig,
-  'claude-code': claudeCodeConfig,
-  codex: codexConfig,
-  cursor: cursorConfig,
-  hermes: hermesConfig,
-  'kimi-code': kimiCodeConfig,
-  omp: ompConfig,
   opencode: opencodeConfig,
   pi: piConfig,
-  'prime-agent': primeAgentConfig,
 };
 
 describe('canonical specialist roster', () => {
@@ -76,14 +63,31 @@ describe('canonical specialist roster', () => {
     expect(delegableNames).toHaveLength(7);
   });
 
+  it('keeps the consolidated profile registry aligned with the delegable roles', () => {
+    const registry: unknown = JSON.parse(
+      readFileSync(
+        path.join(import.meta.dirname, '../../agent-plugins/generation/profiles.json'),
+        'utf-8',
+      ),
+    );
+    if (!isRecord(registry)) {
+      throw new Error('Expected profile registry object');
+    }
+    expect(findViolations(delegableNames, Object.keys(registry))).toEqual({
+      extra: [],
+      missing: [],
+    });
+  });
+
   it('keeps ALLOWED_AGENTS aligned with the delegable roster', () => {
     expect(findViolations(delegableNames, ALLOWED_AGENTS)).toEqual({ extra: [], missing: [] });
   });
 
   for (const [platform, config] of Object.entries(syncConfigs)) {
     describe(platform, () => {
-      it('registers every canonical specialist file', () => {
-        const { missing } = findViolations(canonicalFiles, Object.keys(config.files ?? {}));
+      it('registers the expected canonical specialist roster', () => {
+        const expected = canonicalFiles;
+        const { missing } = findViolations(expected, Object.keys(config.files ?? {}));
         expect(missing).toEqual([]);
       });
     });
@@ -98,11 +102,84 @@ describe('canonical specialist roster', () => {
       const ops = collectReplaceOps(config);
       expect(ops.length, platform).toBeGreaterThan(0);
       const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
-      const uncovered = delegableNames.filter(
+      const referencedNames = delegableNames;
+      const uncovered = referencedNames.filter(
         (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
       );
       expect(uncovered, platform).toEqual([]);
       expect(/\borchestrator\b/u.test(text), platform).toBe(false);
+    }
+  });
+});
+
+// ── Host tool-name drift guard ──
+//
+// A generated `tools:` entry naming a tool the host does not register is inert,
+// not an error: the frontmatter parser does not validate names, so the filter
+// entry silently denies nothing and the capability is simply lost. Both host
+// lists are read from each installed host's own shipped constant rather than
+// from any declaration here, so these assertions can fail when a host changes.
+
+const PACKAGES_DIR = path.join(import.meta.dirname, '..', '..');
+
+/** Package root of an installed host, so a missing install fails loudly here. */
+const hostPackageRoot = (platform: string, packageName: string): string => {
+  const manifest = path.join(PACKAGES_DIR, platform, 'node_modules', packageName, 'package.json');
+  if (!existsSync(manifest)) {
+    throw new Error(`Host not installed, cannot guard tool names: ${packageName} (${manifest})`);
+  }
+  return path.dirname(realpathSync(manifest));
+};
+
+const quotedNames = (source: string, declaration: RegExp, label: string): string[] => {
+  const body = source.match(declaration)?.groups?.names;
+  if (body === undefined) {
+    throw new Error(`Could not read ${label}; the host changed its exported shape`);
+  }
+  return [...body.matchAll(/["'](?<name>[^"']+)["']/gu)].map((match) => match.groups?.name ?? '');
+};
+
+const piHostTools = (): string[] => {
+  const source = readFileSync(
+    path.join(
+      hostPackageRoot('pi', '@earendil-works/pi-coding-agent'),
+      'dist',
+      'core',
+      'tools',
+      'index.js',
+    ),
+    'utf-8',
+  );
+  return quotedNames(
+    source,
+    /allToolNames\s*=\s*new Set\(\s*\[(?<names>[\s\S]*?)\]\s*\)/u,
+    'Pi allToolNames',
+  );
+};
+
+const TOOLS_LINE = /^tools: (?<names>.*)$/mu;
+
+/** Tool names the shipped agent file for `agentFile` grants, or null when undeclared. */
+const grantedTools = (platform: string, agentFile: string): string[] | null => {
+  const source = readFileSync(path.join(PACKAGES_DIR, platform, 'agents', agentFile), 'utf-8');
+  const declared = TOOLS_LINE.exec(source)?.groups?.names;
+  return declared === undefined ? null : declared.split(',').map((name) => name.trim());
+};
+
+const agentFiles = (platform: string): string[] =>
+  readdirSync(path.join(PACKAGES_DIR, platform, 'agents'))
+    .filter((file) => file.endsWith('.md'))
+    .toSorted();
+
+describe('generated agent tool lists', () => {
+  it('grants only tools the Pi host registers', () => {
+    const hostTools = new Set(piHostTools());
+    for (const agentFile of agentFiles('pi')) {
+      const granted = grantedTools('pi', agentFile) ?? [];
+      expect(
+        granted.filter((tool) => !hostTools.has(tool)),
+        agentFile,
+      ).toEqual([]);
     }
   });
 });

@@ -15,7 +15,7 @@ These flags apply across the CLI:
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text) is supported on status, install, update, uninstall, configure, and setup. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes. Examples appear on every command except `uninstall`; AI-agent tips appear on `maestria`, `configure`, `plugin`, `plugin install`, `plugin validate`, and `setup`.
+`--compact` (machine-friendly text) is supported on status, install, update, uninstall, and configure. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes; examples appear on every command except `uninstall`.
 
 `maestria` with no arguments runs `maestria status`.
 
@@ -62,10 +62,10 @@ Each platform object:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
+| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
 | `label` | string | Human-readable name |
 | `available` | boolean | CLI tool detected on `$PATH` |
-| `installed` | boolean | Maestria is installed for this platform |
+| `installed` | boolean | maestria is installed for this platform |
 | `installedVersion` | string | Version string from the installed package |
 | `latestVersion` | string | Latest version available on npm |
 
@@ -74,11 +74,11 @@ Each platform object:
 With `--compact`, status outputs one undecorated line per platform:
 
 ```
-opencode: available installed=0.2.1 latest=0.2.1
+opencode: available installed=0.8.0 latest=0.8.0
 pi: not-available not-installed
-kimi-code: available installed=0.1.0 latest=0.2.1
-claude-code: available installed=0.2.1 latest=0.2.1
-codex: available installed=0.2.0 latest=0.2.0
+kimi-code: available installed=0.6.11 latest=0.7.0
+claude-code: available installed=0.7.0 latest=0.7.0
+codex: available installed=0.7.0 latest=0.7.0
 ```
 
 Implies `--quiet` (no spinner animations).
@@ -94,7 +94,7 @@ Implies `--quiet` (no spinner animations).
 Install maestria for one or more coding agent platforms.
 
 ```bash
-maestria install [platform] [--all] [--skills <csv>] [--exclude-skills <csv>] [--yes] [--json] [--quiet] [--compact]
+maestria install [platform] [--all] [--json] [--quiet] [--compact]
 ```
 
 ### Flags
@@ -103,9 +103,6 @@ maestria install [platform] [--all] [--skills <csv>] [--exclude-skills <csv>] [-
 | --- | --- |
 | `platform` | Positional arg - platform to install. Comma-separated for multiple (e.g., `opencode,pi`). Omit for interactive picker. |
 | `--all`, `-a` | Install for all detected platforms |
-| `--skills` | Methodology skills to activate (CSV, or `none` for no skills). Default: `create-pull-request,docs-update`. Known: `create-pull-request, docs-update`. |
-| `--exclude-skills` | Methodology skills to skip (CSV). Never touches independently installed copies. |
-| `--yes`, `-y` | Confirm skill selection non-interactively (required for non-TTY when it changes) |
 | `--json` | Output results as JSON |
 | `--quiet` | Suppress spinner animations |
 | `--compact` | Machine-friendly text output - one line per result |
@@ -119,10 +116,8 @@ maestria install [platform] [--all] [--skills <csv>] [--exclude-skills <csv>] [-
 | `maestria install opencode,pi` | Installs for OpenCode and Pi in one run, one platform at a time |
 | `maestria install --all` | Installs for every detected platform that lacks maestria |
 | `maestria install opencode --json` | Installs OpenCode, outputs JSON result |
-| `maestria install opencode --skills docs-update` | Installs OpenCode with only the docs-update methodology skill |
-| `maestria install opencode --exclude-skills docs-update --yes` | Installs non-interactively, leaving an independently installed docs-update copy alone |
 
-Skill flags are validated before any change. An unmanaged skill already present for the target agent fails the run with `--exclude-skills <skill>` guidance; nothing is changed.
+Every maestria package bundles the `create-pull-request` and `docs-update` skills, so `install` adds no separate skills. The `--skills`, `--exclude-skills`, and `--maestria-skills` flags were removed; passing one fails before any change.
 
 ### Platform identifiers
 
@@ -130,24 +125,16 @@ Skill flags are validated before any change. An unmanaged skill already present 
 | ------------- | ----------- | ------------------------------------------------------- |
 | `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
 | `pi`          | Pi          | `@maestria/pi` (npm)                                    |
-| `prime-agent` | Prime Agent | `@maestria/prime-agent` (npm, native package manager)   |
-| `kimi-code`   | Kimi Code   | `@maestria/kimi-code` (npm)                             |
+| `kimi-code`   | Kimi Code   | `@maestria/agent-plugins` (npm)                         |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
-| `cursor`      | Cursor      | `@maestria/cursor` (npm)                                |
-| `omp`         | Oh My Pi    | `@maestria/omp` (npm)                                   |
+| `cursor`      | Cursor      | `@maestria/agent-plugins` (npm)                         |
+| `omp`         | Oh My Pi    | `@maestria/agent-plugins` (npm, native data resources)  |
 | `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
 | `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
-
-**Prime Agent** uses its native package manager. Maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
-
-Prime has two additional constraints:
-
-- **Global scope only.** Maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh temporary directory that exposes only user settings; the directory is removed afterward.
-- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. Maestria detects a pinned user-scope registration and reports an error instead of silently skipping it.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in its active AGENTS.md. Marketplace-only Codex installation supplies the four skills.
 
 ### Error handling
 
@@ -155,7 +142,7 @@ Prime has two additional constraints:
 
 | Scenario | Error message |
 | --- | --- |
-| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex` |
+| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex` |
 
 **Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform instead of aborting the batch:
 
@@ -183,9 +170,9 @@ maestria plugin install [source] [--destination <path>] [--json]
 
 | Invocation | What happens |
 | --- | --- |
-| `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, optional MCP configuration, and package path containment without writing files |
+| `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, and package path containment without writing files |
 | `maestria plugin validate ./my-plugin --json` | Emits the validation report as JSON |
-| `maestria plugin install` | Fetches `@maestria/agent-plugin`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
+| `maestria plugin install` | Fetches `@maestria/agent-plugins`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
 | `maestria plugin install ./my-plugin` | Validates and stages a local package |
 | `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
 
@@ -193,10 +180,10 @@ The staged directory contains the root `plugin.json` and fixed `skills/` layout.
 
 ### Sources and destinations
 
-`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugin`:
+`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugins`:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install" />
-<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugin@0.1.2" />
+<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugins@0.7.0" />
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install ./my-plugin" />
 
 Without `--destination`, the package is staged under:
@@ -213,7 +200,7 @@ Use `--destination` to choose another directory; the CLI refuses to overwrite an
 
 `plugin validate --json` returns `valid`, `name`, `version` when present, `root`, `skillNames`, `errors`, and `warnings`. `plugin install --json` returns the same validation fields plus `destination` and the original `source`.
 
-The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, optional `mcp.json`, and filesystem containment. It does not execute package code or grant permissions.
+The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, and filesystem containment. maestria ships no MCP server, so a package that declares `mcp.json` is rejected. It does not execute package code or grant permissions.
 
 ---
 
@@ -222,7 +209,7 @@ The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter
 Update maestria plugins to the latest (or specified) version.
 
 ```bash
-maestria update [platform] [--version <semver>] [--all] [--skills <csv>] [--exclude-skills <csv>] [--yes] [--json] [--quiet] [--compact]
+maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--compact]
 ```
 
 ### Flags
@@ -232,9 +219,6 @@ maestria update [platform] [--version <semver>] [--all] [--skills <csv>] [--excl
 | `platform` | Positional arg - platform to update. Comma-separated for multiple (e.g., `opencode,pi`). Omit for interactive picker. |
 | `--version`, `-V` | Specific version to install (e.g., `0.5.0`). Defaults to latest. |
 | `--all`, `-a` | Update all installed platforms |
-| `--skills` | Methodology skills to activate (CSV, or `none` for no skills). Default: recorded selection, else `create-pull-request` for legacy installs without a record. Known: `create-pull-request, docs-update`. |
-| `--exclude-skills` | Methodology skills to skip (CSV). Never touches independently installed copies. |
-| `--yes`, `-y` | Confirm skill selection non-interactively (required for non-TTY when it changes) |
 | `--json` | Output results as JSON |
 | `--quiet` | Suppress spinner animations |
 | `--compact` | Machine-friendly text output - one line per result |
@@ -254,9 +238,9 @@ Use `--version` to pin a specific version instead of the latest:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
-Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
+Exact version pinning is not available for `claude-code`, `codex`, or `hermes`. The first two update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
 
-When every installed plugin is already current, `update` still reconciles methodology skills and reports the plugin step as a no-op per platform. Legacy installs without a skill record infer only `create-pull-request`, never `docs-update`.
+After each successful plugin update, `update` removes the `create-pull-request` and `docs-update` copies that earlier CLI versions installed through the `skills` CLI, using the CLI's ownership record (`$XDG_CONFIG_HOME/maestria/skills.json`), and drops that record entry. Copies the record does not list, such as ones you installed yourself, are left alone. A copy whose installed path another agent still uses is kept and reported. When every installed plugin is already current, `update` still runs this cleanup for platforms that have a record entry and reports the plugin step as a no-op.
 
 | Invocation | What happens |
 | --- | --- |
@@ -265,7 +249,7 @@ When every installed plugin is already current, `update` still reconciles method
 | `maestria update opencode,pi` | Updates OpenCode and Pi in one run, one platform at a time |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically |
 | `maestria update --all` | Updates all installed platforms to latest |
-| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code, Codex CLI, and Prime Agent return a version-pinning validation result |
+| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code and Codex CLI return a version-pinning validation result |
 
 ### Version caching
 
@@ -331,7 +315,7 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 
 Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
 
-Uninstall removes only Maestria-recorded methodology skills, and only when no other observed consumer shares the same installed path. A platform with no skill record keeps its companion in place with a manual removal command; unknown skill IDs keep their history.
+Uninstall also removes the skill copies earlier CLI versions installed for that platform, with the same ownership and shared-path rules as `update`. A platform with no skill record keeps any copy in place and reports a manual removal command; unknown skill IDs keep their history.
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
@@ -350,7 +334,7 @@ maestria check <platform> [--json] [--quiet]
 maestria check --all [--json] [--quiet]
 ```
 
-`<platform>` is one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
+`<platform>` is one of `opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
 
 ### Flags
 
@@ -391,7 +375,7 @@ Choose the model each maestria specialist uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP discovers native root task profiles whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
 
 For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` (global) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
@@ -399,7 +383,7 @@ For Codex, the command writes native custom-agent TOML files under `~/.codex/age
 
 <AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
+Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
 
 ### Non-interactive (CI)
 
@@ -424,14 +408,14 @@ For a partial assignment, set a model for any role you want to change:
 
 ### Flags
 
-| Flag | Description |
-| --- | --- |
-| `--global` | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`, `~/.omp/agent/`) |
-| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`, `.omp/agents/`) |
-| `--set` | Set models non-interactively, e.g. `planner=<model-id>` |
-| `--json` | Output the resulting config as JSON |
-| `--quiet` | Suppress spinner output (recommended for CI) |
-| `--compact` | Minimal machine-friendly text output |
+| Flag        | Description                                                             |
+| ----------- | ----------------------------------------------------------------------- |
+| `--global`  | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`) |
+| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`)        |
+| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`                 |
+| `--json`    | Output the resulting config as JSON                                     |
+| `--quiet`   | Suppress spinner output (recommended for CI)                            |
+| `--compact` | Minimal machine-friendly text output                                    |
 
 ### JSON schema
 
@@ -456,9 +440,8 @@ An empty string means the agent inherits the session model.
 | -------- | ----------------------------------- | -------------------------- |
 | opencode | `~/.config/opencode/opencode.jsonc` | `.opencode/opencode.jsonc` |
 | pi       | `~/.pi/agent/agents/<name>.md`      | `.pi/agents/<name>.md`     |
-| omp      | `~/.omp/agent/agents/<name>.md`     | `.omp/agents/<name>.md`    |
 
-opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi and omp set the `model:` line in the agent's frontmatter. For pi/omp, a missing project agent file is created from the global one.
+opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
 
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.
@@ -468,7 +451,7 @@ opencode writes the `agent.<name>.model` key (preserving comments and the `varia
 
 ## `doctor`
 
-Diagnose methodology skill setup without changing anything (read-only).
+Report skill copies left over from earlier CLI versions, without changing anything (read-only).
 
 ```bash
 maestria doctor [--json] [--quiet]
@@ -478,49 +461,17 @@ maestria doctor [--json] [--quiet]
 
 | Flag      | Description                                  |
 | --------- | -------------------------------------------- |
-| `--json`  | Output skill diagnostics as JSON             |
+| `--json`  | Output the diagnostics as JSON               |
 | `--quiet` | Suppress spinner output (recommended for CI) |
 
 `doctor` has no `--compact` flag.
 
 ### Behavior
 
-Reports the skill record path and whether it is present, then per platform: plugin state, recorded skill selection, observed skills with install paths, plus notes and next steps. A corrupt record fails loud before any observation. A failed skills-list degrades into a per-platform note instead of aborting the run. Exit code is always `0`; use `--json` for machine-readable output.
+maestria packages bundle `create-pull-request` and `docs-update`, so `doctor` looks for separate copies of them. It reports the skill record path and whether it is present, then per platform: plugin state, the record entry, and the observed copies with their install paths. A copy the record lists is a legacy CLI install, and `maestria update <platform>` removes it. A copy the record does not list duplicates the bundled skill; `doctor` prints the `skills` CLI removal command and leaves the decision to you. A corrupt record fails loud before any observation. A failed skills-list degrades into a per-platform note instead of aborting the run. Exit code is always `0`; use `--json` for machine-readable output.
 
 ### Example
 
 <AllPackageManagers type="dlx" pkg="maestria" args="doctor" />
 
 ---
-
-## `setup`
-
-Coordinate optional project setup across ecosystem tools and skills. Read-only until the final confirmation: nothing runs before confirm.
-
-```bash
-maestria setup [--ecosystem <csv>] [--xtarterize-skills] [--skill-source <owner/repo:scope>] [--skills <csv>] [--maestria-skills <csv>] [--exclude-skills <csv>] [--cwd <dir>] [--yes] [--json] [--quiet] [--compact]
-```
-
-### Flags
-
-| Flag | Description |
-| --- | --- |
-| `--ecosystem` | Ecosystem tools to check (CSV, or omit for interactive selection). Known: `codegraph, agent-browser, opensrc`. Detection only; never installs automatically. |
-| `--xtarterize-skills` | Apply project skills via xtarterize (`agent/skills-install`) for the target cwd |
-| `--skill-source` | Skill source to install via the skills CLI (repeatable or CSV). Format: `<owner/repo:scope>` with scope `project` or `global`. Skip by omitting. |
-| `--skills` | Maestria methodology skills to activate (CSV, or `none` for no skills). Default: recorded selection, else `create-pull-request, docs-update`. |
-| `--maestria-skills` | Alias for `--skills`. `--skills` wins when both are set. |
-| `--exclude-skills` | Maestria methodology skills to skip (CSV). Never touches independently installed copies. |
-| `--cwd` | Project directory the setup targets. Defaults to the current directory. |
-| `--yes`, `-y` | Confirm all setup actions non-interactively (required for non-TTY) |
-| `--json` | Output the per-action report as JSON |
-| `--quiet` | Suppress spinner and non-essential output |
-| `--compact` | Minimal machine-friendly text output |
-
-### Behavior
-
-`setup` plans three independent groups and runs only the confirmed ones: ecosystem tool checks (detection plus manual steps, never automatic installs), xtarterize project skills for `--cwd`, and skill sources plus the Maestria methodology selection. Project scope follows `--cwd` (or the current directory); re-run with the same args to resume. Skill flags are validated before any change, same as `install`.
-
-### Example
-
-<AllPackageManagers type="dlx" pkg="maestria" args="setup --ecosystem codegraph,opensrc --yes" />

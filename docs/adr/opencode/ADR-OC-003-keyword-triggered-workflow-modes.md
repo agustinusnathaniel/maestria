@@ -4,12 +4,6 @@
 
 Accepted (2026-06-14)
 
-## Current Status
-
-The mode table below documents the historical OpenCode implementation. The current canonical contract is capability-aware: `blitz` uses direct execution for familiar, low-risk work when the host permits it, otherwise the permitted specialist; `fein` uses the full route with dynamic sequencing and required review floors. See `packages/core/agent-directives/commands/blitz.md` and `packages/core/agent-directives/commands/fein.md`.
-
-> **Note (2026-09-22).** Mode prompt text is no longer defined as TypeScript strings: `packages/opencode/src/modes/prompts.ts` lazily loads each mode section from its command file (`fein.md`, `sonar.md`, `blitz.md`, generated projections of the canonical files named in Current Status above) via `@maestria/shared-mode`, with pure detection (word-boundary, priority, code-block exclusion, disabled-keyword handling, case-insensitivity) delegated to the same shared module. The "TypeScript Definition" prompt dumps and the "prompts live in TypeScript" consequence below are the historical record; the command files are the current home. Detection still runs in the `chat.message` hook with `disabledKeywords` (`packages/opencode/src/index.ts`).
-
 ## Context
 
 The orchestrator's default pipeline handles most work well, but three usage patterns don't fit it: full-pipeline methodical work with reviewer approval before sign-off; research-only investigation producing structured output then stopping; and fast implementation that skips optional ceremony while preserving safety, authorization, branch, validation, and required-review floors.
@@ -65,17 +59,7 @@ Mode is per-turn, not per-phase; conversation history tracks progress between tu
 | Default mode      | None - no fallback mode               |
 | Per-agent config  | None - mode applies globally per turn |
 
-```typescript
-// Plugin options type
-type PluginOptions = {
-  modes?: {
-    disabledKeywords?: Array<'fein' | 'sonar' | 'blitz'>;
-  };
-};
-
-// Usage: opt out of blitz
-MaestriaPlugin({ modes: { disabledKeywords: ['blitz'] } });
-```
+The plugin options type and the `modes.disabledKeywords` field are defined by `packages/opencode/src/modes/types.ts`, which derives the keyword enum from the canonical mode keywords and types the denylist through the plugin options schema.
 
 Denylist over allowlist (a new mode works out of the box), no default mode (the standard pipeline is the implicit fallback), no per-agent overrides (mode governs the orchestrator's pipeline, not agent behavior).
 
@@ -99,11 +83,11 @@ The keywords are functional descriptors, not mythological or thematic: **fein** 
 
 ## Consequences
 
-One-word machine-detectable intent in plain words, with per-turn detection (mid-task switching, no stale state), a minimal auditable hook, a one-array denylist, and ADR-CORE-002 compliant naming, all without disturbing existing orchestrator behavior. Costs: three more concepts to learn; plain-word false positives (e.g., "sonar" in a code snippet); no hybrid shortcut ("research + build" needs two turns); a trivial per-message processing step. (Historical note: prompts lived in TypeScript for hook injection at the cost of a package rebuild to edit; see the 2026-09-22 note above for the current file-loaded arrangement.)
+One-word machine-detectable intent in plain words, with per-turn detection (mid-task switching, no stale state), a minimal auditable hook, a one-array denylist, and ADR-CORE-002 compliant naming, all without disturbing existing orchestrator behavior. Costs: three more concepts to learn; plain-word false positives (e.g., "sonar" in a code snippet); no hybrid shortcut ("research + build" needs two turns); a trivial per-message processing step. (Historical note: prompts lived in TypeScript for hook injection at the cost of a package rebuild to edit.)
 
 ## Lessons Learned
 
-Plain words over brackets came from user-first reasoning; per-turn mode eliminates stale-state bugs (no session flag to reconcile across mid-session switches or compacted state); the hybrid split follows ADR-CORE-002 (minimal hooks) and ADR-OC-001 (policy in directives); mode prompts are orchestrator rules, not global rules, per ADR-CORE-001's cross-cutting-only filter; denylist config is forward-safe (a fourth mode reaches existing users automatically).
+Plain words over brackets came from user-first reasoning; per-turn mode eliminates stale-state bugs (no session flag to reconcile across mid-session switches or compacted state); the hybrid split follows ADR-CORE-002 (minimal hooks) and ADR-OC-001 (policy in directives); mode prompts are orchestrator rules, not global rules, per ADR-CORE-019's cross-cutting-only filter; denylist config is forward-safe (a fourth mode reaches existing users automatically).
 
 ## Date
 

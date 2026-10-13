@@ -42,7 +42,7 @@ const organizationEntity = () => ({
   ],
   description: SITE_DESCRIPTION,
   logo: `${SITE_URL}/favicon.svg`,
-  name: 'Maestria',
+  name: 'maestria',
   sameAs: [GITHUB_REPO_URL, 'https://www.npmjs.com/package/maestria'],
   url: SITE_URL,
 });
@@ -57,15 +57,15 @@ export const organizationSchema = () => ({
 export const websiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  alternateName: 'Maestria AI Praxis',
+  alternateName: 'maestria AI Praxis',
   description: SITE_DESCRIPTION,
   inLanguage: 'en',
-  name: 'Maestria',
+  name: 'maestria',
   publisher: organizationEntity(),
   url: SITE_URL,
 });
 
-/** SoftwareApplication entity for the Maestria plugin ecosystem itself. */
+/** SoftwareApplication entity for the maestria plugin ecosystem itself. */
 export const softwareApplicationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -75,7 +75,7 @@ export const softwareApplicationSchema = () => ({
   description: SITE_DESCRIPTION,
   downloadUrl: 'https://www.npmjs.com/package/maestria',
   license: `${GITHUB_REPO_URL}/blob/main/LICENSE`,
-  name: 'Maestria',
+  name: 'maestria',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   operatingSystem: 'Node.js 22+',
   url: SITE_URL,

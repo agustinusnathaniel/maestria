@@ -3,6 +3,24 @@ title: Changelog
 description: Release history for @maestria/opencode.
 ---
 
+## v0.7.16
+
+_September 30, 2026_
+
+- Agents reassess explanatory comments and redundant tests before accepting changes, and shared directive text was consolidated with no behavior change; see the [methodology changelog](/core/changelog/).
+
+## v0.7.15
+
+_September 25, 2026_
+
+- Agents follow behavior-first testing guidance and deliver work as verified, reviewable slices with designs shown before implementation; see the [methodology changelog](/core/changelog/).
+
+## v0.7.14
+
+_September 24, 2026_
+
+- Project customization (`.maestria/workflow.md`, `.maestria/rules.md`) now loads through one shared loader across integrations; ordering, live reloads, and error reporting are unchanged.
+
 ## v0.7.13
 
 _September 23, 2026_
@@ -129,7 +147,7 @@ _August 3, 2026_
 
 ### Selective routing contract
 
-The orchestrator now routes by task class across three routes: `direct` (host executes, no Maestria specialist spawn), `focused` (one targeted specialist, one reviewer for non-trivial work), and `full` (bounded recon, design, implementation, and review). `fein` selects the full route, `sonar` is research-only, and `blitz` is an explicit low-risk/direct bypass that does not waive safety floors. Small explanations and tiny edits run directly or through one specialist; the full pipeline stays available for complex, high-risk, or explicitly `fein` work.
+The orchestrator now routes by task class across three routes: `direct` (host executes, no maestria specialist spawn), `focused` (one targeted specialist, one reviewer for non-trivial work), and `full` (bounded recon, design, implementation, and review). `fein` selects the full route, `sonar` is research-only, and `blitz` is an explicit low-risk/direct bypass that does not waive safety floors. Small explanations and tiny edits run directly or through one specialist; the full pipeline stays available for complex, high-risk, or explicitly `fein` work.
 
 ## v0.6.16
 
@@ -293,7 +311,7 @@ After completing work, the orchestrator now presents a file-by-file summary focu
 - `packages/opencode/sync.config.ts` - permission definitions
 - `packages/opencode/agents/builder.md` - bash allow-list
 - `packages/opencode/agents/diagnose.md` - edit permission + bash allow-list
-- `docs/adr/core/ADR-CORE-011-eliminate-questions-autonomy.md` - decision record
+- [Historical autonomy decision](https://github.com/agustinusnathaniel/maestria/blob/00f21377f7f84c9c6e1919ca7a10812b6e7f9634/docs/adr/core/ADR-CORE-011-eliminate-questions-autonomy.md)
 
 ## v0.5.7
 
@@ -378,7 +396,7 @@ Affected files:
 
 - `agents/orchestrator.md` - new COMMIT PROTOCOL section
 - `rules/AGENTS.md` - new Commit Policy section
-- `docs/adr/opencode/ADR-OC-004-commit-authorization-rules.md` - decision record
+- [Historical commit-authorization decision](https://github.com/agustinusnathaniel/maestria/blob/00f21377f7f84c9c6e1919ca7a10812b6e7f9634/docs/adr/opencode/ADR-OC-004-commit-authorization-rules.md)
 
 ## v0.4.3
 

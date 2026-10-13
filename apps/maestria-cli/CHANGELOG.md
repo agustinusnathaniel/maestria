@@ -1,12 +1,60 @@
 # maestria
 
+## 0.15.0
+
+### Minor Changes
+
+- [#391](https://github.com/agustinusnathaniel/maestria/pull/391) [`453c530`](https://github.com/agustinusnathaniel/maestria/commit/453c5308b893d9ec19c20cd2d90518d277609b35) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove `maestria setup`. It only checked whether codegraph, agent-browser, and opensrc were installed, ran xtarterize, and installed external skill repositories through the `skills` CLI; run those tools directly instead, for example `npx skills add agustinusnathaniel/skills -g` for the engineering skills maestria's specialists name. `maestria plugin validate` and `plugin install` no longer validate MCP configuration: maestria ships no MCP server, so a package that declares `mcp.json` is now rejected, and the JSON report's `validationScope` is `portable-manifest-skills`.
+
+- [#390](https://github.com/agustinusnathaniel/maestria/pull/390) [`bc0f4f9`](https://github.com/agustinusnathaniel/maestria/commit/bc0f4f905e02b644795ff38ed488ccd713e9b946) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove the `@maestria/omp` native executable and retire `maestria configure omp` per-agent models. `install`, `update`, `uninstall`, `check`, and `status` keep accepting `omp` and now stage the shared `@maestria/agent-plugins` portable skills with native `task()` dispatch. Session hooks, tool interception, review-mode enforcement, goal mirroring, and agent file deployment do not carry over; remove the retired package (`omp plugin uninstall @maestria/omp`) before installing.
+
+- [#390](https://github.com/agustinusnathaniel/maestria/pull/390) [`bc0f4f9`](https://github.com/agustinusnathaniel/maestria/commit/bc0f4f905e02b644795ff38ed488ccd713e9b946) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove the `prime-agent` platform and withdraw the `@maestria/prime-agent` package. `install`, `update`, `uninstall`, `check`, and `configure` no longer accept `prime-agent`. Oh My Pi coverage continues through the shared plugin skills.
+
+- [#390](https://github.com/agustinusnathaniel/maestria/pull/390) [`bc0f4f9`](https://github.com/agustinusnathaniel/maestria/commit/bc0f4f905e02b644795ff38ed488ccd713e9b946) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Stop installing the `create-pull-request` and `docs-update` skills through the `skills` CLI: every maestria package now bundles them. `install`, `update`, and `setup` no longer accept `--skills`, `--exclude-skills`, or `--maestria-skills` and fail with a pointer if one is passed. `update` and `uninstall` remove the copies earlier CLI versions installed, using the existing ownership record, and leave copies you installed yourself alone; `doctor` reports any copies that remain. `setup --skill-source` still installs external skill repositories such as `agustinusnathaniel/skills`.
+
+- [#390](https://github.com/agustinusnathaniel/maestria/pull/390) [`bc0f4f9`](https://github.com/agustinusnathaniel/maestria/commit/bc0f4f905e02b644795ff38ed488ccd713e9b946) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Consolidate Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, and portable Agent Plugins resources into one declarative plugin package. Native installers retain platform identifiers and managed ownership while fetching the shared archive. Remove the former standalone source packages; native runtime integrations remain separate.
+
+### Patch Changes
+
+- [#390](https://github.com/agustinusnathaniel/maestria/pull/390) [`bc0f4f9`](https://github.com/agustinusnathaniel/maestria/commit/bc0f4f905e02b644795ff38ed488ccd713e9b946) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Install `@maestria/agent-plugins` straight from the package root, following the PostHog and Cursor pstack layout: the host manifests sit at the root and select shared `agents/`, `commands/`, `rules/`, and `skills/` folders, with no nested installation bundle or duplicate component tree. Each specialist profile and workflow command carries its complete role, routing, and global policy, composed from canonical core directives at sync, so no host depends on preloading role or policy skills. Codex profiles are generated TOMLs with complete instructions. One root `AGENTS.md` carries the global policy and routing for Devin, Kimi Code (through `systemPromptPath`), Codex (installed by the CLI), and Hermes, with a short note per host; only OMP and Cursor keep their own rule files because their formats differ.
+  
+  The documentation now has one Installation page and one Usage page with a section per host, including separate CLI and desktop setup for Codex and Claude Code. The former per-host page URLs redirect to those sections.
+  
+  Codex profile updates keep model settings when a prompt contains TOML-like text, and sync dry runs that hit a processing error now fail preflight before anything is written.
+
+- [#390](https://github.com/agustinusnathaniel/maestria/pull/390) [`bc0f4f9`](https://github.com/agustinusnathaniel/maestria/commit/bc0f4f905e02b644795ff38ed488ccd713e9b946) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Ship one profile per specialist in `agents/<role>.md` for every Markdown host, with each host's read-only control in shared frontmatter, and one set of workflow commands in `commands/`. Per-host agent and command copies, the dispatcher-only orchestrator profile, and Devin's mode skill exports are removed; Devin routes mode keywords through its always-on policy. Codex profiles are generated beside the Markdown as `agents/maestria-<role>.toml`.
+  
+  Fix Kimi read-only profiles, which denied `WriteFile` and `StrReplaceFile` (names current Kimi does not use) instead of `Write` and `Edit`. ZCode research and review profiles now deny `Write` and `Edit` as well. The architect is now read-only on every host, matching OpenCode, Pi, and Codex: it returns ADR content for `@writer` to persist. Devin no longer auto-loads the OMP-specific root rule beside its own always-on `AGENTS.md`. Remove an exclamation-mark-before-backtick sequence from the global rules that ZCode and Claude Code commands would run as inline shell, drop the unused `name` key from command frontmatter, and select ZCode agents and commands by directory, the only form ZCode reads. Profiles drop `model: inherit`, which matches the hosts' default. `maestria update cursor` carries a configured model from an earlier Cursor-only profile copy onto the shared profile.
+  
+  Release the CLI and plugin together: the updated CLI reads Codex profiles from `agents/maestria-<role>.toml` and configures Cursor models in `agents/<role>.md`, so run `maestria update cursor` before `maestria configure cursor` on an existing install.
+
+## 0.14.0
+
+### Minor Changes
+
+- [#383](https://github.com/agustinusnathaniel/maestria/pull/383) [`7e40875`](https://github.com/agustinusnathaniel/maestria/commit/7e4087547b6bb2396904be3251e2f8c635c532f6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Pin the Pi subagent prerequisite to its supported range instead of installing bare latest. `pi install npm:@gotgenes/pi-subagents` tracked the registry's latest line, so a new upstream major could change what an install puts on a user's machine and put it outside the `@maestria/pi` peer range. A failure to install the prerequisite is still ignored so it cannot block the main package install.
+
+## 0.13.5
+
+### Patch Changes
+
+- [#375](https://github.com/agustinusnathaniel/maestria/pull/375) [`38e894b`](https://github.com/agustinusnathaniel/maestria/commit/38e894b7a8af67101ba31114d137c396bb764e51) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Isolate temporary npm archives, preserve installed files when downloads fail, and propagate command cancellation and unexpected probe failures.
+
+  Correct SemVer prerelease precedence and reject malformed numeric identifiers.
+
+## 0.13.4
+
+### Patch Changes
+
+- [#350](https://github.com/agustinusnathaniel/maestria/pull/350) [`a2b3756`](https://github.com/agustinusnathaniel/maestria/commit/a2b3756e1bfc4f7a318f5056bbf32f4d1102e76e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Use versions already detected when choosing interactive updates, avoiding duplicate checks and inconsistent choices. Skip latest-version lookups in install, uninstall, doctor, setup, and bulk updates when those commands only need installation state.
+
 ## 0.13.3
 
 ### Patch Changes
 
 - [#343](https://github.com/agustinusnathaniel/maestria/pull/343) [`ec3c94d`](https://github.com/agustinusnathaniel/maestria/commit/ec3c94d47663d3fb339ee249869071ea7795ac17) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Keep recorded skill ownership after a failed add or removal when another skill succeeds, so retries can recover safely. Verify project-scoped setup sources in the requested directory and recognize xtarterize JSON status responses containing nested data.
 
-- [#341](https://github.com/agustinusnathaniel/maestria/pull/341) [`19c70ae`](https://github.com/agustinusnathaniel/maestria/commit/19c70aeaab15638a151466089c8c0c0a34d3f661) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify global scope and cancel semantics in `maestria setup`. Maestria skill prompts, review lines, summary output, and action reports now carry global scope labels, and the final confirm states the target directory role plus full cancel semantics. Display strings only, no behavior change.
+- [#341](https://github.com/agustinusnathaniel/maestria/pull/341) [`19c70ae`](https://github.com/agustinusnathaniel/maestria/commit/19c70aeaab15638a151466089c8c0c0a34d3f661) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify global scope and cancel semantics in `maestria setup`. maestria skill prompts, review lines, summary output, and action reports now carry global scope labels, and the final confirm states the target directory role plus full cancel semantics. Display strings only, no behavior change.
 
 ## 0.13.2
 
@@ -30,7 +78,7 @@
 
 - [#323](https://github.com/agustinusnathaniel/maestria/pull/323) [`5fc031e`](https://github.com/agustinusnathaniel/maestria/commit/5fc031e21b261a2335f9670051b176e735c6e84d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add read-only `maestria doctor` diagnostics for skill setup. Per platform it reports plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`, with unmanaged copy warnings, shared canonical path notes, and actionable next commands. Supports `--json` and `--quiet`; home directories in paths render as `~`. A corrupt record fails loud before any observation; unknown platforms or agents degrade honestly with a note. No installs, updates, removals, or record writes.
 
-- [#328](https://github.com/agustinusnathaniel/maestria/pull/328) [`f4376e8`](https://github.com/agustinusnathaniel/maestria/commit/f4376e8f62c1229e807851bd44abdbdc62edae92) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add optional `maestria setup` coordinator across ecosystem tools and skills. Detection stays read-only (platforms, record, doctor snapshot, binary `--version` probes, xtarterize PATH lookup); mutations run only after the review screen plus final confirm. Ecosystem tools report detected or manual steps and are never auto-installed; xtarterize runs `add agent/skills-install --json --cwd <dir>` gated on the JSON status field with `.gitignore` changes reported; skill sources install per-source project/global scope via the skills CLI transport; Maestria skills reuse the existing selection record and `--skills`/`--exclude-skills` semantics with no other state writes. Non-TTY requires full flags plus `--yes`; reports are per action with resume guidance and idempotent reruns.
+- [#328](https://github.com/agustinusnathaniel/maestria/pull/328) [`f4376e8`](https://github.com/agustinusnathaniel/maestria/commit/f4376e8f62c1229e807851bd44abdbdc62edae92) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add optional `maestria setup` coordinator across ecosystem tools and skills. Detection stays read-only (platforms, record, doctor snapshot, binary `--version` probes, xtarterize PATH lookup); mutations run only after the review screen plus final confirm. Ecosystem tools report detected or manual steps and are never auto-installed; xtarterize runs `add agent/skills-install --json --cwd <dir>` gated on the JSON status field with `.gitignore` changes reported; skill sources install per-source project/global scope via the skills CLI transport; maestria skills reuse the existing selection record and `--skills`/`--exclude-skills` semantics with no other state writes. Non-TTY requires full flags plus `--yes`; reports are per action with resume guidance and idempotent reruns.
 
 - [#320](https://github.com/agustinusnathaniel/maestria/pull/320) [`6430ee9`](https://github.com/agustinusnathaniel/maestria/commit/6430ee95ed03908e535e2e069e0672fda4e5eaef) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Install, update, and reconcile the `create-pull-request` methodology skill through the official `skills` CLI instead of bundling skill bodies into plugins. `install` and `update` accept `--skills` (CSV, or `none`), `--exclude-skills` (CSV), and `--yes`; per-platform selections persist only after actual success, independently installed copies are never adopted or deleted, and shared native skill directories are preserved while another owned platform still uses them. The visual-evidence procedure lives once in the root skill, with the core and integration routers pointing at it.
 
@@ -45,7 +93,7 @@
 ### Patch Changes
 
 - [#303](https://github.com/agustinusnathaniel/maestria/pull/303) [`50c940f`](https://github.com/agustinusnathaniel/maestria/commit/50c940fbcf3a0c60ec0728fc8ad97e455faead0d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Respect terminal unicode support in CLI group-multiselect fallback prompt (ASCII glyphs on non-unicode terminals).
-  
+
   Custom toggle-all renderer and instructions are retained, unicode terminals are unchanged, and the fallback now matches native @clack/prompts ASCII glyphs.
 
 ## 0.12.3
@@ -70,7 +118,7 @@
 
 ### Minor Changes
 
-- [#265](https://github.com/agustinusnathaniel/maestria/pull/265) [`4dcbf04`](https://github.com/agustinusnathaniel/maestria/commit/4dcbf0430e8d9f2143762a44e1d56729e238107d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add a first-class Agent Plugins v1 package that exposes Maestria's methodology as a portable, skills-only plugin, plus CLI commands to validate and stage portable packages.
+- [#265](https://github.com/agustinusnathaniel/maestria/pull/265) [`4dcbf04`](https://github.com/agustinusnathaniel/maestria/commit/4dcbf0430e8d9f2143762a44e1d56729e238107d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add a first-class Agent Plugins v1 package that exposes maestria's methodology as a portable, skills-only plugin, plus CLI commands to validate and stage portable packages.
 
 ## 0.11.1
 
@@ -99,13 +147,13 @@
 ### Patch Changes
 
 - [#230](https://github.com/agustinusnathaniel/maestria/pull/230) [`1d18698`](https://github.com/agustinusnathaniel/maestria/commit/1d18698942c34e45b98b981c09267385805e26ae) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat(cli): `maestria check` detects outdated installs
-  
+
   The check command fetched each plugin's latest published version but never compared it against the installed version, so CI and AI-agent consumers had no machine-readable staleness signal. Single-platform and --all checks now report an `outdated` flag in JSON, print an explicit update hint, show an Outdated column in the status table, and exit 3 when a newer version exists (0 = installed and current; 1 = not installed, unavailable, or unknown platform, unchanged from today; nothing exits 2).
 
 - [#232](https://github.com/agustinusnathaniel/maestria/pull/232) [`0402671`](https://github.com/agustinusnathaniel/maestria/commit/0402671113c85866b18eeb15777100e4ec254008) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix(cli): never silently downgrade on implicit update
-  
+
   `maestria update` (no `-V`) short-circuited only on exact version equality, so an install NEWER than the registry's latest - a local dev build or an unpublished release - sailed past the guard and was silently downgraded by `platform.update()`. Meanwhile `maestria check` correctly reported that same install as current (exit 0), so the two commands disagreed on identical machine state.
-  
+
   Implicit updates now skip any install strictly ahead of latest with an explicit "newer than latest; skipping" message, and the interactive picker only offers platforms that are strictly behind latest. Explicit `--version` pins are honored verbatim - downgrades included. New `isVersionGt()` and `needsUpdateOf()` helpers keep check and update semantics in one place.
 
 ## 0.10.1
@@ -129,7 +177,7 @@
 
 ### Minor Changes
 
-- [#209](https://github.com/agustinusnathaniel/maestria/pull/209) [`47b15b5`](https://github.com/agustinusnathaniel/maestria/commit/47b15b58afa4def30f1ecfc39dbdc942779391e4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add Maestria CLI compatibility for the Prime Agent platform (`prime-agent`). The CLI detects the
+- [#209](https://github.com/agustinusnathaniel/maestria/pull/209) [`47b15b5`](https://github.com/agustinusnathaniel/maestria/commit/47b15b58afa4def30f1ecfc39dbdc942779391e4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add maestria CLI compatibility for the Prime Agent platform (`prime-agent`). The CLI detects the
   Prime Agent binary, inspects its package registrations via `prime-agent package list`, and
   delegates install, update, status, check, and uninstall to Prime's native package commands
   (`package install`/`update`/`remove npm:@maestria/prime-agent`).
@@ -149,7 +197,7 @@
 
 ### Minor Changes
 
-- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add Maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
+- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
   both hosts, stages the published npm package into a local marketplace, and delegates install,
   update, status, check, and uninstall operations to the host plugin manager.
 

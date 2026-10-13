@@ -97,23 +97,12 @@ describe('public/robots.txt', () => {
       ].join('\n'),
     );
   });
-
-  it('uses only RFC 9309 directive names with absolute sitemap URLs', async () => {
-    const text = await readAppFile('public/robots.txt');
-    for (const line of text.split('\n').filter(Boolean)) {
-      const [directive] = line.split(':');
-      expect(['User-agent', 'Allow', 'Sitemap']).toContain(directive?.trim());
-      if (directive?.trim() === 'Sitemap') {
-        expect(line).toMatch(/Sitemap: https:\/\//u);
-      }
-    }
-  });
 });
 
 describe('public/agents.md', () => {
   it('is a static, self-contained entrypoint for coding agents', async () => {
     const text = await readAppFile('public/agents.md');
-    expect(text.startsWith('# Maestria agent instructions\n')).toBe(true);
+    expect(text.startsWith('# maestria agent instructions\n')).toBe(true);
     expect(text).toContain('npx maestria install <platform>');
     expect(text).toContain('https://maestria.sznm.dev/llms-full.txt');
     expect(text).toContain('https://maestria.sznm.dev/core/when-to-use.md');

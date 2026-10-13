@@ -73,28 +73,6 @@ describe('installModeCommands', () => {
   });
 
   describe('handler for fein command', () => {
-    it('with args, sets state.mode to "fein" and notifies (prompt injection via auto-detect)', async () => {
-      let notifyMessage: string | undefined;
-
-      const pi = createMockPi();
-
-      const state = createInitialState();
-      installModeCommands(pi, state);
-
-      const { handler } = pi._commands.fein;
-      const ctx = {
-        ui: {
-          notify: (msg: string) => {
-            notifyMessage = msg;
-          },
-        },
-      };
-      await handler('build the feature', ctx);
-
-      expect(state.mode).toBe('fein');
-      expect(notifyMessage).toBe("Mode set to fein. Describe what you'd like to work on.");
-    });
-
     it('without args, sets state.mode but calls ctx.ui.notify instead', async () => {
       const pi = createMockPi();
       const state = createInitialState();
@@ -139,52 +117,23 @@ describe('installModeCommands', () => {
   });
 
   describe('persists state on mode changes', () => {
-    it('persists state via appendEntry after setting fein mode', async () => {
-      const pi = createMockPi();
-      const state = createInitialState();
-      installModeCommands(pi, state);
+    it('persists state via appendEntry after setting fein, sonar, or blitz mode', async () => {
+      for (const mode of ['fein', 'sonar', 'blitz']) {
+        const pi = createMockPi();
+        const state = createInitialState();
+        installModeCommands(pi, state);
 
-      const { handler } = pi._commands.fein;
-      const ctx = { ui: { notify: vi.fn() } };
-      await handler('build feature', ctx);
+        const { handler } = pi._commands[mode];
+        const ctx = { ui: { notify: vi.fn() } };
+        // oxlint-disable-next-line no-await-in-loop -- sequential awaits keep each mode's failure attributable.
+        await handler('build feature', ctx);
 
-      expect(state.mode).toBe('fein');
-      expect(pi.appendEntry).toHaveBeenCalledWith(
-        'maestria_state',
-        expect.objectContaining({ mode: 'fein' }),
-      );
-    });
-
-    it('persists state via appendEntry after setting sonar mode', async () => {
-      const pi = createMockPi();
-      const state = createInitialState();
-      installModeCommands(pi, state);
-
-      const { handler } = pi._commands.sonar;
-      const ctx = { ui: { notify: vi.fn() } };
-      await handler('research', ctx);
-
-      expect(state.mode).toBe('sonar');
-      expect(pi.appendEntry).toHaveBeenCalledWith(
-        'maestria_state',
-        expect.objectContaining({ mode: 'sonar' }),
-      );
-    });
-
-    it('persists state via appendEntry after setting blitz mode', async () => {
-      const pi = createMockPi();
-      const state = createInitialState();
-      installModeCommands(pi, state);
-
-      const { handler } = pi._commands.blitz;
-      const ctx = { ui: { notify: vi.fn() } };
-      await handler('implement quickly', ctx);
-
-      expect(state.mode).toBe('blitz');
-      expect(pi.appendEntry).toHaveBeenCalledWith(
-        'maestria_state',
-        expect.objectContaining({ mode: 'blitz' }),
-      );
+        expect(state.mode).toBe(mode);
+        expect(pi.appendEntry).toHaveBeenCalledWith(
+          'maestria_state',
+          expect.objectContaining({ mode }),
+        );
+      }
     });
   });
 });

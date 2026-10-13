@@ -1,9 +1,8 @@
 /**
- * Shared agent deployment logic for Maestria platform packages.
+ * Shared agent deployment logic for maestria platform packages.
  *
- * Both @maestria/omp and @maestria/pi deploy specialist agent .md files
- * to their respective platform agent directories. This module eliminates
- * the duplication between the two packages.
+ * The `@maestria/pi` package deploys specialist agent .md files to the
+ * platform agent directory using this module.
  *
  * @module
  */
@@ -20,7 +19,7 @@ import { ALLOWED_AGENTS } from './subagent-utils.js';
  *
  * @param agentsSrc  - Path to the source directory containing specialist .md files
  * @param agentsDest - Absolute path to the platform's agents destination directory
- *                     (e.g. `join(homedir(), '.omp', 'agent', 'agents')`)
+ *                     (e.g. `join(homedir(), '.pi', 'agent', 'agents')`)
  * @returns The number of agents newly deployed
  */
 export const deploySpecialistAgents = (agentsSrc: string, agentsDest: string): number => {

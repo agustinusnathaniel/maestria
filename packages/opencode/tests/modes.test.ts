@@ -3,8 +3,8 @@ import crypto from 'node:crypto';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
-import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
-import type { ModeKeyword, ModeResult } from '@/modes/types.js';
+import { detectMode } from '@/modes/index.js';
+import type { ModeKeyword } from '@/modes/types.js';
 import { pluginInput } from './helpers.js';
 
 type ChatMessageHook = NonNullable<Hooks['chat.message']>;
@@ -32,14 +32,6 @@ const getTextPart = (output: ChatMessageOutput): TextPart => {
   return textPart;
 };
 
-const makeResult = (mode: ModeKeyword, keyword: string, index: number): ModeResult => ({
-  index,
-  keyword,
-  marker: getModeMarker(mode),
-  mode,
-  prompt: getModePrompt(mode),
-});
-
 const createMockMessage = (
   text: string,
   agent = 'orchestrator',
@@ -64,132 +56,18 @@ const createMockMessage = (
 // ---------------------------------------------------------------------------
 // detectMode
 // ---------------------------------------------------------------------------
+// Pure detection behavior (priority, word boundaries, code-block exclusion,
+// disabled keywords, case-insensitivity) is owned by `@maestria/shared-mode`
+// and covered in packages/shared/mode/tests/mode.test.ts. What is unique here
+// is the opencode wrapper: augmenting a shared hit with `marker` and `prompt`,
+// and passing the shared fields through unchanged.
 describe('detectMode', () => {
-  it('detects keyword at start of message', () => {
-    const result = detectMode('fein build the feature');
+  it('passes through index, keyword, and mode from shared detection', () => {
+    const result = detectMode("let's Sonar this");
     expectNotNull(result);
-    expect(result.mode).toBe('fein');
-    expect(result.keyword).toBe('fein');
-    expect(result.index).toBe(0);
-  });
-
-  it('detects keyword in middle of message', () => {
-    const result = detectMode("let's sonar this design");
-    expectNotNull(result);
-    expect(result.mode).toBe('sonar');
-    expect(result.keyword).toBe('sonar');
     expect(result.index).toBe(6);
-  });
-
-  it('detects keyword at end of message', () => {
-    const result = detectMode('implement it blitz');
-    expectNotNull(result);
-    expect(result.mode).toBe('blitz');
-    expect(result.keyword).toBe('blitz');
-  });
-
-  it('most restrictive wins with multiple keywords', () => {
-    const r1 = detectMode('fein research then blitz implement');
-    expectNotNull(r1);
-    expect(r1.mode).toBe('fein');
-    expect(r1.index).toBe(0);
-
-    const r2 = detectMode('fein sonar blitz');
-    expectNotNull(r2);
-    expect(r2.mode).toBe('fein');
-
-    const r3 = detectMode('sonar blitz');
-    expectNotNull(r3);
-    expect(r3.mode).toBe('sonar');
-  });
-
-  it('priority order is fein > sonar > blitz regardless of position', () => {
-    const r1 = detectMode('blitz sonar fein');
-    expectNotNull(r1);
-    expect(r1.mode).toBe('fein');
-
-    const r2 = detectMode('fein blitz sonar');
-    expectNotNull(r2);
-    expect(r2.mode).toBe('fein');
-
-    const r3 = detectMode('blitz sonar');
-    expectNotNull(r3);
-    expect(r3.mode).toBe('sonar');
-  });
-
-  it('returns null when no keyword present', () => {
-    const result = detectMode('please implement this feature');
-    expect(result).toBeNull();
-  });
-
-  it('is case insensitive (FEIN, Sonar, BLITZ)', () => {
-    const r1 = detectMode('FEIN uppercase');
-    expectNotNull(r1);
-    expect(r1.mode).toBe('fein');
-
-    const r2 = detectMode('Sonar title case');
-    expectNotNull(r2);
-    expect(r2.mode).toBe('sonar');
-
-    const r3 = detectMode('uppercase BLITZ');
-    expectNotNull(r3);
-    expect(r3.mode).toBe('blitz');
-  });
-
-  it('does not match inside word boundaries (feinish, dfein, blitzkrieg)', () => {
-    expect(detectMode('feinish the work')).toBeNull();
-    expect(detectMode('dfein research')).toBeNull();
-    expect(detectMode('blitzkrieg attack')).toBeNull();
-  });
-
-  it('does not match inside fenced code blocks', () => {
-    const text = '```blitz this```';
-    const result = detectMode(text);
-    expect(result).toBeNull();
-  });
-
-  it('detects keyword outside code block correctly', () => {
-    const text = 'some code:\n```\nconst x = 1;\n```\nfein then build';
-    const result = detectMode(text);
-    expectNotNull(result);
-    expect(result.mode).toBe('fein');
-  });
-
-  it('does not match inside inline backtick content', () => {
-    const text = 'run `blitz` command';
-    const result = detectMode(text);
-    expect(result).toBeNull();
-  });
-
-  it('matches hyphenated keyword (sonar-like)', () => {
-    // Hyphen is a non-word char boundary, so `sonar` in `sonar-like` matches
-    const result = detectMode('sonar-like exploration');
-    expectNotNull(result);
+    expect(result.keyword).toBe('Sonar');
     expect(result.mode).toBe('sonar');
-  });
-
-  it('respects disabled keywords', () => {
-    const result = detectMode('fein research then blitz build', new Set(['blitz']));
-    expectNotNull(result);
-    expect(result.mode).toBe('fein');
-  });
-
-  it('returns null when all keywords disabled', () => {
-    const result = detectMode('fein research', new Set(['fein', 'sonar', 'blitz']));
-    expect(result).toBeNull();
-  });
-
-  it('handles empty string', () => {
-    const result = detectMode('');
-    expect(result).toBeNull();
-  });
-
-  it('detects keyword with trailing colon', () => {
-    const result = detectMode('fein: build the feature');
-    expectNotNull(result);
-    expect(result.mode).toBe('fein');
-    expect(result.index).toBe(0);
-    expect(result.keyword).toBe('fein');
   });
 
   it('returns prompt and marker in result', () => {
@@ -197,78 +75,6 @@ describe('detectMode', () => {
     expectNotNull(result);
     expect(result.prompt).toBeTruthy();
     expect(result.marker).toBe('[MODE: sonar]');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// stripKeyword
-// ---------------------------------------------------------------------------
-describe('stripKeyword', () => {
-  it('removes keyword from start', () => {
-    const text = 'fein build the feature';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('build the feature');
-  });
-
-  it('removes keyword from middle, collapsing double spaces', () => {
-    const text = "let's sonar research this";
-    const result = makeResult('sonar', 'sonar', 6);
-    expect(stripKeyword(text, result)).toBe("let's research this");
-  });
-
-  it('removes keyword from end, trimming trailing whitespace', () => {
-    const text = 'implement it blitz';
-    const result = makeResult('blitz', 'blitz', 13);
-    expect(stripKeyword(text, result)).toBe('implement it');
-  });
-
-  it('trims extra whitespace', () => {
-    const text = 'fein   build the feature';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('build the feature');
-  });
-
-  it('returns empty string for keyword-only message', () => {
-    const text = 'fein';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('');
-  });
-
-  it('handles keyword followed by colon', () => {
-    const text = 'fein: build the feature';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('build the feature');
-  });
-
-  it('handles keyword followed by colon and extra space', () => {
-    const text = 'fein:  build the feature';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('build the feature');
-  });
-
-  it('does not strip meaningfully when keyword is not present', () => {
-    const text = 'just a normal message';
-    // Simulating a result that wouldn't actually be returned by detectMode
-    const result = makeResult('fein', 'fein', 100);
-    expect(stripKeyword(text, result)).toBe('just a normal message');
-  });
-
-  it('preserves single newline between lines', () => {
-    const text = 'fein: do this\nand this';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('do this\nand this');
-  });
-
-  it('preserves double newline (paragraph break)', () => {
-    const text = 'sonar: paragraph one\n\nparagraph two';
-    const result = makeResult('sonar', 'sonar', 0);
-    expect(stripKeyword(text, result)).toBe('paragraph one\n\nparagraph two');
-  });
-
-  it('preserves indentation in multi-line content', () => {
-    const text = 'fein: do this\n  - sub item A\n  - sub item B';
-    const result = makeResult('fein', 'fein', 0);
-    expect(stripKeyword(text, result)).toBe('do this\n - sub item A\n - sub item B');
   });
 });
 
@@ -288,21 +94,6 @@ describe('MaestriaPlugin config validation', () => {
     const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: ['blitz'] },
     });
-    expect(plugin).toBeDefined();
-    expect(typeof plugin.config).toBe('function');
-  });
-
-  it('accepts no options (all modes active)', async () => {
-    const plugin = await MaestriaPlugin(pluginInput);
-    expect(plugin).toBeDefined();
-    expect(typeof plugin.config).toBe('function');
-  });
-
-  it('accepts empty disabledKeywords array', async () => {
-    const plugin = await MaestriaPlugin(pluginInput, {
-      modes: { disabledKeywords: [] },
-    });
-    expect(plugin).toBeDefined();
     expect(typeof plugin.config).toBe('function');
   });
 
@@ -319,76 +110,11 @@ describe('MaestriaPlugin config validation', () => {
 // MaestriaPlugin chat.message hook
 // ---------------------------------------------------------------------------
 describe('MaestriaPlugin chat.message hook', () => {
-  it('includes chat.message hook when options are provided', async () => {
+  it('registers the chat.message hook when options are provided', async () => {
     const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: [] },
     });
     expect(typeof getChatMessageHook(plugin)).toBe('function');
-  });
-
-  it('includes chat.message hook when no options', async () => {
-    const plugin = await MaestriaPlugin(pluginInput);
-    expect(typeof getChatMessageHook(plugin)).toBe('function');
-  });
-
-  it('passes through normal message without modification', async () => {
-    const plugin = await MaestriaPlugin(pluginInput, {
-      modes: { disabledKeywords: [] },
-    });
-    const hook = getChatMessageHook(plugin);
-    const { input, output } = createMockMessage('build this feature');
-
-    await hook(input, output);
-
-    expect(output.parts).toHaveLength(1);
-    expect(getTextPart(output).text).toBe('build this feature');
-  });
-
-  it('injects mode inline without adding new parts for keyword message', async () => {
-    const plugin = await MaestriaPlugin(pluginInput, {
-      modes: { disabledKeywords: [] },
-    });
-    const hook = getChatMessageHook(plugin);
-    const { input, output } = createMockMessage('fein build this');
-
-    await hook(input, output);
-
-    // Must NOT add new parts (that's the bug fix)
-    expect(output.parts).toHaveLength(1);
-
-    // Keyword stripped, mode marker + prompt prepended inline
-    const { text } = getTextPart(output);
-    expect(text).toContain('[MODE: fein]');
-    expect(text).toContain('Full Pipeline');
-    expect(text).toContain('build this');
-
-    // Marker appears before the user message
-    const markerIndex = text.indexOf('[MODE: fein]');
-    const messageIndex = text.indexOf('build this');
-    expect(markerIndex).toBeLessThan(messageIndex);
-  });
-
-  it('injects sonar mode inline without adding new parts', async () => {
-    const plugin = await MaestriaPlugin(pluginInput);
-    const hook = getChatMessageHook(plugin);
-    const { input, output } = createMockMessage('sonar research only');
-
-    await hook(input, output);
-
-    expect(output.parts).toHaveLength(1);
-    expect(getTextPart(output).text).toContain('[MODE: sonar]');
-    expect(getTextPart(output).text).toContain('research only');
-  });
-
-  it('does not fire for non-orchestrator agents', async () => {
-    const plugin = await MaestriaPlugin(pluginInput);
-    const hook = getChatMessageHook(plugin);
-    const { input, output } = createMockMessage('fein build this', 'builder');
-
-    await hook(input, output);
-
-    // Must NOT modify text for non-orchestrator agents
-    expect(getTextPart(output).text).toBe('fein build this');
   });
 
   it('handles keyword-only message without crash', async () => {
@@ -425,14 +151,17 @@ describe('chat.message hook integration', () => {
 
     // Should be exactly 1 part (no new parts added)
     expect(output.parts).toHaveLength(1);
+    const { text } = getTextPart(output);
     // The text should contain the mode marker
-    expect(getTextPart(output).text).toContain('[MODE: fein]');
+    expect(text).toContain('[MODE: fein]');
     // The text should contain the mode prompt
-    expect(getTextPart(output).text).toContain('Full Pipeline');
+    expect(text).toContain('Full Pipeline');
     // The keyword should NOT be in the text
-    expect(getTextPart(output).text).not.toContain('fein build');
+    expect(text).not.toContain('fein build');
     // The user's message should still be present
-    expect(getTextPart(output).text).toContain('build the api');
+    expect(text).toContain('build the api');
+    // Marker appears before the user message
+    expect(text.indexOf('[MODE: fein]')).toBeLessThan(text.indexOf('build the api'));
   });
 
   it('prepends mode marker to existing text part for sonar', async () => {

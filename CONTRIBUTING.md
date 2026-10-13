@@ -1,20 +1,23 @@
-# Contributing to Maestria
+# Contributing to maestria
 
 ## Start Here
 
 ```bash
-# Prerequisites: Node 24.16+, pnpm 11.8+, Python 3.11+, ruff
+# Prerequisites: Node 24.16+, pnpm 11.8+
 vp install
 vp check
 ```
 
-Maestria uses [Vite+](https://viteplus.dev) for formatting, linting, type-checking, tests, and builds. Use the package-specific commands below when you need to narrow a check.
+maestria uses [Vite+](https://viteplus.dev) for formatting, linting, type-checking, tests, and builds. Use the package-specific commands below when you need to narrow a check. Ultracite supplies presets through the root `vite.config.ts`; Vite+ remains the command, configuration, and staged-hook authority so competing tool paths cannot drift. External initialization must preserve hand-authored repository instructions and canonical/generated directive ownership.
+
+Treat shared toolchain upgrades as deliberate reviewed changes. Keep related Vite+ catalog entries aligned and inspect lockfile regeneration for unrelated upgrades; adding a workspace package should not silently upgrade every package's tooling. Runtime version authority is `devEngines.runtime` in the root manifest. CI and release workflows stay separate so cancellation of superseded PR checks cannot interrupt publishing; static docs rendering runs separately from package-only release builds.
 
 ## Repository Map
 
 ```text
 packages/core/agent-directives/  canonical agent prompts and rules
-packages/<platform>/             platform projections and adapters
+packages/<name>/                 native adapters (OpenCode, Pi)
+packages/agent-plugins/          declarative host plugin bundle
 packages/shared/                 host-neutral shared code
 apps/docs/                       Astro + Starlight documentation site
 apps/maestria-cli/               CLI for managing integrations
@@ -34,7 +37,7 @@ The important ownership rule is:
 | User-facing documentation | `apps/docs/` or the relevant package README | Generated agent files |
 | Architecture decisions | `docs/adr/<area>/` | A duplicate explanation in a package README |
 
-Package manifests, runtime code, package READMEs, and the docs site are hand-authored. Agent files and skills produced by the sync pipeline are generated.
+Release metadata, profile/native metadata and manifest inputs under `generation/`, package READMEs, runtime code, and the docs site are hand-authored. The shared plugin's installable agent, skill, and integration exports are generated directly at the package root. Directive text under `packages/core/agent-directives/` is canonical; agent profiles, skill projections, rules, and workflow entry points produced by sync are generated. Update the source that owns the content, then regenerate projections instead of editing generated files.
 
 ## The Sync Pipeline
 
@@ -46,7 +49,7 @@ packages/core/agent-directives/
 packages/<platform>/ generated agents, skills, commands, and rules
 ```
 
-Each platform's `sync.config.ts` declares its output path and the transformations needed for that host, such as tool names, frontmatter, and routing syntax. The pipeline also removes stale generated files.
+Native adapters use `sync.config.ts`. The shared plugin uses `scripts/sync-consolidated-plugin.ts` to compose canonical sources into an explicit output plan; its hand-authored manifest/profile/native metadata lives under `generation/`. The pipeline validates all inputs before mutation and retires only owned generated files.
 
 Never edit a generated file. Edit the canonical source, then regenerate and verify:
 
@@ -74,14 +77,21 @@ Agent prompts should describe the agent's behavior, not the history of the promp
 
 ## Add a Platform Plugin
 
-1. Create `packages/<name>/` with its manifest and package metadata.
-2. Add `sync.config.ts` when the platform consumes generated directives.
-3. Implement the native adapter when the platform needs runtime behavior. A declarative package may not need runtime source.
-4. Add the platform's user-facing docs under `apps/docs/src/content/docs/<name>/`.
-5. Add tests or validation for the platform's actual boundary.
-6. Run `scripts/check-sync` and the full quality gates.
+Choose the path that matches how the host consumes maestria.
 
-The root `scripts/sync-all` discovers package sync configs automatically. Do not register a platform by editing generated output or by copying another platform's runtime assumptions.
+**Native adapter package** (runtime code, like `opencode` and `pi`):
+
+1. Create `packages/<name>/` with its manifest, package metadata, and runtime source.
+2. Add `sync.config.ts` for the generated directives it consumes; `scripts/sync-all` discovers it automatically.
+3. Add user-facing docs under `apps/docs/src/content/docs/<name>/` and tests for the platform's actual boundary.
+
+**Declarative host in `@maestria/agent-plugins`** (manifest and file conventions only, no runtime source):
+
+1. Keep canonical text in `packages/core/agent-directives/`; do not add host-specific methodology.
+2. Edit the host manifest directly at the package root and keep profile inputs in `packages/agent-plugins/generation/profiles.json`, and extend the generator `scripts/sync-consolidated-plugin.ts` for any new output.
+3. Add docs under `apps/docs/src/content/docs/agent-plugins/<host>/`.
+
+Either way, run `scripts/check-sync` and the full quality gates. Do not register a platform by editing generated output or by copying another platform's runtime assumptions.
 
 ## Platform Development Reference
 
@@ -90,15 +100,8 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `pnpm --filter @maestria/kimi-code test` |
+| `agent-plugins` | `generation/` manifest/profile/native metadata; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
-| `omp` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/omp test` and `validate` |
-| `cursor` | `.cursor-plugin/` manifest and declarative files | `agents/`, `skills/`, `rules/`, `commands/` | `pnpm --filter @maestria/cursor test` |
-| `hermes` | Python adapter, hooks, middleware, and commands | `src/maestria_hermes/skills/` | `ruff check src/` |
-| `claude-code` | `.claude-plugin/` manifest | `agents/`, `skills/`, `commands/` | `pnpm --filter @maestria/claude-code test` and `claude plugin validate . --strict` |
-| `codex` | `.codex-plugin/` manifest and native-agent metadata | `skills/` | `pnpm --filter @maestria/codex test` |
-| `prime-agent` | manifest and verified extension subset | `skills/` | package validation and focused tests |
-| `agent-plugin` | portable manifest and package metadata | `skills/` | package validation and focused tests |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.
 

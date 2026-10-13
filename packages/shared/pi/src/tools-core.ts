@@ -1,10 +1,6 @@
 /** Shared tool interceptor utilities for Pi-family packages. */
 
-import {
-  persistState as persistStateCore,
-  recordFileModified,
-  recordFileRead,
-} from './state-core.js';
+import { recordFileModified, recordFileRead } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
 import { isReadOnlyBashCommand } from './bash-policy.js';
 
@@ -62,14 +58,11 @@ export interface ToolCallHandlerOptions {
   getState: () => MaestriaState;
   getActiveTools: () => string[];
   delegationTool: string;
-  delegationHint?: string;
-  extraMutations?: string[];
   isMutationTool?: (event: ToolCallEventLike) => boolean;
   isReadTool: (event: ToolCallEventLike) => boolean;
   isWriteTool: (event: ToolCallEventLike) => boolean;
   isBashTool: (event: ToolCallEventLike) => boolean;
   persist?: () => void;
-  pi?: { appendEntry: (type: string, data: unknown) => void };
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -83,24 +76,16 @@ const isMutationToolEvent = (
     return options.isMutationTool(event);
   }
   const name = event.toolName ?? '';
-  return (
-    ['bash', 'edit', 'patch', 'write'].includes(name) ||
-    options.extraMutations?.some((mutation) => mutation === name) === true
-  );
+  return ['bash', 'edit', 'patch', 'write'].includes(name);
 };
 
-const resolveDelegationHint = (delegationTool: string, hint?: string): string =>
-  hint ??
-  (delegationTool === 'task'
-    ? "Use 'maestria_subagent' or 'task()' to delegate mutations to specialists."
-    : "Use 'maestria_subagent' to delegate mutations to specialists.");
+const DELEGATION_HINT = "Use 'maestria_subagent' to delegate mutations to specialists.";
 
 const checkOrchestratorBlock = (
   state: MaestriaState,
   event: ToolCallEventLike,
   options: ToolCallHandlerOptions,
   delegationTool: string,
-  hint: string,
 ): { block: boolean; reason: string } | undefined => {
   if (state.mode === null || !options.getActiveTools().some((tool) => tool === delegationTool)) {
     return undefined;
@@ -117,7 +102,7 @@ const checkOrchestratorBlock = (
   }
   return {
     block: true,
-    reason: `Tool '${event.toolName}' is blocked for the orchestrator. ${hint}`,
+    reason: `Tool '${event.toolName}' is blocked for the orchestrator. ${DELEGATION_HINT}`,
   };
 };
 
@@ -176,15 +161,8 @@ const trackFileAccess = (
 
 export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCallHandler => {
   const { delegationTool } = options;
-  const hint = resolveDelegationHint(delegationTool, options.delegationHint);
   const doPersist = (): void => {
-    if (options.persist !== undefined) {
-      options.persist();
-      return;
-    }
-    if (options.pi !== undefined) {
-      persistStateCore(options.pi, options.getState());
-    }
+    options.persist?.();
   };
   return async (
     event: ToolCallEventLike,
@@ -194,7 +172,7 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
       return undefined;
     }
     const state = options.getState();
-    const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool, hint);
+    const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool);
     if (orchestrator !== undefined) {
       return orchestrator;
     }

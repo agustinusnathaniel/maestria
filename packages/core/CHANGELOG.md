@@ -69,7 +69,6 @@
   dispatch timed out or the model omitted the agent name, the orchestrator
   had zero fallback and aborted - the reported "lacks autonomy, behaves
   weirdly" symptom.
-
   - Orchestrator regains read-only tools (read, glob, grep, lsp, webfetch,
     read-only bash, tests) for routing and verification; mutations remain
     denied and delegated.
@@ -99,7 +98,7 @@
 
 - [#157](https://github.com/agustinusnathaniel/maestria/pull/157) [`906f836`](https://github.com/agustinusnathaniel/maestria/commit/906f836a96a2f53e838c29d3a9e82d5c2336ba49) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Selective routing contract in the canonical orchestrator directives.
 
-  **Three routes** - `direct` (host executes, no Maestria specialist spawn),
+  **Three routes** - `direct` (host executes, no maestria specialist spawn),
   `focused` (one targeted specialist, one reviewer for non-trivial
   work), and `full` (bounded recon, design, implementation, and review). The
   full pipeline is an explicit option for complex or high-risk work and for
@@ -122,7 +121,7 @@
   `@reviewer`; where the host cannot enforce separate sessions (e.g. Kimi, Pi,
   OMP, Hermes), the split is advisory and stated as such.
 
-  **How this affects you:** Maestria no longer routes every turn through the
+  **How this affects you:** maestria no longer routes every turn through the
   full pipeline. Small explanations and tiny edits run directly or through one
   specialist; the full pipeline stays available for complex, high-risk, or
   explicitly `fein` work. No action required on your end - your agents apply
@@ -180,7 +179,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -277,7 +275,6 @@
 - [#59](https://github.com/agustinusnathaniel/maestria/pull/59) [`9c0746e`](https://github.com/agustinusnathaniel/maestria/commit/9c0746e611afb6e79b071a14629fbd5b925338e9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add multi-lens review swarm, observation-first principle, and triage pipeline
 
   Three review methodology patterns adopted from PostHog's code review research:
-
   - **Multi-lens review swarm** - orchestrator can dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes, with exclusive lenses and cross-referenced etiquette rules
   - **Observation over reasoning** - reviewer principle shifted from "verify without running" to "what command produces visible proof?", prioritizing observable behavior over logical argument
   - **Review triage pipeline** - issues categorized [fix]/[dismiss]/[escalate] by reviewer, then validated by orchestrator with conflict resolution (conservative wins); iteration terminates when no actionable threads remain
@@ -300,7 +297,6 @@
 
   **Work result summary** - orchestrator presents completed work as
   structured file/signature table, not verbatim handoff dump.
-
   - !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
     Session Flow, Commit Completeness Check, and Automatic Review Loop added.
 

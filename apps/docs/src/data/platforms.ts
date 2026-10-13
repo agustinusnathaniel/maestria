@@ -1,12 +1,12 @@
 /**
- * Shared platform registry - single source of truth for every Maestria
- * platform adapter across the homepage adapter grid and footer.
+ * Shared platform registry - single source of truth for every installable
+ * maestria package across the homepage adapter grid.
  *
  * Blurbs are presentation copy; keep them in sync with the homepage card
  * language. `mark` keys into the shared glyph dict in src/data/marks.ts.
  * `installArgs` is the argument string for `npx maestria <installArgs>`;
- * an empty string means the platform has no canonical maestria CLI install
- * (e.g. ecosystem tooling, or platforms installed via their own tooling).
+ * an empty string means the entry has no canonical maestria CLI install
+ * (e.g. ecosystem tooling, or the multi-host package, which installs per host).
  */
 
 export interface Platform {
@@ -31,11 +31,13 @@ export interface Platform {
   flagship?: boolean;
   /** Homepage-only: draws the dashed inset ring on the cell (auxiliary tooling). */
   auxiliary?: boolean;
+  /** Homepage-only: hosts served by a shared package, listed on the card. */
+  hosts?: string[];
 }
 
 /**
- * All ten entries in homepage grid order. The platform adapters fill the
- * 3-column grid; `/ecosystem/` closes it with shared companion tooling.
+ * All entries in homepage grid order. `/ecosystem/` closes the grid
+ * with shared companion tooling.
  */
 export const platforms: Platform[] = [
   {
@@ -48,62 +50,22 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: 'Namespaced agents, skills, and workflow commands for Claude Code.',
-    href: '/claude-code/',
-    id: 'claude-code',
-    installArgs: 'install claude-code',
-    mark: 'claudeCode',
-    name: '@maestria/claude-code',
-  },
-  {
-    blurb: 'Specialist and workflow skills for Codex CLI.',
-    href: '/codex/',
-    id: 'codex',
-    installArgs: 'install codex',
-    mark: 'codex',
-    name: '@maestria/codex',
-  },
-  {
-    blurb: '8 specialized skills with swarm-aware orchestration and no build step.',
-    href: '/kimi-code/',
-    id: 'kimi-code',
-    installArgs: 'install kimi-code',
-    mark: 'kimiCode',
-    name: '@maestria/kimi-code',
-  },
-  {
-    blurb: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
-    href: '/cursor/',
-    id: 'cursor',
-    installArgs: 'install cursor',
-    mark: 'cursorMark',
-    name: '@maestria/cursor',
-  },
-  {
-    blurb: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
-    href: '/pi-omp/',
-    id: 'pi-omp',
-    // CLI positional arg is `pi` (see /cli/commands/), not `pi-omp`.
+    blurb: '7 specialist subagents with native workflow modes and session tracking for Pi.',
+    href: '/pi/',
+    id: 'pi',
     installArgs: 'install pi',
     mark: 'piOmp',
-    name: '@maestria/pi & @maestria/omp',
+    name: '@maestria/pi',
   },
   {
-    blurb: 'Methodology layer for Hermes Agent: specialists, pipeline, and mode system.',
-    href: '/hermes/',
-    id: 'hermes',
-    // Hermes installs via its own git-based plugin manager, not the maestria CLI.
+    blurb:
+      "One declarative package: seven specialists, three workflow modes, always-on policy, and four skills, loaded through each host's own plugin system.",
+    hosts: ['Claude Code', 'Codex', 'Cursor', 'Kimi Code', 'Devin', 'ZCode', 'OMP', 'Hermes'],
+    href: '/agent-plugins/',
+    id: 'agent-plugins',
     installArgs: '',
-    mark: 'hermes',
-    name: '@maestria/hermes',
-  },
-  {
-    blurb: 'Skills-first Maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
-    href: '/prime-agent/',
-    id: 'prime-agent',
-    installArgs: 'install prime-agent',
-    mark: 'primeAgent',
-    name: '@maestria/prime-agent',
+    mark: 'platforms',
+    name: '@maestria/agent-plugins',
   },
   {
     badge: 'PROVISIONAL',

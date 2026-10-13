@@ -29,7 +29,17 @@ const writeProjectFile = (root: string, rel: string, content: string): void => {
 const baseEvent: BeforeAgentStartEvent = {
   prompt: 'build the feature',
   systemPrompt: 'You are an AI assistant.',
-  systemPromptOptions: { cwd: '' },
+  systemPromptOptions: {
+    appendSystemPrompt: '',
+    contextFiles: [],
+    cwd: '',
+    promptGuidelines: [],
+    sections: {},
+    selectedTools: [],
+    skills: [],
+    toolGuidelines: {},
+    toolSnippets: {},
+  },
   type: 'before_agent_start',
 };
 

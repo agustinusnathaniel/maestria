@@ -5,7 +5,7 @@ description: Platform-specific reference for @maestria/opencode - t3code compati
 
 ## t3code Compatibility
 
-[t3code](https://t3.codes) is a desktop application that provides a unified web interface for multiple AI coding agents, including OpenCode. When OpenCode runs through t3code, some Maestria agent-level controls behave differently.
+[t3code](https://t3.codes) is a desktop application that provides a unified web interface for multiple AI coding agents, including OpenCode. When OpenCode runs through t3code, some maestria agent-level controls behave differently.
 
 ### How t3code drives OpenCode
 
@@ -36,7 +36,7 @@ OpenCode's V2 protocol uses an agent-native permission model: tool access is con
 
 ### Known limitations
 
-**Approval-required mode renders the orchestrator unusable.** Every tool call needs approval through t3code's UI, even tools that Maestria permits freely (like `question` or `task`), so delegation steps stall on manual clicks.
+**Approval-required mode renders the orchestrator unusable.** Every tool call needs approval through t3code's UI, even tools that maestria permits freely (like `question` or `task`), so delegation steps stall on manual clicks.
 
 **Full-access mode bypasses agent-level restrictions.** The builder agent gets unrestricted bash access, and reviewer agents lose their read-only enforcement.
 

@@ -13,7 +13,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
 
 <StarlightPage
   frontmatter={{
-    title: 'Maestria',
+    title: 'maestria',
     description:
       'A portable harness for AI coding agents. Route complex work through specialists, structured handoffs, and independent review.',
     template: 'splash',
@@ -213,7 +213,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       <section class="home-section mb-[clamp(4rem,9vw,6rem)]" id="adapters" aria-labelledby="platforms-title">
         <p class="section-eyebrow">03 / ADAPTERS</p>
         <h2 id="platforms-title">One methodology, built on native primitives.</h2>
-        <div class="grid grid-cols-3 border-t border-l border-home-border max-lg:grid-cols-1">
+        <div class="grid grid-cols-2 border-t border-l border-home-border max-md:grid-cols-1">
           {platforms.map((platform) => (
             <a
               class:list={[
@@ -229,6 +229,9 @@ const INSTALL_CMD = 'npx maestria install opencode';
                 {platform.badge && <span class="platform-badge">{platform.badge}</span>}
               </span>
               <span class="text-[0.84375rem] leading-[1.55] text-home-text-muted">{platform.blurb}</span>
+              {platform.hosts && (
+                <span class="platform-hosts">{platform.hosts.join(' · ')}</span>
+              )}
             </a>
           ))}
         </div>
@@ -631,6 +634,14 @@ const INSTALL_CMD = 'npx maestria install opencode';
     border: 1px dashed var(--home-border);
     border-radius: 3px;
     pointer-events: none;
+  }
+
+  .platform-hosts {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    color: var(--home-text-soft);
   }
 
   .platform-badge {

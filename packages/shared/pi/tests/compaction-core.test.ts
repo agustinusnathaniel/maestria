@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { installCompactionHandlers } from '@/compaction-core.js';
 import type {
   CompactionEvent,
-  CompactionOn,
   CompactionResult,
   TreeEvent,
   TreeResult,
@@ -13,9 +12,15 @@ import { createInitialState } from '@/state-core.js';
 type CompactHandler = (event: CompactionEvent) => CompactionResult;
 type TreeHandler = (event: TreeEvent) => TreeResult | undefined;
 
+type MockOnImpl = (
+  ...args:
+    | [event: 'session_before_compact', handler: CompactHandler]
+    | [event: 'session_before_tree', handler: TreeHandler]
+) => void;
+
 interface MockPi {
   compactHandlers: Map<string, CompactHandler>;
-  on: ReturnType<typeof vi.fn<CompactionOn>>;
+  on: ReturnType<typeof vi.fn<MockOnImpl>>;
   treeHandlers: Map<string, TreeHandler>;
 }
 
@@ -24,12 +29,11 @@ const createMockPi = (): MockPi => {
   const treeHandlers = new Map<string, TreeHandler>();
   return {
     compactHandlers,
-    on: vi.fn<CompactionOn>((...args) => {
-      const [event, handler] = args;
-      if (event === 'session_before_compact') {
-        compactHandlers.set(event, handler);
+    on: vi.fn<MockOnImpl>((...args) => {
+      if (args[0] === 'session_before_compact') {
+        compactHandlers.set(args[0], args[1]);
       } else {
-        treeHandlers.set(event, handler);
+        treeHandlers.set(args[0], args[1]);
       }
     }),
     treeHandlers,

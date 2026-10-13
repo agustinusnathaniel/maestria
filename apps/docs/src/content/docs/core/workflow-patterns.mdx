@@ -1,9 +1,9 @@
 ---
 title: Workflow Patterns
-description: Practical patterns for choosing and combining Maestria routes without adding unnecessary delegation.
+description: Practical patterns for choosing and combining maestria routes without adding unnecessary delegation.
 ---
 
-Use this page to choose a starting point for a task. [Specialist Reference](/core/agents/) has role details, [Pipeline & Roles](/core/pipeline/) the execution model, and [When to use Maestria](/core/when-to-use/) the cost and risk trade-off.
+Use this page to choose a starting point for a task. [Specialist Reference](/core/agents/) has role details, [Pipeline & Roles](/core/pipeline/) the execution model, and [When to use maestria](/core/when-to-use/) the cost and risk trade-off.
 
 ## Match the Task to a Route
 
@@ -52,23 +52,25 @@ Use one independent reviewer for ordinary pre-merge validation, adding a securit
 
 Projects may add two root-only files, loaded in order: `.maestria/workflow.md` for project context, required reading, and quality gates, then `.maestria/rules.md` for local non-negotiable constraints. Each file carries a subordinate-guidance header: it may replace configurable workflows but never waives safety, authorization, or host permissions. Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
 
-Keep these files short: reusable methodology belongs in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
+Keep these files short: reusable methodology belongs in the canonical maestria directives, project decisions in ADRs, and one-off task details in the handoff.
 
 ### How engines load them
 
 | Engine | Project root | Freshness |
 | --- | --- | --- |
 | OpenCode | SDK project worktree, then instance worktree, then session directory | Read fresh on every model call; edits need no restart |
-| Pi / OMP | Session working directory, each turn | Read fresh on every agent turn, composed with the mode prompt |
+| Pi | Session working directory, each turn | Read fresh on every agent turn, composed with the mode prompt |
 
-Compaction and carry-over preserve them: OpenCode keeps active project constraints in the compaction summary while content re-injects on every call; Pi and OMP recompose sections each turn and persist the mode across turns in the same process.
+Compaction and carry-over preserve them: OpenCode keeps active project constraints in the compaction summary while content re-injects on every call; Pi recomposes sections each turn and persist the mode across turns in the same process.
+
+The declarative Agent Plugins integrations provide instructions to read project guidance; they do not install this runtime loader or its freshness and compaction guarantees. OMP owns native rule discovery, and Hermes requires optional manual host context configuration.
 
 ### Absent versus unusable
 
-Missing or empty files are skipped silently. A present-but-unusable file (a directory, a non-file, a symlink escaping the project root, or an unreadable file) fails loud with a diagnostic that names only the relative path, never absolute paths or file contents. OpenCode propagates it as a failed model call; Pi and OMP surface it via notification plus a STOP banner. Do not execute the request until the files are fixed.
+Missing or empty files are skipped silently. A present-but-unusable file (a directory, a non-file, a symlink escaping the project root, or an unreadable file) fails loud with a diagnostic that names only the relative path, never absolute paths or file contents. OpenCode propagates it as a failed model call; Pi surfaces it via notification plus a STOP banner. Do not execute the request until the files are fixed.
 
 ## See Also
 
 - [Specialist Reference](/core/agents/)
 - [Pipeline & Roles](/core/pipeline/)
-- [When to use Maestria](/core/when-to-use/)
+- [When to use maestria](/core/when-to-use/)

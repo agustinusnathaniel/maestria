@@ -2,6 +2,8 @@
 command = "pnpm --filter @maestria/docs build"
 publish = "dist"
 
+# Redirects live in public/_redirects, which Netlify and Cloudflare Pages both read from dist/.
+
 [build.environment]
 NODE_VERSION = "24"
 COREPACK_INTEGRITY_KEYS = "0"

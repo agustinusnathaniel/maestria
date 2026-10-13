@@ -6,7 +6,6 @@ import { configureCommand } from '@/commands/configure.js';
 import { doctorCommand } from '@/commands/doctor.js';
 import { installCommand } from '@/commands/install.js';
 import { pluginCommand } from '@/commands/plugin.js';
-import { setupCommand } from '@/commands/setup.js';
 import { handleStatus, statusCommand } from '@/commands/status.js';
 import type { StatusArgs } from '@/commands/status.js';
 import { uninstallCommand } from '@/commands/uninstall.js';
@@ -19,8 +18,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   check: {
     examples: [
       'maestria check opencode           Check if @maestria/opencode is installed',
-      'maestria check hermes             Check if @maestria/hermes is installed',
-      'maestria check prime-agent        Check if @maestria/prime-agent is installed',
+      'maestria check hermes             Check the shared plugin in Hermes',
       'maestria check --all              Check all detected platforms',
       'maestria check opencode --json    Output as JSON',
       'maestria check opencode --quiet   Exit code only (for scripts)',
@@ -31,21 +29,20 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria configure opencode       Choose per-agent models interactively',
       'maestria configure opencode --project  Configure for the current project only',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set one model',
-      'maestria configure omp --set adventurer=opencode-go/deepseek-v4-flash,writer=opencode-go/deepseek-v4-pro  Set several',
       'maestria configure pi --set builder=  Reset an agent to inherit the session model',
       'maestria configure opencode --json   Output the resulting config as JSON',
       'maestria configure --quiet            Suppress spinner output (for CI)',
     ],
     tip: [
-      'Per-agent models are supported for: opencode (config file), codex (native agent TOML), cursor (native agent files), pi and omp (agent frontmatter).',
+      'Per-agent models are supported for: opencode (config file), codex (native agent TOML), cursor (native agent files), pi (agent frontmatter). OMP loads portable plugin skills and has no per-agent model files.',
       'Use --global (default) or --project to choose the config level.',
       'For CI pipelines, pass --set with --global or --project and add --quiet.',
     ].join('\n'),
   },
   doctor: {
     examples: [
-      'maestria doctor                   Diagnose skill setup without changing anything',
-      'maestria doctor --json            Show skill diagnostics as JSON',
+      'maestria doctor                   Report legacy CLI-installed skills without changing anything',
+      'maestria doctor --json            Show legacy skill diagnostics as JSON',
       'maestria doctor --quiet           Suppress spinner output',
     ],
   },
@@ -59,7 +56,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install hermes           Install for a specific platform',
       'maestria install claude-code      Install for Claude Code',
       'maestria install codex            Install for Codex CLI',
-      'maestria install prime-agent      Install for Prime Agent',
       'maestria install --compact        Minimal machine-friendly output',
     ],
   },
@@ -79,13 +75,11 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install hermes           Install for Hermes agent',
       'maestria install claude-code      Install for Claude Code',
       'maestria install codex            Install for Codex CLI',
-      'maestria install prime-agent      Install for Prime Agent',
       'maestria configure opencode       Choose per-agent models interactively',
       'maestria configure codex          Configure native Codex custom-agent models',
       'maestria configure cursor        Configure native Cursor agent models',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set a model non-interactively',
       'maestria plugin install            Stage a portable Agent Plugin',
-      'maestria setup                   Coordinate optional ecosystem and skill setup',
       'maestria plugin validate ./my-plugin  Validate a portable Agent Plugin directory',
       'maestria --help                   Show this help',
     ],
@@ -99,28 +93,13 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   plugin: {
     examples: [
       'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
-      'maestria plugin install                 Stage @maestria/agent-plugin in the Maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
       'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
     ],
     tip: [
       "The portable workflow stages and validates a directory package; it does not replace each client's own activation or permission model.",
       'Use a client-specific plugin installer or point the client at the staged directory.',
-    ].join('\n'),
-  },
-  setup: {
-    examples: [
-      'maestria setup                    Coordinate optional setup interactively',
-      'maestria setup --ecosystem codegraph,opensrc --yes  Check ecosystem tools non-interactively',
-      'maestria setup --xtarterize-skills --cwd ./my-project --yes  Apply project skills',
-      'maestria setup --skill-source acme/skills:global --yes  Install a skill source globally',
-      'maestria setup --skills create-pull-request --yes  Reconcile Maestria skills',
-      'maestria setup --json             Output the per-action report as JSON',
-    ],
-    tip: [
-      'Setup is read-only until the final confirmation; nothing runs before confirm.',
-      'Ecosystem tools are detection plus manual steps only; setup never installs them automatically.',
-      'Project scope follows --cwd (or the current directory); re-run with the same args to resume.',
     ].join('\n'),
   },
   status: {
@@ -141,7 +120,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update hermes            Update Hermes to latest',
       'maestria update claude-code      Update Claude Code to latest',
       'maestria update codex            Update Codex CLI to latest',
-      'maestria update prime-agent      Update Prime Agent to latest',
       'maestria update --compact         Minimal machine-friendly output',
     ],
   },
@@ -150,7 +128,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
 const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   install: {
     examples: [
-      'maestria plugin install                 Stage @maestria/agent-plugin in the Maestria cache',
+      'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
       'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
       'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
       'maestria plugin install --json          Output the staged package report as JSON',
@@ -264,14 +242,12 @@ export const main = defineCommand({
     doctor: doctorCommand,
     install: installCommand,
     plugin: pluginCommand,
-    setup: setupCommand,
     status: statusCommand,
     uninstall: uninstallCommand,
     update: updateCommand,
   },
 });
 
-/** CLI boundary: owns signal handlers, the citty run, and the single process exit. */
 export const runCli = async (): Promise<void> => {
   process.on('SIGINT', () => process.exit(130));
   process.on('SIGTERM', () => process.exit(0));

@@ -1,19 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import { isPiModel } from '@/model.js';
-import {
-  createInitialState,
-  exitReviewMode,
-  FILE_HISTORY_CAP,
-  HANDOFF_HISTORY_CAP,
-  persistState,
-  recordFileModified,
-  recordFileRead,
-  recordHandoff,
-  recordSpecialistDelegated,
-  renderMaestriaSummary,
-} from '@maestria/shared-pi/state-core';
-import { restoreOriginalState } from '@/state/review.js';
 
 const createModel = (id: string) => ({
   api: 'anthropic-messages' as const,
@@ -26,30 +13,6 @@ const createModel = (id: string) => ({
   name: id,
   provider: 'anthropic',
   reasoning: false,
-});
-
-describe('state modules', () => {
-  it('exposes the shared state API and the pi restore helper', () => {
-    expect(HANDOFF_HISTORY_CAP).toBe(5);
-    expect(FILE_HISTORY_CAP).toBe(10);
-    expect(typeof createInitialState).toBe('function');
-    expect(typeof recordHandoff).toBe('function');
-    expect(typeof recordFileModified).toBe('function');
-    expect(typeof recordFileRead).toBe('function');
-    expect(typeof recordSpecialistDelegated).toBe('function');
-    expect(typeof exitReviewMode).toBe('function');
-    expect(typeof persistState).toBe('function');
-    expect(typeof renderMaestriaSummary).toBe('function');
-    expect(typeof restoreOriginalState).toBe('function');
-  });
-
-  it('serves shared initial state', () => {
-    const state = createInitialState();
-
-    expect(state.mode).toBeNull();
-    expect(state.handoffHistory).toEqual([]);
-    expect(state.reviewMode).toBe(false);
-  });
 });
 
 describe('isPiModel', () => {

@@ -3,7 +3,15 @@ import { defineConfig } from 'vite-plus';
 export default defineConfig({
   pack: {
     deps: {
-      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'jsonc-parser', 'picocolors', 'yaml'],
+      alwaysBundle: [
+        '@clack/prompts',
+        'citty',
+        'effect',
+        'jsonc-parser',
+        'picocolors',
+        'semver',
+        'yaml',
+      ],
     },
     entry: ['src/index.ts'],
     fixedExtension: false,

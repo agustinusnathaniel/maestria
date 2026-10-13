@@ -1,0 +1,30 @@
+{
+  "name": "maestria",
+  "version": "0.8.0",
+  "description": "Native Kimi specialist profiles, workflow commands, and complete session instructions",
+  "keywords": [
+    "maestria",
+    "kimi-code",
+    "skills",
+    "orchestration",
+    "engineering",
+    "workflow",
+    "swarm"
+  ],
+  "author": {
+    "name": "Agustinus Nathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "systemPromptPath": "./AGENTS.md",
+  "interface": {
+    "displayName": "maestria Agent Pack",
+    "shortDescription": "Native specialists and workflow commands for Kimi Code",
+    "longDescription": "Seven native specialist profiles, complete primary-session policy and routing, three workflow commands, and four maestria skills. Models, tool authority, and session lifecycle remain Kimi-owned.",
+    "developerName": "Agustinus Nathaniel",
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria"
+  },
+  "agents": "./agents/"
+}

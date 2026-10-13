@@ -52,7 +52,7 @@ const allow = (...patterns: readonly string[]): BashPermissionEntry[] =>
 // drivers), and branch keeps `--list` discipline. These globs are coarse
 // host configuration (ADR-OC-001): token-level guarantees such as custom
 // --format/%G rejection and chaining/substitution denial stay in the shared
-// Pi/OMP parser. `find` is intentionally not restored: the policy denies
+// Pi parser. `find` is intentionally not restored: the policy denies
 // every find form, and a prefix glob cannot exclude -exec/-delete/-ok.
 const GUARDED_GIT =
   'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
@@ -179,7 +179,7 @@ export default {
     },
     'orchestrator.md': {
       frontmatter: {
-        description: `Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
+        description: `maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
         mode: 'all',
         permission: {
           bash: {

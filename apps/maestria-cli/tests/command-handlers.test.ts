@@ -154,7 +154,6 @@ describe('command handlers', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'maestria-handler-record-'));
     configDirs.push(dir);
     vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
-    vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
     platformMocks.getPlatform.mockImplementation((id: string) => handlers.get(id));
     detectMocks.detectAll.mockReturnValue(Effect.succeed([]));
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed([]));
@@ -189,7 +188,7 @@ describe('command handlers', () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
       const plain = await handleStatus({ quiet: true });
       expect(plain.exitCode).toBe(0);
-      expect(plain.output).toContain('Maestria Status');
+      expect(plain.output).toContain('maestria Status');
       expect(plain.output).toContain('OpenCode');
 
       const platformsStatus = [status({})];
@@ -208,6 +207,40 @@ describe('command handlers', () => {
   });
 
   describe('check', () => {
+    it('keeps distinct JSON shapes for unavailable, missing, and installed plugins', async () => {
+      detectMocks.detectSingle.mockReturnValue(
+        Effect.succeed(status({ available: false, installed: false })),
+      );
+      const unavailable = await handleCheck({ json: true, platform: 'opencode' });
+      expect(JSON.parse(unavailable.output)).toEqual({
+        available: false,
+        message: 'CLI tool for OpenCode is not available on this machine',
+        platform: 'opencode',
+        pluginInstalled: false,
+      });
+
+      detectMocks.detectSingle.mockReturnValue(Effect.succeed(status({ installed: false })));
+      const missing = await handleCheck({ json: true, platform: 'opencode' });
+      expect(JSON.parse(missing.output)).toEqual({
+        available: true,
+        installedVersion: '1.0.0',
+        message: '@maestria/opencode is not installed for OpenCode',
+        platform: 'opencode',
+        pluginInstalled: false,
+      });
+
+      detectMocks.detectSingle.mockReturnValue(Effect.succeed(status({})));
+      const installed = await handleCheck({ json: true, platform: 'opencode' });
+      expect(JSON.parse(installed.output)).toEqual({
+        available: true,
+        installedVersion: '1.0.0',
+        latestVersion: '1.0.0',
+        outdated: false,
+        platform: 'opencode',
+        pluginInstalled: true,
+      });
+    });
+
     it('maps current, outdated, and missing installs to exit 0, 3, and 1', async () => {
       const current = await handleCheck({ platform: 'opencode' });
       expect(current.exitCode).toBe(0);
@@ -370,17 +403,15 @@ describe('command handlers', () => {
   });
 
   describe('update', () => {
-    it('updates a direct platform selection', async () => {
-      const result = await handleUpdate({ platform: 'opencode', quiet: true, version: '1.0.0' });
+    it('uses the detected versions when choosing interactive updates', async () => {
+      setTty(true);
+      detectMocks.detectInstalled.mockReturnValue(
+        Effect.succeed([status({ installedVersion: '1.0.0', latestVersion: '2.0.0' })]),
+      );
+      const { groupMultiselect } = await import('@/lib/group-multiselect.js');
+      vi.mocked(groupMultiselect).mockResolvedValueOnce(['opencode']);
 
-      expect(transactionMocks.updateOne).toHaveBeenCalledTimes(1);
-      expect(result.exitCode).toBe(0);
-    });
-
-    it('updates all installed platforms', async () => {
-      detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
-
-      const result = await handleUpdate({ all: true, quiet: true });
+      const result = await handleUpdate({ quiet: true });
 
       expect(transactionMocks.updateOne).toHaveBeenCalledTimes(1);
       expect(result.exitCode).toBe(0);
@@ -394,42 +425,45 @@ describe('command handlers', () => {
       expect(result).toEqual({ exitCode: 0, output: 'No maestria installations found to update.' });
     });
 
-    it('reviews skills with confirmation when plugins are already current', async () => {
+    it('returns the up-to-date output unchanged when no legacy record exists', async () => {
       setTty(true);
       detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
-      const { groupMultiselect } = await import('@/lib/group-multiselect.js');
-      vi.mocked(groupMultiselect).mockResolvedValueOnce(['create-pull-request', 'docs-update']);
 
       const result = await handleUpdate({ json: true });
 
-      expect(promptMocks.confirm).toHaveBeenCalled();
+      expect(transactionMocks.updateOne).not.toHaveBeenCalled();
       expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('Already up to date');
-      const parsed: unknown = JSON.parse(result.output);
-      expect(parsed).toMatchObject([{ skills: ['create-pull-request', 'docs-update'] }]);
-      const { readSkillsRecord } = await import('@/lib/skills.js');
-      const saved = await readSkillsRecord();
-      expect(saved?.platforms.opencode?.skills).toEqual(['create-pull-request', 'docs-update']);
+      expect(result.output).toContain('All platforms are up to date.');
     });
 
-    it('narrows the recorded selection to a single skill on update', async () => {
+    it('runs legacy cleanup when plugins are already current but a record exists', async () => {
+      setTty(true);
+      detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
       const { writeSkillsRecord } = await import('@/lib/skills.js');
       await writeSkillsRecord({
-        platforms: { opencode: { skills: ['create-pull-request', 'docs-update'] } },
+        platforms: { opencode: { skills: ['create-pull-request'] } },
         version: 2,
       });
 
-      const single = await handleUpdate({
-        platform: 'opencode',
-        quiet: true,
-        skills: 'docs-update',
-        yes: true,
-      });
+      const result = await handleUpdate({ json: true });
 
-      expect(single.exitCode).toBe(0);
+      expect(transactionMocks.updateOne).not.toHaveBeenCalled();
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('Already up to date');
       const { readSkillsRecord } = await import('@/lib/skills.js');
-      const narrowed = await readSkillsRecord();
-      expect(narrowed?.platforms.opencode?.skills).toEqual(['docs-update']);
+      const savedRecord = await readSkillsRecord();
+      expect(savedRecord?.platforms.opencode).toBeUndefined();
+    });
+
+    it('rejects removed skill flags before any effect', async () => {
+      // Non-fresh literal on purpose: removed flags are undeclared by design.
+      const args = { platform: 'opencode', quiet: true, skills: 'none' };
+      const error = await captureCliError(handleUpdate(args));
+
+      expect(error.exitCode).toBe(1);
+      expect(error.message).toMatch(/removed/u);
+      expect(error.message).toMatch(/bundle/u);
+      expect(transactionMocks.updateOne).not.toHaveBeenCalled();
     });
 
     it('returns the batch failure exit code when one update fails', async () => {

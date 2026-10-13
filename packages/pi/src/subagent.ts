@@ -185,8 +185,8 @@ const pollParallelSubagents = async (
   service: SubagentSpawnService,
   signal: AbortSignal | undefined,
   onUpdate: ToolUpdateHandler,
-): Promise<ParallelOutcome[]> => {
-  const settled = await Promise.allSettled(
+): Promise<ParallelOutcome[]> =>
+  await Promise.all(
     spawnedIds.map(async (id, index): Promise<ParallelOutcome> => {
       const task = taskList[index];
       try {
@@ -205,14 +205,6 @@ const pollParallelSubagents = async (
       }
     }),
   );
-  return settled.map((outcome): ParallelOutcome => {
-    if (outcome.status === 'fulfilled') {
-      return outcome.value;
-    }
-    const reason: unknown = outcome.reason;
-    return { error: reason };
-  });
-};
 
 const renderParallelResults = (
   taskList: SubagentTask[],
@@ -388,7 +380,7 @@ const unavailableResult = (): ToolResult => ({
         'Install it as a Pi extension:',
         '',
         '```',
-        'pi install npm:@gotgenes/pi-subagents',
+        'pi install npm:@gotgenes/pi-subagents@^21.5.1',
         '```',
         '',
         'Then restart your Pi session.',
@@ -484,7 +476,7 @@ const createSubagentTool = (
       : undefined;
     return await executeSubagent(pi, state, params, signal, updateHandler);
   },
-  label: 'Maestria Subagent',
+  label: 'maestria Subagent',
   name: 'maestria_subagent',
   parameters: SUBAGENT_PARAMETERS,
   promptGuidelines: [

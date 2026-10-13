@@ -16,12 +16,12 @@ const SUPPORTED_MEDIA_TYPES = ['text/markdown', 'text/html'] as const;
 
 /** Shared absolute recovery links for the agent 404 and the human 404 page. */
 export const RECOVERY_LINKS = [
-  ['Maestria home', 'https://maestria.sznm.dev/'],
+  ['maestria home', 'https://maestria.sznm.dev/'],
   ['Markdown summary for agents', 'https://maestria.sznm.dev/llms.txt'],
   ['Full documentation for agents', 'https://maestria.sznm.dev/llms-full.txt'],
   ['Agent instructions', 'https://maestria.sznm.dev/agents.md'],
   ['Sitemap', 'https://maestria.sznm.dev/sitemap-index.xml'],
-  ['When to Use Maestria', 'https://maestria.sznm.dev/core/when-to-use/'],
+  ['When to Use maestria', 'https://maestria.sznm.dev/core/when-to-use/'],
   ['GitHub repository', 'https://github.com/agustinusnathaniel/maestria'],
 ] as const;
 

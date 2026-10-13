@@ -1,0 +1,22 @@
+{
+  "name": "maestria",
+  "version": "0.8.0",
+  "description": "maestria native specialist profiles, workflow commands, and reusable utilities for ZCode",
+  "author": {
+    "name": "agustinusnathaniel",
+    "url": "https://github.com/agustinusnathaniel"
+  },
+  "homepage": "https://maestria.sznm.dev/",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "ai-engineering",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "specialists"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/"
+}

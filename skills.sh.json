@@ -3,8 +3,13 @@
   "groupings": [
     {
       "title": "Methodology",
-      "description": "Workflow skills for intent contracts, documentation updates, and pull request drafts.",
-      "skills": ["create-pull-request", "docs-update", "spec-contract"]
+      "description": "Workflow skills for documentation updates and pull request drafts.",
+      "skills": ["create-pull-request", "docs-update"]
+    },
+    {
+      "title": "Utilities",
+      "description": "Hand off work between stages and bound repair loops, generated from the maestria global rules.",
+      "skills": ["handoff", "iteration-limits"]
     }
   ]
 }

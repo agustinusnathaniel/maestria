@@ -18,27 +18,17 @@ const runLifecycleTransaction = (
     const spinner = createSpinner(quiet);
     spinner.start(`${gerund} ${platform.label}...`);
 
-    const errorMessage: string | null = yield* operation.pipe(
-      Effect.as(null),
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+    const result = yield* operation.pipe(
+      Effect.match({
+        onFailure: (error) => ({ message: error.message, ok: false }),
+        onSuccess: () => ({ message: completed, ok: true }),
+      }),
     );
-
-    if (errorMessage === null) {
-      spinner.stop(completed);
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: completed,
-        ok: true,
-      } satisfies PlatformResult;
-    }
-
-    spinner.stop(`Failed: ${errorMessage}`);
+    spinner.stop(result.ok ? completed : `Failed: ${result.message}`);
     return {
       id: platform.id,
       label: platform.label,
-      message: errorMessage,
-      ok: false,
+      ...result,
     } satisfies PlatformResult;
   });
 
@@ -81,13 +71,13 @@ const captureSnapshot = (
   );
 };
 
-// oxlint-disable-next-line max-lines-per-function -- updateOne orchestrates the per-platform update transaction (snapshot capture, version checks, preflight, downgrade guard, spinner, cache invalidation) as a single atomic flow; splitting would obscure the sequential transaction and create single-use helpers.
+// oxlint-disable-next-line max-lines-per-function -- atomic per-platform update flow, keep intact.
 export const updateOne = (
   platform: PlatformHandler,
   quiet: boolean,
   version?: string,
 ): Effect.Effect<PlatformResult> =>
-  // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
+  // oxlint-disable-next-line max-lines-per-function -- shares the transaction closure above.
   Effect.gen(function* updateOneEffect() {
     if (isSpecified(version) && platform.supportsVersionPinning === false) {
       return {
@@ -110,11 +100,9 @@ export const updateOne = (
     const prevVersion = snapshot
       ? snapshot.installedVersion
       : yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
+          Effect.catchEager(() => Effect.succeed('unknown')),
         );
-    const targetVersion =
-      version ??
-      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
+    const targetVersion = version ?? (yield* platform.getLatestVersion);
     if (platform.preflightUpdate) {
       const preflightError: string | null = yield* platform
         .preflightUpdate(snapshot ?? undefined)
@@ -152,7 +140,7 @@ export const updateOne = (
       } satisfies PlatformResult;
     }
     const spinner = createSpinner(quiet);
-    // Name the updated plugin package, not the host runtime (Hermes has none: keep its label).
+    // Hermes has no package: keep its label.
     const packageRef = platform.npmPackage ?? platform.label;
     spinner.start(`Updating ${packageRef}: ${prevVersion} → ${targetVersion}...`);
     const errorMessage: string | null = yield* platform.update(version, snapshot ?? undefined).pipe(
@@ -169,11 +157,11 @@ export const updateOne = (
       } satisfies PlatformResult;
     }
     const nextVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
+      Effect.catchEager(() => Effect.succeed('unknown')),
     );
     spinner.stop(previewVersionDiff(packageRef, prevVersion, nextVersion));
     if (isSpecified(platform.npmPackage)) {
-      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
+      yield* invalidateVersionCache(platform.npmPackage);
     }
     return {
       id: platform.id,

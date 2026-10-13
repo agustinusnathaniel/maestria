@@ -27,14 +27,9 @@ export interface DoctorDeps {
 }
 
 const INSTALL_PLUGIN_HINT = 'to install the plugin';
-const RECORD_SELECTION_HINT = 'to record a selection';
+const LEGACY_CLEANUP_HINT = 'to remove legacy';
 
-/**
- * Human table shows one actionable step per platform. Priority: an uninstalled
- * plugin blocks everything else, then a missing record, otherwise the first
- * accumulated step (share, exclude, restore, re-run, manual). The JSON output
- * keeps the full `next` array as the machine contract.
- */
+/** Human table shows one step; JSON keeps the full `next` array. */
 const selectDisplayNext = (platform: DoctorPlatformReport): string[] => {
   if (platform.next.length <= 1) {
     return platform.next;
@@ -45,11 +40,9 @@ const selectDisplayNext = (platform: DoctorPlatformReport): string[] => {
       return [install];
     }
   }
-  if (platform.recorded === null) {
-    const record = platform.next.find((item) => item.includes(RECORD_SELECTION_HINT));
-    if (record !== undefined) {
-      return [record];
-    }
+  const legacy = platform.next.find((item) => item.includes(LEGACY_CLEANUP_HINT));
+  if (legacy !== undefined) {
+    return [legacy];
   }
   return platform.next.slice(0, 1);
 };
@@ -81,11 +74,7 @@ interface ObservedText {
   readonly text: string;
 }
 
-/**
- * Human table shows managed skills only; unrelated skills collapse to a
- * count. Platforms sharing one agent inventory render it once and reference
- * the first platform afterwards. JSON keeps the full `observed` arrays.
- */
+/** Human table collapses unrelated skills; JSON keeps full `observed`. */
 const observedText = (
   platform: DoctorPlatformReport,
   firstByAgent: Map<string, string>,
@@ -137,7 +126,7 @@ const renderPlatformSection = (
 
 const renderDoctorTable = (output: DoctorOutput): string => {
   const lines: string[] = [
-    picocolors.bold('\n  Maestria Doctor'),
+    picocolors.bold('\n  maestria Doctor'),
     picocolors.dim('  ─────────────────────────────────────'),
     `  Record: ${output.recordPresent ? output.recordPath : `${output.recordPath} (absent)`}`,
   ];
@@ -152,8 +141,7 @@ export const handleDoctor = async (
   args: DoctorArgs,
   deps: DoctorDeps = {},
 ): Promise<CommandResult> => {
-  // The global root --compact flag parses everywhere, but doctor has no compact
-  // rendering; fail loud before any detection or observation below.
+  // Root --compact parses everywhere but doctor has no compact rendering; fail loud.
   if (args.compact === true) {
     throw new CliError(
       args.quiet === true
@@ -165,11 +153,13 @@ export const handleDoctor = async (
   const spinner = createSpinner(args.quiet === true);
   spinner.start('Checking skill setup...');
 
-  // Corrupt records fail loud before any observation below.
+  // Corrupt records fail loud before any observation.
   const recordPath = redactHome(getSkillsRecordPath());
   const record = await readSkillsRecord();
   const statuses =
-    deps.detect === undefined ? await Effect.runPromise(detectAll()) : await deps.detect();
+    deps.detect === undefined
+      ? await Effect.runPromise(detectAll({ includeLatest: false }))
+      : await deps.detect();
   const platforms = await collectDoctorReports(deps.runner ?? defaultSkillRunner, statuses, record);
   const output: DoctorOutput = {
     platforms,
@@ -193,7 +183,7 @@ export const doctorCommand = defineCommand({
     json: {
       default: false,
       description:
-        'Output skill diagnostics as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output legacy skill diagnostics as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       type: 'boolean',
     },
     quiet: {
@@ -203,7 +193,7 @@ export const doctorCommand = defineCommand({
     },
   },
   meta: {
-    description: 'Diagnose skill setup without changing anything (read-only)',
+    description: 'Report legacy CLI-installed skills without changing anything (read-only)',
     name: 'doctor',
   },
   run: toCommandRun(handleDoctor),

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vite-plus/test';
 const SKILLS_DIR = path.join(import.meta.dirname, '..', 'skills');
 
 describe('skills', () => {
-  const skills = ['handoff', 'iteration-limits'];
+  const skills = ['create-pull-request', 'docs-update', 'handoff', 'iteration-limits'];
 
   for (const name of skills) {
     it(`${name}/SKILL.md exists and has valid frontmatter`, () => {
@@ -29,13 +29,5 @@ describe('skills', () => {
       const nameMatch = /^name:\s*(?<name>\S+)/mu.exec(content);
       expect(nameMatch?.groups?.name).toBe(name);
     }
-  });
-
-  it('keeps the direct-capable host semantics in the orchestrator skill', () => {
-    const content = readFileSync(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
-
-    expect(content).toContain('Runtime Authority');
-    expect(content).toContain('direct work is available');
-    expect(content).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/iu);
   });
 });

@@ -1,15 +1,15 @@
 import { execFile } from 'node:child_process';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { Data, Effect } from 'effect';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { isRecord } from '@/lib/primitives.js';
+import { isRecord, parseJsonRecord } from '@/lib/primitives.js';
 
-// oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
+// oxlint-disable-next-line strict-void-return -- unused ChildProcess return.
 const execFileAsync = promisify(execFile);
 
-/** OS cache directory, respecting XDG_CACHE_HOME when set. */
 export const getCacheDir = (): string => {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
   if (xdg !== undefined && xdg !== '') {
@@ -18,10 +18,8 @@ export const getCacheDir = (): string => {
   return path.join(homedir(), '.cache');
 };
 
-/** Maestria cache directory (e.g. ~/.cache/maestria). */
 export const getMaestriaCacheDir = (): string => path.join(getCacheDir(), 'maestria');
 
-/** User-preference directory (survives cache clears, unlike the cache directory). */
 export const getMaestriaConfigDir = (): string => {
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
   const base = xdg !== undefined && xdg !== '' ? xdg : path.join(homedir(), '.config');
@@ -46,8 +44,7 @@ const readFailureField = (error: unknown, field: string): string => {
 };
 
 /**
- * Actionable message from an execFile rejection. Timeout kills carry no
- * stderr, so attached child output is used when present.
+ * Timeout kills carry no stderr, so attached child output is used when present.
  */
 const describeRunFailure = (timeoutMs: number, error: unknown): string => {
   const stderr = readFailureField(error, 'stderr');
@@ -68,11 +65,6 @@ const describeRunFailure = (timeoutMs: number, error: unknown): string => {
   return suffix === '' ? fallback : `${fallback}${suffix}`;
 };
 
-/**
- * Run a command with an optional working directory. Callers isolating a
- * command (e.g. Prime's cwd-scoped package commands) pass an empty temp dir;
- * callers driving host installers pass an explicit timeout.
- */
 export const run = (
   cmd: string,
   args: string[],
@@ -85,10 +77,11 @@ export const run = (
         command: `${cmd} ${args.join(' ')}`,
         message: describeRunFailure(timeoutMs, error),
       }),
-    try: async () => {
+    try: async (signal) => {
       const { stdout } = await execFileAsync(cmd, args, {
         cwd,
         encoding: 'utf-8',
+        signal,
         timeout: timeoutMs,
       });
       return stdout.trim();
@@ -102,106 +95,66 @@ export const readTextFile = (filePath: string): Effect.Effect<string, CommandErr
         command: `read ${filePath}`,
         message: String(error),
       }),
-    try: async () => {
-      const { readFile } = await import('node:fs/promises');
-      return await readFile(filePath, 'utf-8');
-    },
+    try: async () => await readFile(filePath, 'utf-8'),
   });
 
 export const fileExists = (filePath: string): Effect.Effect<boolean> =>
   Effect.tryPromise(async () => {
-    const { access } = await import('node:fs/promises');
     await access(filePath);
     return true;
-  }).pipe(Effect.catchCause(() => Effect.succeed(false)));
+  }).pipe(Effect.catchEager(() => Effect.succeed(false)));
 
 export const commandExists = (cmd: string): Effect.Effect<boolean> =>
   run('which', [cmd]).pipe(
     Effect.map((out: string) => out.length > 0),
-    Effect.catchCause(() => Effect.succeed(false)),
+    Effect.catchEager(() => Effect.succeed(false)),
   );
 
 type VersionCache = Record<string, { version: string }>;
 
 const parseVersionCache = (text: string): VersionCache => {
-  try {
-    const parsed: unknown = JSON.parse(text);
-    if (!isRecord(parsed)) {
-      return {};
+  const cache: VersionCache = {};
+  for (const [key, value] of Object.entries(parseJsonRecord(text) ?? {})) {
+    if (isRecord(value) && typeof value.version === 'string') {
+      cache[key] = { version: value.version };
     }
-    const cache: VersionCache = {};
-    for (const [key, value] of Object.entries(parsed)) {
-      if (isRecord(value) && typeof value.version === 'string') {
-        cache[key] = { version: value.version };
-      }
-    }
-    return cache;
-  } catch {
-    return {};
   }
+  return cache;
 };
 
-/** Read cached package versions, tolerating a missing or invalid file. */
 const cachedVersions = (): Effect.Effect<VersionCache> =>
   readTextFile(getVersionCacheFile()).pipe(
     Effect.map(parseVersionCache),
-    Effect.catchCause(() => Effect.succeed({})),
+    Effect.catchEager(() => Effect.succeed({})),
   );
 
-export const npmViewVersion = (pkg: string): Effect.Effect<string> => {
-  const updateCache = (version: string): Effect.Effect<void> =>
-    cachedVersions().pipe(
-      Effect.flatMap((cache) =>
-        Effect.tryPromise({
-          catch: () => {
-            /* empty */
-          },
-          try: async () => {
-            const { mkdir, writeFile } = await import('node:fs/promises');
-            await mkdir(getMaestriaCacheDir(), { recursive: true });
-            await writeFile(
-              getVersionCacheFile(),
-              JSON.stringify({ ...cache, [pkg]: { version } }),
-            );
-          },
-        }),
-      ),
-      Effect.catchCause(() => Effect.void),
-    );
-
-  return Effect.gen(function* npmViewVersionEffect() {
+export const npmViewVersion = (pkg: string): Effect.Effect<string> =>
+  Effect.gen(function* npmViewVersionEffect() {
     const version = yield* run('npm', ['view', pkg, 'version'], 5000).pipe(
-      Effect.catchCause(() => Effect.succeed('')),
+      Effect.catchEager(() => Effect.succeed('')),
     );
 
+    const cache = yield* cachedVersions();
     if (version) {
-      yield* updateCache(version).pipe(Effect.catchCause(() => Effect.void));
-      return version;
+      yield* Effect.tryPromise(async () => {
+        await mkdir(getMaestriaCacheDir(), { recursive: true });
+        await writeFile(getVersionCacheFile(), JSON.stringify({ ...cache, [pkg]: { version } }));
+      }).pipe(Effect.catchEager(() => Effect.void));
     }
-
-    // Network failed - fall back to cached version (any age)
-    return yield* cachedVersions().pipe(Effect.map((cache) => cache[pkg]?.version ?? ''));
+    return version || (cache[pkg]?.version ?? '');
   });
-};
 
-/** Invalidate the version cache for a package after a successful update. */
 export const invalidateVersionCache = (pkg: string): Effect.Effect<void> =>
   readTextFile(getVersionCacheFile()).pipe(
     Effect.flatMap((out) =>
-      Effect.tryPromise({
-        catch: () => {
-          /* empty */
-        },
-        try: async () => {
-          const parsed: unknown = JSON.parse(out);
-          if (!isRecord(parsed)) {
-            return;
-          }
-          const { [pkg]: _removed, ...rest } = parsed;
-          const { writeFile } = await import('node:fs/promises');
-          await writeFile(getVersionCacheFile(), JSON.stringify(rest));
-        },
+      Effect.tryPromise(async () => {
+        const parsed: unknown = JSON.parse(out);
+        if (!isRecord(parsed)) {
+          return;
+        }
+        const { [pkg]: _removed, ...rest } = parsed;
+        await writeFile(getVersionCacheFile(), JSON.stringify(rest));
       }),
     ),
-    Effect.catchCause(() => Effect.void),
+    Effect.catchEager(() => Effect.void),
   );

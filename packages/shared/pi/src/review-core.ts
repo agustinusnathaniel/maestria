@@ -1,9 +1,9 @@
 /**
- * Shared review-mode orchestration for Maestria platform packages.
+ * Shared review-mode orchestration for maestria platform packages.
  *
  * Pure TypeScript - no platform-specific dependencies.
- * Consumed by both @maestria/omp and @maestria/pi to eliminate duplication
- * of review-mode model/tool restoration and switching.
+ * Consumed by @maestria/pi for review-mode model/tool restoration and
+ * switching.
  *
  * @module
  */
@@ -19,8 +19,8 @@ interface ReviewPi {
 }
 
 /**
- * Host-neutral review-model context shared by the pi/omp thin shims
- * (both hosts expose the same registry-read and notify surface).
+ * Host-neutral review-model context consumed by the pi thin shim
+ * (registry-read and notify surface).
  */
 export interface ReviewModelContext {
   modelRegistry: { getAll: () => { id: string }[] };

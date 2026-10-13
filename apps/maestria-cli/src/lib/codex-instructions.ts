@@ -1,5 +1,3 @@
-/** Managed Codex global instruction block for automatic Maestria routing. */
-
 export const CODEX_MANAGED_INSTRUCTIONS_START = '<!-- maestria:codex-orchestrator:start -->';
 export const CODEX_MANAGED_INSTRUCTIONS_END = '<!-- maestria:codex-orchestrator:end -->';
 
@@ -27,26 +25,21 @@ const hasExactlyOne = (content: string, marker: string): boolean =>
 const normalizeManagedBlock = (block: string): string => {
   const normalized = block.trim();
   if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_START)) {
-    throw new Error('Codex Maestria instruction block is missing its start marker');
+    throw new Error('Codex maestria instruction block is missing its start marker');
   }
   if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_END)) {
-    throw new Error('Codex Maestria instruction block is missing its end marker');
+    throw new Error('Codex maestria instruction block is missing its end marker');
   }
   if (
     normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_START) >
     normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_END)
   ) {
-    throw new Error('Codex Maestria instruction block markers are out of order');
+    throw new Error('Codex maestria instruction block markers are out of order');
   }
   return normalized;
 };
 
-/**
- * Return the one Maestria-managed block in a Codex instruction file.
- *
- * A malformed or duplicated marker is rejected so an install cannot silently
- * damage a user-owned instruction file.
- */
+/** Malformed/duplicated markers throw so installs cannot damage user files. */
 export const codexManagedInstructionRange = (
   content: string,
 ): ManagedInstructionRange | undefined => {
@@ -57,7 +50,7 @@ export const codexManagedInstructionRange = (
     return undefined;
   }
   if (starts.length !== 1 || ends.length !== 1 || starts[0] > ends[0]) {
-    throw new Error('Codex Maestria instruction markers are malformed or duplicated');
+    throw new Error('Codex maestria instruction markers are malformed or duplicated');
   }
 
   return {
@@ -69,7 +62,6 @@ export const codexManagedInstructionRange = (
 export const hasCodexManagedInstructions = (content: string): boolean =>
   codexManagedInstructionRange(content) !== undefined;
 
-/** Add or refresh the managed block while leaving user-authored text intact. */
 export const upsertCodexManagedInstructions = (content: string, block: string): string => {
   const normalizedBlock = normalizeManagedBlock(block);
   const range = codexManagedInstructionRange(content);
@@ -86,7 +78,6 @@ export const upsertCodexManagedInstructions = (content: string, block: string): 
   return `${content}${separator}${normalizedBlock}${newline}`;
 };
 
-/** Remove only the managed block, preserving unrelated instructions. */
 export const removeCodexManagedInstructions = (content: string): string => {
   const range = codexManagedInstructionRange(content);
   if (!range) {
@@ -97,8 +88,7 @@ export const removeCodexManagedInstructions = (content: string): string => {
   const after = content.slice(range.end);
   const newline = content.includes('\r\n') ? '\r\n' : '\n';
 
-  // Undo the blank-line separator created by upsert when the block was
-  // appended, without normalizing any other part of the user's file.
+  // Undoes upsert's blank-line separator without touching other user text.
   if (before.endsWith(`${newline}${newline}`) && after.startsWith(newline)) {
     return `${before.slice(0, -newline.length)}${after.slice(newline.length)}`;
   }

@@ -2,7 +2,7 @@
 
 ## Purpose and audience
 
-Use these conventions for new documents and substantial rewrites. Internal documentation preserves scope, rationale, and evidence; public documentation helps consumers install and use Maestria without repository context.
+Use these conventions for new documents and substantial rewrites. Internal documentation preserves scope, rationale, and evidence; public documentation helps consumers install and use maestria without repository context.
 
 ## Choose a template
 
@@ -11,7 +11,7 @@ Use these conventions for new documents and substantial rewrites. Internal docum
 - [Plan](#plans): define scoped work and how to verify and roll it back.
 - [Note or guide](#notes-and-guides): record purpose, audience, dated evidence, and next step.
 
-Apply the requirements below to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template. Changelogs keep their chronological format; JSDoc, docstrings, and inline comments are outside this guide. There is no format linter or schema gate. Put deliberately deferred work in **Future Considerations**, not **Non-Goals**.
+Apply the requirements below to new documents and substantive rewrites. Do not retrofit legacy documents solely to match a template. Changelogs keep their chronological format; JSDoc, docstrings, and inline comments are outside this guide. There is no format linter or schema gate. An ADR asserts what was decided and why. It does not assert the current inventory of code, workflows, files, scripts, or host versions; verify current state against source, the canonical directives, and the runtime support matrix. Put deliberately deferred work in **Future Considerations**, not **Non-Goals**.
 
 These conventions make scope and rejected alternatives easier to review, and keep internal rationale from reading like a product promise. They add authoring overhead; the goal is recoverable reasoning, not uniform document length.
 
@@ -37,14 +37,25 @@ Published READMEs render outside the repository, so links to repository files mu
 
 ## New ADRs
 
-Every new ADR must cover **Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, and Date**. Use `Proposed`, `Accepted`, or `Deprecated` for status; write the date as `YYYY-MM-DD`.
+Create an ADR when a choice changes a structural boundary, public contract, trust model, or costly dependency and its alternatives will matter to a future maintainer. Routine fixes, tool settings, installation procedures, terminology changes, and completed editorial work belong in source, contributor guides, or the delivery history. A change does not need an ADR merely because it touched several files.
 
-- Tag material assumptions `[verified]` or `[inferred]` so readers can distinguish evidence from best-effort conclusions.
-- Record the alternatives deliberately rejected and why; preserve the evidence behind the decision.
+Use `docs/adr/<area>/ADR-{PREFIX}-{NNN}-{slug}.md`, with numbering scoped to the area prefix. This avoids collisions between platform decisions without renumbering other areas.
+
+Every new ADR must cover **Status, Context, Decision, Consequences, Alternatives Considered, and Date**, plus a one-word **Confidence** on the Status line. Use `Proposed`, `Accepted`, `Deprecated`, or `Superseded` for status; write the date as `YYYY-MM-DD`. Goals and Non-Goals are recommended, not required.
+
+- Write Consequences with positive, negative, and neutral outcomes, and never hide a negative.
+- A decision with no recorded alternative is incomplete: name what was rejected and why.
+- Add a `## Supersession` section when a record supersedes, is superseded by, or is extended by another, and link both ways. Put whole-record lifecycle on the Status line instead of in that section.
+- Add Assumptions when the decision rests on an unverified premise, and tag each `[verified]` or `[inferred]`.
+- Add Security Boundaries when the decision defines one or relies on one.
 - Add `Lessons Learned`, `Rollback`, `Verification`, or `Related Decisions` when they help explain or operate the decision.
-- Do not rewrite historical ADRs just to match this template. Preserve their original context, decision, consequences, and date when revising them.
+- Record only architecturally significant, hard-to-reverse decisions, and keep a record to roughly two pages. Move supporting material to a design document and link it.
 
-The `Context` heading is retained for compatibility with existing records. The original format drew on the [Agent Trace RFC](https://agent-trace.dev/) (Motivation → Goals → Non-Goals → Specification).
+Keep decision history traceable. Correct factual errors and condense records in place while preserving the decision, relevant rationale, rejected alternatives, negative consequences, and security boundaries. Date substantive amendments; retain the original decision date. A materially different architectural choice needs a successor record and a clear supersession link.
+
+Remove records that contain only procedures, duplicated guidance, completed work, or obsolete implementation detail. Consolidate overlapping decisions into their owning record and repair incoming references. Preserve consequential historical trade-offs in a short dated passage when they still constrain that decision; Git retains the full earlier text. Editorial work needs a reviewable diff, not a new ADR granting permission to edit another ADR. Keep existing identifiers and numbering gaps so old references remain traceable; allocate new numbers above the highest number ever used in that namespace.
+
+The `Context` heading is retained for compatibility with existing records.
 
 ## Plans
 
@@ -79,19 +90,7 @@ Point-in-time claims need dates and sources so readers can judge whether they re
 ## Evidence and detail
 
 - Use `[verified]` for facts confirmed from code, documentation, a live run, or an immutable commit; use `[inferred]` for conclusions not directly confirmed.
-- Name the mechanism or module instead of giving line numbers. Link the source of changing facts rather than copying its inventory.
+- Name the mechanism or module instead of giving line numbers. An ADR names the source of a changing fact; it does not restate the fact. Link the source of changing facts rather than copying its inventory.
 - Do not maintain exhaustive lists of directory or registry contents. If a count helps, label it as a dated snapshot and point to its source.
 - In public docs, describe the capability and link its owning page. Do not require consumers to understand internal paths or ADR numbers.
 - When an internal rationale also defines a product boundary, explain it in both places using audience-appropriate language.
-
-## Convention history
-
-[ADR-CORE-018](../adr/core/ADR-CORE-018-documentation-standard.md) records the original fixed section order for published package READMEs. This 2026-09-25 clarification replaces that order and the default requirement for standalone Motivation, Goals, Non-Goals, and Development sections. Use concise, package-specific headings while keeping every required information item findable; Development or Contributing is optional when it helps the reader. The ADR keeps its original decision, evidence, and rationale as historical record.
-
-## Next step
-
-Choose the template that matches the reader's task. Check required content, evidence tags, and links before handoff.
-
-## Future Considerations
-
-A proposed retrofit of ADR-CORE-001 through ADR-CORE-004 and ADR-OC-000 through ADR-OC-002 remains separate work. If undertaken, extract implicit boundaries into Goals and Non-Goals while preserving the original decision, context, consequences, and date.

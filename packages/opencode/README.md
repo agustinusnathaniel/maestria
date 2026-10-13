@@ -1,8 +1,8 @@
 # @maestria/opencode
 
-An OpenCode plugin that provides Maestria's specialist agents, shared engineering rules, and review workflows.
+An OpenCode plugin that provides maestria's specialist agents, shared engineering rules, and review workflows.
 
-> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
@@ -30,7 +30,7 @@ The project root resolves from the SDK project worktree, then the worktree path,
 ## Support / Platform Notes
 
 - OpenCode-specific; Kimi Code, Hermes, Cursor, and other adaptations ship as separate `@maestria` packages.
-- Does not bundle skills; domain skills are installed separately via the skills CLI.
+- Bundles the `create-pull-request` and `docs-update` skills the global rules name and registers them through `skills.paths` in the plugin's `config` hook; other domain skills are installed separately.
 - Rules are advisory prompt guidance, not a sandbox. The only structural enforcement is OpenCode's `permission` frontmatter (for example, the orchestrator cannot edit).
 
 ## Documentation and Changelog

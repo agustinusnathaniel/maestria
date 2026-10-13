@@ -1,6 +1,6 @@
 /** Shared subagent validation utilities for Pi-family packages. */
 
-/** Maestria cross-extension event names. */
+/** maestria cross-extension event names. */
 export const MAESTRIA_EVENTS = {
   REVIEW_ACTIVATED: 'maestria:review:activated',
   REVIEW_DEACTIVATED: 'maestria:review:deactivated',
@@ -20,7 +20,6 @@ export const ALLOWED_AGENTS = [
   'writer',
 ] as const;
 
-/** A valid specialist agent name. */
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 
 /** Asserts that `agent` is a known maestria specialist. */

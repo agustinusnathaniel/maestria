@@ -6,7 +6,7 @@ import { testOverrides } from './tooling/lint/test-overrides.js';
 
 export default defineConfig({
   fmt: {
-    // Ultracite oxfmt preset as base - via vite-plus hybrid (ADR-CORE-021).
+    // Ultracite oxfmt preset as base - composed in the authoritative Vite+ config.
     // Spread first so repo overrides win. Keep single authority in vite.config.ts,
     // no standalone oxfmt.config.ts.
     ...oxfmtPreset,
@@ -20,7 +20,9 @@ export default defineConfig({
         'packages/*/commands/**',
         'packages/*/prompts/**',
         'packages/*/rules/**',
-        'packages/**/skills/**',
+        'packages/agent-plugins/AGENTS.md',
+        // Generated skill copies; the canonical core skills stay formatted.
+        'packages/*/skills/**',
         'packages/*/SYSTEM.md',
         '.agents',
         'CHANGELOG.md',
@@ -54,7 +56,7 @@ export default defineConfig({
     trailingComma: 'all',
   },
   lint: {
-    // Ultracite oxlint/core preset as base - via vite-plus hybrid (ADR-CORE-021).
+    // Ultracite oxlint/core preset as base - composed in the authoritative Vite+ config.
     // Spread first so repo rules win. No standalone oxlint.config.ts.
     ...oxlintPreset,
     ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
@@ -64,7 +66,7 @@ export default defineConfig({
     plugins: [...(oxlintPreset.plugins ?? [])],
     rules: {
       ...oxlintPreset.rules,
-      // Strict Ultracite core preset - only intentional project overrides remain (see ADR-021)
+      // Strict Ultracite core preset - only intentional project overrides remain (see CONTRIBUTING.md)
       curly: 'error',
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
@@ -101,7 +103,6 @@ export default defineConfig({
           'vp run test-sync-plugin-versions',
           'vp run test',
           'vp run check-manifest-versions',
-          'vp run check-python',
         ],
         dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
       },
@@ -116,7 +117,6 @@ export default defineConfig({
         cache: false,
         command: [
           'vp run check-lint',
-          'vp run check-python',
           'vp run test-sync-plugin-versions',
           'vp run test',
           'vp run check-manifest-versions',
@@ -151,16 +151,10 @@ export default defineConfig({
           'packages/*/.claude-plugin/plugin.json',
           'packages/*/.codex-plugin/plugin.json',
           'packages/*/.cursor-plugin/plugin.json',
+          'packages/*/.devin-plugin/plugin.json',
+          'packages/*/.zcode-plugin/plugin.json',
           'packages/*/kimi.plugin.json',
-          'packages/hermes/plugin.yaml',
-          'packages/hermes/src/maestria_hermes/_version.py',
         ],
-        output: [],
-      },
-      'check-python': {
-        cache: true,
-        command: 'ruff check packages/hermes/src && python3 -m compileall -q packages/hermes/src',
-        input: ['packages/hermes/src/**/*.py', 'packages/hermes/pyproject.toml'],
         output: [],
       },
       'check-sync': {
@@ -170,16 +164,28 @@ export default defineConfig({
           { auto: false },
           'scripts/check-sync',
           'scripts/sync-packages',
+          'scripts/sync-consolidated-plugin.ts',
+          'scripts/sync-bundled-skills.ts',
           'packages/core/scripts/**/*.ts',
           'packages/core/agent-directives/**/*.md',
           'packages/*/sync.config.ts',
+          'packages/agent-plugins/generation/**/*.ts',
+          'packages/agent-plugins/generation/**/*.json',
+          'packages/agent-plugins/generation/**/*.toml',
+          'packages/agent-plugins/plugin.json',
+          'packages/agent-plugins/.*-plugin/plugin.json',
+          'packages/agent-plugins/kimi.plugin.json',
+          'packages/agent-plugins/agents/**',
+          'packages/*/skills/**',
+          'packages/agent-plugins/commands/**',
+          'packages/agent-plugins/rules/**',
         ],
         output: [
           'packages/*/agents/**',
           'packages/*/commands/**',
           'packages/*/prompts/**',
           'packages/*/rules/**',
-          'packages/**/skills/**',
+          'packages/*/skills/**',
           'packages/*/SYSTEM.md',
         ],
       },

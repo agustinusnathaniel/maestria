@@ -4,37 +4,21 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { CliError } from '@/lib/command-result.js';
 import { DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
-import { reviewSkillSelections } from '@/lib/skill-prompts.js';
 import {
-  DEFAULT_SKILLS,
   getSkillsRecordPath,
-  LEGACY_UPDATE_SKILLS,
   parseSkillsRecord,
   readSkillsRecord,
-  resolveSkillSelection,
   withoutRecordedSelection,
   withRecordedSelection,
   writeSkillsRecord,
 } from '@/lib/skills.js';
 import { buildRecord } from './skill-test-support.js';
-import { createTtyTestSupport } from './tty-test-support.js';
 
 const source = 'test-record';
 const PR = 'create-pull-request';
 
 const fsControls = vi.hoisted(() => ({ failRename: false, failWrite: false }));
-
-const groupMocks = vi.hoisted(() => ({
-  groupMultiselect: vi.fn(),
-}));
-const promptMocks = vi.hoisted(() => ({
-  cancel: vi.fn(),
-  // oxlint-disable-next-line require-await -- synchronous confirm stub by design.
-  confirm: vi.fn(async () => true),
-  isCancel: vi.fn(() => false),
-}));
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof FsPromises>();
@@ -55,90 +39,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   };
 });
 
-vi.mock('@/lib/group-multiselect.js', () => ({
-  groupMultiselect: groupMocks.groupMultiselect,
-}));
-
-vi.mock('@clack/prompts', () => ({
-  cancel: promptMocks.cancel,
-  confirm: promptMocks.confirm,
-  isCancel: promptMocks.isCancel,
-}));
-
-const { restoreTty, setTty } = createTtyTestSupport();
-
-describe('skill selection', () => {
-  it('defaults fresh installs to both current skills', () => {
-    expect(DEFAULT_SKILLS).toContain(PR);
-    expect(DEFAULT_SKILLS).toContain(DOCS_UPDATE_SKILL);
-    const resolved = resolveSkillSelection('opencode', {}, null);
-    expect(resolved).toEqual({ changed: false, skills: [PR, DOCS_UPDATE_SKILL] });
-  });
-
-  it('keeps legacy updates without a record on the prior single skill', () => {
-    expect(LEGACY_UPDATE_SKILLS).toEqual([PR]);
-    expect(resolveSkillSelection('opencode', {}, null, { updateBootstrap: true })).toEqual({
-      changed: false,
-      skills: [PR],
-    });
-    expect(
-      resolveSkillSelection('opencode', { skills: DOCS_UPDATE_SKILL }, null, {
-        updateBootstrap: true,
-      }),
-    ).toEqual({ changed: true, skills: [DOCS_UPDATE_SKILL] });
-  });
-
-  it('preserves recorded choices when no flags are passed', () => {
-    const record = buildRecord({ pi: [] });
-    expect(resolveSkillSelection('pi', {}, record)).toEqual({ changed: false, skills: [] });
-    expect(resolveSkillSelection('pi', {}, record, { updateBootstrap: true })).toEqual({
-      changed: false,
-      skills: [],
-    });
-    const legacy = parseSkillsRecord(
-      JSON.stringify({ platforms: { opencode: { skills: [PR] } }, version: 2 }),
-      source,
-    );
-    expect(resolveSkillSelection('opencode', {}, legacy)).toEqual({
-      changed: false,
-      skills: [PR],
-    });
-  });
-
-  it.each([
-    { expected: [PR], flags: { skills: PR }, name: 'explicit PR include' },
-    {
-      expected: [DOCS_UPDATE_SKILL],
-      flags: { skills: DOCS_UPDATE_SKILL },
-      name: 'explicit docs include without the other skill',
-    },
-    { expected: [], flags: { skills: 'none' }, name: 'none token' },
-    {
-      expected: [],
-      flags: { excludeSkills: PR },
-      name: 'exclusion onto recorded choices',
-      record: buildRecord({ opencode: [PR] }),
-    },
-  ])('applies flag selections: $name', ({ expected, flags, record }) => {
-    expect(resolveSkillSelection('opencode', flags, record ?? null)).toEqual({
-      changed: true,
-      skills: expected,
-    });
-  });
-
-  it.each([
-    { flags: { skills: 'nope' }, name: 'unknown include' },
-    { flags: { excludeSkills: 'nope' }, name: 'unknown exclude' },
-    {
-      flags: { excludeSkills: PR, skills: PR },
-      name: 'conflicting include/exclude',
-    },
-    { flags: { excludeSkills: PR, skills: 'none' }, name: 'none with exclude' },
-    { flags: { skills: `none,${PR}` }, name: 'none with another skill' },
-  ])('rejects invalid flag selections before any external effect: $name', ({ flags }) => {
-    expect(() => resolveSkillSelection('opencode', flags, null)).toThrow(CliError);
-  });
-
+describe('legacy skill record', () => {
   it('keeps v2 per-skill assets separate and preserves unknown history', () => {
     const record = parseSkillsRecord(
       JSON.stringify({
@@ -159,11 +60,14 @@ describe('skill selection', () => {
     expect(record.platforms.opencode?.skillAssets?.[PR]?.path).toBe('/fake/pr');
     expect(record.platforms.opencode?.skillAssets?.[DOCS_UPDATE_SKILL]?.path).toBe('/fake/docs');
     expect(record.platforms.opencode?.skillAssets?.['future-skill']?.path).toBe('/fake/future');
-    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([
-      PR,
-      DOCS_UPDATE_SKILL,
-      'future-skill',
-    ]);
+  });
+
+  it('reads a legacy record written before the cleanup-only migration', () => {
+    const legacy = parseSkillsRecord(
+      JSON.stringify({ platforms: { opencode: { skills: [PR] } }, version: 2 }),
+      source,
+    );
+    expect(legacy.platforms.opencode?.skills).toEqual([PR]);
   });
 
   it('fails loudly on corrupt records instead of resetting to defaults', () => {
@@ -178,11 +82,11 @@ describe('skill selection', () => {
       }),
     ];
     for (const payload of corruptPayloads) {
-      expect(() => parseSkillsRecord(payload, 'test-record')).toThrow(CliError);
+      expect(() => parseSkillsRecord(payload, 'test-record')).toThrow(Error);
     }
   });
 
-  it('keeps selections per platform and cleans up only the uninstalled entry', () => {
+  it('keeps entries per platform and cleans up only the removed entry', () => {
     const record = buildRecord({ hermes: [], opencode: [PR] });
     const added = withRecordedSelection(record, 'pi', []);
     expect(added.platforms.opencode?.skills).toEqual([PR]);
@@ -191,87 +95,6 @@ describe('skill selection', () => {
     expect(removed?.platforms.opencode).toBeUndefined();
     expect(removed?.platforms.hermes?.skills).toEqual([]);
     expect(withoutRecordedSelection(null, 'opencode')).toBeNull();
-  });
-});
-
-describe('reviewSkillSelections', () => {
-  afterEach(() => {
-    restoreTty();
-    groupMocks.groupMultiselect.mockReset();
-    promptMocks.confirm.mockClear();
-  });
-
-  it('preserves distinct per-platform intents without flags outside a TTY', async () => {
-    const record = buildRecord({ opencode: [PR], pi: [] });
-    const selections = [{ id: 'opencode' }, { id: 'pi' }].map((target) => ({
-      ...target,
-      selection: resolveSkillSelection(target.id, {}, record),
-    }));
-
-    const effective = await reviewSkillSelections(selections, 'Update', {});
-
-    expect(effective.map((entry) => [entry.id, entry.selection.skills])).toEqual([
-      ['opencode', [PR]],
-      ['pi', []],
-    ]);
-    expect(effective.every((entry) => !entry.selection.changed)).toBe(true);
-  });
-
-  it('requires confirmation for flag-driven changes outside a TTY', async () => {
-    const selections = [{ id: 'opencode' }].map((target) => ({
-      ...target,
-      selection: resolveSkillSelection(target.id, { skills: 'none' }, null),
-    }));
-
-    await expect(reviewSkillSelections(selections, 'Update', { skills: 'none' })).rejects.toThrow(
-      CliError,
-    );
-    const confirmed = await reviewSkillSelections(selections, 'Update', {
-      skills: 'none',
-      yes: true,
-    });
-    expect(confirmed[0]?.selection.skills).toEqual([]);
-  });
-
-  it('passes through unchanged flag selections without confirmation', async () => {
-    const record = buildRecord({ opencode: [] });
-    const selections = [{ id: 'opencode' }].map((target) => ({
-      ...target,
-      selection: resolveSkillSelection(target.id, { skills: 'none' }, record),
-    }));
-
-    const effective = await reviewSkillSelections(selections, 'Update', {});
-
-    expect(effective[0]?.selection).toEqual({ changed: false, skills: [] });
-  });
-
-  it.each([
-    {
-      changed: false,
-      confirmCalls: 0,
-      name: 'skips the trailing confirm when the interactive review changes nothing',
-      reviewed: [PR],
-    },
-    {
-      changed: true,
-      confirmCalls: 1,
-      name: 'still confirms when the interactive review changes the selection',
-      reviewed: [],
-    },
-  ])('$name', async ({ changed, confirmCalls, reviewed }) => {
-    setTty(true);
-    const record = buildRecord({ opencode: [PR] });
-    const selections = [{ id: 'opencode' }].map((target) => ({
-      ...target,
-      selection: resolveSkillSelection(target.id, {}, record),
-    }));
-    groupMocks.groupMultiselect.mockResolvedValueOnce(reviewed);
-
-    const effective = await reviewSkillSelections(selections, 'Update', {});
-
-    expect(groupMocks.groupMultiselect).toHaveBeenCalledTimes(1);
-    expect(effective[0]?.selection).toEqual({ changed, skills: reviewed });
-    expect(promptMocks.confirm).toHaveBeenCalledTimes(confirmCalls);
   });
 });
 

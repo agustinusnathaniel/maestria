@@ -1,6 +1,7 @@
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
-import { Effect } from 'effect';
+import { Cause, Effect, Exit } from 'effect';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import * as shell from '@/lib/shell.js';
@@ -30,6 +31,44 @@ describe('getCacheDir', () => {
 });
 
 describe('run', () => {
+  it('terminates the child process when its Effect is interrupted', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'maestria-command-abort-'));
+    const pidFile = join(directory, 'pid');
+    const controller = new AbortController();
+    let pid: number | undefined;
+    const result = Effect.runPromiseExit(
+      shell.run(process.execPath, [
+        '-e',
+        `require('node:fs').writeFileSync(${JSON.stringify(pidFile)}, String(process.pid)); setInterval(() => {}, 1000)`,
+      ]),
+      { signal: controller.signal },
+    );
+    try {
+      await vi.waitFor(async () => {
+        expect(await readFile(pidFile, 'utf-8')).not.toBe('');
+      });
+      pid = Number(await readFile(pidFile, 'utf-8'));
+      controller.abort();
+      const exit = await result;
+      expect(Exit.isFailure(exit) && Cause.hasInterrupts(exit.cause)).toBe(true);
+      const childPid = pid;
+      await vi.waitFor(() => {
+        expect(() => process.kill(childPid, 0)).toThrow();
+      });
+    } finally {
+      controller.abort();
+      await result;
+      if (pid !== undefined) {
+        try {
+          process.kill(pid);
+        } catch {
+          // The interruption already terminated the child.
+        }
+      }
+      await rm(directory, { force: true, recursive: true });
+    }
+  });
+
   it('reports stderr and exit code when the command fails', async () => {
     const error = await Effect.runPromise(
       Effect.flip(shell.run('node', ['-e', "console.error('boom-detail'); process.exit(3)"])),

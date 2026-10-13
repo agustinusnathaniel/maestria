@@ -1,10 +1,11 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { handleDoctor } from '@/commands/doctor.js';
 import { collectDoctorReports } from '@/lib/doctor.js';
+import { isRecord } from '@/lib/primitives.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { COMPANION_SKILL, DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
@@ -13,9 +14,7 @@ import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 import { buildRecord, failingSkillCli, fakeListCli } from './skill-test-support.js';
 
-const SOURCE = 'test-source';
 const HEALTHY_PATH = '/fake/.agents/skills/create-pull-request';
-const SHARED_PATH = '/fake/.agents/skills/create-pull-request';
 
 const status = (id: string, overrides: Partial<PlatformStatus> = {}): PlatformStatus => ({
   available: true,
@@ -28,10 +27,6 @@ const status = (id: string, overrides: Partial<PlatformStatus> = {}): PlatformSt
 });
 
 const configDirs: string[] = [];
-
-beforeEach(() => {
-  vi.stubEnv('MAESTRIA_SKILLS_SOURCE', SOURCE);
-});
 
 afterEach(async () => {
   vi.unstubAllEnvs();
@@ -106,7 +101,11 @@ interface DoctorTableCase {
 describe('doctor reports', () => {
   const cases: DoctorTableCase[] = [
     {
-      expectedOutput: [],
+      expectedOutput: [
+        /Legacy CLI-installed copy/u,
+        /bundles create-pull-request/u,
+        /maestria update opencode/u,
+      ],
       expectedPlatforms: [
         {
           id: 'opencode',
@@ -117,10 +116,10 @@ describe('doctor reports', () => {
         },
       ],
       inventory: { opencode: [{ name: COMPANION_SKILL, path: HEALTHY_PATH }] },
-      name: 'healthy platform with recorded skills fully observed',
+      name: 'recorded legacy copies with a removal step',
       record: buildRecord({
         opencode: {
-          skillAssets: { [COMPANION_SKILL]: { path: HEALTHY_PATH, source: SOURCE } },
+          skillAssets: { [COMPANION_SKILL]: { path: HEALTHY_PATH, source: 'test-source' } },
           skills: [COMPANION_SKILL],
         },
       }),
@@ -128,45 +127,45 @@ describe('doctor reports', () => {
       statuses: [status('opencode', { label: 'OpenCode' })],
     },
     {
-      expectedOutput: [/unmanaged/u, /--exclude-skills create-pull-request/u],
+      expectedOutput: [
+        /duplicates the bundled skill/u,
+        /npx -y skills@1\.7\.0 remove create-pull-request -a cursor -g -y/u,
+        /only if it came from maestria/u,
+      ],
       expectedPlatforms: [{ id: 'cursor', unmanaged: [COMPANION_SKILL] }],
       inventory: {
         cursor: [{ name: COMPANION_SKILL, path: '/fake/cursor/skills/create-pull-request' }],
       },
-      name: 'unmanaged copies with an exclude-or-remove next step',
+      name: 'unmanaged duplicates with a manual removal command',
       record: null,
       recordPresent: false,
       statuses: [status('cursor', { label: 'Cursor' })],
     },
     {
-      expectedOutput: [/share the recorded copy/u],
-      expectedPlatforms: [
-        { id: 'opencode' },
-        {
-          id: 'omp',
-          shared: [{ path: SHARED_PATH, providers: ['opencode'], skill: COMPANION_SKILL }],
-          unmanaged: [COMPANION_SKILL],
-        },
-      ],
-      inventory: { universal: [{ name: COMPANION_SKILL, path: SHARED_PATH }] },
-      name: 'shared canonical paths instead of warning when another platform provides the copy',
-      record: buildRecord({
-        omp: [],
-        opencode: {
-          skillAssets: { [COMPANION_SKILL]: { path: SHARED_PATH, source: SOURCE } },
-          skills: [COMPANION_SKILL],
-        },
-      }),
-      recordPresent: true,
-      statuses: [status('opencode', { label: 'OpenCode' }), status('omp', { label: 'Oh My Pi' })],
-    },
-    {
-      expectedOutput: [/maestria update opencode/u],
+      expectedOutput: [/cleaned on next update/u, /maestria update opencode/u],
       expectedPlatforms: [{ id: 'opencode', missing: [COMPANION_SKILL, DOCS_UPDATE_SKILL] }],
       inventory: { opencode: [] },
-      name: 'recorded skills missing from observation with a restore step',
+      name: 'recorded copies missing from observation with a record cleanup step',
       record: buildRecord({ opencode: [COMPANION_SKILL, DOCS_UPDATE_SKILL] }),
       recordPresent: true,
+      statuses: [status('opencode', { label: 'OpenCode' })],
+    },
+    {
+      expectedOutput: [/bundled with the maestria package; nothing to clean up/u],
+      expectedPlatforms: [{ id: 'opencode', missing: [], next: [], unmanaged: [] }],
+      inventory: { opencode: [] },
+      name: 'clean platforms with bundled skills and no next step',
+      record: null,
+      recordPresent: false,
+      statuses: [status('opencode', { label: 'OpenCode' })],
+    },
+    {
+      expectedOutput: [/bundled with the maestria package; nothing to clean up/u],
+      expectedPlatforms: [{ id: 'opencode', missing: [], next: [], unmanaged: [] }],
+      inventory: { opencode: [{ name: 'my-own-skill', path: '/fake/opencode/my-own-skill' }] },
+      name: 'clean platforms whose agent only has unrelated skills',
+      record: null,
+      recordPresent: false,
       statuses: [status('opencode', { label: 'OpenCode' })],
     },
   ];
@@ -181,7 +180,7 @@ describe('doctor reports', () => {
     },
   );
 
-  it('degrades honestly for unknown platforms with no skills-CLI target', async () => {
+  it('notes bundled skills with nothing to check for platforms without an agent', async () => {
     const runner = fakeListCli({});
     const seen: string[][] = [];
     const spying: SkillCommandRunner = async (args, options) => {
@@ -191,7 +190,7 @@ describe('doctor reports', () => {
     const result = await runJson(spying, [], buildRecord({ mystery: [] }));
     expect(parsed(result)).toMatchObject({ platforms: [{ agent: null, id: 'mystery' }] });
     expect(seen).toEqual([]);
-    expect(result.output).toMatch(/No skills-CLI target/u);
+    expect(result.output).toMatch(/bundled with the maestria package; nothing to check/u);
   });
 
   it('degrades honestly when the list call fails without failing the command', async () => {
@@ -265,42 +264,6 @@ describe('doctor reports', () => {
     expect(healthy.exitCode).toBe(0);
   });
 
-  it('lists only the true sharer when two other platforms do not share', async () => {
-    const record = buildRecord({
-      'claude-code': {
-        skillAssets: {
-          [COMPANION_SKILL]: { path: '/fake/other/skills/create-pull-request', source: SOURCE },
-        },
-        skills: [COMPANION_SKILL],
-      },
-      codex: {
-        skillAssets: { [COMPANION_SKILL]: { path: SHARED_PATH, source: 'other-source' } },
-        skills: [COMPANION_SKILL],
-      },
-      cursor: [],
-      opencode: {
-        skillAssets: { [COMPANION_SKILL]: { path: SHARED_PATH, source: SOURCE } },
-        skills: [COMPANION_SKILL],
-      },
-    });
-    const reports = await collectDoctorReports(
-      fakeListCli({
-        'claude-code': [],
-        codex: [],
-        cursor: [{ name: COMPANION_SKILL, path: SHARED_PATH }],
-        opencode: [],
-      }),
-      [status('cursor'), status('opencode'), status('codex'), status('claude-code')],
-      record,
-      SOURCE,
-    );
-    const cursorReport = reports.find((report) => report.id === 'cursor');
-    expect(cursorReport?.unmanaged).toEqual([COMPANION_SKILL]);
-    expect(cursorReport?.shared).toEqual([
-      { path: SHARED_PATH, providers: ['opencode'], skill: COMPANION_SKILL },
-    ]);
-  });
-
   it('redacts the home directory from observed paths', async () => {
     const { homedir } = await import('node:os');
     const home = homedir();
@@ -310,7 +273,6 @@ describe('doctor reports', () => {
       }),
       [status('opencode')],
       null,
-      SOURCE,
     );
     expect(reports[0]?.observed[0]?.path).toBe('~/.agents/skills/create-pull-request');
   });
@@ -323,14 +285,9 @@ describe('doctor reports', () => {
       calls.push(flag === -1 ? '' : (args[flag + 1] ?? ''));
       return { stderr: '', stdout: '[]' };
     };
-    const record = buildRecord({ omp: [], opencode: [], 'prime-agent': [] });
-    const reports = await collectDoctorReports(
-      runner,
-      [status('opencode'), status('omp'), status('prime-agent')],
-      record,
-      SOURCE,
-    );
-    expect(reports).toHaveLength(3);
+    const record = buildRecord({ omp: [], opencode: [] });
+    const reports = await collectDoctorReports(runner, [status('opencode'), status('omp')], record);
+    expect(reports).toHaveLength(2);
     expect(calls.filter((agent) => agent === 'universal')).toHaveLength(1);
     expect(calls.filter((agent) => agent === 'opencode')).toHaveLength(1);
   });
@@ -348,7 +305,6 @@ describe('doctor reports', () => {
     const largeStatuses = [
       status('opencode', { label: 'OpenCode' }),
       status('omp', { label: 'Oh My Pi' }),
-      status('prime-agent', { label: 'Prime Agent' }),
       status('cursor', {
         available: true,
         installed: false,
@@ -375,61 +331,39 @@ describe('doctor reports', () => {
         platforms: [
           { id: 'opencode', observed: inventory.opencode },
           { id: 'omp', observed: inventory.universal },
-          { id: 'prime-agent', observed: inventory.universal },
           { id: 'cursor', observed: inventory.cursor },
         ],
       });
     });
 
-    it('renders a shared inventory once and exactly one Next line per platform', async () => {
+    it('renders exactly one Next line per platform', async () => {
       const human = await runHuman(fakeListCli(inventory), largeStatuses, null);
-      const observedLines = human.output.split('\n').filter((line) => line.includes('Observed:'));
-      expect(observedLines.filter((line) => line.includes('/fake/shared/skills'))).toHaveLength(1);
-      expect(human.output).toContain('same as omp');
-      expect(countOf(human.output, 'unrelated skills omitted')).toBe(3);
       expect(countOf(human.output, 'Next:')).toBe(largeStatuses.length);
       expect(human.output).toContain('to install the plugin');
-      expect(human.output).toContain('to record a selection');
-      expect(human.output).not.toContain('--exclude-skills');
+      expect(human.output).toContain('only if it came from maestria');
 
       const json = await runJson(fakeListCli(inventory), largeStatuses, null);
-      expect(parsed(json)).toMatchObject({
-        platforms: [
-          {
-            id: 'opencode',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-            ],
-          },
-          {
-            id: 'omp',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-            ],
-          },
-          {
-            id: 'prime-agent',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-            ],
-          },
-          {
-            id: 'cursor',
-            next: [
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('--exclude-skills'),
-              expect.stringContaining('to record a selection'),
-              expect.stringContaining('to install the plugin'),
-            ],
-          },
-        ],
-      });
+      const report = parsed(json);
+      if (!isRecord(report) || !Array.isArray(report.platforms)) {
+        throw new Error('Doctor JSON is missing platforms');
+      }
+      const { platforms } = report;
+      expect(platforms.map((platform) => (isRecord(platform) ? platform.id : undefined))).toEqual([
+        'opencode',
+        'omp',
+        'cursor',
+      ]);
+      for (const platform of platforms) {
+        if (!isRecord(platform) || !Array.isArray(platform.next)) {
+          throw new Error('Doctor JSON is missing next actions');
+        }
+        for (const item of platform.next) {
+          expect(typeof item).toBe('string');
+        }
+        expect(
+          platform.next.some((item) => typeof item === 'string' && item.includes('npx -y')),
+        ).toBe(true);
+      }
     });
   });
 });
