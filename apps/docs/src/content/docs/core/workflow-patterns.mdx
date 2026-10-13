@@ -58,10 +58,10 @@ Keep these files short: reusable methodology belongs in the canonical maestria d
 
 | Engine | Project root | Freshness |
 | --- | --- | --- |
-| OpenCode | SDK project worktree, then instance worktree, then session directory | Read fresh on every model call; edits need no restart |
+| OpenCode | Project directory, or the session directory when OpenCode reports no project | Read fresh for every agent-loop and compaction request; edits need no restart |
 | Pi | Session working directory, each turn | Read fresh on every agent turn, composed with the mode prompt |
 
-Compaction and carry-over preserve them: OpenCode keeps active project constraints in the compaction summary while content re-injects on every call; Pi recomposes sections each turn and persist the mode across turns in the same process.
+Compaction and carry-over preserve them: OpenCode sends the current project constraints and rules with every agent-loop and compaction request; Pi recomposes sections each turn and persist the mode across turns in the same process.
 
 The declarative Agent Plugins integrations provide instructions to read project guidance; they do not install this runtime loader or its freshness and compaction guarantees. OMP owns native rule discovery, and Hermes requires optional manual host context configuration.
 

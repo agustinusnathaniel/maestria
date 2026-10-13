@@ -1,6 +1,6 @@
 ---
 title: '@maestria/opencode'
-description: OpenCode plugin that registers 8 specialized agents and injects global rules into every session.
+description: OpenCode V2 plugin that registers 8 specialized agents, workflow modes, and global rules. Version 0.8.0 is the last release for OpenCode V1.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -21,7 +21,7 @@ import { marks } from '@/data/marks.js';
     <PlatformHero
       eyebrow="@MAESTRIA/OPENCODE"
       title="An orchestrator and seven specialists."
-      lead="Install one plugin to add 8 agents, shared workflow rules, and session-aware orchestration to OpenCode."
+      lead="Install one plugin to add 8 agents, shared workflow rules, and workflow modes to OpenCode V2. On OpenCode V1, pin @maestria/opencode@0.8.0."
       mark={marks.opencode}
       primaryCta={{ href: '/opencode/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/opencode/configuration/', label: 'Configuration' }}
@@ -37,11 +37,11 @@ import { marks } from '@/data/marks.js';
       <FeatureGrid
         items={[
           { title: '8 specialized agents', desc: 'The orchestrator plus adventurer, architect, builder, diagnose, planner, reviewer, and writer.' },
-          { title: 'Rules in every session', desc: 'Global workflow directives are appended automatically.' },
+          { title: 'Rules in every request', desc: 'Global workflow directives and your project .maestria/ files reach every agent-loop and compaction request.' },
           { title: 'Delegate with @ mentions', desc: 'Call any specialist directly: @adventurer for recon, @builder for implementation, @reviewer for a check.' },
-          { title: 'Session state preserved', desc: 'A compaction hook retains task status across context resets.' },
+          { title: 'Per-turn workflow modes', desc: 'Type fein, sonar, or blitz, or use the slash commands; the mode stays with that prompt through continuations.' },
           { title: 'Per-agent model control', desc: 'Agents register without model overrides; assign models per agent from your own config.' },
-          { title: 'Native tool permissions', desc: 'Each agent has permission fields the V2 runtime honors, so read-only reviewers stay read-only.' },
+          { title: 'Native tool permissions', desc: 'Each agent ships ordered permission rules that OpenCode enforces, so read-only reviewers stay read-only.' },
         ]}
       />
     </PluginSection>

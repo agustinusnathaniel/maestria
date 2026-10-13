@@ -99,7 +99,7 @@ Use the package README for detailed setup. This table shows where changes normal
 
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
-| `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
+| `opencode` | `src/` OpenCode V2 plugin; permission maps in `sync.config.ts` | `agents/`, `rules/`, `skills/` | `pnpm --filter @maestria/opencode test` and `pnpm e2e:opencode` |
 | `agent-plugins` | `generation/` manifest/profile/native metadata; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 
