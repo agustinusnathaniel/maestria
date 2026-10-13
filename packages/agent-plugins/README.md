@@ -10,9 +10,8 @@ maestria ships one directly installable plugin with native host components and f
 | `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
 | `rules/` | Global policy, plus one folder per host whose rule format differs | Core `rules.md` and integration notes |
 | `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request` and `docs-update` methodology skills | One core `rules.md` section per utility; repository-root `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
-| `integrations/` | Generated host usage and capability guides | Core integration notes |
-| `generation/` | Development-only manifests and profile metadata | Hand-authored mechanical inputs |
-| `assets/`, `docs/` | Presentation and package usage documentation | Hand-authored package files |
+| `generation/` | Development-only profile metadata (`profiles.json`); not shipped | Hand-authored mechanical input |
+| `assets/` | Logo shared by the host manifests | Hand-authored package file |
 
 Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, router, policy, and argument contract without loading removed skills.
 

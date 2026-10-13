@@ -86,7 +86,7 @@ The projection baseline is local `codex 0.145.0` (`rust-v0.145.0`, commit `25af1
 | E-CODEX-CLI-10 | Codex CLI | Plugin hook trust | Non-managed plugin hooks require managed status, a matching trusted hash, or an explicit bypass before command execution | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs; https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/registry.rs | 2026-08-13 | tested: source inspection |
 | E-CODEX-CLI-11 | Codex CLI | maestria projection | At the 2026-08-13 review point, the package generated 14 skills and the separate maestria CLI provided npm-backed marketplace staging; native agents and automatic instructions were added in the subsequent re-verification | `packages/codex` on the 2026-08-13 snapshot | `packages/codex/sync.config.ts`; `packages/codex/skills/`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested after sync |
 
-### Current re-verification (2026-08-26)
+### Re-verification (2026-08-26, pre-consolidation packages)
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -149,6 +149,7 @@ The 2026-10-12 live probe asked read-only roles to write a file; the result is i
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-CURSOR-PLUGIN-01 | Cursor | Plugin agent `readonly` | Plugin-supplied agents did not enforce `readonly: true` (a write succeeded, with or without other hosts' frontmatter keys present). A project `.cursor/agents/` profile with `readonly: true` was blocked ("cannot run non read-only tools"). Other hosts' keys do not affect Cursor loading. Cursor desktop was not tested. | Cursor CLI 2026.10.01 | This register (live CLI probe) | 2026-10-12 | tested: live Cursor CLI; no desktop |
+| E-CURSOR-PLUGIN-02 | Cursor | Bundled skill discovery | With the packed archive loaded through `--plugin-dir` in a throwaway workspace, the agent listed `create-pull-request`, `docs-update`, `handoff`, and `iteration-limits` from the plugin's `skills/`; a control run without the plugin listed none from it (both runs also listed the user's own `~/.cursor/skills` and `~/.claude/skills`). Model-reported listing; skill invocation was not exercised. Cursor desktop was not tested. | Cursor CLI 2026.10.01 | This register (live CLI probe) | 2026-10-13 | tested: live Cursor CLI; no desktop |
 
 ## Kimi Code
 
@@ -158,7 +159,7 @@ Profiles now use `disallowedTools: [Write, Edit]`. In the Kimi 2.1.1 source (202
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-KIMI-PLUGIN-01 | Kimi Code | Tool names for `disallowedTools` | Kimi registers tools as `Write` and `Edit`; the previously shipped `WriteFile` and `StrReplaceFile` names matched nothing, so read-only was not effective before. Unknown keys (`readonly`, `model`) are ignored and `$ARGUMENTS` is substituted in plugin commands. Not live-run. | Kimi v0.38.0 and v2.1.1 | This register (Kimi source tool registry) | 2026-10-12 | tested: source inspection |
+| E-KIMI-PLUGIN-01 | Kimi Code | Tool names for `disallowedTools` | Kimi registers tools as `Write` and `Edit`; the previously shipped `WriteFile` and `StrReplaceFile` names matched nothing, so read-only was not effective before. Unknown keys (`readonly`, `model`) are ignored and `$ARGUMENTS` is substituted in plugin commands. An empty `subagents: []` list is an empty allowlist, so the profile may spawn no subagent type (`main/packages/agent-core-v2/src/app/agentFileCatalog/agentFile.ts` parses the list, and `agentProfileCatalog/profile-shared.ts` `subagentAllowlistFor` enforces it; `*` or omission sets no allowlist). Not live-run. | Kimi v0.38.0 and v2.1.1 | This register (Kimi source tool registry) | 2026-10-12 | tested: source inspection |
 
 ## Devin
 
@@ -178,7 +179,7 @@ ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agre
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-ZCODE-PLUGIN-01 | ZCode | Agent loading and `disallowedTools` | Directory selectors for commands and skills, conventional `agents/` discovery (the `agents` key is diagnostic-only), `.md`-only agents, no rules component; `disallowedTools` is subtracted from the subagent's tool allowlist (exact `Write`/`Edit` names; shell remains); unknown keys dropped. Not live-run. | ZCode source `main`, installed desktop build | This register (ZCode source and shipped bundle) | 2026-10-12 | tested: shipped code inspection |
+| E-ZCODE-PLUGIN-01 | ZCode | Agent loading and `disallowedTools` | Directory selectors for commands and skills, conventional `agents/` discovery (the desktop subagent service always loads `agents/` and adds any manifest `agents` paths, `subagentsService.ts` `collectPluginAgentRoots`; the plugin protocol's compatibility report lists `agents` as diagnostic-only), `.md`-only agents, no rules component; `disallowedTools` is subtracted from the subagent's tool allowlist (exact `Write`/`Edit` names; shell remains); unknown keys dropped. Not live-run. | ZCode source `main`, installed desktop build | This register (ZCode source and shipped bundle) | 2026-10-12 | tested: shipped code inspection |
 
 ## OMP
 
@@ -226,7 +227,7 @@ The Hermes loader supplies skills and optional MCP resources. Portable installat
 - Claude's explicit agent-file form passes strict validation; directory form is rejected. Acceptance of extra frontmatter does not establish runtime enforcement.
 - Kimi native profiles, command/bootstrap resources, and size limits have package/schema evidence; live dispatch and reload remain unverified.
 - Cursor plugin agents do not enforce `readonly` (see above). Devin discovery is verified, but Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist, so their read-only roles are prompt-level. ZCode removes `disallowedTools` from subagent tools per its source, but no live ZCode run was performed.
-- Codex marketplace exposes only utility skills; its complete agent/policy/mode context is supplied by the managed CLI path.
+- Codex marketplace exposes only the four skills; its complete agent/policy/mode context is supplied by the managed CLI path.
 - A doctor check or install dry-run is not proof of a plugin loading, and earlier fourteen-skill/zero-command and eight-profile probes describe retired layouts.
 
 Run the completion gates as well as these probes. Regenerate affected evidence when native contexts, selectors, or installation behavior changes; unchanged source bodies and metadata-only descriptions do not require repeating provider-independent lifecycle work without a named concern.
@@ -243,6 +244,7 @@ Run the completion gates as well as these probes. Regenerate affected evidence w
 | E-CLAUDE-09 | This register; `scripts/e2e/claude-skill-preload.ts` | 2026-10-10 | tested: native CLI fixture (superseded) |
 | E-CLAUDE-10, E-CLAUDE-11, E-CLAUDE-12 | This register; `scripts/e2e/claude-skill-preload.ts`; https://code.claude.com/docs/en/plugins/components; https://claude.com/docs/plugins/platform-support | 2026-10-12 (E-CLAUDE-10 reviewed 2026-10-11) | tested: native CLI fixture |
 | E-CURSOR-PLUGIN-01 | This register (live CLI probe); https://cursor.com/docs/reference/plugins; https://cursor.com/docs/subagents | 2026-10-12 | tested: live Cursor CLI |
+| E-CURSOR-PLUGIN-02 | This register (live CLI probe, `cursor-agent -p --plugin-dir`) | 2026-10-13 | tested: live Cursor CLI |
 | E-KIMI-PLUGIN-01 | Kimi `v0.38.0` and `v2.1.1` source tool registry; https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents | 2026-10-12 | tested: source inspection |
 | E-DEVIN-PLUGIN-01 | This register (`devin plugins info`); https://docs.devin.ai/cli/extensibility/plugins/overview | 2026-10-12 | tested: live Devin CLI discovery |
 | E-ZCODE-PLUGIN-01 | This register (ZCode source and shipped bundle); https://zcode.z.ai/en/docs/plugin | 2026-10-12 | tested: source inspection |

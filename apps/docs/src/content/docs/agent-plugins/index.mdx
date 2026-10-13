@@ -1,11 +1,11 @@
 ---
 title: '@maestria/agent-plugins'
-description: One package that installs maestria's specialists, workflow commands, policy, and utility skills on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes.
+description: One package that installs maestria's specialists, workflow commands, policy, and skills on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes.
 ---
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-`@maestria/agent-plugins` packages maestria's agents, workflow commands, policy, and utility skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes four [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request` and `docs-update` [methodology skills](/core/agents/#skills) the rules tell agents to load.
+`@maestria/agent-plugins` packages maestria's agents, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes four [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request` and `docs-update` [methodology skills](/core/agents/#skills) the rules tell agents to load.
 
 <Aside type="tip" title="Native hosts get the full methodology">
   Portable installation supplies the four skills. Native host integrations add seven specialist
@@ -39,14 +39,16 @@ Every host also gets the four skills. Codex marketplace installation supplies on
 
 [OpenCode](/opencode/) and [Pi](/pi/) keep their separate native runtime packages. The [compatibility matrix](/agent-plugins/compatibility/) distinguishes documented resources, package validation, loader probes, and live runtime verification. See the official [compatible clients](https://agent-plugins.org/compatible-clients) list for portable format support; the table above describes maestria resources, not live verification.
 
-## Portable utilities
+## Skills
 
-| Skill              | Purpose                                                              |
-| ------------------ | -------------------------------------------------------------------- |
-| `handoff`          | Transfer the outcome, constraints, evidence, blockers, and next step |
-| `iteration-limits` | Bound repair and review loops with explicit termination conditions   |
+| Skill                 | Purpose                                                              |
+| --------------------- | -------------------------------------------------------------------- |
+| `handoff`             | Transfer the outcome, constraints, evidence, blockers, and next step |
+| `iteration-limits`    | Bound repair and review loops with explicit termination conditions   |
+| `create-pull-request` | Draft or revise a pull request title and body                        |
+| `docs-update`         | Keep documentation and changesets in step with a change              |
 
-These utilities live at `skills/<name>/SKILL.md`. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
+These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and the other two are copied from the repository-root `skills/`. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
 
 ## Runtime boundaries
 
@@ -82,7 +84,7 @@ Markdown hosts share one profile per role in `agents/<role>.md` and one command 
   />
   <LinkCard
     title="Package source"
-    description="Manifests, native resources, utilities, and installation guide."
+    description="Manifests, native resources, skills, and installation guide."
     href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins"
   />
 </CardGrid>

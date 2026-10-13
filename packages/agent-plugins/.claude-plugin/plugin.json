@@ -3,7 +3,7 @@
   "name": "maestria",
   "displayName": "maestria",
   "version": "0.7.0",
-  "description": "maestria native specialists, workflow commands, and reusable utility skills for Claude Code",
+  "description": "maestria native specialists, workflow commands, and skills for Claude Code",
   "author": {
     "name": "agustinusnathaniel"
   },

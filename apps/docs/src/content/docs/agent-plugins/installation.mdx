@@ -86,11 +86,11 @@ claude plugin validate ./packages/agent-plugins --strict
 
 </Steps>
 
-| Component       | Identifier                                             |
-| --------------- | ------------------------------------------------------ |
-| Native agents   | `maestria:<role>` through the Agent tool               |
+| Component | Identifier |
+| --- | --- |
+| Native agents | `maestria:<role>` through the Agent tool |
 | Native commands | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` |
-| Utility skills  | `maestria:handoff`, `maestria:iteration-limits`        |
+| Skills | `maestria:handoff`, `maestria:iteration-limits`, `maestria:create-pull-request`, `maestria:docs-update` |
 
 **Limits.** `disallowedTools: Write, Edit` filters those tools for the four read-only roles. Shell-mediated writes are outside the filter, and role text remains guidance. Profiles set no `model`, so Claude uses the main conversation's model. Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter for plugin-loaded agents; maestria ships no hooks or MCP server and does not modify `CLAUDE.md`. Strict validation passes on Claude Code `2.1.295`, and an offline fixture (2026-10-12) loaded the reviewer from the shared profile with Write and Edit unavailable and the full role and global policy in the child context. Model judgment, shell isolation, other specialists, other CLI versions, account sync, Cowork, and Desktop behavior are not covered. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [compatibility](/agent-plugins/compatibility/).
 
@@ -102,7 +102,7 @@ To install from the Desktop UI, first add the maestria marketplace in the CLI (`
 
 ### Claude Chat and Cowork
 
-The native commands work in Claude Code, Desktop Code, and Cowork. Claude account plugins can expose commands and utility skills in Chat, which ignores native agents. Cowork supports plugin agents and hooks. Account plugins sync into Claude Code when you are signed in with the same account on Claude Code `2.1.273` or later. maestria's account sync and Cowork behavior are unverified. See [Claude's plugin surface guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+The native commands work in Claude Code, Desktop Code, and Cowork. Claude account plugins can expose commands and skills in Chat, which ignores native agents. Cowork supports plugin agents and hooks. Account plugins sync into Claude Code when you are signed in with the same account on Claude Code `2.1.273` or later. maestria's account sync and Cowork behavior are unverified. See [Claude's plugin surface guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
 
 ## Codex
 
@@ -134,7 +134,7 @@ The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, the
    <AllPackageManagers type="dlx" pkg="maestria@latest" args="check codex" />
 
 2. List the installed plugin with `codex plugin list --json` and look for `maestria@maestria` with `installed: true`.
-3. Start a fresh Codex session, since plugin discovery is session-sensitive, and confirm `$maestria:handoff` and `$maestria:iteration-limits` are available.
+3. Start a fresh Codex session, since plugin discovery is session-sensitive, and confirm the four skills (`$maestria:handoff`, `$maestria:iteration-limits`, `$maestria:create-pull-request`, `$maestria:docs-update`) are available.
 4. Confirm `~/.codex/agents/maestria-*.toml` exists (or the equivalent `$CODEX_HOME/agents/` directory). Ask Codex to delegate with `agent_type: "maestria-builder"` and use `maestria-reviewer` for independent review.
 5. Ask for a meaningful task without a skill prefix and confirm the primary session follows the routing guidance. Try `SONAR: trace authentication without editing`.
 
@@ -192,7 +192,7 @@ The marketplace file is user-scoped, and the npm source requires the `npm` CLI. 
 
 1. Restart the ChatGPT desktop app so Codex reads the marketplace file.
 2. Open the Plugins Directory, choose the **Maestria** marketplace, and install `maestria`.
-3. Start a new Codex chat and confirm `$maestria:handoff` and `$maestria:iteration-limits` appear.
+3. Start a new Codex chat and confirm the four `$maestria:<skill>` skills appear.
 
 </Steps>
 
@@ -390,12 +390,12 @@ Or remove the package with `omp plugin uninstall @maestria/agent-plugins`. If th
 
 **Resources.**
 
-| Resource                      | Purpose                                                     |
-| ----------------------------- | ----------------------------------------------------------- |
-| `agents/<role>.md`            | Seven specialist profiles with complete role and policy     |
-| `/fein`, `/sonar`, `/blitz`   | Complete native mode commands with routing and policy       |
-| `rules/global.md`             | Always-apply global policy and routing for the main session |
-| `handoff`, `iteration-limits` | Portable utilities                                          |
+| Resource | Purpose |
+| --- | --- |
+| `agents/<role>.md` | Seven specialist profiles with complete role and policy |
+| `/fein`, `/sonar`, `/blitz` | Complete native mode commands with routing and policy |
+| `rules/global.md` | Always-apply global policy and routing for the main session |
+| `skills/` | `handoff`, `iteration-limits`, `create-pull-request`, `docs-update` |
 
 Profiles, commands, and rules are generated from canonical sources and shared with other Markdown hosts, so no role or global-rules skill preload is needed. By default, profiles inherit the parent model.
 
@@ -419,7 +419,7 @@ hermes plugins list
 
 For unreleased work, copy the plugin into an isolated Hermes home and use the host enable command. The plugin should appear as `maestria`. Enable it if your installer leaves it disabled, then start a new session.
 
-**Verify skills.** Ask Hermes to call `skills_list` to discover the plugin's fully qualified skill names, then `skill_view` to load `handoff` or `iteration-limits`. Hermes derives an `agent-plugin-<slug>-<hash>` namespace for portable plugins, so do not assume `maestria:<skill>`.
+**Verify skills.** Ask Hermes to call `skills_list` to discover the plugin's fully qualified skill names, then `skill_view` to load one of the four skills, such as `handoff`. Hermes derives an `agent-plugin-<slug>-<hash>` namespace for portable plugins, so do not assume `maestria:<skill>`.
 
 **Update and remove.**
 

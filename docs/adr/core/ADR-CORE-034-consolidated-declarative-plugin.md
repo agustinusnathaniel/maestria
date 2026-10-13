@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, Confidence: Medium.
+Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11 and 2026-10-12.
 
 ## Context
 

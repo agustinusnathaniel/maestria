@@ -5,13 +5,13 @@
     "email": "agustinus.nathaniel@gmail.com"
   },
   "metadata": {
-    "description": "maestria methodology plugin for Cursor - native specialist agents, workflow commands, always-applied policy, and utility skills"
+    "description": "maestria methodology plugin for Cursor - native specialist agents, workflow commands, always-applied policy, and skills"
   },
   "plugins": [
     {
       "name": "maestria",
       "source": "./packages/agent-plugins",
-      "description": "maestria methodology plugin for Cursor - 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer), workflow commands (/fein, /sonar, /blitz), always-applied policy rules, and utility skills"
+      "description": "maestria methodology plugin for Cursor - 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer), workflow commands (/fein, /sonar, /blitz), always-applied policy rules, and four skills"
     }
   ]
 }
