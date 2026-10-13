@@ -63,11 +63,11 @@ const chunk = (delta: unknown, finish: string | null): string =>
 const outIndex = process.argv.indexOf('--out');
 const out = outIndex === -1 ? undefined : process.argv[outIndex + 1];
 if (out === undefined || out === '') {
-  throw new Error('Usage: opencode-v2-evidence.ts --out <path>');
+  throw new Error('Usage: opencode-evidence.ts --out <path>');
 }
 const repo = path.resolve(import.meta.dirname, '../..');
-const root = await fs.mkdtemp(path.join(os.tmpdir(), 'maestria-opencode-v2-'));
-const packageDir = process.env.MAESTRIA_V2_PACKAGE ?? path.join(repo, 'packages/opencode-v2');
+const root = await fs.mkdtemp(path.join(os.tmpdir(), 'maestria-opencode-'));
+const packageDir = process.env.MAESTRIA_OPENCODE_PACKAGE ?? path.join(repo, 'packages/opencode');
 const binary = process.env.OPENCODE_BIN ?? 'opencode';
 const checks: { name: string; pass: boolean }[] = [];
 const requests: RequestBody[] = [];
@@ -145,7 +145,7 @@ const config = {
   plugins: [
     {
       options: { modes: { disabledKeywords: [] as string[] } },
-      package: process.env.MAESTRIA_V2_PLUGIN ?? path.join(root, 'plugin'),
+      package: process.env.MAESTRIA_OPENCODE_PLUGIN ?? path.join(root, 'plugin'),
     },
   ],
   providers: {

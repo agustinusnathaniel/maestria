@@ -11,7 +11,6 @@ const SOURCE_DIR = 'packages/core/agent-directives/skills';
 const TARGET_DIRS = [
   'packages/agent-plugins/skills',
   'packages/opencode/skills',
-  'packages/opencode-v2/skills',
   'packages/pi/skills',
 ];
 const NOTICE_PREFIX = `<!-- Bundled from ${SOURCE_DIR}/`;

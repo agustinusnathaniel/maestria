@@ -82,6 +82,6 @@ minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro
   - effect
-  # opencode-v2 tracks the host SDK release, often younger than minimumReleaseAge
+  # @maestria/opencode tracks the host SDK release, often younger than minimumReleaseAge
   - '@opencode/*'
   - '@earendil-works/*'

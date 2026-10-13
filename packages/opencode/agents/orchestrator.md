@@ -1,28 +1,64 @@
 ---
 description: maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.
 mode: all
-permission:
-  bash:
-    "*": deny
-    "* npx --yes skills@latest *": allow
-  edit: deny
-  glob: deny
-  grep: deny
-  lsp: deny
-  question: allow
-  read: deny
-  skill: allow
-  task:
-    "*": deny
-    adventurer: allow
-    architect: allow
-    builder: allow
-    diagnose: allow
-    planner: allow
-    reviewer: allow
-    writer: allow
-  todowrite: allow
-  webfetch: deny
+permissions:
+  - action: shell
+    effect: deny
+    resource: "*"
+  - action: shell
+    effect: allow
+    resource: "* npx --yes skills@latest *"
+  - action: edit
+    effect: deny
+    resource: "*"
+  - action: glob
+    effect: deny
+    resource: "*"
+  - action: grep
+    effect: deny
+    resource: "*"
+  - action: lsp
+    effect: deny
+    resource: "*"
+  - action: question
+    effect: allow
+    resource: "*"
+  - action: read
+    effect: deny
+    resource: "*"
+  - action: skill
+    effect: allow
+    resource: "*"
+  - action: subagent
+    effect: deny
+    resource: "*"
+  - action: subagent
+    effect: allow
+    resource: adventurer
+  - action: subagent
+    effect: allow
+    resource: architect
+  - action: subagent
+    effect: allow
+    resource: builder
+  - action: subagent
+    effect: allow
+    resource: diagnose
+  - action: subagent
+    effect: allow
+    resource: planner
+  - action: subagent
+    effect: allow
+    resource: reviewer
+  - action: subagent
+    effect: allow
+    resource: writer
+  - action: todowrite
+    effect: allow
+    resource: "*"
+  - action: webfetch
+    effect: deny
+    resource: "*"
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

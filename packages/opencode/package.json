@@ -1,7 +1,7 @@
 {
   "name": "@maestria/opencode",
   "version": "0.8.0",
-  "description": "OpenCode plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
+  "description": "OpenCode V2 plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
   "keywords": [
     "agents",
     "ai",
@@ -42,35 +42,25 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "vp pack && vp test"
+    "test": "vp test"
   },
   "dependencies": {
-    "es-toolkit": "^1.52.0",
-    "yaml": "^2.9.0",
-    "zod": "^4.6.1"
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
     "@maestria/shared-project-config": "workspace:*",
-    "@opencode-ai/plugin": "^1.18.30",
+    "@opencode/plugin": "^2.0.28",
     "@types/node": "catalog:",
+    "effect": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "^1.18.4"
+    "@opencode/plugin": "^2.0.28",
+    "effect": "^4.0.0"
   },
   "engines": {
-    "bun": ">=1.0.0",
     "node": ">=22.12.0"
-  },
-  "opencode": {
-    "type": "plugin",
-    "hooks": [
-      "config",
-      "chat.message",
-      "experimental.chat.system.transform",
-      "experimental.session.compacting"
-    ]
   }
 }

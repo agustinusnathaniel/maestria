@@ -3,7 +3,7 @@
  *
  * Pure TypeScript - no host SDKs, no filesystem APIs.
  * Consolidates the duplicated pure logic from:
- * - `packages/opencode/src/modes/index.ts`
+ * - the former `packages/opencode/src/modes/index.ts` (OpenCode V1 adapter)
  * - `packages/shared/pi/src/modes-core.ts`
  *
  * Consumers (OpenCode, shared-pi) delegate pure detection,

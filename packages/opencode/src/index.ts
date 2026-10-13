@@ -69,5 +69,5 @@ export default Plugin.define({
 
       yield* registerSessionHooks(ctx, bundle, disabledKeywords);
     }),
-  id: 'maestria.v2',
+  id: 'maestria',
 });
