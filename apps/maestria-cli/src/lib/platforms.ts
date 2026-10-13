@@ -16,30 +16,29 @@ import {
   removeKimiPlugin,
 } from '@/lib/kimi.js';
 import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
+import {
+  installOpenCode,
+  isOpenCodeInstalled,
+  OPENCODE_PACKAGE,
+  openCodeInstalledVersion,
+  requireOpenCodeV2,
+  uninstallOpenCode,
+  updateOpenCode,
+} from '@/lib/opencode.js';
 import { isFileNotFound, isRecord, parseJsonRecord, parseJsonValue } from '@/lib/primitives.js';
 import type { JsonRecord } from '@/lib/primitives.js';
 import {
   CommandError,
   commandExists,
   fileExists,
-  getCacheDir,
   getMaestriaCacheDir,
   invalidateVersionCache,
   npmViewVersion,
-  readTextFile,
   run,
 } from '@/lib/shell.js';
 import type { PlatformResult } from '@/types.js';
 
 const { join } = nodePath;
-
-const readOpenCodeConfig = (): Effect.Effect<string, CommandError> => {
-  const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
-  const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
-  return readTextFile(jsoncPath).pipe(
-    Effect.catchTag('CommandError', () => readTextFile(jsonPath)),
-  );
-};
 
 const installNpmTarball = (
   pkg: string,
@@ -336,93 +335,17 @@ const resolveLatestVersion = (definition: PlatformDefinition): PlatformHandler =
   return { ...definition, getLatestVersion: npmViewVersion(definition.npmPackage) };
 };
 
-const clearOpencodeCache = (): Effect.Effect<void, CommandError> =>
-  Effect.tryPromise({
-    catch: (error) =>
-      new CommandError({
-        command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
-        message: String(error),
-      }),
-    try: async () => {
-      const { readdir, rm } = await import('node:fs/promises');
-      const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
-      let entries: string[];
-      try {
-        entries = await readdir(base);
-      } catch (error) {
-        if (isFileNotFound(error)) {
-          return;
-        }
-        throw error;
-      }
-      const stale = entries.filter((e) => e.startsWith('opencode'));
-      await Promise.all(
-        stale.map(async (e) => {
-          await rm(`${base}/${e}`, { force: true, recursive: true });
-        }),
-      );
-    },
-  });
-
 const opencode: PlatformDefinition = {
   detect: commandExists('opencode'),
-  getInstalledVersion: readOpenCodeConfig().pipe(
-    Effect.map((config) => {
-      const match = /@maestria\/opencode@(?<version>.+?)"/u.exec(config);
-      return match?.groups?.version ?? null;
-    }),
-    Effect.flatMap((specifier) => {
-      if (specifier === null || specifier === undefined || specifier === '') {
-        return Effect.succeed('unknown');
-      }
-      return readPackageJsonVersion(
-        join(
-          getCacheDir(),
-          'opencode',
-          'packages',
-          `@maestria/opencode@${specifier}`,
-          'node_modules',
-          '@maestria',
-          'opencode',
-          'package.json',
-        ),
-      );
-    }),
-    Effect.catchEager(() => Effect.succeed('unknown')),
-  ),
+  getInstalledVersion: openCodeInstalledVersion,
   id: 'opencode',
-  install: Effect.gen(function* install() {
-    yield* clearOpencodeCache();
-    yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
-  }).pipe(Effect.asVoid),
-  isInstalled: readOpenCodeConfig().pipe(
-    Effect.map((out) => out.includes('@maestria/opencode')),
-    Effect.catchEager(() => Effect.succeed(false)),
-  ),
+  install: installOpenCode,
+  isInstalled: isOpenCodeInstalled,
   label: 'OpenCode',
-  npmPackage: '@maestria/opencode',
-  uninstall: Effect.sync(() => {
-    console.log(
-      `\n  To uninstall OpenCode:\n` +
-        `  1. Edit ~/.config/opencode/opencode.jsonc (or .opencode/opencode.jsonc in your project)\n` +
-        `  2. Remove "@maestria/opencode@latest" from the "plugin" array\n` +
-        `  3. Optionally clear cache: rm -rf ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}\n`,
-    );
-  }),
-  update: (version?: string) =>
-    Effect.gen(function* update() {
-      const tag = version ?? 'latest';
-
-      yield* clearOpencodeCache();
-
-      // Global install uses -g; cold fetches keep install's 120s deadline.
-      const globalConfig = yield* readOpenCodeConfig().pipe(
-        Effect.map((out) => out.includes('@maestria/opencode')),
-        Effect.catchEager(() => Effect.succeed(false)),
-      );
-      const flag = globalConfig ? ['-g', '--force'] : ['--force'];
-      yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag], 120_000);
-    }),
+  npmPackage: OPENCODE_PACKAGE,
+  preflightUpdate: () => requireOpenCodeV2,
+  uninstall: uninstallOpenCode,
+  update: (version?: string) => updateOpenCode(version),
 };
 
 const claudeCode: PlatformDefinition = {

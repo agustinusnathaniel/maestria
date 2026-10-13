@@ -1,12 +1,17 @@
 // packages/opencode/sync.config.ts
-// Sync config: derives opencode agent files from canonical core directives
+// Sync config: derives OpenCode agent, command, and rules files from canonical core directives
 //
 // oxlint-disable sort-keys -- Permission maps keep their declared glob order because the sync
-// engine projects object keys verbatim into generated agent frontmatter, and `check-sync`
-// enforces byte identity of that committed output. Sorting keys here would churn every
-// generated permission block without changing behavior.
+// engine projects them in order into generated agent frontmatter, and `check-sync` enforces byte
+// identity of that committed output. Sorting keys here would churn every generated permission
+// block without changing behavior.
+//
+// OpenCode takes ordered `permissions` rules (last match wins). Each map below translates entry by
+// entry in declaration order, so its effective policy is preserved: `bash` and `task` become the
+// `shell` and `subagent` actions, and a scalar effect applies to resource `*`. Commands keep their
+// canonical frontmatter, whose description the plugin registers with each slash command.
 
-import type { SyncConfig } from '../core/scripts/lib/config.js';
+import type { FileConfig, SyncConfig } from '../core/scripts/lib/config.js';
 
 type BashPermissionEntry = readonly [string, 'allow' | 'ask' | 'deny'];
 
@@ -67,7 +72,8 @@ const guardedReconGit = (): BashPermissionEntry[] =>
     `${GUARDED_GIT} branch --show-current*`,
   );
 
-export default {
+// Authored as OpenCode V1 `permission` maps, which read compactly; translated to V2 rules below.
+const permissionMaps = {
   files: {
     'adventurer.md': {
       frontmatter: {
@@ -279,4 +285,41 @@ export default {
   },
   output: 'agents',
   source: '../core/agent-directives/specialists',
+} satisfies SyncConfig;
+
+const RULE_ACTIONS: Record<string, string> = { bash: 'shell', task: 'subagent' };
+
+type MapFile = (typeof permissionMaps.files)[keyof typeof permissionMaps.files];
+
+const toPermissions = (permission: Record<string, string | Record<string, string>>) =>
+  Object.entries(permission).flatMap(([tool, value]) => {
+    const action = RULE_ACTIONS[tool] ?? tool;
+    return typeof value === 'string'
+      ? [{ action, effect: value, resource: '*' }]
+      : Object.entries(value).map(([resource, effect]) => ({
+          action,
+          effect,
+          resource,
+        }));
+  });
+
+const toRulesConfig = (name: string, file: MapFile): FileConfig => {
+  if (name.startsWith('commands/')) {
+    return { ...file, stripFrontmatter: false };
+  }
+  if (!('frontmatter' in file)) {
+    return file;
+  }
+  const { permission, ...rest } = file.frontmatter;
+  return {
+    ...file,
+    frontmatter: { ...rest, permissions: toPermissions(permission) },
+  };
+};
+
+export default {
+  ...permissionMaps,
+  files: Object.fromEntries(
+    Object.entries(permissionMaps.files).map(([name, file]) => [name, toRulesConfig(name, file)]),
+  ),
 } satisfies SyncConfig;

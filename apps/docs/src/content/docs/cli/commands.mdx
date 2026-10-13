@@ -123,7 +123,7 @@ Every maestria package bundles the `create-pull-request` and `docs-update` skill
 
 | ID            | Platform    | Distribution                                            |
 | ------------- | ----------- | ------------------------------------------------------- |
-| `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
+| `opencode`    | OpenCode V2 | `@maestria/opencode` (npm) via `opencode plugin`        |
 | `pi`          | Pi          | `@maestria/pi` (npm)                                    |
 | `kimi-code`   | Kimi Code   | `@maestria/agent-plugins` (npm)                         |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
@@ -319,6 +319,8 @@ Uninstall also removes the skill copies earlier CLI versions installed for that 
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
+OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, move a V1 `plugin` entry to `plugins`, and replace a `@maestria/opencode-v2` preview entry; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options.
+
 ### Example
 
 <AllPackageManagers type="dlx" pkg="maestria" args="uninstall pi" />
@@ -441,7 +443,7 @@ An empty string means the agent inherits the session model.
 | opencode | `~/.config/opencode/opencode.jsonc` | `.opencode/opencode.jsonc` |
 | pi       | `~/.pi/agent/agents/<name>.md`      | `.pi/agents/<name>.md`     |
 
-opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
+opencode writes the OpenCode V2 `agents.<name>.model` key, preserving comments and other keys, and removes a V1 `agent.<name>.model` for the same agent; pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
 
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.

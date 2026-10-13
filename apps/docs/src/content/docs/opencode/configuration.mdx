@@ -9,40 +9,38 @@ import { Aside, Code } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-The `@maestria/opencode` plugin registers 8 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agent.<name>.model` path, which works for any agent.
+The `@maestria/opencode` plugin registers 8 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agents.<name>.model` path, which works for any agent.
 
 ## Per-Agent Models
 
 ```jsonc
 {
-  "agent": {
+  "agents": {
     "adventurer": { "model": "<model-id>" },
-    "writer": { "model": "<model-id>" },
+    "writer": { "model": "<model-id>#high" },
   },
 }
 ```
 
 Edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project-level). Unmentioned agents keep their existing assignments.
 
-Use `<provider>/<model-id>` with an explicit model ID copied from OpenCode's live model list: model IDs, availability, pricing, and aliases vary.
+Use `<provider>/<model-id>` with an explicit model ID copied from OpenCode's live model list, optionally followed by `#<variant>`: model IDs, availability, pricing, and aliases vary. OpenCode still accepts the V1 `agent.<name>.model` form; when both are set, the `agents` value wins ([V1 migration guide](https://opencode.ai/v2/docs/migrate-v1/)).
 
 ## Model Inheritance
 
-Model assignment follows a chain. From the OpenCode documentation:
-
-> If you don't specify a model, primary agents use the globally configured model while subagents will use the model of the primary agent that invoked the subagent.
+Model assignment follows a chain. In OpenCode V2, a primary agent uses the session's selected model, and a subagent without its own model inherits the model of the session that launched it ([agents documentation](https://opencode.ai/v2/docs/agents/)).
 
 The 7 specialists are subagents of the orchestrator, so they inherit the orchestrator's model unless overridden individually. Read [When to use maestria](/core/when-to-use/) before assigning the same model to every agent.
 
 <Aside type="tip">
   To put every specialist on the same model, set{' '}
-  <Code code="agent.orchestrator.model" lang="jsonc" />. Add entries only for the agents you want to
-  diverge.
+  <Code code="agents.orchestrator.model" lang="jsonc" />. Add entries only for the agents you want
+  to diverge.
 </Aside>
 
 ## Selective Assignment
 
-The CLI validates a model ID against OpenCode's live model list and changes only the named agents:
+The CLI validates a model ID against OpenCode's live model list and changes only the named agents. It writes `agents.<name>.model` and removes a V1 `agent.<name>.model` for the same agent so the two cannot conflict:
 
 <AllPackageManagers
   type="dlx"
@@ -63,7 +61,7 @@ model: <model-id>
 ---
 ```
 
-This works the same as the `agent.<name>.model` config entry.
+This works the same as the `agents.<name>.model` config entry.
 
 ## Project-Level Config
 
@@ -71,12 +69,19 @@ Project config (`.opencode/opencode.jsonc`) merges with global config (`~/.confi
 
 ## Disabling Workflow Modes
 
-`modes.disabledKeywords` accepts a denylist of mode keywords in the plugin options:
+`modes.disabledKeywords` accepts a denylist of mode keywords in the plugin options. Disabled keywords are no longer detected in prompts; their slash commands stay available:
 
 ```jsonc
 {
-  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
+  "plugins": [
+    {
+      "package": "@maestria/opencode",
+      "options": { "modes": { "disabledKeywords": ["blitz"] } },
+    },
+  ],
 }
 ```
+
+Invalid options are logged and ignored, and the plugin runs with defaults.
 
 Mode detection and precedence are documented under [Modes](/core/agents/#modes).
