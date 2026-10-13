@@ -76,6 +76,8 @@ allowBuilds:
   onnxruntime-node: true
   protobufjs: true
   sharp: true
+# Match CI's pnpm default (one day) even when a user-level config lowers it.
+minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro
