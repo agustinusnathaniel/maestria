@@ -11,8 +11,6 @@ import {
 } from '@/lib/primitives.js';
 import type { JsonRecord } from '@/lib/primitives.js';
 
-import { validateMcp } from './agent-plugin-mcp.js';
-
 export const AGENT_PLUGIN_SCHEMA = 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json';
 
 const PLUGIN_NAME_RE = /^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/u;
@@ -38,7 +36,7 @@ export interface AgentPluginValidation {
   readonly name?: string;
   readonly root: string;
   readonly skillNames: string[];
-  readonly validationScope: 'portable-manifest-skills-mcp';
+  readonly validationScope: 'portable-manifest-skills';
   readonly valid: boolean;
   readonly version?: string;
   readonly warnings: string[];
@@ -69,7 +67,7 @@ const finalize = (draft: ValidationDraft): AgentPluginValidation => ({
   root: draft.root,
   skillNames: draft.skillNames.toSorted(),
   valid: draft.errors.length === 0 && draft.name !== undefined,
-  validationScope: 'portable-manifest-skills-mcp',
+  validationScope: 'portable-manifest-skills',
   ...(draft.version === undefined ? {} : { version: draft.version }),
   warnings: draft.warnings,
 });
@@ -311,7 +309,7 @@ export const validateAgentPlugin = async (input: string): Promise<AgentPluginVal
       root: requestedRoot,
       skillNames: [],
       valid: false,
-      validationScope: 'portable-manifest-skills-mcp',
+      validationScope: 'portable-manifest-skills',
       warnings: [],
     };
   }
@@ -324,7 +322,10 @@ export const validateAgentPlugin = async (input: string): Promise<AgentPluginVal
   };
   await validateManifest(root, draft);
   await validateSkills(root, draft);
-  await validateMcp(root, draft);
+  // maestria ships no MCP server, so it does not validate or stage MCP configuration.
+  if ((await stat(path.join(root, 'mcp.json')).catch(() => null)) !== null) {
+    addError(draft, 'mcp.json is not supported: maestria stages Agent Plugins without MCP servers');
+  }
   return finalize(draft);
 };
 
@@ -339,7 +340,7 @@ export const formatAgentPluginValidation = (report: AgentPluginValidation): stri
   }
   lines.push(
     `Skills: ${report.skillNames.length}`,
-    'Scope: portable manifest, skills, and MCP configuration; native host schemas are not checked.',
+    'Scope: portable manifest and skills; native host schemas are not checked.',
   );
   for (const error of report.errors) {
     lines.push(`Error: ${error}`);

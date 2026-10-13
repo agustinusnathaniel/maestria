@@ -112,7 +112,7 @@ const cleanupCurrentInstalls = async (
 };
 
 export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
-  assertNoRemovedSkillFlags(rawArgs, 'update');
+  assertNoRemovedSkillFlags(rawArgs);
   const isQuiet = resolveBatchQuiet(rawArgs);
   let platformIds: string[] | undefined;
   if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {

@@ -75,7 +75,7 @@ const collectInstallTargets = async (
 };
 
 export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult> => {
-  assertNoRemovedSkillFlags(rawArgs, 'install');
+  assertNoRemovedSkillFlags(rawArgs);
   const isQuiet = resolveBatchQuiet(rawArgs);
   let platformIds: string[] | undefined;
   if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {

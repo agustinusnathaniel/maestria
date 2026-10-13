@@ -75,18 +75,6 @@ Check methodology skill state without changing anything:
 
 This reports the skill record path, per-platform plugin state, recorded selections, and observed skills with next steps. See the [doctor reference](/cli/commands/#doctor).
 
-### Coordinate Project Setup
-
-Check ecosystem tools for a project:
-
-<AllPackageManagers
-  type="dlx"
-  pkg="maestria@latest"
-  args="setup --ecosystem codegraph,opensrc --yes"
-/>
-
-Setup is read-only until the final confirmation. Ecosystem tools are detection plus manual steps only; the CLI never installs them automatically. maestria's own `create-pull-request` and `docs-update` skills come with each package; use `--skill-source` to add external skill repositories. See the [setup reference](/cli/commands/#setup).
-
 ## Prerequisites
 
 - Node.js 22.12 or later

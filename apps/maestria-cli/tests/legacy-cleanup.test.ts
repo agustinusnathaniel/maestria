@@ -165,35 +165,6 @@ describe('legacy companion cleanup migration', () => {
     expect(skillTransport.calls).toEqual([]);
   });
 
-  it('rejects removed setup skill flags and points to --skill-source', async () => {
-    const { runSetup } = await import('@/lib/setup.js');
-    let thrown: unknown;
-    try {
-      await runSetup(
-        { quiet: true, skills: COMPANION_SKILL, yes: true },
-        {
-          detect: async () => [],
-          ecosystemProbe: async () => ({ present: true, version: '' }),
-          isInteractive: () => false,
-          readGitignore: async () => null,
-          readRecord: async () => null,
-          skillRunner: fakeSkillCli({}),
-          xtarterize: async () => ({ exitCode: 0, stderr: '', stdout: '' }),
-          xtarterizePath: async () => null,
-        },
-      );
-    } catch (error) {
-      thrown = error;
-    }
-    expect(thrown).toBeInstanceOf(CliError);
-    if (!(thrown instanceof CliError)) {
-      throw new Error('Expected runSetup to throw CliError');
-    }
-    expect(thrown.exitCode).toBe(1);
-    expect(thrown.message).toMatch(/bundle/iu);
-    expect(thrown.message).toMatch(/--skill-source/iu);
-  });
-
   it('passes citty unknown skill flags through to the install handler rejection', async () => {
     const { installCommand } = await import('@/commands/install.js');
     vi.spyOn(console, 'log').mockImplementation(() => {});

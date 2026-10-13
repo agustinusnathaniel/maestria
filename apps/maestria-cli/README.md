@@ -18,7 +18,6 @@ npx maestria status
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
 | `maestria doctor` | Report skill copies left over from earlier CLI versions, without changing anything (read-only) |
-| `maestria setup [--ecosystem ...] [--xtarterize-skills] [--skill-source ...]` | Coordinate optional setup across ecosystem tools and skills (nothing runs before confirm) |
 | `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi); `--set` configures non-interactively. Cursor global configuration edits the installed plugin's `agents/<role>.md`, and `maestria update cursor` carries configured models over |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the maestria cache or an explicit destination |
@@ -26,10 +25,6 @@ npx maestria status
 ### Methodology skills
 
 Every maestria package bundles the `create-pull-request` and `docs-update` methodology skills (canonical source: `packages/core/agent-directives/skills/<skill>/SKILL.md`), so the CLI no longer installs them. Earlier versions installed them through the official `skills` CLI and recorded ownership per platform in `$XDG_CONFIG_HOME/maestria/skills.json` (version 2). `update` and `uninstall` now remove the copies that record lists, through the pinned `skills@1.7.0` CLI, and then drop the record entry; a copy whose path another agent still uses is kept and reported, and copies the record does not list are never removed. The removed `--skills`, `--exclude-skills`, and `--maestria-skills` flags fail before any change.
-
-### Setup
-
-`maestria setup` coordinates optional setup in one place: ecosystem binary detection (`codegraph`, `agent-browser`, `opensrc`) with manual install steps only, project skills via `xtarterize add agent/skills-install --json --cwd <dir>` (gated on the JSON status field, with `.gitignore` changes reported), and external skill sources via the `skills` CLI with per-source `project` or `global` scope. Detection is read-only; interactive mode groups the categories in one multiselect plus a review screen and final confirm, while non-TTY requires full flags plus `--yes` and never prompts. Reports are per action (`ok`/`failed`/`skipped` with resume guidance); reruns skip completed work via detection. Project scope follows `--cwd` (or the current directory). When OpenCode is detected, setup notes manual goal tracking only and never installs a goal plugin. Supports `--json` and `--quiet`.
 
 ### Doctor
 
@@ -49,7 +44,7 @@ The CLI uses each host's installation mechanism and manages native agent/model c
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
 - **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi package installer, OMP plugin installer, Kimi Code managed install, Cursor plugin directory, Hermes, Claude Code/Codex marketplaces and native Codex agent files). Devin and ZCode have no `install` target; stage the package with `maestria plugin install` and use the host's own installer.
-- **Portable artifact workflow** - validates Agent Plugins v1 manifests, skills, MCP configuration, and path containment, then stages a package for a compatible client's own installer or directory loader.
+- **Portable artifact workflow** - validates Agent Plugins v1 manifests, skills, and path containment (packages with `mcp.json` are rejected), then stages a package for a compatible client's own installer or directory loader.
 
 ## Support / Platform Notes
 

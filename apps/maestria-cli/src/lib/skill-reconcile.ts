@@ -332,10 +332,7 @@ const removedFlagDisplay = (key: string): string => {
  * removed `--skills` still arrives here and must fail loud with guidance
  * instead of being silently ignored.
  */
-export const assertNoRemovedSkillFlags = (
-  args: unknown,
-  command: 'install' | 'update' | 'setup',
-): void => {
+export const assertNoRemovedSkillFlags = (args: unknown): void => {
   if (!isRecord(args)) {
     return;
   }
@@ -344,13 +341,6 @@ export const assertNoRemovedSkillFlags = (
     return;
   }
   const flag = removedFlagDisplay(found);
-  if (command === 'setup') {
-    throw new CliError(
-      `the ${flag} flag was removed: maestria packages now bundle their skills. ` +
-        `Use --skill-source <owner/repo:scope> for external skill repos.`,
-      1,
-    );
-  }
   throw new CliError(
     `the ${flag} flag was removed: maestria packages now bundle their skills, ` +
       `so there is nothing extra to install. Re-run without the flag.`,

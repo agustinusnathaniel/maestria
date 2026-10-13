@@ -71,10 +71,10 @@ Earlier CLI versions installed these two skills separately for each agent. `maes
 
 Agents load these when the assignment calls for them. Every one is optional: a missing skill never blocks the work, and the core directives still apply.
 
-The architect loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. After installing a maestria platform, add that repository for your agents with `setup` (use `:project` instead of `:global` to install into the current project):
+The architect loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. After installing a maestria platform, add that repository for your agents with [skills.sh](https://skills.sh) (drop `-g` to install into the current project instead):
 
 ```bash
-maestria setup --skill-source agustinusnathaniel/skills:global
+npx skills add agustinusnathaniel/skills -g
 ```
 
 Each specialist also names community skills it loads on a matching trigger, such as `agent-browser` for UI verification or `tdd` for explicit test-driven work. The list lives in the Skills section of each [specialist definition](https://github.com/agustinusnathaniel/maestria/tree/main/packages/core/agent-directives/specialists); install any of them from their own sources if you want that behavior.

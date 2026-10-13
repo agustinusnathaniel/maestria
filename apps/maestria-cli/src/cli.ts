@@ -6,7 +6,6 @@ import { configureCommand } from '@/commands/configure.js';
 import { doctorCommand } from '@/commands/doctor.js';
 import { installCommand } from '@/commands/install.js';
 import { pluginCommand } from '@/commands/plugin.js';
-import { setupCommand } from '@/commands/setup.js';
 import { handleStatus, statusCommand } from '@/commands/status.js';
 import type { StatusArgs } from '@/commands/status.js';
 import { uninstallCommand } from '@/commands/uninstall.js';
@@ -81,7 +80,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria configure cursor        Configure native Cursor agent models',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set a model non-interactively',
       'maestria plugin install            Stage a portable Agent Plugin',
-      'maestria setup                   Coordinate optional ecosystem and skill setup',
       'maestria plugin validate ./my-plugin  Validate a portable Agent Plugin directory',
       'maestria --help                   Show this help',
     ],
@@ -102,20 +100,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
     tip: [
       "The portable workflow stages and validates a directory package; it does not replace each client's own activation or permission model.",
       'Use a client-specific plugin installer or point the client at the staged directory.',
-    ].join('\n'),
-  },
-  setup: {
-    examples: [
-      'maestria setup                    Coordinate optional setup interactively',
-      'maestria setup --ecosystem codegraph,opensrc --yes  Check ecosystem tools non-interactively',
-      'maestria setup --xtarterize-skills --cwd ./my-project --yes  Apply project skills',
-      'maestria setup --skill-source acme/skills:global --yes  Install a skill source globally',
-      'maestria setup --json             Output the per-action report as JSON',
-    ],
-    tip: [
-      'Setup is read-only until the final confirmation; nothing runs before confirm.',
-      'Ecosystem tools are detection plus manual steps only; setup never installs them automatically.',
-      'Project scope follows --cwd (or the current directory); re-run with the same args to resume.',
     ].join('\n'),
   },
   status: {
@@ -258,7 +242,6 @@ export const main = defineCommand({
     doctor: doctorCommand,
     install: installCommand,
     plugin: pluginCommand,
-    setup: setupCommand,
     status: statusCommand,
     uninstall: uninstallCommand,
     update: updateCommand,
