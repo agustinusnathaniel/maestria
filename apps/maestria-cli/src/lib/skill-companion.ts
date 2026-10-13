@@ -5,9 +5,11 @@ import { CliError } from '@/lib/command-result.js';
 import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 
 /**
- * Companion skill installation through the external `skills` CLI (pinned
- * `1.7.0`). The CLI never copies skill bodies and keeps no path registry:
- * path identity always comes from the tool's own machine output.
+ * Legacy companion skill cleanup through the external `skills` CLI (pinned
+ * `1.7.0`). The CLI never installs skills and never copies skill bodies:
+ * every maestria package bundles its own skills, and this module only lists
+ * and removes copies the CLI installed earlier. Path identity always comes
+ * from the tool's own machine output, never from our record.
  *
  * Tool quirks (verified against skills@1.7.0): exit code 0 is unreliable
  * (invalid agents exit 0 with an `Invalid agents:` marker); `list --json`
@@ -22,15 +24,14 @@ import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 
 export const SKILLS_CLI_VERSION = '1.7.0';
 export const SKILLS_CLI_PACKAGE = `skills@${SKILLS_CLI_VERSION}`;
-export const SKILLS_SOURCE = 'agustinusnathaniel/maestria';
 export const COMPANION_SKILL = 'create-pull-request';
 export const DOCS_UPDATE_SKILL = 'docs-update';
 export const MANAGED_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_SKILL];
 
 /**
  * maestria platform ID to native skills-CLI agent ID. `null` means no
- * companion target exists. omp and prime-agent alias to `universal`: their
- * hosts natively discover `~/.agents/skills/` SKILL.md directories.
+ * companion target exists. omp aliases to `universal`: its host natively
+ * discovers `~/.agents/skills/` SKILL.md directories.
  */
 const COMPANION_AGENTS: Record<string, string | null> = {
   'claude-code': 'claude-code',
@@ -41,7 +42,6 @@ const COMPANION_AGENTS: Record<string, string | null> = {
   omp: 'universal',
   opencode: 'opencode',
   pi: 'pi',
-  'prime-agent': 'universal',
 };
 
 export const companionAgentFor = (platformId: string): string | null =>
@@ -50,9 +50,6 @@ export const companionAgentFor = (platformId: string): string | null =>
 export const KNOWN_COMPANION_AGENTS: readonly string[] = [
   ...new Set(Object.values(COMPANION_AGENTS).filter((agent): agent is string => agent !== null)),
 ];
-
-export const isCompanionSupported = (platformId: string): boolean =>
-  companionAgentFor(platformId) !== null;
 
 export interface SkillCommandResult {
   readonly stdout: string;
@@ -139,38 +136,7 @@ const scopeArgs = (scope?: CompanionScope): string[] => (scope?.global === false
 export interface CompanionRef {
   readonly agent: string;
   readonly skill?: string;
-  readonly source?: string;
 }
-
-export interface InstalledCompanion {
-  readonly path: string;
-}
-
-/** Never runs a bare broad `skills update`. */
-export const addCompanion = async (
-  runner: SkillCommandRunner,
-  ref: CompanionRef,
-  scope?: CompanionScope,
-): Promise<InstalledCompanion> => {
-  const skill = ref.skill ?? COMPANION_SKILL;
-  const source = ref.source ?? SKILLS_SOURCE;
-  const args = ['add', source, '-a', ref.agent, '-s', skill, ...scopeArgs(scope), '--json', '-y'];
-  const output = await runner(args);
-  assertKnownAgent(output.stdout, args);
-  const parsed = extractJsonArray(output.stdout);
-  const match = Array.isArray(parsed)
-    ? parsed
-        .map(asEntry)
-        .find((entry) => entry !== null && entry.name === skill && entry.status === 'installed')
-    : undefined;
-  if (match?.path !== undefined && typeof match.path === 'string') {
-    return { path: match.path };
-  }
-  throw new CliError(
-    `skills CLI did not confirm install of '${skill}' for agent '${ref.agent}': ${sanitizeDetail(output.stdout)}`,
-    1,
-  );
-};
 
 export interface ObservedCompanion {
   readonly name: string;

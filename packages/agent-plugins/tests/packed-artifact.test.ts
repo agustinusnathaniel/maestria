@@ -1,0 +1,220 @@
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { describe, expect, it } from 'vite-plus/test';
+
+const packageRoot = path.resolve(import.meta.dirname, '..');
+const repoRoot = path.resolve(packageRoot, '../..');
+const roles = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
+const readOnlyRoles = ['adventurer', 'architect', 'planner', 'reviewer'];
+const manifestPaths = [
+  'plugin.json',
+  '.claude-plugin/plugin.json',
+  '.cursor-plugin/plugin.json',
+  '.codex-plugin/plugin.json',
+  '.devin-plugin/plugin.json',
+  '.zcode-plugin/plugin.json',
+  'kimi.plugin.json',
+];
+
+type Manifest = Record<string, unknown>;
+const isRecord = (value: unknown): value is Manifest =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const readManifest = (root: string, relative: string): Manifest => {
+  const value: unknown = JSON.parse(fs.readFileSync(path.join(root, relative), 'utf-8'));
+  if (!isRecord(value)) {
+    throw new Error(`Expected manifest object: ${relative}`);
+  }
+  return value;
+};
+
+const packedArtifact = (output: string): { filename: string; files: string[] } => {
+  const value: unknown = JSON.parse(output);
+  if (!isRecord(value) || typeof value.filename !== 'string' || !Array.isArray(value.files)) {
+    throw new TypeError('Expected pnpm pack result object');
+  }
+  return {
+    filename: value.filename,
+    files: value.files.flatMap((file: unknown) =>
+      isRecord(file) && typeof file.path === 'string' ? [file.path] : [],
+    ),
+  };
+};
+
+const packageFixture = (destination: string): string => {
+  fs.copyFileSync(
+    path.join(repoRoot, 'pnpm-workspace.yaml'),
+    path.join(destination, 'pnpm-workspace.yaml'),
+  );
+  const fixtureRoot = path.join(destination, 'source-package');
+  fs.cpSync(packageRoot, fixtureRoot, {
+    filter: (source) => !source.split(path.sep).includes('node_modules'),
+    recursive: true,
+  });
+  return fixtureRoot;
+};
+
+const assertResourcePaths = (manifest: Manifest, packedRoot: string): void => {
+  for (const field of ['skills', 'agents', 'commands', 'rules']) {
+    const declared = manifest[field];
+    if (declared === undefined) {
+      continue;
+    }
+    for (const relative of Array.isArray(declared) ? declared : [declared]) {
+      expect(typeof relative).toBe('string');
+      const absolute = path.resolve(packedRoot, String(relative));
+      expect(absolute.startsWith(`${packedRoot}${path.sep}`)).toBe(true);
+      expect(fs.existsSync(absolute), `missing ${String(relative)}`).toBe(true);
+    }
+  }
+  for (const field of ['hooks', 'mcpServers', 'automations']) {
+    expect(manifest[field]).toBeUndefined();
+  }
+};
+
+// One shared profile per role carries every Markdown host's keys; Codex gets a generated TOML.
+const assertNativeMetadata = (packedRoot: string): void => {
+  for (const role of roles) {
+    const profile = fs.readFileSync(path.join(packedRoot, `agents/${role}.md`), 'utf-8');
+    const codex = fs.readFileSync(path.join(packedRoot, `agents/maestria-${role}.toml`), 'utf-8');
+    const readOnly = readOnlyRoles.includes(role);
+    expect(profile).toContain('## Universal Floors');
+    expect(profile).toContain('subagents: []');
+    expect(profile).not.toMatch(/^model:/mu);
+    expect(/^readonly: true$/mu.test(profile)).toBe(readOnly);
+    expect(/^disallowedTools:\n {2}- Write\n {2}- Edit$/mu.test(profile)).toBe(readOnly);
+    expect(codex).toContain('developer_instructions = """');
+  }
+  for (const role of readOnlyRoles) {
+    expect(
+      fs.readFileSync(path.join(packedRoot, `agents/maestria-${role}.toml`), 'utf-8'),
+    ).toContain('sandbox_mode = "read-only"');
+  }
+};
+
+describe('published consolidated plugin', () => {
+  it('packs the directly installable package root with complete skills, native paths, and runtime metadata', () => {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'maestria-plugin-pack-'));
+    try {
+      const fixtureRoot = packageFixture(temporary);
+      for (const manifestPath of manifestPaths) {
+        expect(fs.existsSync(path.join(fixtureRoot, manifestPath))).toBe(true);
+      }
+      expect(fs.existsSync(path.join(fixtureRoot, 'plugin'))).toBe(false);
+      const packed = packedArtifact(
+        execFileSync('pnpm', ['pack', '--json', '--pack-destination', temporary], {
+          cwd: fixtureRoot,
+          encoding: 'utf-8',
+        }),
+      );
+      const archive = packed.filename;
+      const entries = execFileSync('tar', ['-tzf', archive], { encoding: 'utf-8' })
+        .trim()
+        .split('\n');
+      execFileSync('tar', ['-xzf', archive, '-C', temporary]);
+      const packedRoot = path.join(temporary, 'package');
+      const packageManifest = readManifest(packedRoot, 'package.json');
+      const manifests = manifestPaths.map((relative) => readManifest(packedRoot, relative));
+      for (const manifest of manifests) {
+        expect(manifest.name).toBe('maestria');
+        expect(manifest.version).toBe(packageManifest.version);
+        assertResourcePaths(manifest, packedRoot);
+      }
+      const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(4);
+      // Generated utilities plus the methodology skills bundled from the repository root.
+      expect(skills.map((entry) => entry.split('/')[2]).toSorted()).toEqual([
+        'create-pull-request',
+        'docs-update',
+        'handoff',
+        'iteration-limits',
+      ]);
+      const agentEntries = entries.filter((entry) => entry.startsWith('package/agents/'));
+      expect(agentEntries.filter((entry) => entry.endsWith('.md'))).toHaveLength(roles.length);
+      expect(agentEntries.filter((entry) => entry.endsWith('.toml'))).toHaveLength(roles.length);
+      expect(agentEntries.every((entry) => /^package\/agents\/[^/]+$/u.test(entry))).toBe(true);
+      expect(
+        entries.some((entry) => /^package\/(?:commands|compatibility)\/.+\//u.test(entry)),
+      ).toBe(false);
+      expect(
+        entries.some((entry) =>
+          /(?:generation\/|sync\.config|\.test\.ts|vite\.config|tsconfig)/u.test(entry),
+        ),
+      ).toBe(false);
+      expect(entries.filter((entry) => /^package\/commands\/[^/]+\.md$/u.test(entry))).toHaveLength(
+        3,
+      );
+      expect(entries).toContain('package/rules/global.md');
+      expect(packageManifest.private).toBe(false);
+      expect(packageManifest.publishConfig).toEqual({ access: 'public', provenance: true });
+      expect(packageManifest.repository).toEqual(
+        expect.objectContaining({ directory: 'packages/agent-plugins' }),
+      );
+      expect(packageManifest.pnpm).toBeUndefined();
+      expect(packageManifest.packageManager).toBeUndefined();
+      expect(packageManifest.omp).toEqual({});
+      expect(packageManifest.engines).toBeUndefined();
+      expect(manifests[4].agents).toBeUndefined();
+      expect(manifests[4].commands).toBeUndefined();
+      expect(entries).toContain('package/AGENTS.md');
+      expect(manifests[1].skills).toBeUndefined();
+      expect(manifests[1].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
+      // ZCode reads command selectors as directories and discovers agents/ by convention;
+      // its `agents` manifest key only adds paths on top of that.
+      expect(manifests[5].agents).toBeUndefined();
+      expect(manifests[5].commands).toBe('./commands/');
+      expect(manifests[6].agents).toBe('./agents/');
+      expect(manifests[6].skills).toBe('./skills/');
+      expect(manifests[6].commands).toBe('./commands/');
+      expect(manifests[6].systemPromptPath).toBe('./AGENTS.md');
+      expect(manifests[1].commands).toEqual([
+        './commands/fein.md',
+        './commands/sonar.md',
+        './commands/blitz.md',
+      ]);
+      expect(manifests[2].agents).toBe('./agents/');
+      expect(manifests[2].commands).toBe('./commands/');
+      expect(manifests[4].skills).toBe('./skills/');
+      expect(manifests[2].rules).toBe('./rules/cursor/');
+      for (const role of roles) {
+        expect(entries).toContain(`package/agents/${role}.md`);
+      }
+      expect(entries).toContain('package/rules/cursor/maestria-global.mdc');
+      expect(entries).toContain('package/AGENTS.md');
+      for (const retired of ['rules/codex/', 'rules/hermes/', 'rules/kimi-code/']) {
+        expect(entries.some((entry) => entry.startsWith(`package/${retired}`))).toBe(false);
+      }
+      assertNativeMetadata(packedRoot);
+      // `!` followed by a backtick is inline shell expansion in ZCode and Claude Code commands.
+      for (const entry of entries.filter((item) => /\.(?:md|mdc|toml)$/u.test(item))) {
+        const text = fs.readFileSync(path.join(temporary, entry), 'utf-8');
+        expect(text, entry).not.toContain('!`');
+      }
+      expect(entries.some((entry) => entry.startsWith('package/integrations/'))).toBe(false);
+      const evidence = path.join(repoRoot, 'artifacts/plugin-pack-evidence.json');
+      fs.mkdirSync(path.dirname(evidence), { recursive: true });
+      fs.writeFileSync(
+        evidence,
+        `${JSON.stringify(
+          {
+            archiveSha256: createHash('sha256').update(fs.readFileSync(archive)).digest('hex'),
+            entries,
+            liveHostLoading: 'unverified',
+            manifests: manifestPaths,
+            nativeReadOnlyRoles: readOnlyRoles,
+            reproduction: 'pnpm --filter @maestria/agent-plugins test',
+            result: 'passed',
+            sharedSkills: skills,
+          },
+          null,
+          2,
+        )}\n`,
+      );
+    } finally {
+      fs.rmSync(temporary, { force: true, recursive: true });
+    }
+  });
+});

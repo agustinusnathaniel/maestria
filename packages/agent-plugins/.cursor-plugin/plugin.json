@@ -1,0 +1,20 @@
+{
+  "name": "maestria",
+  "displayName": "maestria",
+  "version": "0.7.0",
+  "description": "maestria native specialists, workflow commands, always-applied policy, and skills for Cursor",
+  "author": {
+    "name": "agustinusnathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugins",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": ["maestria", "orchestration", "pipeline", "specialists"],
+  "category": "developer-tools",
+  "tags": ["agents", "orchestration", "code-review", "workflow"],
+  "logo": "assets/logo.svg",
+  "agents": "./agents/",
+  "commands": "./commands/",
+  "rules": "./rules/cursor/",
+  "skills": "./skills/"
+}

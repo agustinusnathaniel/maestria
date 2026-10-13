@@ -3,7 +3,7 @@ name: fein
 description: Full pipeline - recon, design, implement, review
 pipeline: thinker (recon/design/plan) -> worker (implementation) -> verifier (review)
 precedence: mode marker overrides trigger phrases
-detection: case-insensitive keyword, [MODE: fein] marker injected at front of message
+detection: 'case-insensitive keyword, [MODE: fein] marker injected at front of message'
 ---
 
 [MODE: fein]

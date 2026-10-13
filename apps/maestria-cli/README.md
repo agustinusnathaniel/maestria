@@ -17,23 +17,23 @@ npx maestria status
 | `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
-| `maestria doctor` | Diagnose skill setup without changing anything (read-only) |
+| `maestria doctor` | Report skill copies left over from earlier CLI versions, without changing anything (read-only) |
 | `maestria setup [--ecosystem ...] [--xtarterize-skills] [--skill-source ...]` | Coordinate optional setup across ecosystem tools and skills (nothing runs before confirm) |
-| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi, omp); `--set` configures non-interactively |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi); `--set` configures non-interactively. Cursor global configuration edits the installed plugin's `agents/<role>.md`, and `maestria update cursor` carries configured models over |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the maestria cache or an explicit destination |
 
 ### Methodology skills
 
-`install`, `update`, and `uninstall` manage the `create-pull-request` and `docs-update` methodology skills through the official `skills` CLI (pinned `skills@1.7.0`); each skill source of truth is `skills/<skill>/SKILL.md` at the repository root and no skill bodies ship inside plugins. `install` and `update` accept `--skills` (CSV with `create-pull-request`, `docs-update`, or `none`) and `--exclude-skills` (CSV) plus `--yes` for non-interactive confirmation; without flags, recorded per-platform choices are preserved exactly (fresh installs default to both skills, while updates of legacy installs without a record infer only `create-pull-request`). Selections and per-skill observed source/path persist per platform under `$XDG_CONFIG_HOME/maestria/skills.json` (version 2 only) only for actually confirmed state. The equivalent native commands are `npx -y skills@1.7.0 add <source> -a <agent> -s <skill> -g -y` for global installs and the same without `-g` for project installs (`<cwd>/.agents/skills/`).
+Every maestria package bundles the `create-pull-request` and `docs-update` methodology skills (canonical source: `packages/core/agent-directives/skills/<skill>/SKILL.md`), so the CLI no longer installs them. Earlier versions installed them through the official `skills` CLI and recorded ownership per platform in `$XDG_CONFIG_HOME/maestria/skills.json` (version 2). `update` and `uninstall` now remove the copies that record lists, through the pinned `skills@1.7.0` CLI, and then drop the record entry; a copy whose path another agent still uses is kept and reported, and copies the record does not list are never removed. The removed `--skills`, `--exclude-skills`, and `--maestria-skills` flags fail before any change.
 
 ### Setup
 
-`maestria setup` coordinates optional setup in one place: ecosystem binary detection (`codegraph`, `agent-browser`, `opensrc`) with manual install steps only, project skills via `xtarterize add agent/skills-install --json --cwd <dir>` (gated on the JSON status field, with `.gitignore` changes reported), skill sources via the `skills` CLI with per-source `project` or `global` scope, and maestria methodology skills reusing the `install`/`update` selection record plus `--skills`/`--exclude-skills` semantics. Detection is read-only; interactive mode groups the categories in one multiselect plus a review screen and final confirm, while non-TTY requires full flags plus `--yes` and never prompts. Reports are per action (`ok`/`failed`/`skipped` with resume guidance); reruns skip completed work via detection. Project scope follows `--cwd` (or the current directory). When OpenCode is detected, setup notes manual goal tracking only and never installs a goal plugin. Supports `--json` and `--quiet`.
+`maestria setup` coordinates optional setup in one place: ecosystem binary detection (`codegraph`, `agent-browser`, `opensrc`) with manual install steps only, project skills via `xtarterize add agent/skills-install --json --cwd <dir>` (gated on the JSON status field, with `.gitignore` changes reported), and external skill sources via the `skills` CLI with per-source `project` or `global` scope. Detection is read-only; interactive mode groups the categories in one multiselect plus a review screen and final confirm, while non-TTY requires full flags plus `--yes` and never prompts. Reports are per action (`ok`/`failed`/`skipped` with resume guidance); reruns skip completed work via detection. Project scope follows `--cwd` (or the current directory). When OpenCode is detected, setup notes manual goal tracking only and never installs a goal plugin. Supports `--json` and `--quiet`.
 
 ### Doctor
 
-`maestria doctor` reports per-platform skill setup without changing anything: plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`. It warns about unmanaged copies (observed but not recorded), notes shared canonical paths provided by another platform from the same source, and prints actionable next commands. Supports `--json` and `--quiet`. A corrupt record fails with a clear error; unknown platforms or agents degrade honestly with a note.
+`maestria doctor` reports leftover skill copies without changing anything: plugin install state from detection, the record entry from `skills.json`, and the tool-observed inventory from `skills list --json`. A recorded copy is a legacy CLI install that `maestria update <platform>` removes; an unrecorded copy duplicates the bundled skill, and doctor prints the manual removal command. Supports `--json` and `--quiet`. A corrupt record fails with a clear error; unknown platforms or agents degrade honestly with a note.
 
 ### Output options
 
@@ -48,15 +48,14 @@ The CLI uses each host's installation mechanism and manages native agent/model c
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install, Cursor plugin directory, Prime Agent package manager, Claude Code/Codex marketplaces and native Codex agent files).
+- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi package installer, OMP plugin installer, Kimi Code managed install, Cursor plugin directory, Hermes, Claude Code/Codex marketplaces and native Codex agent files). Devin and ZCode have no `install` target; stage the package with `maestria plugin install` and use the host's own installer.
 - **Portable artifact workflow** - validates Agent Plugins v1 manifests, skills, MCP configuration, and path containment, then stages a package for a compatible client's own installer or directory loader.
 
 ## Support / Platform Notes
 
 - Requires the target platform's CLI on `PATH`; the CLI cannot install a platform it cannot detect.
 - npm is required for the Claude Code and Codex CLI adapters.
-- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code, Codex CLI, and Prime Agent select the latest available package and reject `--version`.
-- Prime Agent support is deliberately global (user scope only): project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
+- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code and Codex CLI select the latest available package and reject `--version`.
 - Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless removed separately.
 - The CLI manages plugin installation and native agent/model configuration where the host exposes a stable file format; it does not run agents or enforce methodology.
 - `maestria plugin install` stages a portable package but does not activate it in every client. Client activation, permissions, trust, and session behavior remain client-owned.

@@ -28,14 +28,12 @@ describe('Codex managed native agents', () => {
 
     try {
       await mkdir(join(sourceRoot, 'agents'), { recursive: true });
-      await mkdir(join(sourceRoot, 'instructions'), { recursive: true });
+      // The package ships one root AGENTS.md; the installer adds the managed-block markers.
       await writeFile(
-        join(sourceRoot, 'instructions', 'AGENTS.md'),
+        join(sourceRoot, 'AGENTS.md'),
         [
-          '<!-- maestria:codex-orchestrator:start -->',
           '## maestria orchestration',
-          'Use $maestria:orchestrator and delegate with agent_type.',
-          '<!-- maestria:codex-orchestrator:end -->',
+          'Self-contained routing, policy, and per-turn FEIN, SONAR, BLITZ instructions.',
           '',
         ].join('\n'),
       );
@@ -63,6 +61,10 @@ describe('Codex managed native agents', () => {
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
       const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
+      expect(installedInstructions).toContain(
+        `<!-- maestria:codex-orchestrator:start -->\n\n${await readFile(join(sourceRoot, 'AGENTS.md'), 'utf-8')}\n<!-- maestria:codex-orchestrator:end -->`,
+      );
+      expect(installedInstructions).not.toContain('$maestria:orchestrator');
       expect(installedInstructions.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
       expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsFile": "AGENTS.md"',
@@ -131,7 +133,6 @@ describe('Codex managed native agents', () => {
 
     try {
       await mkdir(join(sourceRoot, 'agents'), { recursive: true });
-      await mkdir(join(sourceRoot, 'instructions'), { recursive: true });
       await Promise.all(
         AGENTS.map(async (agent) => {
           await writeFile(
@@ -140,10 +141,7 @@ describe('Codex managed native agents', () => {
           );
         }),
       );
-      await writeFile(
-        join(sourceRoot, 'instructions', 'AGENTS.md'),
-        '<!-- maestria:codex-orchestrator:start -->\nmanaged\n<!-- maestria:codex-orchestrator:end -->\n',
-      );
+      await writeFile(join(sourceRoot, 'AGENTS.md'), 'managed\n');
       await mkdir(codexHome, { recursive: true });
       await writeFile(join(codexHome, 'AGENTS.md'), 'default user instructions\n');
       await writeFile(join(codexHome, 'AGENTS.override.md'), 'override user instructions\n');

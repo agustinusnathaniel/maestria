@@ -129,6 +129,35 @@ export const agentDirectiveSync = ({
       ),
     },
 
+    // Both utilities project one rules.md section, so the skills cannot drift from policy.
+    handoff: {
+      output: '../skills/handoff/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: handoff\n' +
+        'description: >-\n' +
+        '  Pass outcome, constraints, evidence, blockers, and next steps between workflow\n' +
+        '  stages. Load when receiving a task from another specialist, or when handing off\n' +
+        '  work to the next stage in the pipeline.\n' +
+        '---\n' +
+        '\n',
+      section: 'Delegation and Context',
+      source: '../core/agent-directives/rules.md',
+    },
+    'iteration-limits': {
+      output: '../skills/iteration-limits/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: iteration-limits\n' +
+        'description: >-\n' +
+        '  The iteration-limit pattern with verifiable termination and escalation format.\n' +
+        '  Load when defining termination conditions for a loop, or when a loop is at risk of\n' +
+        '  running too long.\n' +
+        '---\n' +
+        '\n',
+      section: 'Bounded Repair and Fail-Loud Behavior',
+      source: '../core/agent-directives/rules.md',
+    },
     'orchestrator.md': {
       output: '../skills/orchestrator/SKILL.md',
       prepend:
@@ -177,31 +206,6 @@ export const agentDirectiveSync = ({
         '  Global behavioral constraints and best practices for maestria-powered\n' +
         `  ${agentFamily} agents. Covers orchestration conventions, delegation rules, context\n` +
         '  management, commit policy, pipeline patterns, and branch discipline.\n' +
-        '---\n' +
-        '\n',
-    },
-    'skills/handoff.md': {
-      output: '../skills/handoff/SKILL.md',
-      prepend:
-        '---\n' +
-        'name: handoff\n' +
-        'description: >-\n' +
-        '  The 7-field handoff contract for inter-specialist delegation.\n' +
-        '  Load when receiving a task from another specialist, or when handing off work\n' +
-        '  to the next stage in the pipeline.\n' +
-        '---\n' +
-        '\n',
-    },
-
-    'skills/iteration-limits.md': {
-      output: '../skills/iteration-limits/SKILL.md',
-      prepend:
-        '---\n' +
-        'name: iteration-limits\n' +
-        'description: >-\n' +
-        '  The iteration-limit pattern with verifiable termination and escalation format.\n' +
-        '  Load when defining termination conditions for a loop, or when a loop is at risk of\n' +
-        '  running too long.\n' +
         '---\n' +
         '\n',
     },

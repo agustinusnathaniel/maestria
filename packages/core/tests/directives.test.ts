@@ -2,10 +2,16 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
+import { extractSection } from '@/lib/transforms.js';
+
 const DIRECTIVES_DIR = path.join(import.meta.dirname, '..', 'agent-directives');
 
 const readDirective = (...segments: string[]): string =>
   readFileSync(path.join(DIRECTIVES_DIR, ...segments), 'utf-8');
+
+/** The `handoff` and `iteration-limits` skills are projections of these rules sections. */
+const readUtilitySkill = (heading: string): string =>
+  extractSection(readDirective('rules.md'), heading) ?? '';
 
 const assertOrdered = (document: string, headings: string[]): void => {
   let previous = -1;
@@ -69,26 +75,6 @@ describe('canonical directive behavioral contracts', () => {
     }
   });
 
-  it('covers delivery-facing text in every specialist directive', () => {
-    const deliveryDirectives = [
-      'adventurer',
-      'architect',
-      'builder',
-      'diagnose',
-      'orchestrator',
-      'planner',
-      'reviewer',
-      'writer',
-    ].map((role) => readDirective('specialists', `${role}.md`));
-
-    for (const directive of deliveryDirectives) {
-      expect(directive).toMatch(
-        /(?:human[- ]facing|delivery[- ]facing)[\s\S]{0,240}(?:commit messages?|PR\s+(?:titles?|descriptions?))|(?:commit messages?|PR\s+(?:titles?|descriptions?))[\s\S]{0,240}(?:human[- ]facing|delivery[- ]facing)/iu,
-      );
-      expect(directive).toMatch(/U\+2014|EM DASH/iu);
-    }
-  });
-
   it('keeps mode semantics distinct without weakening universal floors', () => {
     const rules = readDirective('rules.md');
     const fein = readDirective('commands', 'fein.md');
@@ -130,7 +116,7 @@ describe('canonical directive behavioral contracts', () => {
   it('continues incomplete work and freezes scope across delegations', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
-    const iteration = readDirective('skills', 'iteration-limits.md');
+    const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
 
     expect(rules).toMatch(/orchestrator owns continuation for implementation and delivery work/iu);
     expect(rules).toMatch(/not a user checkpoint/iu);
@@ -140,8 +126,10 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/empty, malformed, or incomplete.*recovery attempt/iu);
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/iu);
     expect(rules).toMatch(/do not reset a review or repair budget/iu);
-    expect(orchestrator).toMatch(/parent session owns continuation until.*terminal artifact/iu);
-    expect(orchestrator).toMatch(/freeze the outcome, acceptance, non-goals, and repair limits/iu);
+    expect(orchestrator).toMatch(/you own continuation and the delivery path/iu);
+    expect(orchestrator).toMatch(
+      /incomplete todos or specialist handoffs are not user checkpoints/iu,
+    );
     expect(iteration).toMatch(/same user outcome/iu);
     expect(iteration).toMatch(/adjacent findings as follow-ups/iu);
   });
@@ -156,20 +144,17 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
-    expect(orchestrator).toMatch(/for implementation work, own the delivery path/iu);
     expect(orchestrator).toMatch(
-      /follow the global delivery contract through the complete PR set/iu,
+      /for implementation work, you own continuation and the delivery path/iu,
     );
+    expect(orchestrator).toMatch(/push and open the PRs without routine approval asks/iu);
   });
 
   it('supports verified incremental commits and reviewable PR slices', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
     const planner = readDirective('specialists', 'planner.md');
-    const prSkill = readFileSync(
-      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
-      'utf-8',
-    );
+    const prSkill = readDirective('skills', 'create-pull-request', 'SKILL.md');
 
     expect(rules).toMatch(/commit coherent, verified slices at useful review or rollback points/iu);
     expect(rules).toMatch(/verify the final diff before delivery/iu);
@@ -202,13 +187,14 @@ describe('canonical directive behavioral contracts', () => {
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
     const rules = readDirective('rules.md');
-    const handoff = readDirective('skills', 'handoff.md');
+    const handoff = readUtilitySkill('Delegation and Context');
 
     for (const concept of [
       /outcome/iu,
-      /context and constraints/iu,
-      /acceptance and evidence/iu,
-      /assumptions or blockers/iu,
+      /constraints/iu,
+      /acceptance evidence/iu,
+      /assumptions/iu,
+      /blockers/iu,
       /next step/iu,
     ]) {
       expect(handoff).toMatch(concept);
@@ -240,48 +226,43 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps rendered evidence distinct from builds and attachment support', () => {
     const rules = readDirective('rules.md');
-    const orchestrator = readDirective('specialists', 'orchestrator.md');
     const builder = readDirective('specialists', 'builder.md');
-    const rootSkill = readFileSync(
-      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
-      'utf-8',
-    );
+    const prSkill = readDirective('skills', 'create-pull-request', 'SKILL.md');
 
     expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
     expect(rules).toMatch(/do not waive an explicit user or project evidence requirement/iu);
-    // Core keeps the compact router: scope, briefs trigger, and skill pointer.
-    expect(orchestrator).toMatch(/documentation sites and visible CLI output/iu);
-    expect(orchestrator).toMatch(
-      /include the evidence requirement in implementation and review briefs/iu,
-    );
-    expect(orchestrator).toMatch(/load the available `create-pull-request` skill/iu);
+    // Core keeps the compact router for every role: scope, briefs trigger, and skill pointer.
+    expect(rules).toMatch(/rendered changes \(UI, documentation sites, visible CLI output\)/iu);
+    expect(rules).toMatch(/through implementation and review briefs to delivery/iu);
+    expect(rules).toMatch(/`create-pull-request` methodology skill holds the capture/iu);
+    expect(rules).toMatch(/missing skill never waives required evidence/iu);
     // The capture/publication detail lives once in the root skill.
-    expect(rootSkill).toMatch(/headless capture/iu);
-    expect(rootSkill).toMatch(/terminal transcript/iu);
-    expect(rootSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
-    expect(rootSkill).toMatch(/unnecessary with a concrete reason/iu);
-    expect(rootSkill).toMatch(/explicit user or project.*requirement/iu);
+    expect(prSkill).toMatch(/headless capture/iu);
+    expect(prSkill).toMatch(/terminal transcript/iu);
+    expect(prSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
+    expect(prSkill).toMatch(/unnecessary with a concrete reason/iu);
+    expect(prSkill).toMatch(/explicit user or project.*requirement/iu);
     expect(builder).toMatch(/evidence artifacts and unresolved verification gaps/iu);
     expect(builder).not.toMatch(/tests or type checks to confirm correctness/iu);
   });
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
     const rules = readDirective('rules.md');
-    const iteration = readDirective('skills', 'iteration-limits.md');
+    const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
 
     expect(rules).toMatch(
       /one independent review and.*only when blockers exist.*one repair\/re-review pass/iu,
     );
     expect(rules).toMatch(/named blocker remains unresolved|new material regression/iu);
     expect(iteration).toMatch(/no more than three repair\/re-review passes/iu);
-    expect(iteration).toMatch(/`\[fix\]` means blocking\/material/iu);
+    expect(iteration).toMatch(/only `\[fix\]` blockers are repair work/iu);
     expect(iteration).toMatch(/final verification/iu);
     expect(iteration).toMatch(/and stop/iu);
     expect(rules).toMatch(/observable progress/iu);
     expect(rules).toMatch(/repeated causes.*no new evidence|no new evidence.*repeated causes/iu);
     expect(rules).toMatch(/do not loop silently/iu);
     expect(iteration).toMatch(/verifiable termination condition/iu);
-    expect(iteration).toMatch(/change strategy or escalate/iu);
+    expect(iteration).toMatch(/change strategy - route root-cause uncertainty to diagnosis/iu);
     expect(iteration).toMatch(/Tried X, Y, Z/u);
   });
 
@@ -291,7 +272,7 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(rules).toMatch(/security.*boundaries are mandatory stops/iu);
     expect(rules).toMatch(/ordinary in-scope security defects may be repaired autonomously/iu);
-    expect(orchestrator).toMatch(/complete PR set without asking for routine approval/iu);
+    expect(orchestrator).toMatch(/without routine approval asks/iu);
   });
 
   it('states precedence, pause naming, and output economy', () => {

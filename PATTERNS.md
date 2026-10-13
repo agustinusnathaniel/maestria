@@ -77,22 +77,21 @@ Every substantial pipeline stage needs three controls:
 
 ### Platform Adaptation
 
-Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; OMP and Pi enforce dispatcher behavior in workflow-mode sessions; Hermes is direct-capable by default and gates modes and roles at the tool layer; and Cursor and Claude Code depend more on host/session permissions. Codex, Prime Agent, and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
+Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; Pi enforces dispatcher behavior in workflow-mode sessions; Hermes and OMP consume portable methodology skills with host-owned tool authority; and Cursor and Claude Code depend more on host/session permissions. Codex and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
 
 How each platform implements this pattern:
 
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
 | **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `read` and `edit` denied, and Bash denied except `npx --yes skills@latest *` for skill installation. Git inspection and runtime queries are delegated to `@adventurer`, which allow-lists read-only shell and git commands. All other shell commands are denied. |
-| **Kimi Code** | AgentSwarm with persona-per-stage | Seven roles map onto three native profiles. Persona boundaries are advisory by default; `[[permission.rules]]` can enforce review-only behavior, but those rules apply to the session rather than one subagent. |
-| **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
-| **Claude Code** | Declarative agents, skills, and commands | Specialists ship as generated `agents/*.md`; the orchestrator and global rules ship as generated skills; workflow modes ship as generated commands. `disallowedTools` protects the read-only roles. This package ships no hooks. |
+| **Kimi Code** | Native plugin agents and commands | Seven complete selected profiles carry role and policy; systemPromptPath supplies primary routing and modes. Named write-tool filters are not shell sandboxes. |
+| **Cursor** | Native profiles, commands, and policy | Complete selected agents and workflow commands use canonical methodology; an always-applied rule activates policy. Root skills are the two utilities and the two bundled methodology skills, never role or command facades. |
+| **Claude Code** | Full native profiles and commands | Explicit profiles contain complete role and policy; three native commands contain parent routing and modes. Write/Edit exclusions are tool-schema controls; no hooks ship here. |
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
-| **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
-| **Codex** | Namespaced skills + native custom agents | The plugin ships 14 `$maestria:*` skills; the maestria CLI installs `maestria-*` custom-agent TOMLs under `$CODEX_HOME/agents/` and a marked global `AGENTS.md` block that activates orchestration. Read-only roles are host sandbox settings plus advisory prompt text, not tool-level enforcement. |
-| **Hermes** | Python plugin with skills, commands, and tool-layer gating | Methodology ships as skills and slash commands through the Hermes plugin manager. Mode and per-role tool access is gated at the tool layer; pipeline sequencing is advisory prompt guidance. |
-| **Prime Agent** | Agent Skills + verified extension subset | The 7 specialists, orchestrator, rules, and modes ship as Agent Skills; a small extension adds mode commands and prompt injection. Native `rlm` subagent dispatch has no public JS bridge, so delegation is skill loading plus methodology, not runtime dispatch. |
-| **Agent Plugins v1 (portable)** | Skills-only package | `@maestria/agent-plugin` ships the methodology as standard skills with no runtime adapter, agents, commands, or hooks. The consuming client owns dispatch, context, and permissions. |
+| **Oh My Pi** | Native task profiles, commands, and global rule | Seven task profiles, three modes, one always-applied policy/router rule, and four skills. Generic profile tool permissions remain advisory; no executable adapter or hooks. |
+| **Codex** | Skills plus companion-installed full methodology | Marketplace installs the four skills. The CLI installs complete native TOMLs and a marked global policy/router/mode block; FEIN/SONAR/BLITZ keywords select per-turn modes. |
+| **Hermes** | Portable skills with optional manual context | Installation supplies the four skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
+| **Agent Plugins v1 (portable)** | Utility-only standard surface | Root handoff and iteration-limit skills follow portable discovery. Native profiles, modes, policy, and runtime controls are outside that standard. |
 
 ---
 
@@ -155,11 +154,10 @@ Self-review fails for three reasons, each documented from real sessions:
 | --- | --- | --- |
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
 | **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`, but the session-wide rules also affect builder and writer work. |
-| **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
-| **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer, adventurer, and planner agents deny `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
+| **Cursor** | Metadata intent plus prompt guidance | The adventurer/architect/planner/reviewer agents declare `readonly: true`, and prompt instructions state the boundary. A probe on Cursor CLI 2026.10.01 did not observe runtime enforcement for plugin-supplied agents (project `.cursor/agents` agents honored it), so treat the boundary as advisory. |
+| **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer, adventurer, architect, and planner agents deny `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
-| **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
-| **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, planner, and reviewer. The skills themselves are advisory and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
-| **Hermes** | Tool-layer role allowlists | `permissions.py` defines positive per-role allowlists (for example reviewer gets `read` and `llm`), and mode gating blocks writes in `sonar`. Role switching is enforced at the tool layer; prompts remain guidance. |
-| **Prime Agent** | Advisory roles only | Skills and role prompts state read-only intent, but Prime has no skill-level tool-denial mechanism and the package makes no enforcement claim. |
-| **Agent Plugins v1 (portable)** | Advisory roles only | Read-only roles are prompt guidance; the consuming client owns permissions, tool access, and review setup. |
+| **Oh My Pi** | Native task dispatch with advisory generic profiles | Commands/rules provide complete methodology, but role prompts do not grant per-role tool restrictions or guarantee model compliance. |
+| **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, planner, and reviewer. The utility skills and instruction text are advisory, and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
+| **Hermes** | Portable skills with optional manual context | Installation supplies the four skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
+| **Agent Plugins v1 (portable)** | Utility-only standard surface | Root handoff and iteration-limit skills follow portable discovery. Native profiles, modes, policy, and runtime controls are outside that standard. |

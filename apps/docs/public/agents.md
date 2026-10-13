@@ -6,9 +6,11 @@ maestria provides installable plugins for structured AI engineering work. An orc
 
 Use maestria when you need to:
 
-- Install or wire structured agent-methodology plugins into a supported coding platform: OpenCode, Kimi Code, Pi, Hermes, Claude Code, Codex CLI, Cursor, prime-agent, or OMP.
-- Install the portable Agent Plugins v1 package when your client supports the standard `plugin.json` and `skills/` layout: https://maestria.sznm.dev/agent-plugin/
-- Check live smoke results and client-specific activation steps: https://maestria.sznm.dev/agent-plugin/compatibility/
+- Install or wire structured agent-methodology plugins into a supported coding platform: OpenCode, Pi, Claude Code, Codex CLI, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes.
+- Install the four portable skills (handoff, iteration-limits, create-pull-request, docs-update) when your client supports Agent Plugins v1. Full methodology requires the selected host integration: https://maestria.sznm.dev/agent-plugins/
+- Install on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes (one section per host): https://maestria.sznm.dev/agent-plugins/installation/
+- Run workflow modes and dispatch specialists on each host: https://maestria.sznm.dev/agent-plugins/usage/
+- Check live smoke results and client-specific activation steps: https://maestria.sznm.dev/agent-plugins/compatibility/
 - Decide how to route a task: direct execution vs specialist dispatch vs the full staged pipeline (thinker, worker, verifier).
 - Enforce maker/checker review: the builder never approves its own work; an independent reviewer signs off.
 

@@ -13,7 +13,7 @@ import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { getPlatform, platforms } from '@/lib/platforms.js';
 import { uninstallOne } from '@/lib/platform-transaction.js';
-import { defaultSkillRunner, reconcileUninstallCompanions } from '@/lib/skill-reconcile.js';
+import { defaultSkillRunner, removeLegacyCompanions } from '@/lib/skill-reconcile.js';
 import { readSkillsRecord } from '@/lib/skills.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 
@@ -67,7 +67,7 @@ export const handleUninstall = async (args: UninstallArgs): Promise<CommandResul
     return targets;
   }
   const results = await runBatchSelected(targets, isQuiet, uninstallOne);
-  const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, results);
+  const combined = await removeLegacyCompanions(defaultSkillRunner, record, results);
   return batchCommandResult(combined.results, args);
 };
 

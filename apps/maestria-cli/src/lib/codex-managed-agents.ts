@@ -4,6 +4,8 @@ import { Effect } from 'effect';
 import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
   CODEX_GLOBAL_INSTRUCTION_FILENAMES,
+  CODEX_MANAGED_INSTRUCTIONS_END,
+  CODEX_MANAGED_INSTRUCTIONS_START,
   hasCodexManagedInstructions,
   removeCodexManagedInstructions,
   upsertCodexManagedInstructions,
@@ -15,9 +17,9 @@ import type { JsonRecord } from '@/lib/primitives.js';
 import { CommandError } from '@/lib/shell.js';
 
 // Codex plugin manifests do not declare custom agents or primary-session
-// instructions. The published maestria package carries native agent TOMLs and
-// a managed AGENTS.md block as companion payloads, and the CLI owns copying
-// them into Codex's documented locations.
+// instructions. The published maestria package carries Codex agent TOMLs and
+// a managed AGENTS.md block as companion payloads, and the CLI copies them
+// into Codex's documented locations.
 const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
 
 interface CodexManagedAgentManifest {
@@ -254,9 +256,11 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
     const sourceDir = `${packageRoot}/agents`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
-    const sourceInstructionsPath = `${packageRoot}/instructions/AGENTS.md`;
+    // The package's root AGENTS.md is shared with Devin, Kimi Code, and Hermes; the managed
+    // block markers belong to this installer, so the package file must not carry them.
+    const sourceInstructionsPath = `${packageRoot}/AGENTS.md`;
 
-    const sourceInstructions = yield* Effect.tryPromise({
+    const sourceContext = yield* Effect.tryPromise({
       catch: (error) =>
         new CommandError({ command: 'read codex instructions', message: String(error) }),
       try: async () => {
@@ -264,14 +268,18 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
         return await readFile(sourceInstructionsPath, 'utf-8');
       },
     });
-    if (!hasCodexManagedInstructions(sourceInstructions)) {
+    if (
+      sourceContext.includes(CODEX_MANAGED_INSTRUCTIONS_START) ||
+      sourceContext.includes(CODEX_MANAGED_INSTRUCTIONS_END)
+    ) {
       yield* Effect.fail(
         new CommandError({
           command: 'validate codex instructions',
-          message: `missing maestria instruction markers in ${sourceInstructionsPath}`,
+          message: `unexpected maestria instruction markers in ${sourceInstructionsPath}`,
         }),
       );
     }
+    const sourceInstructions = `${CODEX_MANAGED_INSTRUCTIONS_START}\n\n${sourceContext}\n${CODEX_MANAGED_INSTRUCTIONS_END}\n`;
 
     yield* Effect.tryPromise({
       catch: (error) =>

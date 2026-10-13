@@ -15,26 +15,14 @@
  * top-level "version") aborts the whole target - no partial updates. Writes
  * are plain `writeFileSync` of the staged content; no transaction layer.
  *
- * Format handling - edits are formatting-preserving:
- * - JSON: jsonc-parser `parseTree`/`modify`/`applyEdits` replace only the
- *   top-level version span; the rest of the document is preserved
- *   byte-for-byte. Limitation: jsonc-parser 3.x does not report duplicate
- *   keys (keeps the last); manifests are project-owned and never contain
- *   them.
- * - YAML: `yaml` `parseDocument`/`Document#set` preserve comments, quote
- *   style, and key order, and quoted versions read as their semantic value.
- *   Limitation: `toString` normalizes whitespace and line endings.
- * - Python (_version.py): a generated release artifact, regenerated
- *   canonically to two lines (docstring + `__version__`) on write, as the
- *   previous release helper did.
+ * Format handling - edits are formatting-preserving: jsonc-parser
+ * `parseTree`/`modify`/`applyEdits` replace only the top-level version span;
+ * the rest of the document is preserved byte-for-byte. Limitation:
+ * jsonc-parser 3.x does not report duplicate keys (keeps the last);
+ * manifests are project-owned and never contain them.
  *
  * Targets:
- * - @maestria/agent-plugin packages/agent-plugin/package.json -> plugin.json
- * - @maestria/hermes       packages/hermes/package.json -> src/maestria_hermes/_version.py, plugin.yaml
- * - @maestria/claude-code  packages/claude-code/package.json -> .claude-plugin/plugin.json
- * - @maestria/codex        packages/codex/package.json -> .codex-plugin/plugin.json
- * - @maestria/cursor       packages/cursor/package.json -> .cursor-plugin/plugin.json
- * - @maestria/kimi-code    packages/kimi-code/package.json -> kimi.plugin.json
+ * - @maestria/agent-plugins -> root manifests
  */
 
 import {
@@ -49,7 +37,6 @@ import type { Node, ParseError } from 'jsonc-parser';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { parseDocument } from 'yaml';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 
@@ -57,22 +44,22 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const SEMVER_RE =
   /^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<build>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/u;
 
-// Canonical two-line _version.py content, matching the previous release helper.
-const VERSION_PY_HEADER = '"""Package version -- single source of truth."""';
-
 // (package dir, list of manifest paths relative to the package dir)
 export type Target = [packageDir: string, manifests: string[]];
 
 export const TARGETS: Target[] = [
-  [path.join(ROOT, 'packages', 'agent-plugin'), [path.join('plugin.json')]],
   [
-    path.join(ROOT, 'packages', 'hermes'),
-    [path.join('src', 'maestria_hermes', '_version.py'), path.join('plugin.yaml')],
+    path.join(ROOT, 'packages', 'agent-plugins'),
+    [
+      'plugin.json',
+      '.claude-plugin/plugin.json',
+      '.codex-plugin/plugin.json',
+      '.cursor-plugin/plugin.json',
+      '.devin-plugin/plugin.json',
+      '.zcode-plugin/plugin.json',
+      'kimi.plugin.json',
+    ],
   ],
-  [path.join(ROOT, 'packages', 'claude-code'), [path.join('.claude-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'codex'), [path.join('.codex-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'cursor'), [path.join('.cursor-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'kimi-code'), [path.join('kimi.plugin.json')]],
 ];
 
 export const display = (p: string): string => {
@@ -130,66 +117,13 @@ const rewriteJsonVersion = (text: string, version: string): string => {
   return applyEdits(text, modify(text, ['version'], version, {}));
 };
 
-// YAML (plugin.yaml)
-// ---------------------------------------------------------------------------
-
-/** Semantic value of the top-level `version` key, or null when absent. */
-const readYamlVersion = (text: string): string | null => {
-  const doc = parseDocument(text);
-  if (doc.errors.length > 0) {
-    throw new Error(`invalid YAML: ${doc.errors[0].message.split('\n')[0]}`);
-  }
-  const value = doc.get('version');
-  if (
-    value === undefined ||
-    value === null ||
-    (typeof value !== 'string' &&
-      typeof value !== 'number' &&
-      typeof value !== 'bigint' &&
-      typeof value !== 'boolean')
-  ) {
-    return null;
-  }
-  return String(value);
-};
-
-/** Rewrite the top-level `version`, preserving comments, quote style, and key order. */
-const rewriteYamlVersion = (text: string, version: string): string => {
-  const doc = parseDocument(text);
-  if (doc.errors.length > 0) {
-    throw new Error(`invalid YAML: ${doc.errors[0].message.split('\n')[0]}`);
-  }
-  if (doc.get('version') === undefined) {
-    throw new Error('no "version" field found');
-  }
-  doc.set('version', version);
-  return doc.toString();
-};
-
-// Python (_version.py)
-// ---------------------------------------------------------------------------
-
-/** Return the version from the canonical `__version__ = "..."` line, or null. */
-const readPythonVersion = (text: string): string | null =>
-  /__version__\s*=\s*"(?<version>[^"]+)"/u.exec(text)?.groups?.version ?? null;
-
-/** The canonical two-line _version.py content for a version. */
-const pythonVersionText = (version: string): string =>
-  `${VERSION_PY_HEADER}\n__version__ = "${version}"\n`;
-
 // Manifest read/rewrite dispatch
 // ---------------------------------------------------------------------------
 
-/** Version declared by a manifest, or null if undeclared (dispatches on extension). */
+/** Version declared by a manifest, or null if undeclared (JSON only). */
 export const readManifestVersion = (p: string): unknown => {
   const suffix = path.extname(p);
   const text = fs.readFileSync(p, 'utf-8');
-  if (suffix === '.py') {
-    return readPythonVersion(text);
-  }
-  if (suffix === '.yaml' || suffix === '.yml') {
-    return readYamlVersion(text);
-  }
   if (suffix === '.json') {
     return readJsonVersion(text);
   }
@@ -199,19 +133,13 @@ export const readManifestVersion = (p: string): unknown => {
 /** Compute the rewritten manifest text with its version set (format-preserving, see header). */
 export const computeManifestVersion = (p: string, version: string): string => {
   const suffix = path.extname(p);
-  if (suffix === '.py') {
-    return pythonVersionText(version);
-  }
-  if (suffix === '.yaml' || suffix === '.yml') {
-    return rewriteYamlVersion(fs.readFileSync(p, 'utf-8'), version);
-  }
   if (suffix === '.json') {
     return rewriteJsonVersion(fs.readFileSync(p, 'utf-8'), version);
   }
   throw new Error(`unsupported manifest format: ${suffix}`);
 };
 
-/** Format a manifest's current version for DRIFT reporting, mirroring Python's str(). */
+/** Format a manifest's current version for DRIFT reporting. */
 const formatCurrent = (current: unknown): string => {
   if (current === null) {
     return 'None';

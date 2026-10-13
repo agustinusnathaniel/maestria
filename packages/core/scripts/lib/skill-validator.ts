@@ -1,7 +1,6 @@
-// Shared filesystem/frontmatter validation for Pi/OMP skill validators.
+// Shared filesystem/frontmatter validation for the Pi skill validator.
 // Pure wrapper over node:fs - no host SDK imports.
-// Keeps the byte-identical logic from packages/pi/scripts/validate-skills.ts
-// and packages/omp/scripts/validate-skills.ts in one place.
+// Holds the logic used by packages/pi/scripts/validate-skills.ts in one place.
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';

@@ -25,23 +25,11 @@ export const setupCommand = defineCommand({
       required: false,
       type: 'string',
     },
-    'exclude-skills': {
-      description:
-        'maestria methodology skills to skip (CSV). Never touches independently installed copies.',
-      required: false,
-      type: 'string',
-    },
     json: {
       default: false,
       description:
         'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       type: 'boolean',
-    },
-    'maestria-skills': {
-      description:
-        "Alias for --skills for the maestria methodology selection (CSV, or 'none'). --skills wins when both are set.",
-      required: false,
-      type: 'string',
     },
     quiet: {
       default: false,
@@ -52,12 +40,6 @@ export const setupCommand = defineCommand({
     'skill-source': {
       description:
         'Skill source to install via the skills CLI (repeatable or CSV). Format: <owner/repo:scope> with scope project or global. Skip by omitting.',
-      required: false,
-      type: 'string',
-    },
-    skills: {
-      description:
-        "maestria methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request, docs-update. Validated before any change.",
       required: false,
       type: 'string',
     },

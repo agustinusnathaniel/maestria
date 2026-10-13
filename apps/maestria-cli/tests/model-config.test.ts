@@ -9,7 +9,6 @@ import {
   parseCodexAgentModel,
   parseConfigModels,
   parseCursorModels,
-  parseOmpModels,
   parseOpenCodeModels,
   parsePiModels,
   setCodexAgentModel,
@@ -68,27 +67,6 @@ describe('parsePiModels', () => {
       '',
     ].join('\n');
     expect(parsePiModels(out)).toEqual(['opencode-go/deepseek-v4-flash', 'opencode-go/glm-5.2']);
-  });
-});
-
-describe('parseOmpModels', () => {
-  it('maps the selector field', () => {
-    const out = JSON.stringify({
-      models: [
-        {
-          id: 'deepseek-v4-flash',
-          provider: 'opencode-go',
-          selector: 'opencode-go/deepseek-v4-flash',
-        },
-        { id: 'gpt-5.2', provider: 'opencode-zen', selector: 'opencode-zen/gpt-5.2' },
-        { id: 'y', provider: 'x' },
-      ],
-    });
-    expect(parseOmpModels(out)).toEqual(['opencode-go/deepseek-v4-flash', 'opencode-zen/gpt-5.2']);
-  });
-
-  it('returns [] on invalid JSON', () => {
-    expect(parseOmpModels('not json')).toEqual([]);
   });
 });
 

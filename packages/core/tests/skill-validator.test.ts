@@ -92,9 +92,8 @@ describe('validateSkills', () => {
     expect(result.errors[0]).toContain('no body content');
   });
 
-  it('does not fail for Prime stricter helper - this helper is intentionally lenient (Pi/OMP)', () => {
+  it('is intentionally lenient (Pi/OMP): name/directory mismatch is not a failure', () => {
     // Pi/OMP helper only checks presence of name/description, not grammar.
-    // Prime's validator (packages/prime-agent/scripts/skill-validation.ts) is stricter.
     makeSkill(tmp, 'weird-name', 'name: weird-name\ndescription: desc', 'Body');
     const result = validateSkills({ root: tmp, skills: ['weird-name'] });
     expect(result.valid).toBe(true);

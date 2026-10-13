@@ -22,8 +22,8 @@ Read relevant decisions before changing architecture, package boundaries, sync b
 | OpenCode                                             | docs/adr/opencode/  |
 | Kimi Code                                            | docs/adr/kimi-code/ |
 | Cursor                                               | docs/adr/cursor/    |
-| Hermes                                               | docs/adr/hermes/    |
-| Pi and Oh My Pi                                      | docs/adr/pi/        |
+| Declarative plugin distribution and retirement       | docs/adr/core/      |
+| Pi native adapter                                    | docs/adr/pi/        |
 
 Create an ADR for a consequential architectural choice whose alternatives will matter later. Use the selection criteria and required fields in [the documentation format guide](../docs/guides/doc-format.md#new-adrs); routine dependency updates and documentation edits need no separate record.
 
@@ -35,8 +35,6 @@ Before @builder changes code:
 - Check packages/core/agent-directives/ before adding methodology.
 - Check the relevant sync.config.ts before adding a platform transform.
 - Justify new dependencies against the lightweight, platform-independent design.
-
-See the available `skills/spec-contract` skill only when persistent intent across steps would reduce risk; absence is normal.
 
 ## Implement and Verify
 
@@ -57,12 +55,12 @@ Follow the commit, changeset, and pull request guidance in CONTRIBUTING.md. Spli
 
 Update documentation when behavior, architecture, or user-facing workflows change. Use the matching location:
 
-| Change                       | Documentation                                                 |
-| ---------------------------- | ------------------------------------------------------------- |
-| Core methodology or pipeline | apps/docs/src/content/docs/core/                              |
-| Platform behavior            | apps/docs/src/content/docs/<platform>/ and the package README |
-| Architecture or boundary     | docs/adr/<area>/                                              |
-| Project-wide rule or pattern | AGENTS.md, PATTERNS.md, or VISION.md                          |
+| Change | Documentation |
+| --- | --- |
+| Core methodology or pipeline | apps/docs/src/content/docs/core/ |
+| Platform behavior | apps/docs/src/content/docs/agent-plugins/installation.mdx and usage.mdx for shared plugin hosts (one section per host); opencode/ or pi/ for native adapters; package README |
+| Architecture or boundary | docs/adr/<area>/ |
+| Project-wide rule or pattern | AGENTS.md, PATTERNS.md, or VISION.md |
 
 ## Precedence
 

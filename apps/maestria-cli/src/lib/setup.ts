@@ -17,7 +17,7 @@ import {
   resolveSetupPlan,
 } from '@/lib/setup-plan.js';
 import type { SetupSelection } from '@/lib/setup-plan.js';
-import { defaultSkillRunner, preflightCompanionOwnership } from '@/lib/skill-reconcile.js';
+import { assertNoRemovedSkillFlags, defaultSkillRunner } from '@/lib/skill-reconcile.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import { createSpinner } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
@@ -45,12 +45,9 @@ export interface SetupArgs {
   compact?: boolean;
   cwd?: string;
   ecosystem?: string;
-  excludeSkills?: string;
   json?: boolean;
-  maestriaSkills?: string;
   quiet?: boolean;
   skillSource?: string | string[];
-  skills?: string;
   xtarterizeSkills?: boolean;
   yes?: boolean;
   [key: string]: unknown;
@@ -78,7 +75,7 @@ export type XtarterizeRunner = (
   options?: { cwd?: string },
 ) => Promise<XtarterizeResult>;
 
-export { effectiveMaestriaSkills, parseEcosystem, parseSkillSources } from '@/lib/setup-plan.js';
+export { parseEcosystem, parseSkillSources } from '@/lib/setup-plan.js';
 
 // oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
 const execFileAsync = promisify(execFile);
@@ -193,6 +190,7 @@ export const runSetup = async (
   rawArgs: SetupArgs,
   deps: SetupDeps = {},
 ): Promise<CommandResult> => {
+  assertNoRemovedSkillFlags(rawArgs, 'setup');
   const args = { ...rawArgs };
   const isQuiet = resolveBatchQuiet(args);
   const detect =
@@ -219,15 +217,10 @@ export const runSetup = async (
   const installed = detection.platforms.filter((p) => p.available && p.installed);
   const selection = await resolveSetupPlan(
     args,
-    installed,
-    detection.record,
     detection.xtarterizeOnPath,
     detection.probes,
     interactive,
   );
-  if (selection.maestriaActive && selection.reviewed.length > 0) {
-    await preflightCompanionOwnership(skillRunner, detection.record, selection.reviewed);
-  }
   if (isNoopSetupPlan(selection, detection.probes)) {
     return {
       exitCode: 0,
@@ -243,12 +236,9 @@ export const runSetup = async (
   await confirmSetupPlan(cwd, selection, args.yes);
   const ctx: SetupActionContext = {
     cwd,
-    excludeSkills: args.excludeSkills,
     installed,
-    maestriaSkills: selection.maestriaSkills,
     probes: detection.probes,
     readGitignore,
-    record: detection.record,
     skillRunner,
     xtarterize,
     xtarterizeOnPath: detection.xtarterizeOnPath,

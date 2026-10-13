@@ -8,7 +8,7 @@
       "name": "maestria",
       "source": {
         "source": "npm",
-        "package": "@maestria/codex"
+        "package": "@maestria/agent-plugins"
       },
       "policy": {
         "installation": "AVAILABLE",

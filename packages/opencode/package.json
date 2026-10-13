@@ -23,7 +23,8 @@
   "files": [
     "dist",
     "agents",
-    "rules"
+    "rules",
+    "skills"
   ],
   "type": "module",
   "main": "./dist/index.js",

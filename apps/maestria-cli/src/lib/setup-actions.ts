@@ -1,14 +1,6 @@
 import { companionAgentFor, listCompanions } from '@/lib/skill-companion.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
-import {
-  attachCompanionObserved,
-  reconcileCompanions,
-  resolveSkillsSource,
-} from '@/lib/skill-reconcile.js';
-import type { EffectiveSkillTarget } from '@/lib/skill-reconcile.js';
 import type { SetupActionReport, SetupSkillSource, XtarterizeRunner } from '@/lib/setup.js';
-import { hasSkillFlags, persistSuccessfulSelections } from '@/lib/skills.js';
-import type { SkillsRecord } from '@/lib/skills.js';
 import { isRecord, parseJsonRecord } from '@/lib/primitives.js';
 import type { PlatformStatus } from '@/types.js';
 
@@ -27,12 +19,9 @@ export const ECOSYSTEM_GUIDANCE: Record<string, string> = {
 
 export interface SetupActionContext {
   readonly cwd: string;
-  readonly excludeSkills: string | undefined;
   readonly installed: readonly PlatformStatus[];
-  readonly maestriaSkills: string | undefined;
   readonly probes: ReadonlyMap<string, { present: boolean; version: string }>;
   readonly readGitignore: (cwd: string) => Promise<string | null>;
-  readonly record: SkillsRecord | null;
   readonly skillRunner: SkillCommandRunner;
   readonly xtarterize: XtarterizeRunner;
   readonly xtarterizeOnPath: string | null;
@@ -224,49 +213,10 @@ export const runSkillSourceActions = async (
   }
   return reports;
 };
-/**
- * Reconcile maestria methodology skills for installed platforms without
- * touching plugin installs. Persists only confirmed state through the
- * existing selection record.
- */
-export const runMaestriaSkillsAction = async (
-  ctx: SetupActionContext,
-  reviewed: readonly EffectiveSkillTarget[],
-): Promise<SetupActionReport[]> => {
-  const pluginOk = new Map(reviewed.map((entry) => [entry.id, true]));
-  const outcome = await reconcileCompanions(
-    ctx.skillRunner,
-    ctx.record,
-    reviewed,
-    pluginOk,
-    resolveSkillsSource(),
-    hasSkillFlags({ excludeSkills: ctx.excludeSkills, skills: ctx.maestriaSkills }),
-  );
-  await persistSuccessfulSelections(
-    ctx.record,
-    attachCompanionObserved(reviewed, outcome),
-    reviewed.map((entry) => ({ id: entry.id, ok: outcome.ok.get(entry.id) ?? false })),
-    false,
-  );
-  return reviewed.map((target) => {
-    const ok = outcome.ok.get(target.id) ?? false;
-    const note = outcome.notes.get(target.id);
-    const actual = outcome.actual.get(target.id) ?? [];
-    return {
-      category: 'maestria-skills',
-      detail: note ?? `selection [${actual.join(', ') || 'none'}] reconciled (global scope)`,
-      item: target.id,
-      status: ok ? 'ok' : 'failed',
-    } satisfies SetupActionReport;
-  });
-};
-
 export const executeSetupActions = async (
   ctx: SetupActionContext,
   selection: {
     ecosystem: readonly string[];
-    maestriaActive: boolean;
-    reviewed: readonly EffectiveSkillTarget[];
     sources: readonly SetupSkillSource[];
     xtarterize: boolean;
   },
@@ -277,16 +227,6 @@ export const executeSetupActions = async (
   }
   if (selection.sources.length > 0) {
     reports.push(...(await runSkillSourceActions(ctx, selection.sources)));
-  }
-  if (selection.maestriaActive && selection.reviewed.length > 0) {
-    reports.push(...(await runMaestriaSkillsAction(ctx, selection.reviewed)));
-  } else if (selection.maestriaActive) {
-    reports.push({
-      category: 'maestria-skills',
-      detail: 'skipped: no installed platforms detected',
-      item: 'maestria-skills',
-      status: 'skipped',
-    });
   }
   return reports;
 };

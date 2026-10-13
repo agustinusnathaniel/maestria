@@ -4,19 +4,12 @@ import { CliError } from '@/lib/command-result.js';
 import { redactHome } from '@/lib/doctor.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { KNOWN_ECOSYSTEM_TOOLS } from '@/lib/setup-actions.js';
-import { resolveEffectiveSkills } from '@/lib/skill-reconcile.js';
-import type { EffectiveSkillTarget } from '@/lib/skill-reconcile.js';
-import { confirmOrThrow, reviewSkillSelections } from '@/lib/skill-prompts.js';
-import { hasSkillFlags, validateSkillFlags } from '@/lib/skills.js';
-import type { SkillsRecord } from '@/lib/skills.js';
+import { confirmOrThrow } from '@/lib/skill-prompts.js';
 import type { PlatformStatus } from '@/types.js';
 import type { SetupActionReport, SetupArgs, SetupSkillSource } from '@/lib/setup.js';
 
 export interface SetupSelection {
   readonly ecosystem: string[];
-  readonly maestriaActive: boolean;
-  readonly maestriaSkills: string | undefined;
-  readonly reviewed: EffectiveSkillTarget[];
   readonly sources: SetupSkillSource[];
   readonly xtarterize: boolean;
 }
@@ -83,30 +76,16 @@ export const parseSkillSources = (input: string | string[] | undefined): SetupSk
   });
 };
 
-export const effectiveMaestriaSkills = (args: SetupArgs): string | undefined => {
-  const kebab = args['maestria-skills'];
-  const kebabText = typeof kebab === 'string' ? kebab : '';
-  const alias = (args.maestriaSkills ?? kebabText).trim();
-  const direct = args.skills?.trim();
-  if (direct !== undefined && direct !== '') {
-    return direct;
-  }
-  return alias === '' ? undefined : alias;
-};
-
 const assertFullArgs = (
   interactive: boolean,
   yes: boolean,
-  selections: { ecosystem?: string; skillSource?: string | string[]; skills?: string },
+  selections: { ecosystem?: string; skillSource?: string | string[] },
   hasMutations: boolean,
 ): void => {
   if (interactive || yes) {
     return;
   }
-  const provided =
-    selections.ecosystem !== undefined ||
-    selections.skillSource !== undefined ||
-    selections.skills !== undefined;
+  const provided = selections.ecosystem !== undefined || selections.skillSource !== undefined;
   if (provided && !hasMutations) {
     return;
   }
@@ -114,8 +93,7 @@ const assertFullArgs = (
     throw new CliError(
       'Not in an interactive terminal and selection flags are missing. ' +
         'Provide --ecosystem <csv>, --skill-source <owner/repo:scope> (repeatable or CSV), ' +
-        '--xtarterize-skills as needed, --skills/--exclude-skills for maestria skills, ' +
-        'and --yes to confirm non-interactively. Nothing was changed.',
+        'or --xtarterize-skills as needed, and --yes to confirm non-interactively. Nothing was changed.',
       1,
     );
   }
@@ -211,41 +189,14 @@ const promptSetupSelections = async (
   );
 };
 
-const reviewMaestriaTargets = async (
-  args: SetupArgs,
-  maestriaSkills: string | undefined,
-  installed: readonly PlatformStatus[],
-  record: SkillsRecord | null,
-): Promise<EffectiveSkillTarget[]> => {
-  const targets = installed.map((p) => ({ id: p.id, label: p.label }));
-  const resolved = resolveEffectiveSkills(
-    targets,
-    { excludeSkills: args.excludeSkills, skills: maestriaSkills },
-    record,
-  );
-  return await reviewSkillSelections(resolved, 'Install', {
-    excludeSkills: args.excludeSkills,
-    skills: maestriaSkills,
-    yes: args.yes,
-  });
-};
-
 export const resolveSetupPlan = async (
   args: SetupArgs,
-  installed: readonly PlatformStatus[],
-  record: SkillsRecord | null,
   xtarterizeOnPath: string | null,
   probes: Map<string, { present: boolean; version: string }>,
   interactive: boolean,
 ): Promise<SetupSelection> => {
-  const maestriaSkills = effectiveMaestriaSkills(args);
   const ecosystem = parseEcosystem(args.ecosystem);
   const skillSources = parseSkillSources(flattenSkillSource(args));
-  validateSkillFlags(
-    installed.map((p) => p.id),
-    { excludeSkills: args.excludeSkills, skills: maestriaSkills },
-    record,
-  );
 
   const picked = await promptSetupSelections(
     args,
@@ -255,10 +206,6 @@ export const resolveSetupPlan = async (
     probes,
     interactive,
   );
-  const reviewed = await reviewMaestriaTargets(args, maestriaSkills, installed, record);
-  const maestriaActive =
-    hasSkillFlags({ excludeSkills: args.excludeSkills, skills: maestriaSkills }) ||
-    reviewed.some((entry) => entry.selection.changed || entry.selection.skills.length > 0);
 
   assertFullArgs(
     interactive,
@@ -266,32 +213,21 @@ export const resolveSetupPlan = async (
     {
       ecosystem: args.ecosystem,
       skillSource: flattenSkillSource(args),
-      skills: maestriaSkills,
     },
-    picked.ecosystem.length > 0 || picked.xtarterize || picked.sources.length > 0 || maestriaActive,
+    picked.ecosystem.length > 0 || picked.xtarterize || picked.sources.length > 0,
   );
   return {
     ecosystem: picked.ecosystem,
-    maestriaActive,
-    maestriaSkills,
-    reviewed,
     sources: picked.sources,
     xtarterize: picked.xtarterize,
   };
 };
 
-// Fresh installs with targets still run to match the initial reconcile in executeSetupActions.
 export const isNoopSetupPlan = (
   selection: SetupSelection,
   probes: ReadonlyMap<string, { present: boolean; version: string }>,
 ): boolean => {
   if (selection.xtarterize || selection.sources.length > 0) {
-    return false;
-  }
-  if (selection.maestriaActive && selection.reviewed.length > 0) {
-    return false;
-  }
-  if (selection.reviewed.some((entry) => entry.selection.changed)) {
     return false;
   }
   return selection.ecosystem.every((tool) => probes.get(tool)?.present === true);
@@ -307,7 +243,6 @@ export const confirmSetupPlan = async (
     `ecosystem [${selection.ecosystem.join(', ') || 'none'}]`,
     `xtarterize [${selection.xtarterize ? 'project skills' : 'skipped'}]`,
     `skill sources [${selection.sources.map((s) => `${s.source}:${s.scope}`).join(', ') || 'none'}]`,
-    `maestria skills [${selection.reviewed.map((r) => `${r.id} (global)=[${r.selection.skills.join(', ') || 'none'}]`).join(', ') || 'none'}]`,
   ];
   await confirmOrThrow(
     `Run setup with ${reviewLines.join(', ')}? ` +

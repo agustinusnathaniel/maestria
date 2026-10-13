@@ -8,7 +8,7 @@ import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { formatProjectSection, loadProjectSections, resolveProjectRoot } from '@/project-config.js';
-import { AGENTS_DIR, RULES_PATH } from '@/root.js';
+import { AGENTS_DIR, RULES_PATH, SKILLS_DIR } from '@/root.js';
 
 type OpenCodeAgentConfig = NonNullable<NonNullable<Config['agent']>[string]>;
 type AgentMode = NonNullable<OpenCodeAgentConfig['mode']>;
@@ -21,7 +21,10 @@ type ChatMessageHook = NonNullable<Hooks['chat.message']>;
 type ChatMessageInput = Parameters<ChatMessageHook>[0];
 type ChatMessageOutput = Parameters<ChatMessageHook>[1];
 type TextPart = Extract<ChatMessageOutput['parts'][number], { type: 'text' }>;
-type ConfigInput = Parameters<NonNullable<Hooks['config']>>[0];
+// The plugin SDK's v1 Config type predates `skills`; OpenCode scans `skills.paths` at runtime.
+type ConfigInput = Parameters<NonNullable<Hooks['config']>>[0] & {
+  skills?: { paths?: string[]; urls?: string[] };
+};
 type CompactingOutput = Parameters<NonNullable<Hooks['experimental.session.compacting']>>[1];
 
 interface AgentFrontmatter {
@@ -169,6 +172,15 @@ const configureAgents = (input: ConfigInput, agents: NonNullable<Config['agent']
   input.instructions = instructions;
 };
 
+/** Register the skills bundled with this package, keeping user paths first. */
+const configureSkills = (input: ConfigInput): void => {
+  const paths = [...(input.skills?.paths ?? [])];
+  if (!paths.includes(SKILLS_DIR)) {
+    paths.push(SKILLS_DIR);
+  }
+  input.skills = { ...input.skills, paths };
+};
+
 type SystemTransformOutput = Parameters<
   NonNullable<Hooks['experimental.chat.system.transform']>
 >[1];
@@ -215,6 +227,7 @@ export const MaestriaPlugin: Plugin = async (
     },
     config: async (configInput) => {
       configureAgents(configInput, agents);
+      configureSkills(configInput);
       await Promise.resolve();
     },
     'experimental.chat.system.transform': async (_systemInput, systemOutput) => {

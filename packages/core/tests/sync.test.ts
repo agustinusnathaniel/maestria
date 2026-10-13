@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -1065,8 +1065,7 @@ describe('secondary source loop', () => {
     mkdirSync(sourceDir, { recursive: true });
     mkdirSync(outputDir, { recursive: true });
 
-    // Canonical source lives in a subdirectory of the parent of source -
-    // the same layout as packages/core/agent-directives/skills/.
+    // Canonical source lives in a subdirectory of the parent of source.
     writeFileSync(
       join(sourceParent, 'skills', 'handoff.md'),
       '# Handoff Contract\n\n1. **Goal**\n',
@@ -1100,6 +1099,43 @@ describe('secondary source loop', () => {
     const out = readFileSync(outPath, 'utf-8');
     expect(out).toContain('name: handoff');
     expect(out).toContain('# Handoff Contract');
+  });
+
+  it('projects one rules section as a standalone document and fails closed when it is missing', async () => {
+    const sourceDir = join(tmpDir, 'specialists');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(sourceDir, { recursive: true });
+    writeFileSync(
+      join(tmpDir, 'rules.md'),
+      '# Rules\n\nIntro.\n\n## Handoffs\n\nBrief the goal.\n\n### Detail\n\nKeep it short.\n\n## Repair\n\nStop.\n',
+      'utf-8',
+    );
+    const sectionConfig = (section: string): ResolvedSyncConfig => ({
+      configDir: tmpDir,
+      configPath: join(tmpDir, 'sync.config.ts'),
+      files: {
+        handoff: {
+          ...configForOutput(join(outputDir, 'handoff', 'SKILL.md')),
+          section,
+          source: join(tmpDir, 'rules.md'),
+        },
+      },
+      output: outputDir,
+      preserve: [],
+      source: sourceDir,
+    });
+
+    await runSync({ config: sectionConfig('Handoffs') });
+    const out = readFileSync(join(outputDir, 'handoff', 'SKILL.md'), 'utf-8');
+    expect(out).toContain('# Handoffs\n\nBrief the goal.\n\n### Detail\n\nKeep it short.\n');
+    expect(out).not.toContain('Intro.');
+    expect(out).not.toContain('Repair');
+
+    rmSync(outputDir, { force: true, recursive: true });
+    await expect(runSync({ config: sectionConfig('Missing') })).rejects.toThrow(
+      /Missing section "## Missing" in handoff/u,
+    );
+    expect(existsSync(outputDir)).toBe(false);
   });
 
   it('throws one ConfigError naming every entry missing from source and secondary dirs', async () => {
@@ -1569,3 +1605,148 @@ describe('checkProvenance', () => {
     expect(existsSync(join(tmpDir, 'PWNED'))).toBe(false);
   });
 }, 30_000);
+
+describe('canonical source overrides', () => {
+  let root: string;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), 'maestria-source-override-'));
+    mkdirSync(join(root, 'source'));
+    mkdirSync(join(root, 'output'));
+    writeFileSync(join(root, 'source', 'builder.md'), 'Full builder methodology\n');
+    writeFileSync(join(root, 'source', 'reviewer.md'), 'Full reviewer methodology\n');
+    writeFileSync(join(root, 'wrapper.md'), 'Follow the preloaded methodology.\n');
+  });
+  afterEach(() => {
+    rmSync(root, { force: true, recursive: true });
+  });
+
+  it('projects one canonical wrapper into separate native profiles idempotently', async () => {
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(
+      configPath,
+      `export default ${JSON.stringify({
+        files: {
+          'builder.md': { frontmatter: { name: 'builder' }, source: './wrapper.md' },
+          'reviewer.md': { frontmatter: { name: 'reviewer' }, source: './wrapper.md' },
+        },
+        output: './output',
+        source: './source',
+      })}`,
+    );
+    const config = await loadConfig(configPath);
+    await runSync({ config });
+    const builder = readFileSync(join(root, 'output', 'builder.md'), 'utf-8');
+    const reviewer = readFileSync(join(root, 'output', 'reviewer.md'), 'utf-8');
+    expect(builder).toContain('name: builder');
+    expect(reviewer).toContain('name: reviewer');
+    expect(builder).toContain('Follow the preloaded methodology.');
+    expect(reviewer).toContain('Follow the preloaded methodology.');
+    expect(builder).not.toContain('Full builder methodology');
+    const repeated = await runSync({ config });
+    expect(repeated.every((result) => result.status === 'unchanged')).toBe(true);
+  });
+
+  it('fails before writes or cleanup when an override source is missing', async () => {
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(
+      configPath,
+      `export default ${JSON.stringify({
+        files: {
+          'reviewer.md': { source: './missing.md' },
+        },
+        output: './output',
+        source: './source',
+      })}`,
+    );
+    writeFileSync(join(root, 'output', 'builder.md'), 'Existing output\n');
+    writeFileSync(join(root, 'output', 'stale.md'), 'Keep until preflight succeeds\n');
+    const config = await loadConfig(configPath);
+    await expect(runSync({ config })).rejects.toThrow(/missing\.md/u);
+    expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toBe('Existing output\n');
+    expect(existsSync(join(root, 'output', 'stale.md'))).toBe(true);
+  });
+
+  it('validates replacement anchors against the selected canonical source', async () => {
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(
+      configPath,
+      `export default ${JSON.stringify({
+        files: {
+          'builder.md': {
+            replace: [{ from: 'preloaded methodology', to: 'shared role skill' }],
+            source: './wrapper.md',
+          },
+        },
+        output: './output',
+        source: './source',
+      })}`,
+    );
+    const config = await loadConfig(configPath);
+    await runSync({ config });
+    expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toContain(
+      'shared role skill',
+    );
+    writeFileSync(join(root, 'wrapper.md'), 'Changed without the required anchor\n');
+    await expect(runSync({ config })).rejects.toThrow(/preloaded methodology/u);
+    expect(readFileSync(join(root, 'output', 'builder.md'), 'utf-8')).toContain(
+      'shared role skill',
+    );
+  });
+});
+
+describe('sync CLI dry-run status', () => {
+  const repoRoot = path.resolve(import.meta.dirname, '../../..');
+  const temporaryRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of temporaryRoots.splice(0)) {
+      rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  const dryRun = (invalidOutput: boolean) => {
+    const root = mkdtempSync(join(tmpdir(), 'maestria-sync-cli-status-'));
+    temporaryRoots.push(root);
+    mkdirSync(join(root, 'source'));
+    mkdirSync(join(root, 'output'));
+    writeFileSync(join(root, 'source', 'role.md'), 'Canonical role instructions\n');
+    writeFileSync(join(root, 'output', 'unrelated.md'), 'Preserve this file\n');
+    if (invalidOutput) {
+      mkdirSync(join(root, 'output', 'role.md'));
+    }
+    const configPath = join(root, 'sync.config.mjs');
+    writeFileSync(configPath, "export default {source: './source', output: './output'};\n");
+    const result = spawnSync(
+      process.execPath,
+      [
+        join(repoRoot, 'node_modules', 'tsx', 'dist', 'cli.mjs'),
+        join(repoRoot, 'packages', 'core', 'scripts', 'sync.ts'),
+        '--config',
+        configPath,
+        '--dry-run',
+        '--verbose',
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    );
+    return { result, root };
+  };
+
+  it('fails dry-run processing errors without changing existing outputs', () => {
+    const { root, result } = dryRun(true);
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain('EISDIR');
+    expect(readdirSync(join(root, 'output', 'role.md'))).toEqual([]);
+    expect(readFileSync(join(root, 'output', 'unrelated.md'), 'utf-8')).toBe(
+      'Preserve this file\n',
+    );
+  });
+
+  it('allows valid dry-run drift without writing or cleaning outputs', () => {
+    const { root, result } = dryRun(false);
+    expect(result.status).toBe(0);
+    expect(existsSync(join(root, 'output', 'role.md'))).toBe(false);
+    expect(readFileSync(join(root, 'output', 'unrelated.md'), 'utf-8')).toBe(
+      'Preserve this file\n',
+    );
+  });
+});

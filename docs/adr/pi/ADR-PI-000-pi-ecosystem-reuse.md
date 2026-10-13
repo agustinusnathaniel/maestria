@@ -14,7 +14,7 @@ The required seam was programmatic dispatch with typed access, custom specialist
 
 Depend on `@gotgenes/pi-subagents` for in-process dispatch and wrap its typed service rather than building another engine. Keep maestria responsible for outcome-oriented handoffs and parent/session-tree integration, not vendor-owned dispatch mechanics. The public tool is named `maestria_subagent` because the dependency registers `subagent` and last registration wins.
 
-Keep host and methodology contracts separate. Dispatch asserts the specialist name and a non-empty task; the historical seven-field machine pre-check was removed on 2026-09-11. The [handoff skill](../../../packages/core/agent-directives/skills/handoff.md) owns advisory context, while `@maestria/shared-pi` and the Pi adapter own dispatch validation, unavailable-service behavior, and recursion handling. This decision requires no fixed handoff field count or mandatory spec format.
+Keep host and methodology contracts separate. Dispatch asserts the specialist name and a non-empty task; the historical seven-field machine pre-check was removed on 2026-09-11. The handoff skill, generated from the [global rules](../../../packages/core/agent-directives/rules.md) `Delegation and Context` section, owns advisory context, while `@maestria/shared-pi` and the Pi adapter own dispatch validation, unavailable-service behavior, and recursion handling. This decision requires no fixed handoff field count or mandatory spec format.
 
 Use the service's lifecycle and tool restriction capabilities while documenting what the actual host enforces. Do not add a second workflow engine merely because it also supports subagents. Workflow DAGs, richer persistence, scheduling, and worktree isolation need a demonstrated requirement before another dependency is adopted.
 
@@ -46,6 +46,7 @@ These are dated selection reasons, not current compatibility claims about the al
 - [CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md): Pi-family sharing and native host seams.
 - [CORE-033](../core/ADR-CORE-033-cli-effect-resource-boundaries.md): demonstrated-need-only Effect adoption and Pi polling history.
 - [PI-001](ADR-PI-001-rules-injection.md): static methodology and specialist registration.
+- [Oh My Pi](https://omp.sh/) (docs unverified, JS-gated): OMP consumes the portable root manifest and shared skills through the consolidated package; no OMP posture change is claimed here.
 
 ## Date
 

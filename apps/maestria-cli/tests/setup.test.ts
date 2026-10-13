@@ -2,7 +2,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { CliError } from '@/lib/command-result.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
@@ -52,10 +52,6 @@ vi.mock('@clack/prompts', () => ({
 }));
 
 const { restoreTty, setTty } = createTtyTestSupport();
-
-beforeEach(() => {
-  vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
-});
 
 afterEach(async () => {
   vi.unstubAllEnvs();
@@ -216,23 +212,6 @@ describe('setup arg parity', () => {
     expect(parseEcosystem('codegraph')).toEqual(['codegraph']);
   });
 
-  it('treats --maestria-skills as an alias for --skills', async () => {
-    await withConfigDir();
-    const direct = await runSetup(
-      { json: true, quiet: true, skills: 'create-pull-request', yes: true },
-      baseDeps({ readRecord: opencodeEmptyRecord }),
-    );
-    const aliased = await runSetup(
-      { json: true, maestriaSkills: 'create-pull-request', quiet: true, yes: true },
-      baseDeps({ readRecord: opencodeEmptyRecord }),
-    );
-    expect(direct.exitCode).toBe(0);
-    expect(aliased.exitCode).toBe(0);
-    const maestriaOnly = (output: string): SetupActionShape[] =>
-      actionsOf(output).filter((a) => a.category === 'maestria-skills');
-    expect(maestriaOnly(direct.output)).toEqual(maestriaOnly(aliased.output));
-  });
-
   it('invokes the exact xtarterize task command with --cwd, never bare add', async () => {
     await withConfigDir();
     const calls: string[][] = [];
@@ -277,15 +256,18 @@ describe('setup pre-effect validation', () => {
     expect(calls.length).toBe(0);
   });
 
-  it('rejects unknown maestria skills before any effect', async () => {
+  it('rejects removed maestria skill flags before any effect', async () => {
     await withConfigDir();
     const calls: string[][] = [];
-    await expect(
+    const error = await captureCliError(
       runSetup(
-        { json: true, quiet: true, skills: 'nope', yes: true },
+        { json: true, quiet: true, skills: 'create-pull-request', yes: true },
         baseDeps({ xtarterize: xtarterizeOk(calls) }),
       ),
-    ).rejects.toThrow(/Unknown skill/u);
+    );
+    expect(error.exitCode).toBe(1);
+    expect(error.message).toMatch(/bundle/u);
+    expect(error.message).toMatch(/--skill-source/u);
     expect(calls.length).toBe(0);
   });
 
@@ -300,36 +282,6 @@ describe('setup pre-effect validation', () => {
     );
     expect(result.exitCode).toBe(1);
     expect(result.output).toContain('not found on PATH');
-  });
-
-  it('blocks unmanaged skills via ownership preflight without mutating', async () => {
-    await withConfigDir();
-    const calls: string[][] = [];
-    const runner = fakeSkillCli({
-      'opencode:create-pull-request': '/other/skills/create-pull-request',
-    });
-    await runner([
-      'add',
-      'test-source',
-      '-a',
-      'opencode',
-      '-s',
-      'create-pull-request',
-      '-g',
-      '--json',
-      '-y',
-    ]);
-    await expect(
-      runSetup(
-        { json: true, quiet: true, skills: 'create-pull-request', yes: true },
-        baseDeps({
-          readRecord: nullRecord,
-          skillRunner: runner,
-          xtarterize: xtarterizeOk(calls),
-        }),
-      ),
-    ).rejects.toThrow(/Existing unmanaged skill/u);
-    expect(calls.length).toBe(0);
   });
 });
 
@@ -438,55 +390,23 @@ describe('setup non-TTY refusal', () => {
 
 const noopPlan = (overrides: Partial<SetupSelection> = {}): SetupSelection => ({
   ecosystem: [],
-  maestriaActive: false,
-  maestriaSkills: undefined,
-  reviewed: [],
   sources: [],
   xtarterize: false,
   ...overrides,
 });
 
 describe('setup scope clarity', () => {
-  interface PickerCall {
-    initialValues?: string[];
-    message: string;
-    options?: Record<string, unknown>;
-  }
-
-  it('shows global scope in the skill review prompt', async () => {
+  it('names the target directory role and full cancel semantics in setup confirms', async () => {
     await withConfigDir();
     setTty(true);
-    const messages: string[] = [];
-    groupMocks.groupMultiselect.mockImplementation(async (opts: PickerCall) => {
-      messages.push(opts.message);
-      if (opts.message.includes('Which setup items')) {
-        return [];
-      }
-      return [...(opts.initialValues ?? [])];
-    });
-    const result = await runSetup(
-      { quiet: true },
-      baseDeps({ isInteractive: () => true, readRecord: emptyRecord }),
-    );
-    expect(result.exitCode).toBe(0);
-    expect(
-      messages.some(
-        (message) => message.includes('methodology skills') && message.includes('global scope'),
-      ),
-    ).toBe(true);
-  });
-
-  it('names global scope, target directory role, and full cancel semantics in setup confirms', async () => {
-    await withConfigDir();
-    setTty(true);
-    groupMocks.groupMultiselect.mockImplementation(async (opts: PickerCall) => {
+    groupMocks.groupMultiselect.mockImplementation(async (opts: { message: string }) => {
       if (opts.message.includes('Which setup items')) {
         return [];
       }
       return [];
     });
     const result = await runSetup(
-      { quiet: true },
+      { ecosystem: 'codegraph', quiet: true },
       baseDeps({ isInteractive: () => true, readRecord: nullRecord }),
     );
     expect(result.exitCode).toBe(0);
@@ -494,22 +414,11 @@ describe('setup scope clarity', () => {
       const arg: unknown = call[0];
       return isRecord(arg) && typeof arg.message === 'string' ? arg.message : '';
     });
-    const perGroup = confirmMessages.find((message) => message.startsWith('Install with skills'));
-    expect(perGroup).toBeDefined();
-    expect(perGroup ?? '').toContain('(global)');
     const finalConfirm = confirmMessages.at(-1) ?? '';
-    expect(finalConfirm).toContain('opencode (global)=[');
     expect(finalConfirm).toContain(
       'Project-scoped actions use the target directory; global actions do not depend on it.',
     );
     expect(finalConfirm).toContain('Answering No cancels the entire setup with nothing changed.');
-  });
-
-  it('shows global scope in the maestria skills summary output', async () => {
-    await withConfigDir();
-    const result = await runSetup({ quiet: true, yes: true }, baseDeps({ readRecord: nullRecord }));
-    expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('(global scope)');
   });
 });
 
@@ -544,26 +453,6 @@ describe('isNoopSetupPlan', () => {
       expected: false,
       name: 'skill sources selected',
       plan: noopPlan({ sources: [{ scope: 'global', source: 'acme/a' }] }),
-    },
-    {
-      expected: false,
-      name: 'maestria defaults kept on a fresh install',
-      plan: noopPlan({
-        maestriaActive: true,
-        reviewed: [
-          { id: 'opencode', selection: { changed: false, skills: ['create-pull-request'] } },
-        ],
-      }),
-    },
-    {
-      expected: false,
-      name: 'any maestria selection changed',
-      plan: noopPlan({
-        reviewed: [
-          { id: 'opencode', selection: { changed: false, skills: [] } },
-          { id: 'pi', selection: { changed: true, skills: ['create-pull-request'] } },
-        ],
-      }),
     },
   ])('$name', ({ expected, plan }) => {
     expect(isNoopSetupPlan(plan, probes)).toBe(expected);
@@ -634,25 +523,13 @@ describe('setup no-op confirm skipping', () => {
     expect(result.output).not.toContain('already set up');
   });
 
-  it('does not short-circuit a fresh install when maestria defaults are kept', async () => {
+  it('treats a bare run with no selections as already set up', async () => {
     await withConfigDir();
-    const missingYes = await captureCliError(
-      runSetup(
-        { ecosystem: 'codegraph', quiet: true },
-        baseDeps({
-          ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
-          readRecord: nullRecord,
-        }),
-      ),
-    );
-    expect(missingYes.message).toContain('--yes');
-
     const skillCalls: string[][] = [];
     const inner = fakeSkillCli({});
     const result = await runSetup(
-      { ecosystem: 'codegraph', json: true, quiet: true, yes: true },
+      { quiet: true, yes: true },
       baseDeps({
-        ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
         readRecord: nullRecord,
         skillRunner: async (args, options) => {
           skillCalls.push([...args]);
@@ -661,10 +538,8 @@ describe('setup no-op confirm skipping', () => {
       }),
     );
     expect(result.exitCode).toBe(0);
-    expect(result.output).not.toContain('already set up');
-    const maestria = actionsOf(result.output).filter((a) => a.category === 'maestria-skills');
-    expect(maestria.length).toBeGreaterThan(0);
-    expect(skillCalls.some((args) => args[0] === 'add')).toBe(true);
+    expect(result.output).toContain('already set up');
+    expect(skillCalls.every((args) => args[0] === 'list')).toBe(true);
   });
 
   it('replays a no-op interactive run with review prompts only and annotated picker labels', async () => {
@@ -711,7 +586,7 @@ describe('setup no-op confirm skipping', () => {
     );
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('already set up');
-    expect(groupMocks.groupMultiselect).toHaveBeenCalledTimes(2);
+    expect(groupMocks.groupMultiselect).toHaveBeenCalledTimes(1);
     expect(promptMocks.confirm).not.toHaveBeenCalled();
     expect(xtarterizeCalls.length).toBe(0);
     expect(skillCommands.every((command) => command === 'list')).toBe(true);
