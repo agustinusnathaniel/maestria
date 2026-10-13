@@ -108,13 +108,13 @@ const integrationDisplayName = (host: string): string => {
   if (host === 'omp') {
     return 'OMP';
   }
+  if (host === 'kimi-code') {
+    return 'Kimi Code';
+  }
   return `${host.charAt(0).toUpperCase()}${host.slice(1)}`;
 };
 
 const integrationHeading = (host: string): string => {
-  if (host === 'kimi-code') {
-    return '## Specialist → Subagent Routing';
-  }
   if (host === 'cursor') {
     return '## Specialist Agents (Cursor)';
   }
@@ -137,17 +137,6 @@ const readCanonicalInputs = (repoRoot: string): Inputs => {
   }
   const args = readInput(coreRoot, 'integrations/command-arguments.md');
   requiredHeading(args, '$ARGUMENTS', 'integrations/command-arguments.md');
-  const codexInstructions = readInput(coreRoot, 'integrations/codex-instructions.md');
-  requiredHeading(
-    codexInstructions,
-    '<!-- maestria:codex-orchestrator:start -->',
-    'codex-instructions.md',
-  );
-  requiredHeading(
-    codexInstructions,
-    '<!-- maestria:codex-orchestrator:end -->',
-    'codex-instructions.md',
-  );
   return {
     arguments: args,
     contexts,
@@ -275,19 +264,22 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   );
 };
 
-const addSessionContexts = (plan: Map<string, string>, input: Inputs, complete: string): void => {
-  addOutput(plan, 'AGENTS.md', document(compose(complete, input.contexts.devin)));
-  addOutput(plan, 'rules/hermes/context.md', document(compose(complete, input.contexts.hermes)));
-  const kimi = document(compose(complete, input.contexts['kimi-code']));
-  if (Buffer.byteLength(kimi) > 32 * 1024) {
-    throw new Error('Kimi bootstrap exceeds the documented 32 KB system prompt limit');
+// One root AGENTS.md serves every host that reads a plain session context: Devin loads it
+// always-on, Kimi Code through `systemPromptPath`, the CLI installs it into Codex's AGENTS.md,
+// and Hermes users add it manually. Each host note sits under its own heading.
+const SESSION_HOSTS = ['devin', 'kimi-code', 'codex', 'hermes'];
+const HOST_NOTES_INTRO =
+  '## Host Notes\n\nEach section below applies only on the host it names; skip the others.';
+const demote = (markdown: string): string =>
+  markdown.replaceAll(/^(?<hashes>#{2,5}) /gmu, '#$<hashes> ');
+
+const addSessionContext = (plan: Map<string, string>, input: Inputs, complete: string): void => {
+  const notes = SESSION_HOSTS.map((host) => demote(input.contexts[host]));
+  const context = document(compose(complete, HOST_NOTES_INTRO, ...notes));
+  if (Buffer.byteLength(context) > 32 * 1024) {
+    throw new Error("AGENTS.md exceeds Kimi Code's documented 32 KB system prompt limit");
   }
-  addOutput(plan, 'rules/kimi-code/bootstrap.md', kimi);
-  addOutput(
-    plan,
-    'rules/codex/instructions/AGENTS.md',
-    `<!-- maestria:codex-orchestrator:start -->\n\n${document(compose(complete, input.contexts.codex))}\n<!-- maestria:codex-orchestrator:end -->\n`,
-  );
+  addOutput(plan, 'AGENTS.md', context);
 };
 
 const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {
@@ -328,7 +320,7 @@ const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   const routerPolicy = compose(input.roles.orchestrator, input.rules);
   const complete = compose(routerPolicy, ...MODES.map((mode) => input.modes[mode].body));
   addPolicyRules(plan, input, routerPolicy);
-  addSessionContexts(plan, input, complete);
+  addSessionContext(plan, input, complete);
   addModeCommands(plan, input, routerPolicy);
   addUtilitySkills(plan, input);
 };

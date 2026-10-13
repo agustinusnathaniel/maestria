@@ -12,7 +12,7 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | --- | --- |
 | Agents | Seven complete specialists, one shared `agents/<role>.md` per role for every Markdown host (no per-host copies, no orchestrator profile); generated Codex TOMLs beside them as `agents/maestria-<role>.toml` |
 | Commands | Three complete modes in one shared `commands/` set, including parent routing, policy, and argument preservation |
-| Rules | Per host because formats differ: `rules/global.md` (OMP), `rules/cursor/`, `rules/kimi-code/`, `rules/codex/`, `rules/hermes/`, and root `AGENTS.md` (Devin) |
+| Rules | `rules/global.md` (OMP) and `rules/cursor/` (Cursor) keep their own formats; one root `AGENTS.md` serves Devin (always on), Kimi Code (`systemPromptPath`), Codex (installed by the CLI), and Hermes (manual), with a Host Notes section per host |
 | Skills | The `handoff` and `iteration-limits` utilities and the bundled `create-pull-request` and `docs-update` methodology skills; no role, command, or policy facades |
 | Integrations | Core host notes (`packages/core/agent-directives/integrations/`) composed into the generated rules and profiles; not shipped as separate guides |
 | Generation | Development-only profile metadata (`generation/profiles.json`); root host manifests are hand-edited and validated against the generated outputs |

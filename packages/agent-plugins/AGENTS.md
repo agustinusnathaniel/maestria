@@ -186,10 +186,52 @@ Use direct execution for familiar, low-risk code or other work when the host per
 
 Reuse valid context and completed checks. If evidence reveals an unknown root cause, a consequential design choice, or higher risk, switch to the focused or full route needed to resolve it. Continue until the requested outcome satisfies the shared verification, review, and delivery requirements.
 
-## Devin Integration
+## Host Notes
+
+Each section below applies only on the host it names; skip the others.
+
+### Devin Integration
 
 Devin discovers the conventional root `agents/*.md` as plugin subagents. Every profile includes complete canonical role and global policy; root AGENTS.md carries always-on policy and routing. Custom plugin subagents are available in local CLI and Desktop sessions, not cloud sessions. Use the subagent controls the host exposes and preserve maker/checker separation.
 
 Devin documents an `allowed-tools` allowlist but no denylist or read-only field, so research, architecture, and review roles rely on their prompt-level read-only instructions; profile keys meant for other hosts are undocumented for Devin. Devin has no plugin commands component: trigger workflow modes with the natural-language mode keywords routed by the always-on policy (for example `fein: <task>`). The overlay selects only the four skills.
 
 See [Devin plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview).
+
+### Kimi Code Integration
+
+#### Specialist → Subagent Routing
+
+The Kimi manifest selects the shared root `agents/` directory, whose seven native Markdown profiles embed the complete role and global policy. Dispatch through Kimi's native Agent tool using the selected specialist identity: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, or `writer`. Carry the task constraints and complete handoff; neither parent skill loading nor built-in coder/plan/explore mappings supply these identities.
+
+Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Research, architecture, and review profiles deny `Write` and `Edit`, and every profile sets `subagents: []` so specialists do not delegate further. This is a tool filter, not a shell sandbox. Profiles set no model; Kimi ignores keys meant for other hosts, such as `readonly`, and the active host chooses the model.
+
+#### Session instructions and modes
+
+`systemPromptPath` selects the root `AGENTS.md`, containing complete policy and routing plus mode instructions within Kimi's 32 KB limit. Native mode commands under the shared root `commands/` carry full context and preserve arguments. The Kimi Integration plugin does not use `sessionStart.skill`, `skillInstructions`, or shared role skills.
+
+See [Kimi plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
+
+### Codex CLI Integration
+
+#### Global rules and routing
+
+The companion maestria CLI installs a marked full orchestration block into Codex's active AGENTS.md. It includes the canonical router, global policy, and FEIN, SONAR, and BLITZ mode instructions. Natural-language mode keywords are case-insensitive and per-turn. These instructions remain guidance under Codex's sandbox and approval controls.
+
+#### Native custom agents
+
+The CLI installs complete native TOML profiles in `$CODEX_HOME/agents/`: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist. Each profile embeds its complete role and global policy. Research, architecture, and review profiles retain the native read-only sandbox. `maestria configure codex` can update models while retaining instructions.
+
+#### Plugin boundary
+
+Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`); orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
+
+See [Codex custom agents](https://developers.openai.com/codex/subagents) and [plugin packaging](https://developers.openai.com/plugins/build/plugins).
+
+### Hermes Integration
+
+Hermes consumes the portable root Agent Plugins v1 manifest and the four root skills. Enable the package with the host's plugin flow, then discover the qualified skill names using `skills_list` and load them using `skill_view`. Hermes generates an `agent-plugin-<slug>-<hash>` namespace; do not assume `maestria:<skill>`.
+
+Portable installation supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, the root `AGENTS.md` contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
+
+See [Hermes portable packages](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).

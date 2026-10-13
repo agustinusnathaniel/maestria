@@ -29,7 +29,7 @@ Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent
 | [Claude Code](/agent-plugins/installation/#claude-code) | 7 native | 3 native commands (`/maestria:fein` and others) | In the commands | Write and Edit tools denied |
 | [Codex](/agent-plugins/installation/#codex) | 7 native, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | `sandbox_mode = "read-only"` |
 | [Cursor](/agent-plugins/installation/#cursor) | 7 native | 3 commands | Always-apply rule | Declared, not enforced for plugin agents |
-| [Kimi Code](/agent-plugins/installation/#kimi-code) | 7 native | 3 commands | `systemPromptPath` bootstrap | Write and Edit tools denied |
+| [Kimi Code](/agent-plugins/installation/#kimi-code) | 7 native | 3 commands | `systemPromptPath` to `AGENTS.md` | Write and Edit tools denied |
 | [Devin](/agent-plugins/installation/#devin) | 7 root profiles, local only | Mode keywords | Root `AGENTS.md` | Prompt-level |
 | [ZCode](/agent-plugins/installation/#zcode) | 7 native | 3 commands | In the profiles and commands (no rules component) | Write and Edit removed from subagent tools; shell remains |
 | [OMP](/agent-plugins/installation/#omp) | 7 task profiles | 3 commands | Always-apply rule | Prompt-level |
@@ -52,7 +52,7 @@ These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` 
 
 ## Runtime boundaries
 
-Markdown hosts share one profile per role in `agents/<role>.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. Rules stay per host because host formats differ. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
+Markdown hosts share one profile per role in `agents/<role>.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. OMP and Cursor keep their own rule files because their formats differ; Devin, Kimi Code, Codex, and Hermes share the root `AGENTS.md`. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
 
 ## Resources
 

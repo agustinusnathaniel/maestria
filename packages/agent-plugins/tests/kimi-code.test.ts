@@ -58,13 +58,17 @@ describe('Kimi native methodology loading', () => {
 
   it('injects complete policy and router within the host system instruction limit', async () => {
     const config = await manifest();
-    expect(config.systemPromptPath).toBe('./rules/kimi-code/bootstrap.md');
+    // Kimi, Devin, Hermes, and the Codex installer share the one root AGENTS.md.
+    expect(config.systemPromptPath).toBe('./AGENTS.md');
     const systemPromptPath = String(config.systemPromptPath);
     const context = await readFile(path.join(root, systemPromptPath), 'utf-8');
     expect(Buffer.byteLength(context)).toBeLessThanOrEqual(32 * 1024);
     expect(context).toContain('## Universal Floors');
     expect(context).toContain('## Routing');
     expect(context).toContain('## MODE: fein');
+    for (const host of ['Devin', 'Kimi Code', 'Codex CLI', 'Hermes']) {
+      expect(context).toContain(`### ${host} Integration`);
+    }
     const bootstrap = await stat(path.join(root, systemPromptPath));
     expect(bootstrap.isFile()).toBe(true);
   });

@@ -253,7 +253,7 @@ Profiles embed complete role and global policy, so no role skill preload is need
 
 ## Kimi Code
 
-The Kimi manifest points at the seven shared profiles in `agents/`, the three shared commands in `commands/`, and the session bootstrap in `rules/kimi-code/bootstrap.md`. Root `skills/` carries the four skills.
+The Kimi manifest points at the seven shared profiles in `agents/`, the three shared commands in `commands/`, and, through `systemPromptPath`, the root `AGENTS.md` it shares with Devin, Codex, and Hermes. Root `skills/` carries the four skills.
 
 **Prerequisites.** A Kimi Code version that supports native plugin agents, commands, and `systemPromptPath` (see the [official plugin guide](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html)), and Node.js 22.12 or later with npm for the maestria CLI.
 
@@ -284,7 +284,7 @@ Updates replace the managed package, so back up local changes first. Your own pe
 | --- | --- |
 | Seven native specialists | Complete role and global policy for adventurer, architect, builder, diagnose, planner, reviewer, and writer |
 | Three native commands | Complete fein, sonar, and blitz workflows with task arguments (`$ARGUMENTS` is substituted) |
-| `systemPromptPath` bootstrap | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
+| `systemPromptPath` to `AGENTS.md` | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
 | Four skills | `handoff`, `iteration-limits`, `create-pull-request`, `docs-update` |
 
 The integration uses neither `sessionStart.skill` nor `skillInstructions`. Native specialists replace the former mapping to the built-in coder, explore, and plan agents. Child methodology does not depend on a parent loading role skills.
@@ -297,7 +297,7 @@ The integration uses neither `sessionStart.skill` nor `skillInstructions`. Nativ
 | --- | --- |
 | Plugin missing | Run `/plugins list` and `/plugins info maestria`; verify the installation directory |
 | Old skills or agents appear | Remove the former standalone plugin, then `/reload` or start a new session |
-| Bootstrap does not load | Confirm the host supports `systemPromptPath` and the selected bootstrap file exists |
+| Session context does not load | Confirm the host supports `systemPromptPath` and the package's root `AGENTS.md` exists |
 | Native role missing | Confirm the host supports plugin agents and the manifest points at `./agents/` |
 | Reviewer can edit through a shell | Native write-tool denial does not restrict shell execution |
 
@@ -440,7 +440,7 @@ The Python adapter's mode commands, role gates, lifecycle hooks, and OpenCode br
 
 ### Hermes manual context
 
-For full policy, routing, and mode guidance, manually add the contents of the bundled `rules/hermes/context.md` to the context file Hermes already selects, preserving existing instructions. If no context file exists, create one appropriate for your project. The package and CLI do not modify these user files or import the bundled context automatically.
+For full policy, routing, and mode guidance, manually add the contents of the bundled root `AGENTS.md` to the context file Hermes already selects, preserving existing instructions. If no context file exists, create one appropriate for your project. The package and CLI do not modify these user files or import the bundled context automatically.
 
 Hermes loads only the first applicable project context type. It searches for `.hermes.md` or `HERMES.md` from the current directory toward the Git root, then falls back to `AGENTS.md` in the current directory, followed by other supported context types. Do not create a higher-priority `.hermes.md` that hides an existing `AGENTS.md`. See the [official prompt-assembly order](https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly).
 

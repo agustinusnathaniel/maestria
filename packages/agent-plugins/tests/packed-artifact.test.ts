@@ -169,7 +169,7 @@ describe('published consolidated plugin', () => {
       expect(manifests[6].agents).toBe('./agents/');
       expect(manifests[6].skills).toBe('./skills/');
       expect(manifests[6].commands).toBe('./commands/');
-      expect(manifests[6].systemPromptPath).toBe('./rules/kimi-code/bootstrap.md');
+      expect(manifests[6].systemPromptPath).toBe('./AGENTS.md');
       expect(manifests[1].commands).toEqual([
         './commands/fein.md',
         './commands/sonar.md',
@@ -183,7 +183,10 @@ describe('published consolidated plugin', () => {
         expect(entries).toContain(`package/agents/${role}.md`);
       }
       expect(entries).toContain('package/rules/cursor/maestria-global.mdc');
-      expect(entries).toContain('package/rules/codex/instructions/AGENTS.md');
+      expect(entries).toContain('package/AGENTS.md');
+      for (const retired of ['rules/codex/', 'rules/hermes/', 'rules/kimi-code/']) {
+        expect(entries.some((entry) => entry.startsWith(`package/${retired}`))).toBe(false);
+      }
       assertNativeMetadata(packedRoot);
       // `!` followed by a backtick is inline shell expansion in ZCode and Claude Code commands.
       for (const entry of entries.filter((item) => /\.(?:md|mdc|toml)$/u.test(item))) {

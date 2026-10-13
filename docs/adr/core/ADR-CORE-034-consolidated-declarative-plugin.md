@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11 and 2026-10-12.
+Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, and 2026-10-13.
 
 ## Context
 
@@ -44,7 +44,11 @@ The source/bundle detour and its root fourteen-skill compatibility layout are su
 
 Ship each role once as `agents/<role>.md`, and each workflow mode once as `commands/<mode>.md`, for every Markdown host. Read-only roles carry each host's control in one frontmatter block: `readonly` for Cursor, `disallowedTools: [Write, Edit]` for Claude Code, Kimi Code, and ZCode, and `subagents: []` for Kimi. Profiles omit `model`, which Claude Code, Cursor, and ZCode treat as the main conversation's model. Codex profiles are generated TOML beside the Markdown, because Codex loads only TOML agents installed by the companion CLI. Retire the per-host agent and command copies, the dispatcher-only `orchestrator` profile (a child profile cannot dispatch on most hosts, and the always-on context already routes), and Devin's mode skill transport (Devin has no plugin command component; its always-on policy routes mode keywords).
 
-Earlier sessions kept per-host copies on the assumption that hosts reject one another's keys and that Claude and Kimi tool names conflict. Evidence on 2026-10-12 disproved both: Claude Code and Kimi ignore unknown frontmatter fields, both accept a YAML tool list, and current Kimi names its file tools `Write` and `Edit` (the previously shipped `WriteFile` and `StrReplaceFile` matched nothing). A Cursor CLI probe loaded profiles carrying other hosts' keys unchanged. It also showed that Cursor does not enforce `readonly` for plugin-supplied profiles, although it does for project `.cursor/agents/` profiles, so Cursor plugin read-only is intent plus prompt guidance. Rules remain per host because their formats differ and OMP and Devin discover flat `rules/*.md`.
+Earlier sessions kept per-host copies on the assumption that hosts reject one another's keys and that Claude and Kimi tool names conflict. Evidence on 2026-10-12 disproved both: Claude Code and Kimi ignore unknown frontmatter fields, both accept a YAML tool list, and current Kimi names its file tools `Write` and `Edit` (the previously shipped `WriteFile` and `StrReplaceFile` matched nothing). A Cursor CLI probe loaded profiles carrying other hosts' keys unchanged. It also showed that Cursor does not enforce `readonly` for plugin-supplied profiles, although it does for project `.cursor/agents/` profiles, so Cursor plugin read-only is intent plus prompt guidance. Rules remain per host only where formats differ; see the shared session context amendment below.
+
+### Shared session context amendment (2026-10-13)
+
+Ship one root `AGENTS.md` for every host that reads a plain session context: Devin loads it always-on, Kimi Code through `systemPromptPath`, the maestria CLI wraps it in its managed block in Codex's `AGENTS.md`, and Hermes users add it manually. The four former files (`AGENTS.md`, `rules/kimi-code/bootstrap.md`, `rules/codex/instructions/AGENTS.md`, `rules/hermes/context.md`) were 95 to 97 percent identical and differed only in each host's integration note; those notes now sit under a Host Notes heading that tells the agent to skip the others. Only OMP (`rules/global.md`, with `alwaysApply` and `trigger` frontmatter) and Cursor (`rules/cursor/maestria-global.mdc`) keep their own rule files. The cost is a few dozen lines of other hosts' notes in each of those sessions; the file must stay under Kimi Code's 32 KB limit, which the generator enforces.
 
 ## Consequences
 
@@ -79,4 +83,4 @@ Earlier sessions kept per-host copies on the assumption that hosts reject one an
 
 ## Date
 
-2026-10-10; amended 2026-10-11 and 2026-10-12.
+2026-10-10; amended 2026-10-11, 2026-10-12, and 2026-10-13.
