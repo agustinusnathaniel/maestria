@@ -192,7 +192,7 @@ Each section below applies only on the host it names; skip the others.
 
 ### Devin Integration
 
-Devin discovers the conventional root `agents/*.md` as plugin subagents. Every profile includes complete canonical role and global policy; root AGENTS.md carries always-on policy and routing. Custom plugin subagents are available in local CLI and Desktop sessions, not cloud sessions. Use the subagent controls the host exposes and preserve maker/checker separation.
+Devin discovers the conventional root `agents/*.md` as plugin subagents. Every profile includes complete canonical role and global policy; Devin loads this file, the package's root `AGENTS.md`, always-on for policy and routing. Custom plugin subagents are available in local CLI and Desktop sessions, not cloud sessions. Use the subagent controls the host exposes and preserve maker/checker separation.
 
 Devin documents an `allowed-tools` allowlist but no denylist or read-only field, so research, architecture, and review roles rely on their prompt-level read-only instructions; profile keys meant for other hosts are undocumented for Devin. Devin has no plugin commands component: trigger workflow modes with the natural-language mode keywords routed by the always-on policy (for example `fein: <task>`). The overlay selects only the four skills.
 
@@ -208,7 +208,7 @@ Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Researc
 
 #### Session instructions and modes
 
-`systemPromptPath` selects the root `AGENTS.md`, containing complete policy and routing plus mode instructions within Kimi's 32 KB limit. Native mode commands under the shared root `commands/` carry full context and preserve arguments. The Kimi Integration plugin does not use `sessionStart.skill`, `skillInstructions`, or shared role skills.
+`systemPromptPath` selects this file, the package's root `AGENTS.md`, containing complete policy and routing plus mode instructions within Kimi's 32 KB limit. Native mode commands under the shared root `commands/` carry full context and preserve arguments. The Kimi Integration plugin does not use `sessionStart.skill`, `skillInstructions`, or shared role skills.
 
 See [Kimi plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
 
@@ -232,6 +232,6 @@ See [Codex custom agents](https://developers.openai.com/codex/subagents) and [pl
 
 Hermes consumes the portable root Agent Plugins v1 manifest and the four root skills. Enable the package with the host's plugin flow, then discover the qualified skill names using `skills_list` and load them using `skill_view`. Hermes generates an `agent-plugin-<slug>-<hash>` namespace; do not assume `maestria:<skill>`.
 
-Portable installation supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, the root `AGENTS.md` contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
+Portable installation supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, this file, the package's root `AGENTS.md`, contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
 
 See [Hermes portable packages](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).

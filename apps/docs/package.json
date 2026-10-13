@@ -31,6 +31,7 @@
     "@astrojs/check": "^0.9.10",
     "@types/negotiator": "catalog:",
     "@types/node": "catalog:",
+    "@vercel/routing-utils": "catalog:",
     "sharp": "0.35.4",
     "typescript": "catalog:"
   }

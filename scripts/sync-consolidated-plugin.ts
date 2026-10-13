@@ -21,7 +21,7 @@ const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
 const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
 export const GENERATED_NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
-const TOML_NOTICE = '# Generated from canonical core directives.';
+export const TOML_NOTICE = '# Generated from canonical core directives.';
 const ROOT_MANIFESTS = [
   'plugin.json',
   '.claude-plugin/plugin.json',
@@ -383,7 +383,7 @@ const validateOutputPaths = (repoRoot: string, plan: Map<string, string>): void 
 /** A file is ours only when it carries the generator's notice line; others are never touched. */
 const isGenerated = (absolute: string): boolean => {
   const notice = absolute.endsWith('.toml') ? TOML_NOTICE : GENERATED_NOTICE;
-  return fs.readFileSync(absolute, 'utf-8').split('\n').includes(notice);
+  return normalizeLineEndings(fs.readFileSync(absolute, 'utf-8')).split('\n').includes(notice);
 };
 
 /** Generated files the current plan no longer produces, found by notice instead of a path list. */

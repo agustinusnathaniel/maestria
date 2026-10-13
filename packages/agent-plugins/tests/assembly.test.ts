@@ -7,6 +7,7 @@ import {
   GENERATED_NOTICE,
   main,
   syncConsolidatedPlugin,
+  TOML_NOTICE,
 } from '../../../scripts/sync-consolidated-plugin.js';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
@@ -111,7 +112,7 @@ describe('consolidated plugin assembly', () => {
     fs.mkdirSync(path.dirname(path.join(packageRoot, obsoleteProfile)), { recursive: true });
     fs.writeFileSync(
       path.join(packageRoot, obsoleteProfile),
-      'name = "maestria-reviewer"\n\n# Generated from canonical core directives.\n',
+      `name = "maestria-reviewer"\r\n\r\n${TOML_NOTICE}\r\n`,
     );
     obsoletes.push(obsoleteProfile);
 

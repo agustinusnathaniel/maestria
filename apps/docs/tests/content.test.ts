@@ -1,5 +1,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { getTransformedRoutes } from '@vercel/routing-utils';
+import type { Route, RouteWithSrc } from '@vercel/routing-utils';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { platforms } from '@/data/platforms.ts';
@@ -114,9 +116,26 @@ const readVercelRedirects = async (): Promise<VercelRedirect[]> => {
   return parsed.redirects;
 };
 
-/** The Vercel rule covering `from`; one `{/}?` rule serves a route with and without its slash. */
-const vercelRuleFor = (vercel: VercelRedirect[], from: string): VercelRedirect | undefined =>
-  vercel.find(({ source }) => source === from || source === `${from.replace(/\/$/u, '')}{/}?`);
+/** Vercel's compiled routes mix redirect patterns with internal phase handlers. */
+const isSourceRoute = (route: Route): route is RouteWithSrc => !('handle' in route);
+
+/**
+ * Resolve a path the way Vercel does: compile `vercel.json` with Vercel's own route transform and
+ * return the Location of the first permanent redirect whose pattern matches.
+ */
+const vercelResolver = async (): Promise<(pathname: string) => string | undefined> => {
+  const { error, routes } = getTransformedRoutes({ redirects: await readVercelRedirects() });
+  if (error !== null || routes === null) {
+    throw new TypeError(`vercel.json redirects do not compile: ${JSON.stringify(error)}`);
+  }
+  const compiled = routes.filter(isSourceRoute).flatMap((route) => {
+    const location = route.headers?.Location;
+    return route.status === 308 && location !== undefined
+      ? [{ location, pattern: new RegExp(route.src, 'u') }]
+      : [];
+  });
+  return (pathname) => compiled.find(({ pattern }) => pattern.test(pathname))?.location;
+};
 
 /** Parse `_redirects` into a `from -> to` map (status must be 301). */
 const readRedirects = async (): Promise<Map<string, string>> => {
@@ -326,7 +345,8 @@ describe('platform guide routes', () => {
     // Netlify, like Cloudflare Pages, reads public/_redirects from the published dist/ folder.
     expect(netlify).not.toContain('[[redirects]]');
     expect(netlify).toContain('publish = "dist"');
-    // Vercel cannot read _redirects; a `{/}?` rule covers both slash forms of one route.
+    // Vercel cannot read _redirects; one `{/}?` rule covers both slash forms of a route.
+    const resolveVercel = await vercelResolver();
     const sources = new Set(vercel.map(({ source }) => source));
     expect(
       [...sources].filter((source) => source.endsWith('/') && sources.has(source.slice(0, -1))),
@@ -339,22 +359,18 @@ describe('platform guide routes', () => {
     // Host index twins end in `.md` directly, without a trailing slash rule.
     for (const [from, to] of cases) {
       expect(redirects.get(from), `_redirects ${from}`).toBe(to);
-      expect(vercelRuleFor(vercel, from), `vercel ${from}`).toEqual(
-        expect.objectContaining({ destination: to, permanent: true }),
-      );
+      expect(resolveVercel(from), `vercel ${from}`).toBe(to);
     }
   });
 
   it('sends every other path under a removed host tree to its Installation section', async () => {
     const redirects = await readRedirects();
-    const vercel = await readVercelRedirects();
+    const resolveVercel = await vercelResolver();
 
     for (const host of REMOVED_HOSTS) {
       const target = `/agent-plugins/installation/#${host}`;
       expect(redirects.get(`/agent-plugins/${host}/*`)).toBe(target);
-      expect(vercel).toContainEqual(
-        expect.objectContaining({ destination: target, source: `/agent-plugins/${host}/:path*` }),
-      );
+      expect(resolveVercel(`/agent-plugins/${host}/any/deeper/page`)).toBe(target);
     }
     for (const host of ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp']) {
       const target = `/agent-plugins/installation/#${host}`;

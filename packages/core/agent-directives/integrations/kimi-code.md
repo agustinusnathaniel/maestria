@@ -8,6 +8,6 @@ Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Researc
 
 ### Session instructions and modes
 
-`systemPromptPath` selects the root `AGENTS.md`, containing complete policy and routing plus mode instructions within Kimi's 32 KB limit. Native mode commands under the shared root `commands/` carry full context and preserve arguments. The Kimi Integration plugin does not use `sessionStart.skill`, `skillInstructions`, or shared role skills.
+`systemPromptPath` selects this file, the package's root `AGENTS.md`, containing complete policy and routing plus mode instructions within Kimi's 32 KB limit. Native mode commands under the shared root `commands/` carry full context and preserve arguments. The Kimi Integration plugin does not use `sessionStart.skill`, `skillInstructions`, or shared role skills.
 
 See [Kimi plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents).
