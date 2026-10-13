@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "maestria",
+    "description": "Adds the maestria agent preset: an orchestrator that routes work through seven specialist subagents with independent review."
+  }
+}

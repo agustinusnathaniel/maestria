@@ -27,6 +27,7 @@
     "contributors:generate": "all-contributors generate",
     "contributors:check": "all-contributors check",
     "e2e:fail-closed": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json",
+    "e2e:deepseek": "tsx scripts/e2e/deepseek-evidence.ts --out artifacts/deepseek-evidence.json",
     "e2e:opencode": "tsx scripts/e2e/opencode-evidence.ts --out artifacts/opencode-evidence.json",
     "e2e:opencode-cli": "tsx scripts/e2e/maestria-cli-opencode-evidence.ts --out artifacts/maestria-cli-opencode-evidence.json",
     "e2e:phase-b": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json"

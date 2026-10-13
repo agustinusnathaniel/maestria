@@ -12,5 +12,5 @@
     "noEmit": true
   },
   "include": ["src", "tests"],
-  "exclude": ["dist", "node_modules", "skills", "preset"]
+  "exclude": ["dist", "node_modules"]
 }

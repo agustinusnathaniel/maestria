@@ -5,7 +5,6 @@ export default defineConfig({
     entry: ['src/index.ts'],
     fixedExtension: false,
     minify: true,
-    sourcemap: true,
     target: 'node22',
   },
   resolve: {

@@ -1,44 +1,33 @@
 {
   "name": "@maestria/deepseek",
   "version": "0.0.0",
-  "private": false,
-  "description": "Maestria methodology for DeepSeek Harness: specialist skills, prompt sections, and a native agent preset",
+  "description": "maestria agent preset for DeepSeek Harness: orchestrator persona, global rules, specialist delegation tools, and skills",
   "keywords": [
-    "ai",
+    "agent-orchestration",
     "deepseek-harness",
-    "dsh",
-    "maestria",
-    "orchestration",
-    "pipeline",
-    "skills"
+    "dsh-bundle",
+    "maestria"
   ],
-  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/deepseek#readme",
-  "bugs": {
-    "url": "https://github.com/agustinusnathaniel/maestria/issues"
-  },
   "license": "MIT",
-  "author": "agustinusnathaniel",
   "repository": {
     "type": "git",
     "url": "https://github.com/agustinusnathaniel/maestria.git",
     "directory": "packages/deepseek"
   },
   "files": [
+    "cordis.patch.yml",
     "dist",
-    "preset",
+    "locale",
+    "prompts",
     "skills",
-    "INSTALL.md",
     "README.md",
     "LICENSE"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "publishConfig": {
     "access": "public",
@@ -46,19 +35,23 @@
   },
   "scripts": {
     "build": "vp pack",
-    "dev": "vp pack --watch",
     "test": "vp test"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-skill": "0.0.1-rc.1",
-    "@deepseek-ai/dsh-system-prompt": "0.0.1-rc.1",
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml": "^2.9.0"
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
   }
 }

@@ -1,38 +1,42 @@
 # @maestria/deepseek
 
-Maestria methodology for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): the specialist pipeline as Agent Skills, a native Cordis plugin, and a full agent preset with per-specialist subagent delegation.
+A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) bundle that adds a `maestria` agent preset: an orchestrator that routes work through seven specialist subagents with independent review.
 
-## Status / Support Boundary
-
-DeepSeek Harness is a developer-preview runtime, so this package is **provisional**: it typechecks against the published `@deepseek-ai/*` RC type packages and is unit-tested, but it has not been verified against a live `dsh` deployment. See the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) and [ADR-CORE-026](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/core/ADR-CORE-026-deepseek-harness-projection.md).
-
-The package has three layers, usable independently:
-
-- **Generated skills** (`skills/`) — 14 Agent-Skills `SKILL.md` directories (7 specialists, `orchestrator`, `global-rules`, `handoff`, `iteration-limits`, and the `fein`, `sonar`, `blitz` workflow modes), discoverable by any DSH skill root.
-- **Cordis plugin** (`dist/`) — a function plugin (`name: 'maestria'`, `inject: ['systemPrompt', 'skills']`) that registers the workflow-routing prompt section, optionally the global-rules section, one named prompt variable per specialist persona, and a `ctx.skills` provider exposing the generated skill tree. Type-only imports; zero runtime dependencies on the host.
-- **Agent preset** (`preset/maestria/`) — a full coding-agent composition derived from DSH's shipped `standard` preset, with the Maestria orchestrator persona, the methodology plugin, and seven `maestria_<role>` subagent delegation tools carrying specialist personas.
-
-Skills and prompt sections are advisory capabilities, not security enforcement. DeepSeek Harness owns tool restrictions (`toolFilter`), sandboxing, approvals, and permission presets. Read-only roles carry advisory notes; the preset does not ship a `toolFilter` because denied tool names depend on the host composition and unknown names fail startup.
+> This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
-See [INSTALL.md](./INSTALL.md) for the skills-only route and the `maestria install deepseek` preset route.
-
-## Documentation
-
-- [User-facing documentation](https://maestria.sznm.dev/)
-- [Runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md)
-
-## Development
-
 ```bash
-scripts/sync-all
-scripts/check-sync
-pnpm --filter @maestria/deepseek test
+# Recommended: via the maestria CLI
+pnpx maestria@latest install deepseek
+
+# Manual: DeepSeek Harness's own bundle installer
+dsh plugin --profile web add @maestria/deepseek
 ```
 
-Do not edit `skills/` directly. Edit the canonical directive or this package's sync configuration, then regenerate the projection.
+Both install into the shipped `web` profile, the one that mounts agent presets. Restart `dsh web`, then choose **maestria** in the preset picker for a new session, or make it the default in settings. Uninstall with `pnpx maestria@latest uninstall deepseek` or `dsh plugin --profile web remove @maestria/deepseek`.
+
+## What It Provides
+
+- **The `maestria` agent preset** - the standard coding agent's tools with maestria's orchestrator as its persona and the global rules as a system-prompt section.
+- **Specialist delegation tools** - `maestria_adventurer`, `maestria_architect`, `maestria_builder`, `maestria_diagnose`, `maestria_planner`, `maestria_reviewer`, and `maestria_writer`, each starting a one-shot child with that specialist's complete role.
+- **Skills** - the `fein`, `sonar`, and `blitz` workflow modes, the `handoff` and `iteration-limits` utilities, and the bundled `create-pull-request` and `docs-update` skills.
+
+## Support / Platform Notes
+
+- **Provisional.** Verified against DeepSeek Harness `0.2.0-rc.2` with a real `dsh web` run and a local fake model; not yet against live inference. DeepSeek Harness is a developer preview, so later releases may need an update.
+- Specialist tool filters are host-enforced: `adventurer`, `planner`, and `reviewer` have no shell, `edit`, or `write` tool, and `architect` and `diagnose` cannot `edit` or `write`. Everything else in the methodology is guidance under DeepSeek Harness's sandbox, approvals, and permission presets.
+- The preset restates the rows of DeepSeek Harness's `standard` preset, because a bundle cannot extend another preset. It does not change any other preset.
+
+## Documentation and Changelog
+
+- [User-facing documentation](https://maestria.sznm.dev/deepseek/) on the docs site
+- [Runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md)
+
+## Contributing
+
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 
-MIT. The agent preset is derived from the `standard` preset in `deepseek-ai/deepseek-harness`, which is BSD-3-Clause licensed; that notice is preserved in `preset/maestria/agent.cordis.yml`.
+MIT. `cordis.patch.yml` restates rows from DeepSeek Harness's `standard` preset, Copyright (c) 2026 DeepSeek, MIT License.
