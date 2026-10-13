@@ -9,7 +9,7 @@ maestria ships one directly installable plugin with native host components and f
 | `agents/` | One profile per specialist for every Markdown host, plus a generated Codex TOML beside each | Core `specialists/` and `generation/profiles.json` |
 | `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
 | `rules/` | Global policy, plus one folder per host whose rule format differs | Core `rules.md` and integration notes |
-| `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request` and `docs-update` methodology skills | One core `rules.md` section per utility; repository-root `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
+| `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request` and `docs-update` methodology skills | One core `rules.md` section per utility; core `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
 | `generation/` | Development-only profile metadata (`profiles.json`); not shipped | Hand-authored mechanical input |
 | `assets/` | Logo shared by the host manifests | Hand-authored package file |
 
@@ -29,7 +29,7 @@ On a host with a managed flow, run `npx maestria install <host>` (`claude-code`,
 
 Supports Claude Code, Cursor, Codex, Kimi Code, Devin, ZCode, OMP, and Hermes, plus portable skill clients. Follow the public [installation](https://maestria.sznm.dev/agent-plugins/installation/), [usage](https://maestria.sznm.dev/agent-plugins/usage/), and [compatibility](https://maestria.sznm.dev/agent-plugins/compatibility/) pages for per-host setup and support boundaries.
 
-See [installation](INSTALL.md) and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; the repository's root `skills/` holds the canonical methodology skills, which this package bundles and `skills.sh` serves to runtimes maestria does not package.
+See [installation](INSTALL.md) and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; the methodology skills this package bundles are authored in `packages/core/agent-directives/skills/`, and `npx skills add agustinusnathaniel/maestria` serves this package's four skills to runtimes maestria does not package.
 
 ## Development and verification
 

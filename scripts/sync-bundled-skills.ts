@@ -3,16 +3,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { normalizeLineEndings } from '../packages/core/scripts/lib/transforms.js';
 
-// maestria's own methodology skills live once under the repository-root `skills/` (the
-// skills.sh source for runtimes maestria does not package) and ship as generated copies in
-// every maestria package, so no host has a directive pointing at a missing skill.
-const SOURCE_DIR = 'skills';
+// maestria's own methodology skills live once in core and ship as generated copies in every
+// maestria package, so no host has a directive pointing at a missing skill. Runtimes maestria
+// does not package reach the agent-plugins copies through `npx skills add`, which follows the
+// relative source in `.claude-plugin/marketplace.json`.
+const SOURCE_DIR = 'packages/core/agent-directives/skills';
 const TARGET_DIRS = [
   'packages/agent-plugins/skills',
   'packages/opencode/skills',
   'packages/pi/skills',
 ];
-const NOTICE_PREFIX = '<!-- Bundled from skills/';
+const NOTICE_PREFIX = `<!-- Bundled from ${SOURCE_DIR}/`;
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const FRONTMATTER = /^---\n[\s\S]*?\n---\n/u;
 
@@ -29,16 +30,18 @@ const assertNotSymlink = (absolute: string, label: string): void => {
 const bundledContent = (name: string, source: string): string => {
   const frontmatter = FRONTMATTER.exec(source)?.[0];
   if (frontmatter === undefined) {
-    throw new Error(`Canonical skill is missing YAML frontmatter: skills/${name}/SKILL.md`);
+    throw new Error(`Canonical skill is missing YAML frontmatter: ${SOURCE_DIR}/${name}/SKILL.md`);
   }
   if (!new RegExp(`^name: ${name}$`, 'mu').test(frontmatter)) {
-    throw new Error(`Canonical skill name must match its directory: skills/${name}/SKILL.md`);
+    throw new Error(
+      `Canonical skill name must match its directory: ${SOURCE_DIR}/${name}/SKILL.md`,
+    );
   }
   const body = source.slice(frontmatter.length).trim();
   return `${frontmatter}\n${notice(name)}\n\n${body}\n`;
 };
 
-/** Canonical skills by name, read from the repository-root `skills/` directory. */
+/** Canonical skills by name, read from the core skills directory. */
 export const bundledSkills = (repoRoot: string): Map<string, string> => {
   const root = path.join(repoRoot, SOURCE_DIR);
   const skills = new Map<string, string>();
@@ -48,9 +51,9 @@ export const bundledSkills = (repoRoot: string): Map<string, string> => {
       continue;
     }
     if (!SKILL_NAME.test(entry.name)) {
-      throw new Error(`Invalid canonical skill directory name: skills/${entry.name}`);
+      throw new Error(`Invalid canonical skill directory name: ${SOURCE_DIR}/${entry.name}`);
     }
-    assertNotSymlink(file, `skills/${entry.name}/SKILL.md`);
+    assertNotSymlink(file, `${SOURCE_DIR}/${entry.name}/SKILL.md`);
     const source = normalizeLineEndings(fs.readFileSync(file, 'utf-8'));
     skills.set(entry.name, bundledContent(entry.name, source));
   }

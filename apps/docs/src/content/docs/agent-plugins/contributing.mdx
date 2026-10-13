@@ -9,7 +9,7 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 Canonical role, mode, routing, and policy text lives in `packages/core/agent-directives/`. The consolidation generator (`scripts/sync-consolidated-plugin.ts`) composes it with the hand-authored manifest, profile, and native metadata inputs under `packages/agent-plugins/generation/` and writes the installable resources at the package root. Do not edit emitted resources; change a generation input or the canonical directives, then regenerate.
 
-Root `skills/` carries only skills: the `handoff` and `iteration-limits` utilities, generated from the global rules, and generated copies of `create-pull-request` and `docs-update`, whose source is the repository-root `skills/`. Do not recreate roles, commands, or global policy as skill facades.
+Root `skills/` carries only skills: the `handoff` and `iteration-limits` utilities, generated from the global rules, and generated copies of `create-pull-request` and `docs-update`, whose source is `packages/core/agent-directives/skills/`. Do not recreate roles, commands, or global policy as skill facades.
 
 Markdown hosts share one profile per role in `agents/<role>.md` (seven roles, no orchestrator) and one command set in `commands/{fein,sonar,blitz}.md`. Do not add per-host copies. Rules stay per host because formats differ and OMP and Devin auto-discover flat files: `rules/global.md`, `rules/cursor/`, `rules/kimi-code/`, `rules/codex/`, `rules/hermes/`, and root `AGENTS.md`. Generated Codex profiles live beside the Markdown as `agents/maestria-<role>.toml`; Codex plugins cannot ship agents, so `maestria install codex` copies them to `$CODEX_HOME/agents/`. Each host manifest selects only the resources that host can load.
 

@@ -5,8 +5,9 @@ import { afterEach, describe, expect, it } from 'vite-plus/test';
 
 import { syncBundledSkills } from '../../../scripts/sync-bundled-skills.js';
 
-const SKILLS_DIR = path.join(import.meta.dirname, '..', '..', '..', 'skills');
-const REPO_ROOT = path.join(SKILLS_DIR, '..');
+const REPO_ROOT = path.join(import.meta.dirname, '..', '..', '..');
+const SKILLS_DIR = path.join(REPO_ROOT, 'packages', 'core', 'agent-directives', 'skills');
+const PLUGIN_SKILLS_DIR = path.join(REPO_ROOT, 'packages', 'agent-plugins', 'skills');
 
 const FRONTMATTER_RE = /^---\n(?<body>[\s\S]*?)\n---/u;
 const SKILL_NAME_RE = /^name:\s*(?<name>.+)$/mu;
@@ -23,8 +24,8 @@ const readSkillName = (dir: string): string => {
   return SKILL_NAME_RE.exec(frontmatter)?.groups?.name?.trim() ?? '';
 };
 
-const skillDirs = (): string[] =>
-  readdirSync(SKILLS_DIR, { withFileTypes: true })
+const skillDirs = (root = SKILLS_DIR): string[] =>
+  readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .toSorted();
@@ -37,7 +38,7 @@ describe('canonical methodology skills', () => {
     }
   });
 
-  it('lists exactly the skills under skills/ in skills.sh.json groupings', () => {
+  it('lists exactly the skills `npx skills add` resolves in skills.sh.json groupings', () => {
     const parsed: unknown = JSON.parse(
       readFileSync(path.join(REPO_ROOT, 'skills.sh.json'), 'utf-8'),
     );
@@ -50,9 +51,27 @@ describe('canonical methodology skills', () => {
       }
       return Array.isArray(grouping.skills) ? grouping.skills.map(String) : [];
     });
-    expect(grouped.map(normalizeSkillSlug).toSorted()).toEqual(skillDirs());
+    expect(grouped.map(normalizeSkillSlug).toSorted()).toEqual(skillDirs(PLUGIN_SKILLS_DIR));
+  });
+
+  it('resolves `npx skills add` through the Claude marketplace entry, not a root copy', () => {
+    // The skills CLI follows a relative marketplace source to the plugin's skills/ folder.
+    // A root skills/ copy would duplicate it; without either, the CLI's repository-wide
+    // fallback scan would also offer the Pi adapter's internal skills.
+    expect(fs.existsSync(path.join(REPO_ROOT, 'skills'))).toBe(false);
+    const marketplace: unknown = JSON.parse(
+      readFileSync(path.join(REPO_ROOT, '.claude-plugin', 'marketplace.json'), 'utf-8'),
+    );
+    if (!isRecord(marketplace) || !Array.isArray(marketplace.plugins)) {
+      throw new TypeError('.claude-plugin/marketplace.json must list plugins');
+    }
+    expect(marketplace.plugins.map((plugin: unknown) => isRecord(plugin) && plugin.source)).toEqual(
+      ['./packages/agent-plugins'],
+    );
   });
 });
+
+const CANONICAL = path.join('packages', 'core', 'agent-directives', 'skills');
 
 const target = (root: string, name: string): string =>
   path.join(root, 'packages', 'pi', 'skills', name, 'SKILL.md');
@@ -68,9 +87,9 @@ describe('bundled skill copies', () => {
   const fixture = (): string => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'maestria-bundled-skills-'));
     temporary.push(root);
-    fs.mkdirSync(path.join(root, 'skills', 'demo'), { recursive: true });
+    fs.mkdirSync(path.join(root, CANONICAL, 'demo'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'skills', 'demo', 'SKILL.md'),
+      path.join(root, CANONICAL, 'demo', 'SKILL.md'),
       '---\nname: demo\ndescription: Demo skill\n---\n\n# Demo\n\nBody.\n',
     );
     return root;
@@ -84,7 +103,7 @@ describe('bundled skill copies', () => {
       const copy = readFileSync(path.join(root, 'packages', pkg, 'skills/demo/SKILL.md'), 'utf-8');
       expect(copy).toBe(
         '---\nname: demo\ndescription: Demo skill\n---\n\n' +
-          '<!-- Bundled from skills/demo/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->\n\n' +
+          '<!-- Bundled from packages/core/agent-directives/skills/demo/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->\n\n' +
           '# Demo\n\nBody.\n',
       );
     }
@@ -99,7 +118,7 @@ describe('bundled skill copies', () => {
       { action: 'write', relative: 'packages/pi/skills/demo/SKILL.md' },
     ]);
 
-    fs.rmSync(path.join(root, 'skills', 'demo'), { recursive: true });
+    fs.rmSync(path.join(root, CANONICAL, 'demo'), { recursive: true });
     syncBundledSkills(root);
     expect(fs.existsSync(path.dirname(target(root, 'demo')))).toBe(false);
   });

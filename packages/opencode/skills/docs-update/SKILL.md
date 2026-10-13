@@ -3,7 +3,7 @@ description: Assess documentation impact and update affected docs for a code, AP
 name: docs-update
 ---
 
-<!-- Bundled from skills/docs-update/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->
+<!-- Bundled from packages/core/agent-directives/skills/docs-update/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->
 
 # Update Documentation
 

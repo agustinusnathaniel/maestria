@@ -3,7 +3,7 @@ description: Draft or revise a pull request title and body. Use when preparing a
 name: create-pull-request
 ---
 
-<!-- Bundled from skills/create-pull-request/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->
+<!-- Bundled from packages/core/agent-directives/skills/create-pull-request/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->
 
 # Create Pull Request
 

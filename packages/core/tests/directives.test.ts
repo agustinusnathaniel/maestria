@@ -154,10 +154,7 @@ describe('canonical directive behavioral contracts', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
     const planner = readDirective('specialists', 'planner.md');
-    const prSkill = readFileSync(
-      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
-      'utf-8',
-    );
+    const prSkill = readDirective('skills', 'create-pull-request', 'SKILL.md');
 
     expect(rules).toMatch(/commit coherent, verified slices at useful review or rollback points/iu);
     expect(rules).toMatch(/verify the final diff before delivery/iu);
@@ -230,10 +227,7 @@ describe('canonical directive behavioral contracts', () => {
   it('keeps rendered evidence distinct from builds and attachment support', () => {
     const rules = readDirective('rules.md');
     const builder = readDirective('specialists', 'builder.md');
-    const rootSkill = readFileSync(
-      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
-      'utf-8',
-    );
+    const prSkill = readDirective('skills', 'create-pull-request', 'SKILL.md');
 
     expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
     expect(rules).toMatch(/do not waive an explicit user or project evidence requirement/iu);
@@ -243,11 +237,11 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/`create-pull-request` methodology skill holds the capture/iu);
     expect(rules).toMatch(/missing skill never waives required evidence/iu);
     // The capture/publication detail lives once in the root skill.
-    expect(rootSkill).toMatch(/headless capture/iu);
-    expect(rootSkill).toMatch(/terminal transcript/iu);
-    expect(rootSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
-    expect(rootSkill).toMatch(/unnecessary with a concrete reason/iu);
-    expect(rootSkill).toMatch(/explicit user or project.*requirement/iu);
+    expect(prSkill).toMatch(/headless capture/iu);
+    expect(prSkill).toMatch(/terminal transcript/iu);
+    expect(prSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
+    expect(prSkill).toMatch(/unnecessary with a concrete reason/iu);
+    expect(prSkill).toMatch(/explicit user or project.*requirement/iu);
     expect(builder).toMatch(/evidence artifacts and unresolved verification gaps/iu);
     expect(builder).not.toMatch(/tests or type checks to confirm correctness/iu);
   });

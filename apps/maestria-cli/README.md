@@ -25,7 +25,7 @@ npx maestria status
 
 ### Methodology skills
 
-Every maestria package bundles the `create-pull-request` and `docs-update` methodology skills (canonical source: `skills/<skill>/SKILL.md` at the repository root), so the CLI no longer installs them. Earlier versions installed them through the official `skills` CLI and recorded ownership per platform in `$XDG_CONFIG_HOME/maestria/skills.json` (version 2). `update` and `uninstall` now remove the copies that record lists, through the pinned `skills@1.7.0` CLI, and then drop the record entry; a copy whose path another agent still uses is kept and reported, and copies the record does not list are never removed. The removed `--skills`, `--exclude-skills`, and `--maestria-skills` flags fail before any change.
+Every maestria package bundles the `create-pull-request` and `docs-update` methodology skills (canonical source: `packages/core/agent-directives/skills/<skill>/SKILL.md`), so the CLI no longer installs them. Earlier versions installed them through the official `skills` CLI and recorded ownership per platform in `$XDG_CONFIG_HOME/maestria/skills.json` (version 2). `update` and `uninstall` now remove the copies that record lists, through the pinned `skills@1.7.0` CLI, and then drop the record entry; a copy whose path another agent still uses is kept and reported, and copies the record does not list are never removed. The removed `--skills`, `--exclude-skills`, and `--maestria-skills` flags fail before any change.
 
 ### Setup
 

@@ -11,10 +11,7 @@
       "name": "maestria",
       "displayName": "maestria",
       "description": "Portable AI engineering workflows for Claude Code.",
-      "source": {
-        "source": "npm",
-        "package": "@maestria/agent-plugins"
-      }
+      "source": "./packages/agent-plugins"
     }
   ]
 }

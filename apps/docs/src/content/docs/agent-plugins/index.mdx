@@ -48,7 +48,7 @@ Every host also gets the four skills. Codex marketplace installation supplies on
 | `create-pull-request` | Draft or revise a pull request title and body                        |
 | `docs-update`         | Keep documentation and changesets in step with a change              |
 
-These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and the other two are copied from the repository-root `skills/`. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
+These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and `create-pull-request` and `docs-update` are copied from maestria's core methodology. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
 
 ## Runtime boundaries
 
