@@ -230,7 +230,7 @@ export const main = defineCommand({
     name: 'maestria',
   },
   run: async (context) => {
-    // A matched subcommand already recorded its exit code.
+    // A matched subcommand already recorded its exit code; skip the status fall-through.
     if (process.exitCode !== undefined) {
       return;
     }
