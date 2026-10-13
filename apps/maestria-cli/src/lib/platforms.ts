@@ -411,86 +411,17 @@ const codex: PlatformDefinition = {
     }),
 };
 
-// ── DeepSeek Harness ─────────────────────────────────
-
-const dshHomePath = (): string => {
-  const fromEnv = process.env.DSH_HOME?.trim();
-  return fromEnv !== undefined && fromEnv !== '' ? fromEnv : `${homedir()}/.dsh`;
-};
-const deepseekPresetDir = (): string => `${dshHomePath()}/.agent-presets/maestria`;
-const DEEPSEEK_STAGING_DIR = join(getMaestriaCacheDir(), 'deepseek-package');
-
-/**
- * Stage the Maestria agent preset into the harness's user preset root.
- *
- * The npm tarball is extracted into a cache staging dir, then the preset
- * composition (`preset/maestria`) and the bundled plugin (`dist`) are copied
- * into `<dshHome>/.agent-presets/maestria`. The preset references the plugin
- * by the relative `./plugin/index.js`, so the staged preset is
- * self-contained and needs no npm resolvability at harness runtime.
- */
-const stageDeepseekPreset = (tag: string): Effect.Effect<void, CommandError> =>
-  Effect.gen(function* stageDeepseekPresetEffect() {
-    yield* installNpmTarball('@maestria/deepseek', DEEPSEEK_STAGING_DIR, { tag });
-    yield* Effect.tryPromise({
-      catch: (error) =>
-        new CommandError({
-          command: `stage preset into ${deepseekPresetDir()}`,
-          message: String(error),
-        }),
-      try: async () => {
-        const { cp, mkdir, rm } = await import('node:fs/promises');
-        const presetDir = deepseekPresetDir();
-        await rm(presetDir, { force: true, recursive: true });
-        await mkdir(presetDir, { recursive: true });
-        await cp(join(DEEPSEEK_STAGING_DIR, 'preset', 'maestria'), presetDir, { recursive: true });
-        await cp(join(DEEPSEEK_STAGING_DIR, 'dist'), join(presetDir, 'plugin'), {
-          recursive: true,
-        });
-      },
-    });
-  }).pipe(Effect.asVoid);
-
-const deepseek: PlatformDefinition = {
-  detect: Effect.gen(function* detect() {
-    if (yield* commandExists('dsh')) {
-      return true;
-    }
-    return yield* fileExists(`${deepseekPresetDir()}/agent.cordis.yml`);
-  }),
-  getInstalledVersion: Effect.suspend(() =>
-    readPackageJsonVersion(`${deepseekPresetDir()}/plugin/package.json`).pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
-    ),
-  ),
-  id: 'deepseek',
-  install: stageDeepseekPreset('latest'),
-  isInstalled: fileExists(`${deepseekPresetDir()}/agent.cordis.yml`),
-  label: 'DeepSeek Harness',
-  npmPackage: '@maestria/deepseek',
-  uninstall: Effect.tryPromise({
-    catch: (error) =>
-      new CommandError({
-        command: `rm -r ${deepseekPresetDir()}`,
-        message: String(error),
-      }),
-    try: async () => {
-      const { rm } = await import('node:fs/promises');
-      await rm(deepseekPresetDir(), { force: true, recursive: true });
-    },
-  }).pipe(Effect.asVoid),
-  update: (version?: string) => stageDeepseekPreset(version ?? 'latest'),
-};
-
-/** Pi and omp share one handler shape; only spelling, prefix, path, and labels differ. */
+/** Hosts with their own package installer share one handler shape; only spelling, prefix, path, and labels differ. */
 interface PiStylePlatformDefinition {
-  readonly id: 'pi' | 'omp';
+  readonly id: 'pi' | 'omp' | 'deepseek';
   readonly label: string;
   readonly binary: string;
   readonly npmPackage: string;
   /** Host installer requires `npm:` for Pi, empty for omp. */
   readonly referencePrefix: string;
   readonly commandPrefix: readonly string[];
+  /** Install verb; `dsh plugin` forwards to pnpm and documents `add`. */
+  readonly installVerb?: string;
   readonly installedPackageJsonPath: string;
   readonly prerequisite?: Effect.Effect<void>;
 }
@@ -498,7 +429,8 @@ interface PiStylePlatformDefinition {
 const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinition => {
   const packageReference = `${definition.referencePrefix}${definition.npmPackage}`;
   const taggedReference = (version: string): string => `${packageReference}@${version}`;
-  const pluginArgs = (action: 'install' | 'uninstall', reference: string): string[] => [
+  const installVerb = definition.installVerb ?? 'install';
+  const pluginArgs = (action: string, reference: string): string[] => [
     ...definition.commandPrefix,
     action,
     reference,
@@ -514,7 +446,7 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
       if (definition.prerequisite !== undefined) {
         yield* definition.prerequisite;
       }
-      yield* run(definition.binary, pluginArgs('install', packageReference), 120_000);
+      yield* run(definition.binary, pluginArgs(installVerb, packageReference), 120_000);
     }).pipe(Effect.asVoid),
     isInstalled: fileExists(definition.installedPackageJsonPath),
     label: definition.label,
@@ -531,7 +463,7 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
           version !== null && version !== undefined && version !== ''
             ? taggedReference(version)
             : taggedReference('latest');
-        yield* run(definition.binary, pluginArgs('install', tagged), 120_000);
+        yield* run(definition.binary, pluginArgs(installVerb, tagged), 120_000);
       }),
   };
 };
@@ -789,6 +721,22 @@ const cursor: PlatformDefinition = {
       restore: restoreCursorAgentModels,
     }),
 };
+
+// DeepSeek Harness treats a blank `DSH_HOME` as unset.
+const dshHomeEnv = process.env.DSH_HOME?.trim() ?? '';
+const dshHome = dshHomeEnv === '' ? `${homedir()}/.dsh` : dshHomeEnv;
+
+// The bundle declares a preset, and only the shipped `web` profile mounts the preset registry.
+const deepseek: PlatformDefinition = piStylePlatform({
+  binary: 'dsh',
+  commandPrefix: ['plugin', '--profile', 'web'],
+  id: 'deepseek',
+  installVerb: 'add',
+  installedPackageJsonPath: `${dshHome}/profiles/web/node_modules/@maestria/deepseek/package.json`,
+  label: 'DeepSeek Harness',
+  npmPackage: '@maestria/deepseek',
+  referencePrefix: '',
+});
 
 // OMP loads the consolidated plugin natively; no hooks or model files ship.
 // Migrating from `@maestria/omp` requires manual uninstall first.
