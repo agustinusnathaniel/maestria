@@ -96,20 +96,20 @@ const parseAgentPermissions = (text: string): PermissionFile => {
     // Alias expansion can throw after a document parses without errors.
     return perm;
   }
-  if (!isRecord(parsed) || !isRecord(parsed.permission)) {
+  if (!isRecord(parsed) || !Array.isArray(parsed.permissions)) {
     return perm;
   }
-  for (const [key, value] of Object.entries(parsed.permission)) {
-    if (key === 'bash' || key === 'task') {
-      if (isRecord(value)) {
-        for (const [pattern, level] of Object.entries(value)) {
-          if (typeof level === 'string') {
-            perm[key][pattern] = level;
-          }
-        }
-      }
-    } else if (typeof value === 'string') {
-      perm.other[key] = value;
+  // Ordered last-match-wins rules fold back into per-action maps; later rules overwrite earlier ones.
+  for (const rule of parsed.permissions) {
+    if (!isRecord(rule) || typeof rule.resource !== 'string' || typeof rule.effect !== 'string') {
+      continue;
+    }
+    if (rule.action === 'shell') {
+      perm.bash[rule.resource] = rule.effect;
+    } else if (rule.action === 'subagent') {
+      perm.task[rule.resource] = rule.effect;
+    } else if (typeof rule.action === 'string' && rule.resource === '*') {
+      perm.other[rule.action] = rule.effect;
     }
   }
   return perm;

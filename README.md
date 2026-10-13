@@ -23,7 +23,7 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 
 | Package | Description | README |
 | --- | --- | --- |
-| [@maestria/opencode](packages/opencode/) | maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
+| [@maestria/opencode](packages/opencode/) | maestria methodology plugin for OpenCode V2 (0.8.0 and earlier: OpenCode V1) | [README](packages/opencode/README.md) |
 | [@maestria/agent-plugins](packages/agent-plugins/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and Agent Plugins clients | [README](packages/agent-plugins/README.md) |
 | [@maestria/deepseek](packages/deepseek/) | maestria methodology for DeepSeek Harness (skills + Cordis plugin + agent preset) | [README](packages/deepseek/README.md) |
 | [@maestria/pi](packages/pi/) | maestria methodology plugin for Pi | [README](packages/pi/README.md) |

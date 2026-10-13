@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-14)
+Accepted (2026-06-14). Amended 2026-10-14: from `@maestria/opencode` 0.9.0 the OpenCode adapter detects modes during V2 prompt admission instead of the V1 `chat.message` hook; see the V2 adapter amendment.
 
 ## Context
 
@@ -12,7 +12,7 @@ Before this ADR, intent could only be expressed through ambiguous natural-langua
 
 ## Decision
 
-### Detect Three Keywords via `chat.message` Hook
+### Detect Three Keywords in a Prompt Hook
 
 | Mode | Keyword | Origin | Meaning | Pipeline Behavior |
 | --- | --- | --- | --- | --- |
@@ -39,12 +39,12 @@ Detection lives in the hook; behavior lives in prompts plus orchestrator and glo
 
 | Layer               | What it does                                         |
 | ------------------- | ---------------------------------------------------- |
-| `chat.message` hook | Regex detection, keyword stripping, marker injection |
+| Prompt hook         | Regex detection, keyword stripping, marker injection |
 | Mode prompt strings | Static prompt snippets for fein/sonar/blitz          |
 | Orchestrator rules  | Mode behavior definitions, pipeline overrides        |
 | Global rules        | Awareness bullet: "mode keywords change pipeline"    |
 
-The `chat.message` hook tests each message, resolves multiples to the most restrictive mode, strips the keyword, and prepends the `[MODE: fein]` (or `sonar`/`blitz`) marker plus that mode's summary prompt. The marker is **re-injected every turn**, so the orchestrator receives the mode instruction fresh each time and mode changes mid-task carry no stale state. Other adapters may persist mode state and must document a clear/reset path.
+The prompt hook (V1 `chat.message`, V2 `session.hook('prompt')`) tests each message, resolves multiples to the most restrictive mode, strips the keyword, and prepends the `[MODE: fein]` (or `sonar`/`blitz`) marker plus that mode's summary prompt. The marker is **re-injected every turn**, so the orchestrator receives the mode instruction fresh each time and mode changes mid-task carry no stale state. Other adapters may persist mode state and must document a clear/reset path.
 
 Mode is per-turn, not per-phase; conversation history tracks progress between turns. Adapters using session state must document its lifetime and expose a neutral reset such as `/mode-clear`. Each mode prompt fully describes its pipeline behavior without referencing the orchestrator's global CRITICAL RULES, so behavior changes require editing only the prompt strings at the cost of duplicating those rules.
 
@@ -59,7 +59,7 @@ Mode is per-turn, not per-phase; conversation history tracks progress between tu
 | Default mode      | None - no fallback mode               |
 | Per-agent config  | None - mode applies globally per turn |
 
-The plugin options type and the `modes.disabledKeywords` field are defined by `packages/opencode/src/modes/types.ts`, which derives the keyword enum from the canonical mode keywords and types the denylist through the plugin options schema.
+The `modes.disabledKeywords` field is decoded by the plugin options schema in `packages/opencode/src/index.ts`, whose keyword literals come from the canonical mode keywords.
 
 Denylist over allowlist (a new mode works out of the box), no default mode (the standard pipeline is the implicit fallback), no per-agent overrides (mode governs the orchestrator's pipeline, not agent behavior).
 
@@ -80,6 +80,12 @@ The keywords are functional descriptors, not mythological or thematic: **fein** 
 | Default / fallback mode     | Standard pipeline is the implicit default; keywords override.     |
 | Allowlist configuration     | New modes should not break setups; denylist is forward-safe.      |
 | Per-agent mode overrides    | Mode governs the orchestrator pipeline, not agents.               |
+
+## V2 adapter amendment (2026-10-09, updated 2026-10-14)
+
+From `@maestria/opencode` 0.9.0 this is the only OpenCode adapter; the V1 `chat.message` path ships only in 0.8.0 and earlier. OpenCode V2 uses the Effect `session.hook("prompt")` admission hook instead of V1's `chat.message`. Bare keywords expand into the marker, synced mode prompt, and stripped user text before durable admission. Explicit slash commands submit the same template and bypass repeat expansion. Attachment identities remain intact, while mention ranges invalidated by prefixing instructions are removed.
+
+The admitted message carries the mode across continuations, queued delivery, and plugin reloads. No per-session cache or FIFO eviction is needed; each new user prompt selects its own mode. The separate `context` and `compaction` hooks append bundled global rules and the project's `.maestria/` files because V2 reference registration does not load file content as instructions. Title and generate requests retain the host's own guidance.
 
 ## Consequences
 

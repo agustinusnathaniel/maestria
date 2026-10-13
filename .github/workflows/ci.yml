@@ -42,10 +42,8 @@ jobs:
       - name: Verify opencode plugin loads in Bun
         run: |
           bun -e "
-            const mod = await import('./packages/opencode/dist/index.js');
-            const plugin = await mod.MaestriaPlugin({}, {});
-            const hooks = Object.keys(plugin).sort().join(',');
-            if (hooks !== 'chat.message,config,experimental.chat.system.transform,experimental.session.compacting')
-              throw new Error('Unexpected hooks: ' + hooks);
-            console.log('OK opencode plugin loaded in Bun: ' + hooks);
+            const { default: plugin } = await import('./packages/opencode/dist/index.js');
+            if (plugin.id !== 'maestria' || typeof plugin.effect !== 'function')
+              throw new Error('Unexpected plugin definition: ' + JSON.stringify(Object.keys(plugin)));
+            console.log('OK opencode plugin loaded in Bun: ' + plugin.id);
           "

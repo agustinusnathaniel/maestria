@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-13). The 2026-09-24 shared Pi Bash and Git decisions live in [OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Correction (2026-09-28): the historical `pwd` example below is not the live orchestrator policy; [the sync config](../../../packages/opencode/sync.config.ts) owns generated permissions. The orchestrator uses default deny with a narrow allow pattern, not that example's per-tool list.
+Accepted (2026-06-13). The 2026-09-24 shared Pi Bash and Git decisions live in [OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) and [OC-007](ADR-OC-007-normalized-read-only-git-boundary.md). Correction (2026-09-28): the historical `pwd` example below is not the live orchestrator policy; [the sync config](../../../packages/opencode/sync.config.ts) owns generated permissions. The orchestrator uses default deny with a narrow allow pattern, not that example's per-tool list. Amendment (2026-10-14): from `@maestria/opencode` 0.9.0 the sync config still authors each agent's permissions as a V1-style map, then translates it entry by entry into ordered OpenCode V2 `permissions` rules (`bash` to `shell`, `task` to `subagent`, scalar effects on resource `*`); both hosts are last-match-wins, so the effective policy is unchanged.
 
 ## Context
 
