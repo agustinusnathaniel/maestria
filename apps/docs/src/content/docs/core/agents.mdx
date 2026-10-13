@@ -54,7 +54,7 @@ The consolidated [Agent Plugins package](/agent-plugins/) exports two portable u
 
 ### Bundled methodology skills
 
-The global rules name two maestria-specific skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, and `@maestria/pi`. They update with the package; there is nothing extra to install or select.
+The global rules name two maestria-specific skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, `@maestria/pi`, and `@maestria/deepseek`. They update with the package; there is nothing extra to install or select.
 
 - **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Agents load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
 - **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/docs-update/SKILL.md)** - Documentation and changeset procedure. Agents load it before finishing a change to behavior, interfaces, configuration, or user-facing workflows, and follow it to classify and update affected docs; ordinary docs work proceeds without it.

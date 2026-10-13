@@ -1,52 +1,43 @@
 ---
 title: Quick Start
-description: Route work through the Maestria pipeline in DeepSeek Harness.
+description: Route work through maestria's specialists in DeepSeek Harness.
 ---
 
-After `npx maestria install deepseek` and joining a session on the `Maestria` preset, the session persona is the Maestria orchestrator: normal engineering requests are routed through the direct/focused/full pipeline without any special prefix. The workflow is methodology guidance, not a replacement for DeepSeek Harness's sandbox, approvals, or permission presets.
+import { Aside, Steps } from '@astrojs/starlight/components';
 
-## Delegate to a specialist
+With `@maestria/deepseek` installed, start the web app in your project directory:
 
-When the orchestrator routing calls for a single stage, it delegates through the matching `maestria_<role>` tool. You can also ask directly:
+```bash
+dsh web
+```
+
+<Aside type="caution" title="Choose the route that fits the task">
+  Delegation adds model work and waiting time. Use [When to Use maestria](/core/when-to-use/) before
+  sending a small task or an expensive, slow model through the full pipeline.
+</Aside>
+
+## Run a Task
+
+<Steps>
+
+1. Start a new session on the **maestria** preset and describe the task. The orchestrator picks the smallest safe route; no prefix is needed.
+
+2. Watch the delegation. Each specialist runs as a child through its tool, such as `maestria_adventurer` for reconnaissance or `maestria_reviewer` for independent review, and its result returns to the orchestrator.
+
+3. To choose the route yourself, name a mode: ask for `fein` for the full pipeline, `sonar` for research that stops before implementation, or `blitz` for the fast path on familiar work.
+
+</Steps>
+
+You can also ask for a specialist directly:
 
 ```text
 Use maestria_adventurer to trace the authentication flow and report the relevant files.
 ```
 
-Available delegation tools:
+Adventurer, planner, and reviewer children get no shell or file-editing tools, and architect and diagnose children cannot edit or write files. DeepSeek Harness enforces those filters; everything else follows its sandbox, approvals, and permission presets.
 
-| Tool                  | Use it for                                      |
-| --------------------- | ----------------------------------------------- |
-| `maestria_adventurer` | Reconnaissance and codebase mapping             |
-| `maestria_architect`  | Architecture trade-offs and ADR decisions       |
-| `maestria_builder`    | Focused implementation and verification         |
-| `maestria_diagnose`   | Root-cause analysis and regression tracing      |
-| `maestria_planner`    | Phased plans, dependencies, and rollback points |
-| `maestria_reviewer`   | Independent review after implementation         |
-| `maestria_writer`     | Documentation and structured prose              |
+## Next Steps
 
-Each child runs one-shot with the canonical specialist persona from the generated skills, and the generic `subagent` tools remain available for unstructured delegation.
-
-## Work directly with skills
-
-The generated skill tree is available through the `skill` tool. Load `orchestrator` for the full routing table, `global-rules` for the universal contract (already part of the system prompt when the preset's plugin has `injectGlobalRules: true`), `handoff` between stages, and `iteration-limits` to bound repair loops.
-
-## Choose a workflow mode
-
-The workflow modes are skills rather than slash commands:
-
-| Skill   | Route                                                             |
-| ------- | ----------------------------------------------------------------- |
-| `fein`  | Full pipeline: reconnaissance, design, implementation, and review |
-| `sonar` | Research-only route that stops before implementation              |
-| `blitz` | Fast capability-aware route for small or well-understood work     |
-
-For example:
-
-```text
-Load the sonar mode, then use maestria_diagnose to find why checkout fails on empty carts.
-```
-
-## Keep review independent
-
-For multi-stage work, the pipeline keeps the maker/checker boundary explicit: implementation and review run in separate delegations, and the reviewer reports findings instead of fixing them. Read-only role boundaries are advisory at the persona level; add a `toolFilter` to the read-only rows in the staged `agent.cordis.yml` when your deployment should enforce them.
+- [Specialist Reference](/core/agents/) for roles and boundaries
+- [Installation](/deepseek/getting-started/installation/)
+- [When to Use maestria](/core/when-to-use/)
