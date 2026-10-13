@@ -19,9 +19,9 @@ const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
 };
 // Hosts whose canonical integration note is composed into a shipped rule, context, or profile.
 const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
-const RETIRED_GUIDE_HOSTS = [...HOSTS, 'claude-code', 'zcode'];
-const NOTICE =
+export const GENERATED_NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
+const TOML_NOTICE = '# Generated from canonical core directives.';
 const ROOT_MANIFESTS = [
   'plugin.json',
   '.claude-plugin/plugin.json',
@@ -31,20 +31,6 @@ const ROOT_MANIFESTS = [
   '.zcode-plugin/plugin.json',
   'kimi.plugin.json',
 ] as const;
-const RETIRED_HOST_COPIES = ['claude-code', 'cursor', 'kimi-code'];
-const RETIRED_OUTPUTS = [
-  ...[...ROLES, ...MODES, 'orchestrator', 'global-rules'].map((name) => `skills/${name}/SKILL.md`),
-  ...MODES.map((mode) => `commands/modes/${mode}.md`),
-  'agents/orchestrator.md',
-  ...RETIRED_HOST_COPIES.flatMap((host) => ROLES.map((role) => `agents/${host}/${role}.md`)),
-  ...ROLES.map((role) => `agents/codex/maestria-${role}.toml`),
-  ...['cursor', 'kimi-code'].flatMap((host) => MODES.map((mode) => `commands/${host}/${mode}.md`)),
-  ...MODES.map((mode) => `compatibility/devin/skills/${mode}/SKILL.md`),
-  'rules/global/global-rules.md',
-  'skills/handoff.md',
-  'skills/iteration-limits.md',
-  ...RETIRED_GUIDE_HOSTS.map((host) => `integrations/${host}/README.md`),
-];
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -78,7 +64,7 @@ const readInput = (root: string, relative: string): string => {
 };
 
 const document = (body: string, metadata: Record<string, unknown> | null = null): string =>
-  `${serializeFrontmatter(metadata)}\n${NOTICE}\n\n${body.trim()}\n`;
+  `${serializeFrontmatter(metadata)}\n${GENERATED_NOTICE}\n\n${body.trim()}\n`;
 const compose = (...parts: string[]): string => parts.map((part) => part.trim()).join('\n\n');
 
 interface Inputs {
@@ -251,7 +237,7 @@ const codexProfile = (profile: Profile, instructions: string): string => {
       ? []
       : [`sandbox_mode = ${JSON.stringify(profile.codex.sandboxMode)}`]),
   ];
-  return `${header.join('\n')}\n\n# Generated from canonical core directives.\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`;
+  return `${header.join('\n')}\n\n${TOML_NOTICE}\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`;
 };
 
 const addProfiles = (plan: Map<string, string>, packageRoot: string, input: Inputs): void => {
@@ -394,12 +380,41 @@ const outputPlan = (repoRoot: string): Map<string, string> => {
 
 const validateOutputPaths = (repoRoot: string, plan: Map<string, string>): void => {
   const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
-  for (const relative of [...plan.keys(), ...RETIRED_OUTPUTS]) {
+  for (const relative of plan.keys()) {
     const absolute = assertContainedFile(packageRoot, relative);
     if (fs.existsSync(absolute) && !fs.statSync(absolute).isFile()) {
       throw new Error(`Plugin resource is not a file: ${relative}`);
     }
   }
+};
+
+/** A file is ours only when it carries the generator's notice line; others are never touched. */
+const isGenerated = (absolute: string): boolean => {
+  const notice = absolute.endsWith('.toml') ? TOML_NOTICE : GENERATED_NOTICE;
+  return fs.readFileSync(absolute, 'utf-8').split('\n').includes(notice);
+};
+
+/** Generated files the current plan no longer produces, found by notice instead of a path list. */
+const staleOutputs = (packageRoot: string, plan: Map<string, string>): string[] => {
+  const stale: string[] = [];
+  const visit = (directory: string): void => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const absolute = path.join(directory, entry.name);
+      const relative = path.relative(packageRoot, absolute).split(path.sep).join('/');
+      if (entry.isDirectory() && entry.name !== 'node_modules') {
+        visit(absolute);
+      } else if (
+        entry.isFile() &&
+        /\.(?:md|mdc|toml)$/u.test(entry.name) &&
+        !plan.has(relative) &&
+        isGenerated(absolute)
+      ) {
+        stale.push(relative);
+      }
+    }
+  };
+  visit(packageRoot);
+  return stale;
 };
 
 export const preflightPluginPaths = (repoRoot: string): void => {
@@ -422,9 +437,7 @@ export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[
   const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
   const plan = outputPlan(repoRoot);
   validateOutputPaths(repoRoot, plan);
-  const stale = RETIRED_OUTPUTS.filter((relative) =>
-    fs.existsSync(path.join(packageRoot, relative)),
-  );
+  const stale = staleOutputs(packageRoot, plan);
   const changed = [...plan]
     .filter(
       ([relative, content]) =>

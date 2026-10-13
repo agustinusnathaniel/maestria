@@ -3,9 +3,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 
-import { main, syncConsolidatedPlugin } from '../../../scripts/sync-consolidated-plugin.js';
+import {
+  GENERATED_NOTICE,
+  main,
+  syncConsolidatedPlugin,
+} from '../../../scripts/sync-consolidated-plugin.js';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
+// A file the generator wrote carries its notice; that marker, not a path list, makes it owned.
+const generated = (body: string): string => `---\n---\n\n${GENERATED_NOTICE}\n\n${body}\n`;
 const temporaryRoots: string[] = [];
 
 const fixture = (): string => {
@@ -44,7 +50,7 @@ describe('consolidated plugin assembly', () => {
     const nativeBefore = fs.readFileSync(native, 'utf-8');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
-    fs.writeFileSync(stale, 'stale\n');
+    fs.writeFileSync(stale, generated('stale'));
 
     expect(syncConsolidatedPlugin(root, true)).toContain('rules/global.md');
     expect(syncConsolidatedPlugin(root, true)).toContain('skills/handoff.md');
@@ -66,13 +72,13 @@ describe('consolidated plugin assembly', () => {
     const stale = path.join(packageRoot, 'skills/handoff.md');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
-    fs.writeFileSync(stale, 'stale\n');
+    fs.writeFileSync(stale, generated('stale'));
     fs.rmSync(path.join(packageRoot, 'generation/profiles.json'));
 
     expect(main(['--preflight'], root)).toBe(2);
     expect(() => syncConsolidatedPlugin(root)).toThrow(/profiles\.json/u);
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
-    expect(fs.readFileSync(stale, 'utf-8')).toBe('stale\n');
+    expect(fs.readFileSync(stale, 'utf-8')).toBe(generated('stale'));
   });
 
   it('preserves unowned files while cleaning obsolete generated resources', () => {
@@ -83,6 +89,7 @@ describe('consolidated plugin assembly', () => {
       'generation/operator-note.md',
       'agents/operator-note.md',
       'integrations/claude-code/operator-note.md',
+      'rules/operator-note.md',
     ];
     for (const note of notes) {
       const target = path.join(packageRoot, note);
@@ -92,14 +99,21 @@ describe('consolidated plugin assembly', () => {
     const obsoletes = [
       'commands/modes/fein.md',
       'agents/cursor/reviewer.md',
-      'agents/codex/maestria-reviewer.toml',
       'commands/kimi-code/fein.md',
       'compatibility/devin/skills/fein/SKILL.md',
+      'rules/retired-host/context.md',
     ];
     for (const obsolete of obsoletes) {
       fs.mkdirSync(path.dirname(path.join(packageRoot, obsolete)), { recursive: true });
-      fs.writeFileSync(path.join(packageRoot, obsolete), 'obsolete generated resource\n');
+      fs.writeFileSync(path.join(packageRoot, obsolete), generated('obsolete generated resource'));
     }
+    const obsoleteProfile = 'agents/codex/maestria-reviewer.toml';
+    fs.mkdirSync(path.dirname(path.join(packageRoot, obsoleteProfile)), { recursive: true });
+    fs.writeFileSync(
+      path.join(packageRoot, obsoleteProfile),
+      'name = "maestria-reviewer"\n\n# Generated from canonical core directives.\n',
+    );
+    obsoletes.push(obsoleteProfile);
 
     expect(syncConsolidatedPlugin(root, true)).toEqual(expect.arrayContaining(obsoletes));
     syncConsolidatedPlugin(root);
