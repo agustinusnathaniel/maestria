@@ -114,6 +114,10 @@ const readVercelRedirects = async (): Promise<VercelRedirect[]> => {
   return parsed.redirects;
 };
 
+/** The Vercel rule covering `from`; one `{/}?` rule serves a route with and without its slash. */
+const vercelRuleFor = (vercel: VercelRedirect[], from: string): VercelRedirect | undefined =>
+  vercel.find(({ source }) => source === from || source === `${from.replace(/\/$/u, '')}{/}?`);
+
 /** Parse `_redirects` into a `from -> to` map (status must be 301). */
 const readRedirects = async (): Promise<Map<string, string>> => {
   const text = await readFile(path.resolve(APP_ROOT, 'public', '_redirects'), 'utf-8');
@@ -315,10 +319,18 @@ describe('platform guide routes', () => {
     }
   });
 
-  it('redirects every removed route and its markdown twin in all three redirect files', async () => {
+  it('redirects every removed route and its markdown twin on every host', async () => {
     const redirects = await readRedirects();
     const netlify = await readFile(path.resolve(APP_ROOT, 'netlify.toml'), 'utf-8');
     const vercel = await readVercelRedirects();
+    // Netlify, like Cloudflare Pages, reads public/_redirects from the published dist/ folder.
+    expect(netlify).not.toContain('[[redirects]]');
+    expect(netlify).toContain('publish = "dist"');
+    // Vercel cannot read _redirects; a `{/}?` rule covers both slash forms of one route.
+    const sources = new Set(vercel.map(({ source }) => source));
+    expect(
+      [...sources].filter((source) => source.endsWith('/') && sources.has(source.slice(0, -1))),
+    ).toEqual([]);
 
     const cases: [string, string][] = [];
     for (const [route, target] of REMOVED_ROUTES) {
@@ -327,25 +339,19 @@ describe('platform guide routes', () => {
     // Host index twins end in `.md` directly, without a trailing slash rule.
     for (const [from, to] of cases) {
       expect(redirects.get(from), `_redirects ${from}`).toBe(to);
-      expect(netlify, `netlify ${from}`).toContain(`from = "${from}"\nto = "${to}"\nstatus = 301`);
-      const entry = vercel.find(({ source }) => source === from);
-      expect(entry, `vercel ${from}`).toEqual({
-        destination: to,
-        permanent: true,
-        source: from,
-      });
+      expect(vercelRuleFor(vercel, from), `vercel ${from}`).toEqual(
+        expect.objectContaining({ destination: to, permanent: true }),
+      );
     }
   });
 
   it('sends every other path under a removed host tree to its Installation section', async () => {
     const redirects = await readRedirects();
-    const netlify = await readFile(path.resolve(APP_ROOT, 'netlify.toml'), 'utf-8');
     const vercel = await readVercelRedirects();
 
     for (const host of REMOVED_HOSTS) {
       const target = `/agent-plugins/installation/#${host}`;
       expect(redirects.get(`/agent-plugins/${host}/*`)).toBe(target);
-      expect(netlify).toContain(`from = "/agent-plugins/${host}/*"\nto = "${target}"`);
       expect(vercel).toContainEqual(
         expect.objectContaining({ destination: target, source: `/agent-plugins/${host}/:path*` }),
       );
@@ -353,10 +359,9 @@ describe('platform guide routes', () => {
     for (const host of ['claude-code', 'codex', 'cursor', 'kimi-code', 'hermes', 'omp']) {
       const target = `/agent-plugins/installation/#${host}`;
       expect(redirects.get(`/${host}/*`)).toBe(target);
-      expect(netlify).toContain(`from = "/${host}/*"\nto = "${target}"`);
     }
     expect(redirects.get('/pi-omp/*')).toBe('/pi/:splat');
-    expect(netlify).not.toContain('from = "/pi"');
+    expect(redirects.has('/pi')).toBe(false);
   });
 
   it('never redirects to a removed route and always lands on an existing page and heading', async () => {
