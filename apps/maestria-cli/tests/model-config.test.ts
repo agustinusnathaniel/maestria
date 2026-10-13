@@ -1,5 +1,6 @@
 import { Effect } from 'effect';
 import { describe, expect, it, vi } from 'vite-plus/test';
+import { parse } from 'jsonc-parser/lib/esm/main.js';
 
 import type * as shell from '@/lib/shell.js';
 import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
@@ -261,6 +262,14 @@ describe('jsonc config edits', () => {
     const next = setConfigModelJsonc(config, 'reviewer', '');
     expect(next).toBe(config);
     expect(parseConfigModels(next).reviewer).toBeUndefined();
+  });
+
+  it('moves a V1 agent model to the V2 agents map', () => {
+    const next = setConfigModelJsonc(config, 'adventurer', 'opencode-go/deepseek-v4-flash');
+    expect(parse(next)).toMatchObject({
+      agent: { adventurer: {} },
+      agents: { adventurer: { model: 'opencode-go/deepseek-v4-flash' } },
+    });
   });
 
   it('creates the agent object in an empty file', () => {

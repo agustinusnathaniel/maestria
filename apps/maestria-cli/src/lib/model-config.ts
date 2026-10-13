@@ -19,6 +19,7 @@ import {
   setCodexTopLevelString,
 } from '@/lib/codex-agent-files.js';
 import { cursorCliName } from '@/lib/cursor-cli.js';
+import { openCodeConfigDir } from '@/lib/opencode.js';
 import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 import { CommandError, fileExists, readTextFile, run } from '@/lib/shell.js';
 
@@ -132,32 +133,48 @@ export const parseCodexModels = (out: string): string[] => {
 
 const JSONC_OPTIONS = { formattingOptions: { insertSpaces: true, tabSize: 2 } } as const;
 
-const hasConfigModel = (text: string, agent: string): boolean => {
+// OpenCode V2 configures agents under `agents` and still accepts the V1 `agent` map.
+type AgentMap = 'agent' | 'agents';
+
+const hasConfigModel = (text: string, map: AgentMap, agent: string): boolean => {
   const tree = parseTree(text);
   if (!tree) {
     return false;
   }
-  return findNodeAtLocation(tree, ['agent', agent, 'model']) !== undefined;
+  return findNodeAtLocation(tree, [map, agent, 'model']) !== undefined;
 };
 
+// jsonc-parser >= 3.3 throws on removing a non-existent path.
+const removeConfigModel = (text: string, map: AgentMap, agent: string): string =>
+  hasConfigModel(text, map, agent)
+    ? applyEdits(text, modify(text, [map, agent, 'model'], undefined, JSONC_OPTIONS))
+    : text;
+
+/** Writes the V2 `agents` model and drops a V1 one, which OpenCode would report as conflicting. */
 export const setConfigModelJsonc = (text: string, agent: string, model: string): string => {
-  if (!model && !hasConfigModel(text, agent)) {
-    // jsonc-parser >= 3.3 throws on removing a non-existent path.
-    return text;
+  const next = removeConfigModel(text, 'agent', agent);
+  if (!model) {
+    return removeConfigModel(next, 'agents', agent);
   }
-  const edits = modify(text, ['agent', agent, 'model'], model || undefined, JSONC_OPTIONS);
-  return applyEdits(text, edits);
+  return applyEdits(next, modify(next, ['agents', agent, 'model'], model, JSONC_OPTIONS));
 };
 
 export const parseConfigModels = (text: string): AgentModels => {
   const parsed: unknown = parse(text);
-  if (!isRecord(parsed) || !isRecord(parsed.agent)) {
+  if (!isRecord(parsed)) {
     return {};
   }
   const result: AgentModels = {};
-  for (const [name, value] of Object.entries(parsed.agent)) {
-    if (isAgentName(name) && isRecord(value) && typeof value.model === 'string' && value.model) {
-      result[name] = value.model;
+  // A V2 `agents` value takes precedence over the V1 `agent` map, as in OpenCode.
+  for (const map of ['agent', 'agents'] as const) {
+    const agents = parsed[map];
+    if (!isRecord(agents)) {
+      continue;
+    }
+    for (const [name, value] of Object.entries(agents)) {
+      if (isAgentName(name) && isRecord(value) && typeof value.model === 'string' && value.model) {
+        result[name] = value.model;
+      }
     }
   }
   return result;
@@ -219,9 +236,9 @@ const readAgentModels = (
     }),
   );
 
-const OPENCODE_GLOBAL_CANDIDATES = [
-  `${homedir()}/.config/opencode/opencode.jsonc`,
-  `${homedir()}/.config/opencode/opencode.json`,
+const openCodeGlobalCandidates = (): string[] => [
+  path.join(openCodeConfigDir(), 'opencode.jsonc'),
+  path.join(openCodeConfigDir(), 'opencode.json'),
 ];
 const OPENCODE_PROJECT_CANDIDATES = [
   '.opencode/opencode.jsonc',
@@ -237,10 +254,9 @@ const firstExisting = (candidates: readonly string[], fallback: string): Effect.
   );
 
 const findOpenCodeConfigPath = (level: ModelConfigLevel): Effect.Effect<string> =>
-  firstExisting(
-    level === 'global' ? OPENCODE_GLOBAL_CANDIDATES : OPENCODE_PROJECT_CANDIDATES,
-    level === 'global' ? OPENCODE_GLOBAL_CANDIDATES[0] : OPENCODE_PROJECT_CREATE,
-  );
+  level === 'global'
+    ? firstExisting(openCodeGlobalCandidates(), openCodeGlobalCandidates()[0] ?? '')
+    : firstExisting(OPENCODE_PROJECT_CANDIDATES, OPENCODE_PROJECT_CREATE);
 
 const opencode: ModelConfigHandler = {
   agents: MAESTRIA_AGENTS,

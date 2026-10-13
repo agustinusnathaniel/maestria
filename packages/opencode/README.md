@@ -1,46 +1,68 @@
-# @maestria/opencode
+# @maestria/opencode-v2
 
-An OpenCode plugin that provides maestria's specialist agents, shared engineering rules, and review workflows.
+An [OpenCode V2](https://opencode.ai/v2/docs/) plugin that provides maestria's specialist agents, shared engineering rules, workflow modes, and methodology skills. Verified against OpenCode and `@opencode/plugin` 2.0.28. The V1 package is [`@maestria/opencode`](https://github.com/agustinusnathaniel/maestria/tree/main/packages/opencode).
 
 > This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
 ```bash
-# Global install (recommended)
-opencode plugin @maestria/opencode@latest -g
-
-# Project-level install
-opencode plugin @maestria/opencode@latest
+opencode plugin add @maestria/opencode-v2
 ```
 
-OpenCode does not auto-update plugins; re-run the install command with `--force` to update. To uninstall, remove the `@maestria/opencode` entry from the `plugin` array in `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project). Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms.
+This installs the package and adds it to the global `plugins` list. Update with `opencode plugin update @maestria/opencode-v2`. For a single project, add it to `plugins` in that project's `opencode.json(c)` instead. Select the `orchestrator` agent for specialist routing; the plugin keeps your configured default agent.
 
 ## What It Provides
 
-- **Agents** (8 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/opencode/agents) for the current list) - `@orchestrator` (delegates to the 7 specialists) plus `@adventurer`, `@architect`, `@builder`, `@diagnose`, `@planner`, `@reviewer`, and `@writer`.
-- **Global rules** - shared requirements injected into every session for evidence, safety, delegation, review, and bounded repair.
-- **Project customization** - when the project root contains `.maestria/workflow.md` or `.maestria/rules.md`, the full content of each file that exists is injected fresh on every model call in deterministic order (workflow first, then rules). Projects without these files see no behavior change.
-- **Zero plugin telemetry** - the plugin makes no network calls of its own.
+- **Agents**: `orchestrator` (delegates to the 7 specialists) plus `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`, with the same prompts and permission policy as the V1 package.
+- **Global rules**: added to every agent-loop and compaction request.
+- **Workflow modes**: `fein`, `sonar`, and `blitz` as slash commands or bare keywords.
+- **Skills**: `create-pull-request` and `docs-update`, which the global rules name. A project skill with the same ID takes precedence.
+- **Project customization**: `.maestria/workflow.md` and `.maestria/rules.md` at the project root are read on every model request, so edits apply without a reload. A missing file is skipped; a directory, unreadable file, or link resolving outside the project fails the request instead of running without it.
 
-## Project Customization Details
+## Workflow Modes
 
-The project root resolves from the SDK project worktree, then the worktree path, then the session directory; a `/` sentinel is skipped so a non-git open directory still resolves. Only the project root is read; no nested or ancestor lookup applies. Files are read fresh on every model call through `experimental.chat.system.transform`, so edits apply on the next call with no restart and no stale snapshot. The same pipeline covers primary and subagent calls, including calls after compaction; a compaction note also asks the summary to preserve active project constraints. This path is separate from `config.instructions`: the pinned host file loader swallows read failures to empty and plugin init/config errors are swallowed, while a transform error here propagates as a failed model call instead of running with silently absent config (verified against pinned host v1.18.31 by source inspection plus package tests, no live model run). A project file that exists but cannot be used (directory, special file, unreadable, unresolvable, or a link resolving outside the root) fails the call loudly instead of being skipped. Diagnostics name only the relative file and the failure kind; symlink targets are canonicalized against the root and the resolved target must be a regular file. Checks observe the filesystem at call time and are not an atomic snapshot. Loaded project guidance stays subordinate: it may replace configurable workflows but never waives safety, authorization, or host permissions.
+```text
+fein: implement and review the change
+sonar investigate the module
+/blitz fix the typo
+```
+
+Keywords match case-insensitively outside code spans; when several appear, `fein` wins over `sonar`, which wins over `blitz`. The mode's instructions replace the keyword in the stored prompt, so they persist across tool continuations and reloads, show in desktop and web history, and apply only to that turn. Attachments are kept. Turn off bare keywords with plugin options; slash commands stay available:
+
+```json
+{
+  "plugins": [
+    {
+      "package": "@maestria/opencode-v2",
+      "options": { "modes": { "disabledKeywords": ["blitz"] } }
+    }
+  ]
+}
+```
+
+Unlike V1, which detects keywords only for the orchestrator, keywords apply to whichever agent is selected.
 
 ## Support / Platform Notes
 
-- OpenCode-specific; Kimi Code, Hermes, Cursor, and other adaptations ship as separate `@maestria` packages.
-- Bundles the `create-pull-request` and `docs-update` skills the global rules name and registers them through `skills.paths` in the plugin's `config` hook; other domain skills are installed separately.
-- Rules are advisory prompt guidance, not a sandbox. The only structural enforcement is OpenCode's `permission` frontmatter (for example, the orchestrator cannot edit).
+- An [Effect plugin](https://opencode.ai/v2/docs/build/plugins/effect/): `effect` and `@opencode/plugin` are peer dependencies supplied by the host. Registrations close with the plugin scope.
+- Uses agent, command, and skill transforms plus the `prompt`, `context`, and `compaction` session hooks. It adds no tools, [CLI extension](https://opencode.ai/v2/docs/build/plugins/cli/), or [RPC](https://opencode.ai/v2/docs/build/plugins/rpc/) methods, and stores nothing.
+- Rules are prompt guidance, not a sandbox. Agent permissions are configuration, subject to [Console](https://opencode.ai/v2/docs/console/) workspace policies; the plugin does not evaluate permissions itself.
+- Makes no network calls of its own.
 
-## Documentation and Changelog
+## Development
 
-- [User-facing documentation](https://maestria.sznm.dev/opencode/) on the docs site
-- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/opencode/CHANGELOG.md)
+Edit shared directives in `packages/core/agent-directives/` and the OpenCode permission policy in `packages/opencode/sync.config.ts`; this package's `sync.config.ts` translates that policy to V2 permission rules. Generated agents, commands, rules, and skills are not hand-authored. From the repository root:
 
-## Contributing
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/opencode-v2 test
+pnpm --filter @maestria/opencode-v2 build
+pnpm exec tsx scripts/e2e/opencode-v2-evidence.ts --out artifacts/opencode-v2-evidence.json
+```
 
-See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
+The E2E probe needs an OpenCode V2 CLI on `PATH` (or `OPENCODE_BIN`). It starts the host with an isolated home, config, and workspace plus a local fake provider, drives real prompts, commands, and compaction without paid inference, and writes its checks and wire evidence to the output file. Set `MAESTRIA_V2_PLUGIN=@maestria/opencode-v2@<version>` to run it against a published version.
 
 ## License
 
