@@ -207,8 +207,8 @@ catalogs:
       specifier: 7.3.2
       version: 7.3.2
     effect:
-      specifier: 4.0.0
-      version: 4.0.0
+      specifier: 4.0.1
+      version: 4.0.1
     jsonc-parser:
       specifier: ^3.3.1
       version: 3.3.1
@@ -368,7 +368,7 @@ importers:
         version: 0.2.2
       effect:
         specifier: 'catalog:'
-        version: 4.0.0
+        version: 4.0.1
       jsonc-parser:
         specifier: 'catalog:'
         version: 3.3.1
@@ -458,9 +458,6 @@ importers:
       yaml:
         specifier: ^2.9.0
         version: 2.9.0
-      zod:
-        specifier: ^4.4.0
-        version: 4.6.1
     devDependencies:
       '@maestria/shared-mode':
         specifier: workspace:*
@@ -469,14 +466,14 @@ importers:
         specifier: workspace:*
         version: link:../shared/project-config
       '@opencode/plugin':
-        specifier: ^2.0.26
+        specifier: ^2.0.28
         version: 2.0.28(@opentelemetry/semantic-conventions@1.43.0)(redis@6.3.0(@opentelemetry/api@1.9.0))(supports-color@10.2.2)
       '@types/node':
         specifier: 'catalog:'
         version: 26.5.1
       effect:
-        specifier: 4.0.0-rc.112
-        version: 4.0.0-rc.112
+        specifier: 'catalog:'
+        version: 4.0.1
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -3530,14 +3527,8 @@ packages:
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
 
-  effect@4.0.0:
-    resolution: {integrity: sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ==}
-
   effect@4.0.0-beta.83:
     resolution: {integrity: sha512-0wsak8RtgGAr9UWSbVDgJHZcUqMSvicHcvaZv1MbMM7MCGgW4Rn/137J1MHQbwYPcwYGxT/IqehFd+UbYuj78w==}
-
-  effect@4.0.0-rc.112:
-    resolution: {integrity: sha512-wXxwuh1Ywnv4cPRM3Wfa0vDwuOHnZ1TsTgHJkG9XgzND6inhBH9n1vBxhg3iIXOia/OrpmvVmd3lrD4vq6bF3A==}
 
   effect@4.0.1:
     resolution: {integrity: sha512-b1VlQG9g8fwxE5QnIZuPoOP/0MsqHJSRKxUijjoM80E5q95FXrX5yWtY5XI8G+GJsBQAVSDbLS458z9a++uVvw==}
@@ -9081,8 +9072,6 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  effect@4.0.0: {}
-
   effect@4.0.0-beta.83:
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -9095,11 +9084,6 @@ snapshots:
       toml: 4.3.0
       uuid: 14.0.2
       yaml: 2.9.0
-
-  effect@4.0.0-rc.112:
-    dependencies:
-      fast-check: 4.9.0
-      msgpackr: 2.0.5
 
   effect@4.0.1: {}
 

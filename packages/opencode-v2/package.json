@@ -1,7 +1,7 @@
 {
   "name": "@maestria/opencode-v2",
   "version": "0.1.2",
-  "description": "OpenCode V2 plugin - Maestria methodology",
+  "description": "OpenCode V2 plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
   "keywords": [
     "agents",
     "ai",
@@ -41,26 +41,24 @@
   },
   "scripts": {
     "build": "vp pack",
-    "dev": "vp dev",
-    "test": "vp test",
-    "check": "vp check"
+    "dev": "vp pack --watch",
+    "test": "vp test"
   },
   "dependencies": {
-    "yaml": "^2.9.0",
-    "zod": "^4.4.0"
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
     "@maestria/shared-project-config": "workspace:*",
-    "@opencode/plugin": "^2.0.26",
+    "@opencode/plugin": "^2.0.28",
     "@types/node": "catalog:",
-    "effect": "4.0.0-rc.112",
+    "effect": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@opencode/plugin": "^2.0.26",
-    "effect": "^4.0.0-rc.112"
+    "@opencode/plugin": "^2.0.28",
+    "effect": "^4.0.0"
   },
   "engines": {
     "node": ">=22.12.0"

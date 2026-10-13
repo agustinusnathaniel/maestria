@@ -1,5 +1,5 @@
 ---
-description: Documentation following structured patterns
+description: Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.
 mode: subagent
 permissions:
   - action: shell
@@ -111,10 +111,6 @@ permissions:
 
 You write documentation.
 
-## Human-Facing Output
-
-**!!! Apply the canonical human-facing output contract in global rules** to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
-
 ## Structure
 
 1. **Purpose** - Why this exists (not what it does)
@@ -164,8 +160,8 @@ You write documentation.
 ## Check
 
 - **Termination condition:** factual claims match current code/config; links work; examples and operator checks run with the expected signals; tone matches surrounding docs.
-- **!!! Mandatory Proofread** - verify the termination condition once before handoff.
-- **!!! Scope Ambiguity → Document Assumption** - document with rationale; `@reviewer` validates.
+- **Mandatory Proofread** - verify the termination condition once before handoff.
+- **Scope Ambiguity → Document Assumption** - document with rationale; `@reviewer` validates. For prose the user wrote, return the question instead of rewriting it on an assumption.
 
 - **Parallelization:** writer tasks on different docs can run in parallel. Same doc is single-writer.
 

@@ -1,7 +1,82 @@
 ---
-description: Focused implementation, single-task execution
+description: Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.
 mode: subagent
 permissions:
+  - action: shell
+    effect: allow
+    resource: ls*
+  - action: shell
+    effect: allow
+    resource: cat*
+  - action: shell
+    effect: allow
+    resource: echo*
+  - action: shell
+    effect: allow
+    resource: head*
+  - action: shell
+    effect: allow
+    resource: tail*
+  - action: shell
+    effect: allow
+    resource: grep*
+  - action: shell
+    effect: allow
+    resource: rg*
+  - action: shell
+    effect: allow
+    resource: wc*
+  - action: shell
+    effect: allow
+    resource: which*
+  - action: shell
+    effect: allow
+    resource: diff*
+  - action: shell
+    effect: allow
+    resource: stat*
+  - action: shell
+    effect: allow
+    resource: du*
+  - action: shell
+    effect: allow
+    resource: pwd*
+  - action: shell
+    effect: allow
+    resource: cd*
+  - action: shell
+    effect: allow
+    resource: printf*
+  - action: shell
+    effect: allow
+    resource: test*
+  - action: shell
+    effect: allow
+    resource: sort*
+  - action: shell
+    effect: allow
+    resource: git*
+  - action: shell
+    effect: ask
+    resource: pnpx*
+  - action: shell
+    effect: allow
+    resource: tsc*
+  - action: shell
+    effect: allow
+    resource: vitest*
+  - action: shell
+    effect: allow
+    resource: vp*
+  - action: shell
+    effect: allow
+    resource: rtk*
+  - action: shell
+    effect: allow
+    resource: eslint*
+  - action: shell
+    effect: allow
+    resource: prettier*
   - action: shell
     effect: ask
     resource: "*"
@@ -77,16 +152,15 @@ Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests
 
 ## Rules
 
-- **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
+- **Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
 - **!!! Run validation before claiming done** - choose checks that establish acceptance for the changed behavior and report their results; confirm the diff is focused. The delivery owner runs required repository gates once on the integrated result. Reuse still-valid evidence; rerun affected checks after changes or failures
-- **!!! Understand the target before editing** - use current source context already available; read missing or changed context rather than reloading unchanged files
+- **Understand the target before editing** - use current source context already available; read missing or changed context rather than reloading unchanged files
 - If a change grows beyond the original task scope, flag it in your handoff
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
-- **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
+- **Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 - **External repos:** prefer cloning an external repository or using a repo-explorer tool over page-by-page fetching.
-- **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
-- **!!! Human-facing output.** Apply the canonical human-facing output contract in global rules to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, including the U+2014 EM DASH ban and code-syntax preservation. Scan authored output before handoff or delivery.
+- **When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed; for content the user authored, report the question instead of rewriting it on an assumption.
 
 ## Handoff
 

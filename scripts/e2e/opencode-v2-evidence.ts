@@ -61,10 +61,7 @@ const chunk = (delta: unknown, finish: string | null): string =>
     object: 'chat.completion.chunk',
   })}\n\n`;
 const outIndex = process.argv.indexOf('--out');
-if (outIndex === -1) {
-  throw new Error('Usage: opencode-v2-evidence.ts --out <path>');
-}
-const out = process.argv[outIndex + 1];
+const out = outIndex === -1 ? undefined : process.argv[outIndex + 1];
 if (out === undefined || out === '') {
   throw new Error('Usage: opencode-v2-evidence.ts --out <path>');
 }
@@ -79,64 +76,62 @@ const contexts: { name: string; messages: Record<string, unknown>[] }[] = [];
 const check = (name: string, pass: boolean): void => {
   checks.push({ name, pass });
 };
-await Promise.all(
-  ['home', 'config/opencode', 'data', 'cache', 'state', 'work', 'work/.maestria', 'plugin'].map(
-    async (dir) => {
-      await fs.mkdir(path.join(root, dir), { recursive: true });
-    },
-  ),
+const write = async (relative: string, text: string): Promise<void> => {
+  await fs.mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+  await fs.writeFile(path.join(root, relative), text);
+};
+for (const dir of ['home', 'data', 'cache', 'state']) {
+  await fs.mkdir(path.join(root, dir));
+}
+await write('work/attached.txt', 'ATTACHMENT_EVIDENCE_CONTENT\n');
+await write('work/.maestria/workflow.md', 'WORKFLOW_INITIAL_EVIDENCE');
+await write('work/.maestria/rules.md', 'RULES_INITIAL_EVIDENCE');
+await write(
+  'work/.opencode/skills/docs-update/SKILL.md',
+  '---\nname: docs-update\ndescription: Project override\n---\n\nPROJECT_SKILL_EVIDENCE\n',
 );
-await fs.writeFile(path.join(root, 'work/attached.txt'), 'ATTACHMENT_EVIDENCE_CONTENT\n');
-await fs.writeFile(path.join(root, 'work/.maestria/workflow.md'), 'WORKFLOW_INITIAL_EVIDENCE');
-await fs.writeFile(path.join(root, 'work/.maestria/rules.md'), 'RULES_INITIAL_EVIDENCE');
-await fs.writeFile(
-  path.join(root, 'plugin/index.js'),
+await write(
+  'plugin/index.js',
   `export {default} from ${JSON.stringify(path.join(packageDir, 'dist/index.js'))};\n`,
 );
 const serveFake = async (
   request: http.IncomingMessage,
   response: http.ServerResponse,
 ): Promise<void> => {
-  let raw = '';
-  for await (const data of request) {
-    raw += String(data);
-  }
-  const body = wire(parse(raw));
-  requests.push(body);
-  const tool =
-    latest(body).includes('CONTINUATION_EVIDENCE') &&
-    !body.messages.some((message) => message.role === 'tool');
-  const delta = tool
-    ? {
-        tool_calls: [
-          {
-            function: {
-              arguments: JSON.stringify({ path: path.join(root, 'work/attached.txt') }),
-              name: 'read',
-            },
-            id: 'local_read',
-            index: 0,
-            type: 'function',
-          },
-        ],
-      }
-    : { content: 'Deterministic evidence response', role: 'assistant' };
-  response.setHeader('Content-Type', 'text/event-stream');
-  response.end(`${chunk(delta, null)}${chunk({}, tool ? 'tool_calls' : 'stop')}data: [DONE]\n\n`);
-};
-const respond = async (
-  request: http.IncomingMessage,
-  response: http.ServerResponse,
-): Promise<void> => {
   try {
-    await serveFake(request, response);
+    let raw = '';
+    for await (const data of request) {
+      raw += String(data);
+    }
+    const body = wire(parse(raw));
+    requests.push(body);
+    const tool =
+      latest(body).includes('CONTINUATION_EVIDENCE') &&
+      !body.messages.some((message) => message.role === 'tool');
+    const delta = tool
+      ? {
+          tool_calls: [
+            {
+              function: {
+                arguments: JSON.stringify({ path: path.join(root, 'work/attached.txt') }),
+                name: 'read',
+              },
+              id: 'local_read',
+              index: 0,
+              type: 'function',
+            },
+          ],
+        }
+      : { content: 'Deterministic evidence response', role: 'assistant' };
+    response.setHeader('Content-Type', 'text/event-stream');
+    response.end(`${chunk(delta, null)}${chunk({}, tool ? 'tool_calls' : 'stop')}data: [DONE]\n\n`);
   } catch (error) {
     response.writeHead(500);
     response.end(String(error));
   }
 };
 const fake = http.createServer((request, response) => {
-  void respond(request, response);
+  void serveFake(request, response);
 });
 const listening = once(fake, 'listening');
 fake.listen(0, '127.0.0.1');
@@ -174,7 +169,7 @@ const config = {
   },
 };
 const configPath = path.join(root, 'config/opencode/opencode.json');
-await fs.writeFile(configPath, JSON.stringify(config));
+await write('config/opencode/opencode.json', JSON.stringify(config));
 const child = spawn(binary, ['serve', '--port', '0', '--hostname', '127.0.0.1'], {
   cwd: path.join(root, 'work'),
   env: {
@@ -323,7 +318,7 @@ try {
       ],
     ],
     ['command', ['fein', 'sonar', 'blitz']],
-    ['skill', ['handoff', 'iteration-limits']],
+    ['skill', ['create-pull-request', 'docs-update']],
   ] as const) {
     const registry = rows(record(await api(`/api/${route}${directoryQuery}`)).data);
     registries.push({ entries: registry, name: route });
@@ -365,16 +360,18 @@ try {
       );
     }
     if (route === 'skill') {
-      const handoff = registry.find((item) => item.id === 'handoff');
+      const bundled = registry.find((item) => item.id === 'create-pull-request');
+      const bundledContent = String(bundled?.content);
       check(
-        'handoff advertised without generated header or frontmatter',
-        handoff !== undefined &&
-          typeof handoff.description === 'string' &&
-          handoff.description.length > 0 &&
-          typeof handoff.content === 'string' &&
-          handoff.content.trim().length > 0 &&
-          !handoff.content.startsWith('---') &&
-          !handoff.content.includes('Auto-generated from'),
+        'bundled skill advertised without frontmatter or bundling notice',
+        typeof bundled?.description === 'string' &&
+          bundledContent.startsWith('# ') &&
+          !bundledContent.includes('Bundled from'),
+      );
+      const project = registry.find((item) => item.id === 'docs-update');
+      check(
+        'project skill takes precedence over the bundled copy',
+        typeof project?.content === 'string' && project.content.includes('PROJECT_SKILL_EVIDENCE'),
       );
     }
   }
@@ -487,7 +484,6 @@ try {
         contexts,
         logs: logs.replaceAll(/server password \S+/gu, 'server password <REDACTED>'),
         packageDir,
-        processesCleaned: true,
         registries,
         requests,
         sandbox: root,
