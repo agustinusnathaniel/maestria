@@ -4,6 +4,7 @@
 // against a local fake Messages endpoint, and drives one maestria session that
 // delegates to a read-only and an edit-denied specialist. No paid inference.
 import { spawn, spawnSync } from 'node:child_process';
+import type { ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
 import fs from 'node:fs/promises';
 import http from 'node:http';
@@ -195,24 +196,43 @@ const run = (args: string[], command = binary, cwd = path.join(root, 'work')): s
   }
   return result.stdout;
 };
-run(['pack', '--pack-destination', path.join(root, 'pack')], 'npm', packageDir);
-const [tarball = ''] = await fs.readdir(path.join(root, 'pack'));
-run(['plugin', '--profile', 'web', 'add', path.join(root, 'pack', tarball)]);
-
-const port = 39_000 + Math.floor(Math.random() * 1000);
-const child = spawn(binary, ['web', '--no-open', '--port', String(port)], {
-  cwd: path.join(root, 'work'),
-  env,
-});
+// The path `maestria install deepseek` reads to detect the installed version.
+const webProfile = path.join(root, 'dsh/profiles/web');
+const installedManifest = path.join(webProfile, 'node_modules/@maestria/deepseek/package.json');
+const exists = async (file: string): Promise<boolean> => {
+  try {
+    await fs.access(file);
+    return true;
+  } catch {
+    return false;
+  }
+};
+/** Whether the web profile lists the bundle as a layer and has its package installed. */
+const installed = async (): Promise<boolean> => {
+  const manifest = record(
+    JSON.parse(await fs.readFile(path.join(webProfile, 'package.json'), 'utf-8')),
+  );
+  const layers = list(record(record(manifest.dsh).profile).bundles);
+  return layers.includes('@maestria/deepseek') && (await exists(installedManifest));
+};
+let child: ChildProcess | undefined;
 let logs = '';
-child.stdout.on('data', (data: Buffer) => {
-  logs += data.toString();
-});
-child.stderr.on('data', (data: Buffer) => {
-  logs += data.toString();
-});
 const report: Record<string, unknown> = {};
 try {
+  run(['pack', '--pack-destination', path.join(root, 'pack')], 'npm', packageDir);
+  const [tarball = ''] = await fs.readdir(path.join(root, 'pack'));
+  run(['plugin', '--profile', 'web', 'add', path.join(root, 'pack', tarball)]);
+  check('dsh plugin add installs the bundle where the CLI detects it', await installed());
+  child = spawn(binary, ['web', '--no-open', '--port', '0'], {
+    cwd: path.join(root, 'work'),
+    env,
+  });
+  child.stdout?.on('data', (data: Buffer) => {
+    logs += data.toString();
+  });
+  child.stderr?.on('data', (data: Buffer) => {
+    logs += data.toString();
+  });
   const deadline = Date.now() + 60_000;
   const launchUrl = /(?<url>http:\/\/\S+\?token=\S+)/u;
   while (!launchUrl.test(logs) && Date.now() < deadline) {
@@ -343,17 +363,23 @@ try {
         toolResults(final).some((block) => text(block.content).includes(marker)),
       ),
   );
+
+  child.kill();
+  // The CLI's uninstall verb; pnpm treats it as `remove`.
+  run(['plugin', '--profile', 'web', 'uninstall', '@maestria/deepseek']);
+  check('dsh plugin uninstall removes the package and its bundle layer', !(await installed()));
 } catch (error) {
-  check('the scripted session completes', false);
+  check('the scripted run completes', false);
   report.error = error instanceof Error ? error.message : String(error);
 } finally {
   report.requests = requests.map((body) => ({ role: body.role, tools: body.tools }));
-  child.kill();
+  child?.kill();
   fake.close();
 }
+const version = spawnSync(binary, ['--version'], { encoding: 'utf-8', env });
 const artifact = {
   checks,
-  dshVersion: run(['--version']).trim(),
+  dshVersion: version.status === 0 ? version.stdout.trim() : 'unknown',
   logs: logs.replaceAll(/token=\S+/gu, 'token=<redacted>'),
   ...report,
 };

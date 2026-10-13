@@ -25,7 +25,7 @@ Both install into the shipped `web` profile, the one that mounts agent presets. 
 ## Support / Platform Notes
 
 - **Provisional.** Verified against DeepSeek Harness `0.2.0-rc.2` with a real `dsh web` run and a local fake model; not yet against live inference. DeepSeek Harness is a developer preview, so later releases may need an update.
-- Specialist tool filters are host-enforced: `adventurer`, `planner`, and `reviewer` have no shell, `edit`, or `write` tool, and `architect` and `diagnose` cannot `edit` or `write`. Everything else in the methodology is guidance under DeepSeek Harness's sandbox, approvals, and permission presets.
+- Specialist tool filters are host-enforced: `adventurer`, `planner`, and `reviewer` keep only `read`, `glob`, `grep`, and `skill` (plus the host's `subagent` tool, which cannot delegate further), and `architect` and `diagnose` keep everything except `edit` and `write`. Everything else in the methodology is guidance under DeepSeek Harness's sandbox, approvals, and permission presets.
 - The preset restates the rows of DeepSeek Harness's `standard` preset, because a bundle cannot extend another preset. It does not change any other preset.
 
 ## Documentation and Changelog
