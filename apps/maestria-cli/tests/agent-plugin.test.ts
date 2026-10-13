@@ -7,7 +7,6 @@ import { validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
 const PORTABLE_PACKAGE = path.join(REPO_ROOT, 'packages/agent-plugins');
-const PLUGIN_DATA_PLACEHOLDER = ['$', '{PLUGIN_DATA}'].join('');
 const tempDirectories: string[] = [];
 
 const makeTempDirectory = async (): Promise<string> => {
@@ -62,57 +61,20 @@ describe('Agent Plugin validation', () => {
     );
   });
 
-  it('rejects unsafe MCP paths and non-HTTPS remote endpoints', async () => {
+  it('rejects a package that declares MCP servers, which maestria does not ship', async () => {
     const root = await makeTempDirectory();
     await writeManifest(root, {
       $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
       name: 'fixture',
     });
-    await writeFile(
-      path.join(root, 'mcp.json'),
-      `${JSON.stringify({
-        $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
-        mcpServers: {
-          data: {
-            command: 'server',
-            cwd: `${PLUGIN_DATA_PLACEHOLDER}/..\\\\outside`,
-            type: 'stdio',
-          },
-          local: { command: './bin/server', cwd: './../outside', type: 'stdio' },
-          loopback: { type: 'streamable-http', url: 'http://127.0.0.1/mcp' },
-          remote: {
-            headers: {
-              Authorization: 'embedded',
-              authorization: 'duplicate',
-              'bad header': 'value',
-            },
-            type: 'streamable-http',
-            url: 'http://127.0.0.1.attacker.example/mcp',
-          },
-        },
-      })}\n`,
-    );
+    await writeFile(path.join(root, 'mcp.json'), '{"mcpServers":{}}\n');
 
     const report = await validateAgentPlugin(root);
 
     expect(report.valid).toBe(false);
-    expect(report.errors).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('local'),
-        expect.stringContaining('escapes PLUGIN_DATA'),
-        expect.stringContaining('remote'),
-        expect.stringContaining('duplicate header name'),
-        expect.stringContaining('valid HTTP header name'),
-        expect.stringContaining('must use HTTPS outside loopback hosts'),
-      ]),
-    );
-    expect(report.warnings).toEqual(
-      expect.arrayContaining([expect.stringContaining('may contain credentials')]),
-    );
+    expect(report.errors).toEqual([expect.stringContaining('mcp.json is not supported')]);
+    expect(report.validationScope).toBe('portable-manifest-skills');
   });
-});
-
-describe('Agent Plugin staging', () => {
   it('defaults portable staging to the consolidated package', () => {
     expect(AGENT_PLUGIN_PACKAGE).toBe('@maestria/agent-plugins');
   });
@@ -171,16 +133,7 @@ describe('Agent Plugin staging', () => {
     await writeFile(
       path.join(source, 'package.json'),
       JSON.stringify({
-        files: [
-          'plugin.json',
-          '.host-plugin',
-          'commands',
-          'rules',
-          'agents',
-          'assets',
-          'hooks',
-          'mcp.json',
-        ],
+        files: ['plugin.json', '.host-plugin', 'commands', 'rules', 'agents', 'assets', 'hooks'],
         name: 'fixture',
         scripts: { prepack: 'node -e "process.exit(99)"' },
         version: '1.0.0',
@@ -202,13 +155,6 @@ describe('Agent Plugin staging', () => {
         await writeFile(path.join(source, directory, 'resource.txt'), directory);
       }),
     );
-    await writeFile(
-      path.join(source, 'mcp.json'),
-      JSON.stringify({
-        $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
-        mcpServers: {},
-      }),
-    );
     await writeFile(path.join(source, 'README.md'), '# Fixture');
 
     await stageAgentPlugin({ destination, source });
@@ -221,7 +167,6 @@ describe('Agent Plugin staging', () => {
       'assets',
       'commands',
       'hooks',
-      'mcp.json',
       'package.json',
       'plugin.json',
       'rules',

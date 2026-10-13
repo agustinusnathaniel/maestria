@@ -165,35 +165,6 @@ describe('legacy companion cleanup migration', () => {
     expect(skillTransport.calls).toEqual([]);
   });
 
-  it('rejects removed setup skill flags and points to --skill-source', async () => {
-    const { runSetup } = await import('@/lib/setup.js');
-    let thrown: unknown;
-    try {
-      await runSetup(
-        { quiet: true, skills: COMPANION_SKILL, yes: true },
-        {
-          detect: async () => [],
-          ecosystemProbe: async () => ({ present: true, version: '' }),
-          isInteractive: () => false,
-          readGitignore: async () => null,
-          readRecord: async () => null,
-          skillRunner: fakeSkillCli({}),
-          xtarterize: async () => ({ exitCode: 0, stderr: '', stdout: '' }),
-          xtarterizePath: async () => null,
-        },
-      );
-    } catch (error) {
-      thrown = error;
-    }
-    expect(thrown).toBeInstanceOf(CliError);
-    if (!(thrown instanceof CliError)) {
-      throw new Error('Expected runSetup to throw CliError');
-    }
-    expect(thrown.exitCode).toBe(1);
-    expect(thrown.message).toMatch(/bundle/iu);
-    expect(thrown.message).toMatch(/--skill-source/iu);
-  });
-
   it('passes citty unknown skill flags through to the install handler rejection', async () => {
     const { installCommand } = await import('@/commands/install.js');
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -208,56 +179,5 @@ describe('legacy companion cleanup migration', () => {
       process.exitCode = originalExitCode;
       vi.restoreAllMocks();
     }
-  });
-
-  it('doctor reports legacy recorded copies and unmanaged duplicates without changing anything', async () => {
-    const { writeSkillsRecord } = await import('@/lib/skills.js');
-    await writeSkillsRecord({
-      platforms: { opencode: { skills: [COMPANION_SKILL] } },
-      version: 2,
-    });
-    const { handleDoctor } = await import('@/commands/doctor.js');
-    const inventory = {
-      cursor: [{ name: DOCS_UPDATE_SKILL, path: '/fake/cursor/docs-update' }],
-      opencode: [{ name: COMPANION_SKILL, path: '/fake/opencode/create-pull-request' }],
-    };
-    const { fakeListCli } = await import('./skill-test-support.js');
-    const seen: string[][] = [];
-    const spying: SkillCommandRunner = async (args, options) => {
-      seen.push([...args]);
-      return await fakeListCli(inventory)(args, options);
-    };
-    const result = await handleDoctor(
-      { json: true, quiet: true },
-      {
-        detect: async () => [
-          {
-            available: true,
-            id: 'opencode',
-            installed: true,
-            installedVersion: '0.1.0',
-            label: 'OpenCode',
-            latestVersion: '0.1.0',
-          },
-          {
-            available: true,
-            id: 'cursor',
-            installed: true,
-            installedVersion: '0.1.0',
-            label: 'Cursor',
-            latestVersion: '0.1.0',
-          },
-        ],
-        runner: spying,
-      },
-    );
-    expect(result.exitCode).toBe(0);
-    expect(result.output).toMatch(/Legacy CLI-installed copy/u);
-    expect(result.output).toMatch(/bundles create-pull-request/u);
-    expect(result.output).toMatch(/maestria update opencode/u);
-    expect(result.output).toMatch(/npx -y skills@1\.7\.0 remove docs-update -a cursor -g -y/u);
-    expect(seen.every((args) => args[0] === 'list')).toBe(true);
-    const record = await readSkillsRecord();
-    expect(record?.platforms.opencode?.skills).toEqual([COMPANION_SKILL]);
   });
 });

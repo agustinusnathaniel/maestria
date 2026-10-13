@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- model-config aggregates 4 platform handlers (opencode/codex/pi/cursor) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
+// oxlint-disable max-lines -- single cohesive handler registry; splitting would fragment registration.
 import { Effect } from 'effect';
 import {
   applyEdits,
@@ -10,8 +10,7 @@ import {
 import { homedir } from 'node:os';
 import path from 'node:path';
 
-// Import the ESM build directly - the UMD entry does runtime `require('./impl/*')`
-// calls that the bundler does not inline.
+// ESM build: the UMD entry's runtime `require('./impl/*')` is not inlined.
 import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
 import {
   codexManagedAgentFileName,
@@ -25,7 +24,6 @@ import { CommandError, fileExists, readTextFile, run } from '@/lib/shell.js';
 
 export type ModelConfigLevel = 'global' | 'project';
 
-/** The 7 maestria specialist agents (no orchestrator - it uses the session model) */
 export const MAESTRIA_AGENTS = [
   'adventurer',
   'architect',
@@ -37,22 +35,19 @@ export const MAESTRIA_AGENTS = [
 ] as const;
 export type AgentName = (typeof MAESTRIA_AGENTS)[number];
 
-/** Agent name to model id. Empty string means "inherit" (session model). */
+/** Empty string means "inherit" (session model). */
 export type AgentModels = Partial<Record<AgentName, string>>;
 
 export const isAgentName = (name: string): name is AgentName =>
   MAESTRIA_AGENTS.some((agent) => agent === name);
 
-/** Per-agent model configuration for one platform (writes native config files). */
 export interface ModelConfigHandler {
   readonly id: string;
   readonly label: string;
-  /** Platform CLI binary used to list available models. */
   readonly cli: string;
   readonly agents: readonly string[];
   readonly configLevels: readonly ModelConfigLevel[];
   readonly restartHint: string;
-  /** Host-specific identity check when the binary name is ambiguous. */
   readonly isAvailable?: Effect.Effect<boolean>;
   readonly listModels: Effect.Effect<string[], CommandError>;
   readonly readCurrent: (level: ModelConfigLevel) => Effect.Effect<AgentModels, CommandError>;
@@ -62,14 +57,12 @@ export interface ModelConfigHandler {
   ) => Effect.Effect<void, CommandError>;
 }
 
-/** `opencode models` -> one `provider/model` per line */
 export const parseOpenCodeModels = (out: string): string[] =>
   out
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => /^\S+\/\S+$/u.test(line));
 
-/** `pi --list-models` -> table with a header row */
 export const parsePiModels = (out: string): string[] =>
   out
     .split('\n')
@@ -77,7 +70,6 @@ export const parsePiModels = (out: string): string[] =>
     .filter((parts) => parts.length >= 2 && parts[0] !== 'provider')
     .map((parts) => `${parts[0]}/${parts[1]}`);
 
-/** `agent --list-models` -> one Cursor model id per line. */
 export const parseCursorModels = (out: string): string[] => {
   const parsed = parseJsonValue(out);
   let entries: unknown[] | undefined;
@@ -120,7 +112,6 @@ export const parseCursorModels = (out: string): string[] => {
   return [...new Set(models)];
 };
 
-/** `codex debug models` -> model slugs from the native JSON catalog. */
 export const parseCodexModels = (out: string): string[] => {
   const parsed = parseJsonValue(out);
   if (!isRecord(parsed) || !Array.isArray(parsed.models)) {
@@ -141,7 +132,6 @@ export const parseCodexModels = (out: string): string[] => {
 
 const JSONC_OPTIONS = { formattingOptions: { insertSpaces: true, tabSize: 2 } } as const;
 
-/** Set (or remove when model is '') `agent.<name>.model`, preserving formatting. */
 const hasConfigModel = (text: string, agent: string): boolean => {
   const tree = parseTree(text);
   if (!tree) {
@@ -152,14 +142,13 @@ const hasConfigModel = (text: string, agent: string): boolean => {
 
 export const setConfigModelJsonc = (text: string, agent: string, model: string): string => {
   if (!model && !hasConfigModel(text, agent)) {
-    // jsonc-parser >= 3.3 throws when removing a non-existent path
+    // jsonc-parser >= 3.3 throws on removing a non-existent path.
     return text;
   }
   const edits = modify(text, ['agent', agent, 'model'], model || undefined, JSONC_OPTIONS);
   return applyEdits(text, edits);
 };
 
-/** Read `agent.<name>.model` values from an opencode config file. */
 export const parseConfigModels = (text: string): AgentModels => {
   const parsed: unknown = parse(text);
   if (!isRecord(parsed) || !isRecord(parsed.agent)) {
@@ -174,15 +163,12 @@ export const parseConfigModels = (text: string): AgentModels => {
   return result;
 };
 
-/** Extract a top-level `model` value from a Codex custom-agent TOML file. */
 export const parseCodexAgentModel = (content: string): string | undefined =>
   parseCodexTopLevelString(content, 'model');
 
-/** Set or remove a top-level `model` entry without rewriting other TOML text. */
 export const setCodexAgentModel = (content: string, model: string): string =>
   setCodexTopLevelString(content, 'model', model || undefined);
 
-/** Create the smallest native Codex custom-agent file for a maestria role. */
 export const createCodexAgentConfig = (
   agent: AgentName,
   model: string,
@@ -216,7 +202,6 @@ const writeFile = (filePath: string, content: string): Effect.Effect<void, Comma
     },
   });
 
-/** Read every specialist agent file; missing or unreadable files count as inherit. */
 const readAgentModels = (
   readContent: (agent: AgentName) => Effect.Effect<string>,
   parseModel: (content: string) => string | undefined,
@@ -345,8 +330,7 @@ const listCursorModels = (): Effect.Effect<string[], CommandError> =>
           }),
         );
       }
-      // `agent models` is the current command; retain the older flag as a
-      // compatibility fallback for cursor-agent releases that still expose it.
+      // Older cursor-agent releases expose `--list-models` instead of `models`.
       return run(cli, ['models'], 30_000).pipe(
         Effect.catchTag('CommandError', () => run(cli, ['--list-models'], 30_000)),
       );
@@ -365,14 +349,9 @@ interface AgentFilePlatform {
   readonly isAvailable?: Effect.Effect<boolean>;
 }
 
-// oxlint-disable-next-line max-lines-per-function -- createAgentFileHandler is a cohesive factory for per-agent file handlers (pi/omp/cursor) sharing resolveAgent and readCurrent/write for 7 agents. Splitting would fragment the single platform file-handling responsibility and create single-use helpers with one call site, hurting discoverability.
+// oxlint-disable-next-line max-lines-per-function -- cohesive per-agent file factory, keep intact.
 const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
-  /**
-   * Resolve the target file and its starting content for an agent.
-   * At project level, falls back to the global agent file as the source
-   * (the runtime merges project over global, so the file must be valid
-   * standalone - copying the global content guarantees that).
-   */
+  /** Project level copies global content (runtime merges project over global). */
   const resolveAgent = (
     level: ModelConfigLevel,
     agent: string,
@@ -445,8 +424,7 @@ const pi = createAgentFileHandler({
 
 const cursor = createAgentFileHandler({
   cli: 'agent',
-  // The plugin's shared generated agents are the global source. Project-level
-  // configuration is written to Cursor's native `.cursor/agents` overlay.
+  // Project-level configuration uses Cursor's native `.cursor/agents` overlay.
   globalDir: `${homedir()}/.cursor/plugins/local/maestria/agents`,
   id: 'cursor',
   isAvailable: cursorCliName().pipe(Effect.map((cli) => cli !== undefined && cli !== '')),

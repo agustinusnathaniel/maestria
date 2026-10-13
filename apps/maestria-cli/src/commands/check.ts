@@ -112,8 +112,7 @@ const handleCheckSingle = async (platformId: string, args: CheckArgs): Promise<C
 };
 
 export const handleCheck = async (args: CheckArgs): Promise<CommandResult> => {
-  // The global root --compact flag parses everywhere, but check has no compact
-  // rendering; fail loud instead of silently ignoring it.
+  // Root --compact parses everywhere but check has no compact rendering; fail loud.
   if (args.compact === true) {
     throw new CliError(
       args.quiet === true

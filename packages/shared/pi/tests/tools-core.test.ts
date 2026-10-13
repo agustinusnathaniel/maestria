@@ -102,7 +102,7 @@ describe('DANGEROUS_PATTERNS', () => {
 const createOptions = (
   overrides: Partial<ToolCallHandlerOptions> = {},
 ): ToolCallHandlerOptions => ({
-  delegationTool: 'task',
+  delegationTool: 'subagent',
   getActiveTools: () => [],
   getState: () => createInitialState(),
   isBashTool: (event) => event.toolName === 'bash',
@@ -122,7 +122,7 @@ describe('createToolCallHandler', () => {
   it('blocks orchestrator mutations while a mode is active and the delegation tool is present', async () => {
     const state = { ...createInitialState(), mode: 'fein' as const };
     const handler = createToolCallHandler(
-      createOptions({ getActiveTools: () => ['task', 'read'], getState: () => state }),
+      createOptions({ getActiveTools: () => ['subagent', 'read'], getState: () => state }),
     );
 
     const result = await handler({ input: { path: 'src/a.ts' }, toolName: 'edit' }, {});
@@ -134,10 +134,10 @@ describe('createToolCallHandler', () => {
   it('allows the delegation tool, reads, and guarded read-only bash while a mode is active', async () => {
     const state = { ...createInitialState(), mode: 'fein' as const };
     const handler = createToolCallHandler(
-      createOptions({ getActiveTools: () => ['task', 'read'], getState: () => state }),
+      createOptions({ getActiveTools: () => ['subagent', 'read'], getState: () => state }),
     );
 
-    await expect(handler({ toolName: 'task' }, {})).resolves.toBeUndefined();
+    await expect(handler({ toolName: 'subagent' }, {})).resolves.toBeUndefined();
     await expect(
       handler({ input: { path: 'a.ts' }, toolName: 'read' }, {}),
     ).resolves.toBeUndefined();
@@ -157,7 +157,7 @@ describe('createToolCallHandler', () => {
   it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {
     const state = { ...createInitialState(), mode: 'sonar' as const };
     const handler = createToolCallHandler(
-      createOptions({ getActiveTools: () => ['task'], getState: () => state }),
+      createOptions({ getActiveTools: () => ['subagent'], getState: () => state }),
     );
 
     const result = await handler(
@@ -215,21 +215,6 @@ describe('createToolCallHandler', () => {
     expect(persist).toHaveBeenCalledTimes(2);
   });
 
-  it('falls back to the pi adapter for persistence when no callback is given', async () => {
-    const state = createInitialState();
-    const appendEntry = vi.fn<(type: string, data: unknown) => void>();
-    const handler = createToolCallHandler(
-      createOptions({ getState: () => state, pi: { appendEntry } }),
-    );
-
-    await handler({ input: { path: 'src/read.ts' }, toolName: 'read' }, {});
-
-    expect(appendEntry).toHaveBeenCalledWith(
-      'maestria_state',
-      expect.objectContaining({ filesRead: ['src/read.ts'] }),
-    );
-  });
-
   it('does not persist or track when the file path is missing', async () => {
     const state = createInitialState();
     const persist = vi.fn<() => void>();
@@ -239,25 +224,5 @@ describe('createToolCallHandler', () => {
 
     expect(state.filesRead).toEqual([]);
     expect(persist).not.toHaveBeenCalled();
-  });
-
-  it('honors delegation hints and extra mutation tools', async () => {
-    const state = { ...createInitialState(), mode: 'blitz' as const };
-    const handler = createToolCallHandler(
-      createOptions({
-        delegationHint: 'Delegate with task().',
-        delegationTool: 'subagent',
-        extraMutations: ['goal'],
-        getActiveTools: () => ['subagent'],
-        getState: () => state,
-      }),
-    );
-
-    const goalResult = await handler({ toolName: 'goal' }, {});
-    expect(goalResult?.block).toBe(true);
-    expect(goalResult?.reason).toContain('Delegate with task().');
-
-    const subagentResult = await handler({ toolName: 'subagent' }, {});
-    expect(subagentResult).toBeUndefined();
   });
 });

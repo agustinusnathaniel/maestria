@@ -1,4 +1,3 @@
-/** Kimi-code plugin registry helpers. */
 import { Effect } from 'effect';
 import { homedir } from 'node:os';
 

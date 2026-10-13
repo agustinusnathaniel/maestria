@@ -42,7 +42,7 @@ export const handlePluginInstall = async (args: PluginInstallArgs): Promise<Comm
       exitCode: 0,
       output: [
         `Staged ${staged.name ?? 'Agent Plugin'}${versionSuffix} at ${staged.destination}`,
-        'Validated the portable manifest, skills, and MCP configuration. Native host schemas are not checked.',
+        'Validated the portable manifest and skills. Native host schemas are not checked.',
         'Point a compatible client at this directory to load the package.',
       ].join('\n'),
     };
@@ -65,7 +65,7 @@ const validateCommand = defineCommand({
     },
   },
   meta: {
-    description: 'Validate the portable manifest, skills, and MCP configuration',
+    description: 'Validate the portable manifest and skills',
     name: 'validate',
   },
   run: toCommandRun(handlePluginValidate),

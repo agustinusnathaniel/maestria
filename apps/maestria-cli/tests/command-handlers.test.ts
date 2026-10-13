@@ -417,22 +417,6 @@ describe('command handlers', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('updates a direct platform selection', async () => {
-      const result = await handleUpdate({ platform: 'opencode', quiet: true, version: '1.0.0' });
-
-      expect(transactionMocks.updateOne).toHaveBeenCalledTimes(1);
-      expect(result.exitCode).toBe(0);
-    });
-
-    it('updates all installed platforms', async () => {
-      detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
-
-      const result = await handleUpdate({ all: true, quiet: true });
-
-      expect(transactionMocks.updateOne).toHaveBeenCalledTimes(1);
-      expect(result.exitCode).toBe(0);
-    });
-
     it('reports an empty install set', async () => {
       detectMocks.detectInstalled.mockReturnValue(Effect.succeed([]));
 

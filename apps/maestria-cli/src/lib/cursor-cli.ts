@@ -3,9 +3,8 @@ import { Effect } from 'effect';
 import { commandExists, run } from '@/lib/shell.js';
 
 /**
- * Probe for a Cursor CLI binary: `'cursor-agent'` when present, `'agent'`
- * when that binary reports itself as Cursor, else `undefined`. Shared by
- * detection and model configuration so both agree on the binary to call.
+ * `'cursor-agent'` when present, `'agent'` when that binary reports itself as
+ * Cursor, else `undefined`.
  */
 export const cursorCliName = (): Effect.Effect<string | undefined> =>
   Effect.gen(function* cursorCliNameEffect() {

@@ -75,7 +75,7 @@ const collectInstallTargets = async (
 };
 
 export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult> => {
-  assertNoRemovedSkillFlags(rawArgs, 'install');
+  assertNoRemovedSkillFlags(rawArgs);
   const isQuiet = resolveBatchQuiet(rawArgs);
   let platformIds: string[] | undefined;
   if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {
@@ -86,8 +86,7 @@ export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult
   if (!Array.isArray(targets)) {
     return targets;
   }
-  // Install runs the plugin batch only: maestria packages bundle their own
-  // skills, so no companion-skill step remains.
+  // Packages bundle their own skills, so no companion-skill step remains.
   const results = await runBatchSelected(targets, isQuiet, installOne);
   return batchCommandResult(results, rawArgs);
 };

@@ -117,54 +117,10 @@ const rewriteJsonVersion = (text: string, version: string): string => {
   return applyEdits(text, modify(text, ['version'], version, {}));
 };
 
-// Manifest read/rewrite dispatch
-// ---------------------------------------------------------------------------
+/** Drift display for a manifest's current version; strings print bare, as in the version field. */
+const formatCurrent = (current: unknown): string =>
+  typeof current === 'string' ? current : (JSON.stringify(current) ?? 'undefined');
 
-/** Version declared by a manifest, or null if undeclared (JSON only). */
-export const readManifestVersion = (p: string): unknown => {
-  const suffix = path.extname(p);
-  const text = fs.readFileSync(p, 'utf-8');
-  if (suffix === '.json') {
-    return readJsonVersion(text);
-  }
-  throw new Error(`unsupported manifest format: ${suffix}`);
-};
-
-/** Compute the rewritten manifest text with its version set (format-preserving, see header). */
-export const computeManifestVersion = (p: string, version: string): string => {
-  const suffix = path.extname(p);
-  if (suffix === '.json') {
-    return rewriteJsonVersion(fs.readFileSync(p, 'utf-8'), version);
-  }
-  throw new Error(`unsupported manifest format: ${suffix}`);
-};
-
-/** Format a manifest's current version for DRIFT reporting. */
-const formatCurrent = (current: unknown): string => {
-  if (current === null) {
-    return 'None';
-  }
-  if (current === true) {
-    return 'True';
-  }
-  if (current === false) {
-    return 'False';
-  }
-  if (typeof current === 'string' || typeof current === 'number' || typeof current === 'bigint') {
-    return String(current);
-  }
-  return JSON.stringify(current) ?? 'undefined';
-};
-
-/**
- * Sync one package's manifests to its package.json version.
- *
- * Result lines: "OK: ...", "DRIFT: ..." (check mode only: drift, or a
- * required manifest missing), "ERROR: ..." (both modes: missing package.json,
- * invalid version, malformed/unreadable/unwritable manifest; a missing
- * manifest in write mode). Write mode preflights every manifest first - any
- * failure aborts the whole target with no writes (see header).
- */
 type PackageVersionResult = { error: string; kind: 'error' } | { kind: 'success'; version: string };
 
 const resolvePackageVersion = (packageDir: string): PackageVersionResult => {
@@ -234,11 +190,12 @@ const buildPreflight = (
       }
     }
     try {
-      const current = readManifestVersion(manifestPath);
+      const text = fs.readFileSync(manifestPath, 'utf-8');
+      const current = readJsonVersion(text);
       const entry: Preflight = { current, path: manifestPath, rel };
       if (!check && current !== version) {
         try {
-          entry.updated = computeManifestVersion(manifestPath, version);
+          entry.updated = rewriteJsonVersion(text, version);
         } catch (error) {
           entry.syncError = message(error);
         }

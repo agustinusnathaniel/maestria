@@ -20,7 +20,6 @@ export type ModeKeyword = SharedModeKeyword;
 
 export const MODE_MARKERS: Record<ModeKeyword, string> = SHARED_MARKERS;
 
-/** Load a mode prompt from a commands directory. */
 export const loadModePrompt = (name: string, commandsDir: string): string => {
   const content = readFileSync(path.resolve(commandsDir, `${name}.md`), 'utf-8');
   return extractModeSection(content);
@@ -38,7 +37,6 @@ const loadCached = memoize((cacheKey: string): string => {
   }
 });
 
-/** Full mode prompt (marker plus body) for a keyword. */
 export const getModePrompt = (keyword: ModeKeyword, commandsDir: string): string => {
   const cacheKey = `${path.resolve(commandsDir)}\0${keyword}`;
   return `${MODE_MARKERS[keyword]}\n\n${loadCached(cacheKey)}`;

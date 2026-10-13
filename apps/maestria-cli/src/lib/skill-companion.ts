@@ -5,21 +5,16 @@ import { CliError } from '@/lib/command-result.js';
 import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 
 /**
- * Legacy companion skill cleanup through the external `skills` CLI (pinned
- * `1.7.0`). The CLI never installs skills and never copies skill bodies:
- * every maestria package bundles its own skills, and this module only lists
- * and removes copies the CLI installed earlier. Path identity always comes
- * from the tool's own machine output, never from our record.
+ * Legacy cleanup through the external `skills` CLI (pinned `1.7.0`).
  *
  * Tool quirks (verified against skills@1.7.0): exit code 0 is unreliable
  * (invalid agents exit 0 with an `Invalid agents:` marker); `list --json`
- * always reports `source: null` with unreliable `agents`, so ownership comes
- * from our own record plus observed name/path; `remove` supports no `--json`
- * and exit 0 means the command ran, not that anything was removed (confirm by
- * re-listing); scoped removal of a shared canonical path
- * (`~/.agents/skills/<skill>`) deletes the directory even while another agent
- * still references it, so callers guard removal while another owned platform
- * shares the observed path.
+ * reports `source: null` with unreliable `agents`, so ownership comes from
+ * our record plus observed name/path; `remove` has no `--json` and exit 0
+ * means the command ran, not that anything was removed (confirm by
+ * re-listing); scoped removal of a shared canonical path deletes the
+ * directory while another agent still references it, so callers guard shared
+ * paths.
  */
 
 export const SKILLS_CLI_VERSION = '1.7.0';
@@ -28,11 +23,7 @@ export const COMPANION_SKILL = 'create-pull-request';
 export const DOCS_UPDATE_SKILL = 'docs-update';
 export const MANAGED_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_SKILL];
 
-/**
- * maestria platform ID to native skills-CLI agent ID. `null` means no
- * companion target exists. omp aliases to `universal`: its host natively
- * discovers `~/.agents/skills/` SKILL.md directories.
- */
+/** Platform ID to skills-CLI agent ID. omp aliases to `universal`. */
 const COMPANION_AGENTS: Record<string, string | null> = {
   'claude-code': 'claude-code',
   codex: 'codex',
@@ -64,7 +55,7 @@ export type SkillCommandRunner = (
 const MAX_ERROR_DETAIL = 1000;
 
 const stripAnsi = (value: string): string =>
-  // oxlint-disable-next-line no-control-regex -- intentional ANSI/spinner stripping for child output.
+  // oxlint-disable-next-line no-control-regex -- strips ANSI/spinner output.
   value.replaceAll(/\u001B\[[0-9;?]*[A-Za-z]|\u001B\?25[hl]/gu, '');
 
 const sanitizeDetail = (value: string): string =>
@@ -103,7 +94,7 @@ interface CompanionEntry {
 const asEntry = (value: unknown): CompanionEntry | null =>
   isRecord(value) ? { name: value.name, path: value.path, status: value.status } : null;
 
-// oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
+// oxlint-disable-next-line strict-void-return -- unused ChildProcess return.
 const execFileAsync = promisify(execFile);
 
 export const runSkillsCli = async (
@@ -143,10 +134,6 @@ export interface ObservedCompanion {
   readonly path: string;
 }
 
-/**
- * List installed skills for one native target. Returns tool-observed
- * name/path inventory only; callers combine this with their own record.
- */
 export const listCompanions = async (
   runner: SkillCommandRunner,
   agent: string,
@@ -175,11 +162,7 @@ export const listCompanions = async (
   });
 };
 
-/**
- * Remove one managed skill from one native target. Success is the validated
- * exit plus a post-`list` check, never prose parsing; an absent skill is a
- * successful no-op. Callers guard shared canonical paths before invoking.
- */
+/** Exit 0 plus a post-`list` check; absent skill is a no-op. */
 export const removeCompanion = async (
   runner: SkillCommandRunner,
   ref: CompanionRef,

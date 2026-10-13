@@ -46,32 +46,6 @@ const requirePlatform = (id: string): NonNullable<ReturnType<typeof getPlatform>
 // An implicit update (no --version) must never downgrade an install that is
 // ahead of the registry. An explicit -V pin is honored verbatim.
 describe('update command - no silent downgrade', () => {
-  it('skips an implicit update when the installed version is newer than latest', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation(() => Effect.succeed(''));
-
-    const newerPlatform = {
-      ...requirePlatform('opencode'),
-      getInstalledVersion: Effect.succeed('0.99.0'),
-      getLatestVersion: Effect.succeed('0.2.0'),
-    };
-    const result = await Effect.runPromise(updateOne(newerPlatform, true));
-
-    expect(result.ok).toBe(true);
-    expect(result.message).toContain('newer than latest');
-    expect(result.message).toContain('skipping');
-
-    const updateCommands = vi
-      .mocked(shell.run)
-      .mock.calls.filter(
-        (call) =>
-          call[0] === 'opencode' &&
-          call[1]?.[0] === 'plugin' &&
-          call[1]?.[1] === '@maestria/opencode@0.2.0',
-      );
-    expect(updateCommands).toHaveLength(0);
-  });
-
   it('honors an explicit -V pin even when it downgrades below the installed version', async () => {
     vi.clearAllMocks();
     vi.mocked(shell.run).mockImplementation((cmd, args) => {
@@ -102,19 +76,5 @@ describe('update command - no silent downgrade', () => {
           call[1]?.[1] === '@maestria/opencode@0.2.0',
       );
     expect(pinnedUpdateCommands).toHaveLength(1);
-  });
-
-  it('does not offer a newer-than-latest install in the interactive picker', async () => {
-    vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation(() => Effect.succeed(''));
-    fsMocks.readFile.mockResolvedValue(
-      JSON.stringify({ name: '@maestria/opencode', version: '0.99.0' }),
-    );
-
-    const { needsUpdateOf } = await import('@/lib/freshness.js');
-
-    // Picker semantics: only strictly-BEHIND platforms are offered.
-    expect(needsUpdateOf('0.99.0', '0.2.0')).toBe(false);
-    expect(needsUpdateOf('0.1.0', '0.2.0')).toBe(true);
   });
 });

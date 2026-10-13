@@ -19,20 +19,14 @@ import { isRecord } from '@/lib/primitives.js';
 import type { PlatformResult } from '@/types.js';
 
 /**
- * Legacy companion cleanup for the external skills-CLI copies the CLI
- * installed before maestria packages started bundling their own skills.
- * Nothing here installs: update and uninstall remove recorded (owned) managed
- * skills after the plugin batch, then drop the platform record entry.
- * Ownership is never inferred from the filesystem: removal runs only for
- * recorded selections and only when no other observed consumer shares the
- * tool-observed path. Records persist only actual confirmed state.
+ * Legacy cleanup for CLI-installed copies. Only recorded (owned) skills are
+ * removed, only when no other observed consumer shares the tool-observed
+ * path. Unrecorded copies are never removed.
  */
 
-/** Skills in a selection this CLI version does not manage. */
 const unknownSkills = (skills: readonly string[]): string[] =>
   skills.filter((skill) => !MANAGED_SKILLS.includes(skill));
 
-/** Record read; ownership never comes from filesystem observation. */
 const recordedSkills = (record: SkillsRecord | null, platformId: string): string[] | null =>
   record?.platforms[platformId]?.skills ?? null;
 
@@ -45,17 +39,12 @@ const observedSkillPath = async (
   return entries.find((entry) => entry.name === skill)?.path ?? null;
 };
 
-/** Minimal shape for the shared-path guard: platform identity plus current intent. */
 interface SharerScope {
   readonly id: string;
   readonly selection: { readonly skills: readonly string[] };
 }
 
-/**
- * Other owned platforms that still want one skill and are not dropping it in
- * this same run. A shared tool-observed path means preserve-and-report,
- * never delete.
- */
+/** Shared path means preserve-and-report, never delete. */
 const stayingSharers = (
   record: SkillsRecord | null,
   effective: readonly SharerScope[],
@@ -73,11 +62,7 @@ const stayingSharers = (
   );
 };
 
-/**
- * Shared-path guard with fresh reads. Staying sharers report their
- * platform ID, other known agents their agent name. An unreadable agent fails
- * closed as a sharer.
- */
+/** Unreadable agents fail closed as sharers. */
 const findSharingObserver = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -94,7 +79,7 @@ const findSharingObserver = async (
       continue;
     }
     checkedAgents.add(otherAgent);
-    // oxlint-disable-next-line no-await-in-loop -- sequential pre-effect checks keep failure order deterministic.
+    // oxlint-disable-next-line no-await-in-loop -- deterministic failure order.
     const otherPath = await observedSkillPath(runner, otherAgent, skill);
     if (otherPath === ownPath) {
       return otherId;
@@ -117,7 +102,7 @@ const findSharingObserver = async (
     }
     let otherPath: string | null;
     try {
-      // oxlint-disable-next-line no-await-in-loop -- sequential pre-effect checks keep failure order deterministic.
+      // oxlint-disable-next-line no-await-in-loop -- deterministic failure order.
       otherPath = await observedSkillPath(runner, otherAgent, skill);
     } catch {
       return otherAgent;
@@ -129,7 +114,6 @@ const findSharingObserver = async (
   return null;
 };
 
-/** Remove one owned skill when unshared; otherwise report preservation. */
 const removeOwnedSkillIfUnshared = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -151,7 +135,7 @@ const removeOwnedSkillIfUnshared = async (
 const manualRemoveCommand = (agent: string, skill: string): string =>
   `npx -y ${SKILLS_CLI_PACKAGE} remove ${skill} -a ${agent} -g -y`;
 
-/** Remove every owned skill for one platform; a failure keeps the record for retry. */
+/** A failure keeps the record for retry. */
 const removeOwnedLegacySkills = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -163,10 +147,10 @@ const removeOwnedLegacySkills = async (
   const notes: string[] = [];
   try {
     for (const skill of owned) {
-      // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
+      // oxlint-disable-next-line no-await-in-loop -- deterministic mutation order.
       const ownPath = await observedSkillPath(runner, agent, skill);
       if (ownPath !== null) {
-        // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
+        // oxlint-disable-next-line no-await-in-loop -- deterministic mutation order.
         await removeOwnedSkillIfUnshared(
           runner,
           record,
@@ -204,12 +188,7 @@ const removeOwnedLegacySkills = async (
   };
 };
 
-/**
- * Reconcile one platform after a successful plugin operation. Missing records
- * leave companions in place with a manual command (or stay silent when the
- * caller opts out of the note). Unknown skill IDs keep their history.
- * Observed but unrecorded copies are never removed.
- */
+/** Unrecorded copies are never removed; unknown IDs keep their history. */
 const reconcileOneLegacy = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -247,20 +226,11 @@ const reconcileOneLegacy = async (
 };
 
 export interface LegacyCleanupOptions {
-  /**
-   * When true, platforms without a record entry keep their result untouched
-   * and silent (no observation, no note). The update path uses this so fresh
-   * installs without legacy records see no cleanup noise.
-   */
+  /** Silent for record-less platforms; update uses this to avoid cleanup noise. */
   readonly silentWhenUnrecorded: boolean;
 }
 
-/**
- * Remove legacy managed companions after successful plugin operations. Only
- * recorded (owned) known skills are removed, each only when no other observed
- * consumer shares the tool-observed path. Unrecorded copies are never
- * removed.
- */
+/** Only recorded skills are removed; unrecorded copies are never removed. */
 export const removeLegacyCompanions = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -277,7 +247,7 @@ export const removeLegacyCompanions = async (
       merged.push(result);
       continue;
     }
-    // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
+    // oxlint-disable-next-line no-await-in-loop -- deterministic mutation order.
     const reconciled = await reconcileOneLegacy(
       runner,
       next,
@@ -327,15 +297,10 @@ const removedFlagDisplay = (key: string): string => {
 };
 
 /**
- * Reject the retired companion-skill flags before any effect. citty passes
- * unknown flags through in the args object (strict parsing is off), so a
- * removed `--skills` still arrives here and must fail loud with guidance
- * instead of being silently ignored.
+ * citty passes unknown flags through with strict parsing off, so removed
+ * `--skills` flags arrive here and must fail loud instead of being ignored.
  */
-export const assertNoRemovedSkillFlags = (
-  args: unknown,
-  command: 'install' | 'update' | 'setup',
-): void => {
+export const assertNoRemovedSkillFlags = (args: unknown): void => {
   if (!isRecord(args)) {
     return;
   }
@@ -344,13 +309,6 @@ export const assertNoRemovedSkillFlags = (
     return;
   }
   const flag = removedFlagDisplay(found);
-  if (command === 'setup') {
-    throw new CliError(
-      `the ${flag} flag was removed: maestria packages now bundle their skills. ` +
-        `Use --skill-source <owner/repo:scope> for external skill repos.`,
-      1,
-    );
-  }
   throw new CliError(
     `the ${flag} flag was removed: maestria packages now bundle their skills, ` +
       `so there is nothing extra to install. Re-run without the flag.`,

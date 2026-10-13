@@ -29,12 +29,7 @@ export interface DoctorDeps {
 const INSTALL_PLUGIN_HINT = 'to install the plugin';
 const LEGACY_CLEANUP_HINT = 'to remove legacy';
 
-/**
- * Human table shows one actionable step per platform. Priority: an uninstalled
- * plugin blocks everything else, then legacy cleanup, otherwise the first
- * accumulated step. The JSON output keeps the full `next` array as the
- * machine contract.
- */
+/** Human table shows one step; JSON keeps the full `next` array. */
 const selectDisplayNext = (platform: DoctorPlatformReport): string[] => {
   if (platform.next.length <= 1) {
     return platform.next;
@@ -79,11 +74,7 @@ interface ObservedText {
   readonly text: string;
 }
 
-/**
- * Human table shows managed skills only; unrelated skills collapse to a
- * count. Platforms sharing one agent inventory render it once and reference
- * the first platform afterwards. JSON keeps the full `observed` arrays.
- */
+/** Human table collapses unrelated skills; JSON keeps full `observed`. */
 const observedText = (
   platform: DoctorPlatformReport,
   firstByAgent: Map<string, string>,
@@ -150,8 +141,7 @@ export const handleDoctor = async (
   args: DoctorArgs,
   deps: DoctorDeps = {},
 ): Promise<CommandResult> => {
-  // The global root --compact flag parses everywhere, but doctor has no compact
-  // rendering; fail loud before any detection or observation below.
+  // Root --compact parses everywhere but doctor has no compact rendering; fail loud.
   if (args.compact === true) {
     throw new CliError(
       args.quiet === true
@@ -163,7 +153,7 @@ export const handleDoctor = async (
   const spinner = createSpinner(args.quiet === true);
   spinner.start('Checking skill setup...');
 
-  // Corrupt records fail loud before any observation below.
+  // Corrupt records fail loud before any observation.
   const recordPath = redactHome(getSkillsRecordPath());
   const record = await readSkillsRecord();
   const statuses =

@@ -10,7 +10,7 @@ import type { ObservedCompanion, SkillCommandRunner } from '@/lib/skill-companio
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
-/** Read-only legacy skill diagnostics (`maestria doctor`): never installs, removes, or records. */
+/** Read-only legacy skill diagnostics: never installs, removes, or records. */
 
 export interface DoctorPlatformReport {
   readonly agent: string | null;
@@ -54,11 +54,6 @@ interface ManagedSkillFindings {
   readonly unmanaged: string[];
 }
 
-/**
- * Classify maestria's managed skills for one agent: recorded and observed is a
- * legacy CLI install, observed but unrecorded duplicates the bundled skill, and
- * recorded but unobserved is a stale record entry.
- */
 const classifyManagedSkills = (
   platformId: string,
   agentName: string,
@@ -105,7 +100,6 @@ const classifyManagedSkills = (
   return { missing, next, notes, unmanaged };
 };
 
-/** Build one platform report; list failures degrade into notes via `listError`. */
 const buildDoctorReport = (
   status: DoctorStatus,
   record: SkillsRecord | null,
@@ -160,7 +154,6 @@ const buildDoctorReport = (
   };
 };
 
-/** Collect read-only reports; list failures degrade into per-platform notes. */
 export const collectDoctorReports = async (
   runner: SkillCommandRunner,
   statuses: readonly PlatformStatus[],
@@ -189,7 +182,7 @@ export const collectDoctorReports = async (
   const failures = new Map<string, string>();
   for (const agent of agents) {
     try {
-      // oxlint-disable-next-line no-await-in-loop -- sequential read-only lists keep failure order deterministic.
+      // oxlint-disable-next-line no-await-in-loop -- deterministic failure order.
       inventories.set(agent, await listCompanions(runner, agent, { global: true }));
     } catch (error) {
       failures.set(agent, error instanceof Error ? error.message : String(error));

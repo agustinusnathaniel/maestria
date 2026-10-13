@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- platforms.ts is a cohesive registry aggregating 8 platform handlers (opencode, pi, kimi-code, hermes, cursor, claude-code, codex, omp) with shared helpers. Splitting the registry would fragment the single source for PLATFORM_IDS and platform lookup, harming discoverability and increasing cross-file churn for handler registration. The file's handlers share helpers (installNpmTarball, marketplace, the pi/omp factory) and are rarely edited together; file length is justified by cohesion.
+// oxlint-disable max-lines -- single cohesive platform registry; splitting would fragment lookup.
 import { Effect } from 'effect';
 import { homedir, tmpdir } from 'node:os';
 import nodePath from 'node:path';
@@ -33,7 +33,6 @@ import type { PlatformResult } from '@/types.js';
 
 const { join } = nodePath;
 
-/** Read OpenCode config file, trying .jsonc first then .json. */
 const readOpenCodeConfig = (): Effect.Effect<string, CommandError> => {
   const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
   const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
@@ -42,7 +41,6 @@ const readOpenCodeConfig = (): Effect.Effect<string, CommandError> => {
   );
 };
 
-/** Pack and extract a package in a private staging directory. */
 const installNpmTarball = (
   pkg: string,
   dest: string,
@@ -100,21 +98,11 @@ const installNpmTarball = (
       }),
   );
 
-/**
- * Version string from a parsed JSON manifest. Missing, malformed, and
- * non-string versions all resolve to 'unknown', so handlers cannot drift into
- * different fallbacks for the same manifest.
- */
+/** Missing/malformed/non-string versions resolve to 'unknown'. */
 const manifestVersion = (manifest: JsonRecord | undefined): string =>
   typeof manifest?.version === 'string' ? manifest.version : 'unknown';
 
-/**
- * Read a JSON manifest (typically package.json) and return its `version` field
- * via Node's cross-platform fs/promises API rather than a POSIX `cat`, so
- * installed paths in either host-native or Windows format work on the matching
- * host. Fails with a CommandError; callers decide whether a failed read means
- * 'unknown' (all current callers catch into 'unknown').
- */
+/** Reads via fs/promises so Windows-format paths work on their host. */
 export const readPackageJsonVersion = (
   packageJsonPath: string,
 ): Effect.Effect<string, CommandError> =>
@@ -184,7 +172,6 @@ const hostPluginInstalled = (command: 'claude' | 'codex'): Effect.Effect<boolean
     Effect.catchEager(() => Effect.succeed(false)),
   );
 
-/** Marketplace data a host CLI needs to prepare its local plugin marketplace. */
 interface NpmMarketplace {
   readonly command: 'claude' | 'codex';
   readonly dir: string;
@@ -193,7 +180,6 @@ interface NpmMarketplace {
   readonly packageName: string;
 }
 
-/** Register the marketplace directory with the host CLI when it is absent. */
 const ensureMarketplace = (
   command: 'claude' | 'codex',
   dir: string,
@@ -270,14 +256,12 @@ const codexMarketplace: NpmMarketplace = {
 };
 
 const refreshClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
-  // Network refresh shared by install and update; same 120s fetch deadline.
+  // Shared by install and update; host fetches keep the 120s deadline.
   run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE], 120_000).pipe(
     Effect.asVoid,
   );
 
-// Install and update share one flow: stage the marketplace payload, refresh
-// it, then materialize through the host CLI. Host fetches keep the 120s
-// deadline instead of the shared 30s default.
+// Stage, refresh, then materialize through the host CLI (120s host deadline).
 const runClaudePlugin = (action: 'install' | 'update'): Effect.Effect<void, CommandError> =>
   Effect.gen(function* runClaudePluginEffect() {
     yield* prepareNpmMarketplace(claudeMarketplace);
@@ -289,11 +273,7 @@ const runClaudePlugin = (action: 'install' | 'update'): Effect.Effect<void, Comm
     );
   });
 
-/**
- * Literal-typed registry of platform IDs. This is the single source for the
- * platform ID union - PlatformHandler.id and ValidPlatform both derive from it,
- * so adding or removing a platform updates the type without an independent cast.
- */
+/** Single source for the platform ID union. */
 export const PLATFORM_IDS = [
   'opencode',
   'omp',
@@ -308,13 +288,10 @@ export const PLATFORM_IDS = [
 export type PlatformId = (typeof PLATFORM_IDS)[number];
 
 /**
- * Per-update host state that a handler captures exactly once so the update
- * command's version check, preflight, and update step can share a single host
- * inspection instead of running it once per step. Handlers that need no shared
- * state omit `captureUpdateSnapshot`.
+ * Per-update host state captured once and shared by the version check,
+ * preflight, and update step.
  */
 export interface PlatformUpdateSnapshot {
-  /** Installed version observed when the snapshot was captured. */
   readonly installedVersion: string;
 }
 
@@ -328,21 +305,10 @@ export interface PlatformHandler {
   readonly getLatestVersion: Effect.Effect<string>;
   /** Whether `update --version` can select an exact package version. */
   readonly supportsVersionPinning?: boolean;
-  /**
-   * Optional single-capture per-update snapshot. When present, the update
-   * command captures it once and uses it for the installed-version check, the
-   * preflight, and the update itself, so a stateful host inspection runs a
-   * single time per update. A capture failure fails the update with the
-   * accurate error rather than updating blind.
-   */
   readonly captureUpdateSnapshot?: Effect.Effect<PlatformUpdateSnapshot, CommandError>;
   /**
-   * Optional update eligibility/preflight check, run by the update command
-   * before the version-equality "Already up to date" short-circuit so an
-   * ineligible registration can never be reported as a successful no-op. It
-   * receives the per-update snapshot when the handler captured one. Fails with
-   * a CommandError to block the update with an accurate message. Handlers
-   * without such a condition omit it.
+   * Runs before the "Already up to date" short-circuit so ineligible state is
+   * never reported as a successful no-op.
    */
   readonly preflightUpdate?: (
     snapshot?: PlatformUpdateSnapshot,
@@ -355,12 +321,7 @@ export interface PlatformHandler {
   readonly uninstall: Effect.Effect<void, CommandError>;
 }
 
-/**
- * Handler definition accepted by the registry. A handler that declares an
- * `npmPackage` derives `getLatestVersion` from it, so the npm package and the
- * latest-version lookup cannot drift apart. Platforms distributed outside npm
- * (Hermes is git-based) keep an explicit `getLatestVersion` override.
- */
+/** `npmPackage` derives `getLatestVersion`, so the two cannot drift apart. */
 type PlatformDefinition = Omit<PlatformHandler, 'getLatestVersion'> & {
   readonly getLatestVersion?: Effect.Effect<string>;
 };
@@ -432,7 +393,6 @@ const opencode: PlatformDefinition = {
   id: 'opencode',
   install: Effect.gen(function* install() {
     yield* clearOpencodeCache();
-    // Install globally by default - install is a setup command, not per-project
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
   }).pipe(Effect.asVoid),
   isInstalled: readOpenCodeConfig().pipe(
@@ -455,13 +415,12 @@ const opencode: PlatformDefinition = {
 
       yield* clearOpencodeCache();
 
-      // Check if installed globally or at project level
+      // Global install uses -g; cold fetches keep install's 120s deadline.
       const globalConfig = yield* readOpenCodeConfig().pipe(
         Effect.map((out) => out.includes('@maestria/opencode')),
         Effect.catchEager(() => Effect.succeed(false)),
       );
       const flag = globalConfig ? ['-g', '--force'] : ['--force'];
-      // Cold fetches outlast the 30s default; match install's 120s deadline.
       yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag], 120_000);
     }),
 };
@@ -488,8 +447,7 @@ const claudeCode: PlatformDefinition = {
   update: () => runClaudePlugin('update'),
 };
 
-// Codex plugin add/remove share one shape: host call with the marketplace
-// reference. Host fetches keep the 120s deadline instead of the 30s default.
+// Host fetches keep the 120s deadline instead of the 30s default.
 const runCodexPlugin = (action: 'add' | 'remove'): Effect.Effect<void, CommandError> =>
   run(
     'codex',
@@ -522,34 +480,23 @@ const codex: PlatformDefinition = {
   update: (_version?: string) =>
     Effect.gen(function* update() {
       yield* prepareNpmMarketplace(codexMarketplace);
-      // Codex CLI has no plugin update command. Reinstalling after refreshing
-      // the marketplace is its supported update path.
+      // No plugin update command; remove-then-add is the supported update path.
       yield* runCodexPlugin('remove');
       yield* runCodexPlugin('add');
       yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
     }),
 };
 
-/**
- * Pi and its fork omp share one handler shape: detect the binary, read the
- * installed version from the host's package.json, check installation by that
- * same file, and drive install/update/uninstall through the host's package
- * installer. Only command spelling, reference prefix, install path, label, and
- * Pi's subagent prerequisite differ, so they are parameters here.
- */
+/** Pi and omp share one handler shape; only spelling, prefix, path, and labels differ. */
 interface PiStylePlatformDefinition {
   readonly id: 'pi' | 'omp';
   readonly label: string;
-  /** Host CLI binary and package command name. */
   readonly binary: string;
   readonly npmPackage: string;
-  /** Package reference prefix the host installer requires (`npm:` for Pi). */
+  /** Host installer requires `npm:` for Pi, empty for omp. */
   readonly referencePrefix: string;
-  /** Plugin command group (`['plugin']` for omp; empty for Pi). */
   readonly commandPrefix: readonly string[];
-  /** package.json whose `version` reports the installed maestria package. */
   readonly installedPackageJsonPath: string;
-  /** Peer dependency installed before every install/update; failures are ignored. */
   readonly prerequisite?: Effect.Effect<void>;
 }
 
@@ -594,21 +541,10 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
   };
 };
 
-/**
- * Range for the Pi subagent dispatch peer. Kept in step with the
- * '@gotgenes/pi-subagents' catalog entry in pnpm-workspace.yaml, which
- * `@maestria/pi` declares as its peer. Bare latest would install a version the
- * peer range can reject; Pi accepts a semver range after the `npm:` prefix and
- * reconciles updates inside it (`parseNpmSpec` + `validRange` in the host's
- * package manager).
- */
+/** Pinned in step with the workspace catalog; bare latest can violate the peer range. */
 const PI_SUBAGENTS_RANGE = '^21.5.1';
 
-/**
- * Pi's subagent dispatch needs @gotgenes/pi-subagents. It is installed before
- * every install/update; a failure is ignored so a missing peer dependency
- * cannot block the main package install.
- */
+/** Installed before every install/update; failures are ignored. */
 const piSubagentsPrerequisite: Effect.Effect<void> = run(
   'pi',
   ['install', `npm:@gotgenes/pi-subagents@${PI_SUBAGENTS_RANGE}`],
@@ -627,15 +563,8 @@ const pi: PlatformDefinition = piStylePlatform({
 });
 
 /**
- * Replace a platform's installed plugin payload while preserving the host
- * state around it. `capture` reads the pre-replacement state (a failure aborts
- * before anything is destroyed), `replace` installs the new payload, and
- * `restore` reapplies the captured state to the fresh payload.
- * `invalidatePackage` clears the npm version cache after a successful update,
- * which only the update paths need.
- *
- * Capture and replace are thunks so call sites resolve environment-dependent
- * paths when the operation runs, not when the handler is defined.
+ * Replace a payload while preserving host state. Capture failures abort
+ * before anything is destroyed; thunks resolve env paths at run time.
  */
 interface ReplacePlatformPayloadOptions<State> {
   readonly capture: () => Effect.Effect<State, CommandError>;
@@ -674,9 +603,7 @@ const kimiCode: PlatformDefinition = {
   ),
   id: 'kimi-code',
   install: replacePlatformPayload({
-    // Validate the host registry before the tarball helper replaces the managed
-    // directory. Kimi's plugin manager treats malformed installed.json as a
-    // load failure, so do not destroy the current copy before surfacing it.
+    // Kimi treats malformed installed.json as a load failure; validate first.
     capture: readKimiInstalled,
     replace: () => installNpmTarball(MAESTRIA_PLUGIN_PACKAGE, kimiManagedPluginDir()),
     restore: registerKimiPlugin,
@@ -741,10 +668,9 @@ const hermes: PlatformDefinition = {
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
 const CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents`;
-// Installs before the shared-profile layout kept configured models in a Cursor-only copy.
+// Pre-shared-profile installs kept models in a Cursor-only copy.
 const LEGACY_CURSOR_AGENT_DIR = `${CURSOR_PLUGIN_DIR}/agents/cursor`;
 
-/** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
 const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandError> =>
   Effect.tryPromise({
     catch: (error) =>
@@ -768,8 +694,7 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
               throw error;
             }
           };
-          // The shared profile wins when it carries a model; otherwise fall back to the
-          // Cursor-only copy that earlier consolidated installs configured.
+          // Shared profile wins; fallback is the pre-consolidation Cursor-only copy.
           const [shared, legacy] = await Promise.all([
             readModel(CURSOR_AGENT_DIR),
             readModel(LEGACY_CURSOR_AGENT_DIR),
@@ -782,7 +707,6 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
     },
   });
 
-/** Reapply configured Cursor plugin-agent models after replacing the generated package files. */
 const restoreCursorAgentModels = (
   models: Record<string, string>,
 ): Effect.Effect<void, CommandError> =>
@@ -810,10 +734,6 @@ const restoreCursorAgentModels = (
     },
   });
 
-/**
- * Cursor's local plugin directory lives under `~/.cursor/plugins/local`; make
- * sure the parent exists before the tarball is extracted into it.
- */
 const ensureCursorPluginParentDirectory = (): Effect.Effect<void, CommandError> =>
   Effect.tryPromise({
     catch: (error) =>
@@ -833,8 +753,7 @@ const cursor: PlatformDefinition = {
     if (cliName !== null && cliName !== undefined && cliName !== '') {
       return true;
     }
-    // An unrelated `agent` binary (for example another vendor's CLI) must not
-    // be rescued by the broad ~/.cursor directory fallback.
+    // An unrelated `agent` binary must not match the ~/.cursor fallback.
     if (yield* commandExists('agent')) {
       return false;
     }
@@ -876,13 +795,8 @@ const cursor: PlatformDefinition = {
     }),
 };
 
-// OMP consumes the consolidated portable plugin: `omp plugin install`
-// stages `@maestria/agent-plugins`, whose root manifest and shared skills OMP loads
-// natively (see https://maestria.sznm.dev/agent-plugins/installation/#omp). No
-// maestria-owned executable ships for OMP: no session hooks, no tool
-// interception, and no per-agent model files, so OMP has no model-config
-// handler. The retired `@maestria/omp` payload is not removed automatically;
-// uninstall it first when migrating (`omp plugin uninstall @maestria/omp`).
+// OMP loads the consolidated plugin natively; no hooks or model files ship.
+// Migrating from `@maestria/omp` requires manual uninstall first.
 const omp: PlatformDefinition = piStylePlatform({
   binary: 'omp',
   commandPrefix: ['plugin'],

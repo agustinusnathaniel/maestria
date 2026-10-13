@@ -25,7 +25,7 @@ const report = (valid: boolean): AgentPluginValidation => ({
   root: '/tmp/my-plugin',
   skillNames: [],
   valid,
-  validationScope: 'portable-manifest-skills-mcp',
+  validationScope: 'portable-manifest-skills',
   warnings: [],
 });
 
