@@ -62,7 +62,7 @@ Each platform object:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
+| `id` | string | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`, `deepseek`) |
 | `label` | string | Human-readable name |
 | `available` | boolean | CLI tool detected on `$PATH` |
 | `installed` | boolean | maestria is installed for this platform |
@@ -121,20 +121,21 @@ Every maestria package bundles the `create-pull-request` and `docs-update` skill
 
 ### Platform identifiers
 
-| ID            | Platform    | Distribution                                            |
-| ------------- | ----------- | ------------------------------------------------------- |
-| `opencode`    | OpenCode V2 | `@maestria/opencode` (npm) via `opencode plugin`        |
-| `pi`          | Pi          | `@maestria/pi` (npm)                                    |
-| `kimi-code`   | Kimi Code   | `@maestria/agent-plugins` (npm)                         |
-| `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
-| `cursor`      | Cursor      | `@maestria/agent-plugins` (npm)                         |
-| `omp`         | Oh My Pi    | `@maestria/agent-plugins` (npm, native data resources)  |
-| `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
-| `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
+| ID            | Platform         | Distribution                                                  |
+| ------------- | ---------------- | ------------------------------------------------------------- |
+| `opencode`    | OpenCode V2      | `@maestria/opencode` (npm) via `opencode plugin`              |
+| `pi`          | Pi               | `@maestria/pi` (npm)                                          |
+| `kimi-code`   | Kimi Code        | `@maestria/agent-plugins` (npm)                               |
+| `hermes`      | Hermes           | Git-based via `hermes plugins install`                        |
+| `cursor`      | Cursor           | `@maestria/agent-plugins` (npm)                               |
+| `omp`         | Oh My Pi         | `@maestria/agent-plugins` (npm, native data resources)        |
+| `claude-code` | Claude Code      | npm package staged into a local Claude Code marketplace       |
+| `codex`       | Codex CLI        | npm package staged into a local Codex marketplace             |
+| `deepseek`    | DeepSeek Harness | `@maestria/deepseek` (npm) via `dsh plugin --profile web add` |
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in its active AGENTS.md. Marketplace-only Codex installation supplies the four skills.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in its active AGENTS.md. Marketplace-only Codex installation supplies the four skills. DeepSeek Harness installs into its shipped `web` profile, the one that mounts agent presets; restart `dsh web` after an install or update.
 
 ### Error handling
 
@@ -142,7 +143,7 @@ Claude Code and Codex CLI use host-native marketplace managers; the CLI stages t
 
 | Scenario | Error message |
 | --- | --- |
-| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex` |
+| Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex, deepseek` |
 
 **Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform instead of aborting the batch:
 
@@ -336,7 +337,7 @@ maestria check <platform> [--json] [--quiet]
 maestria check --all [--json] [--quiet]
 ```
 
-`<platform>` is one of `opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
+`<platform>` is one of `opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`, `deepseek`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
 
 ### Flags
 
