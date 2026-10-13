@@ -11,12 +11,11 @@ export class ValidationError extends Data.TaggedError('ValidationError')<{
 
 export type ValidPlatform = PlatformId;
 
-// Ordering follows the legacy help/error order; membership comes from the registry.
+// Preserve legacy help/error order; membership comes from the registry.
 const LEGACY_INDEX = new Map<ValidPlatform, number>(
   PLATFORM_IDS.map((id, idx) => [id, idx] as const),
 );
 
-// Single source for membership, sorted to preserve prior message ordering.
 export const VALID_PLATFORMS: readonly ValidPlatform[] = platforms
   .map((p) => p.id)
   .toSorted((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
@@ -80,7 +79,6 @@ export const validateVersion = (input: string): Effect.Effect<string, Validation
   );
 };
 
-/** First typed failure's string `message`, or undefined when none is present. */
 export const failureMessage = (cause: Cause.Cause<unknown>): string | undefined => {
   const failure: unknown = cause.reasons.find(Cause.isFailReason)?.error;
   if (typeof failure !== 'object' || failure === null || !('message' in failure)) {
@@ -89,7 +87,6 @@ export const failureMessage = (cause: Cause.Cause<unknown>): string | undefined 
   return typeof failure.message === 'string' ? failure.message : undefined;
 };
 
-/** Run a validation effect at the CLI boundary (failure becomes CliError exit 1). */
 export const validateOrThrow = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {

@@ -86,8 +86,7 @@ export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult
   if (!Array.isArray(targets)) {
     return targets;
   }
-  // Install runs the plugin batch only: maestria packages bundle their own
-  // skills, so no companion-skill step remains.
+  // Packages bundle their own skills, so no companion-skill step remains.
   const results = await runBatchSelected(targets, isQuiet, installOne);
   return batchCommandResult(results, rawArgs);
 };

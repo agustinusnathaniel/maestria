@@ -230,7 +230,7 @@ export const main = defineCommand({
     name: 'maestria',
   },
   run: async (context) => {
-    // A matched subcommand already recorded its exit code; skip the status fall-through.
+    // A matched subcommand already recorded its exit code.
     if (process.exitCode !== undefined) {
       return;
     }
@@ -248,7 +248,6 @@ export const main = defineCommand({
   },
 });
 
-/** CLI boundary: owns signal handlers, the citty run, and the single process exit. */
 export const runCli = async (): Promise<void> => {
   process.on('SIGINT', () => process.exit(130));
   process.on('SIGTERM', () => process.exit(0));

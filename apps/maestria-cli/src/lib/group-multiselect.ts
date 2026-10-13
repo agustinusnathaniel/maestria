@@ -150,12 +150,12 @@ const buildValidate = (required: boolean) => (selected: unknown[] | undefined) =
   return noValidationError;
 };
 
-// oxlint-disable-next-line max-lines-per-function -- Group render shares title/guide/styleOption closure across 5 visual states; splitting would duplicate the closure.
+// oxlint-disable-next-line max-lines-per-function -- shares render closure across visual states.
 const createGroupRender = <Value>(
   opts: GroupMultiSelectOptions<Value>,
   opt: ReturnType<typeof createOptionRenderer<Value>>,
 ): ConstructorParameters<typeof GroupMultiSelectPrompt<Option<Value>>>[0]['render'] =>
-  // oxlint-disable-next-line max-lines-per-function -- Render covers submit/cancel/error/default states with shared helpers; splitting fragments the states.
+  // oxlint-disable-next-line max-lines-per-function -- covers submit/cancel/error/default states.
   function render(this: GroupMultiSelectPrompt<Option<Value>>) {
     const guide = opts.withGuide ?? true;
     const showInstructions = opts.showInstructions ?? true;

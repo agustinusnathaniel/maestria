@@ -84,12 +84,7 @@ const collectInteractiveUpdateTargets = async (): Promise<
     .map((platform) => ({ id: platform.id, label: platform.label }));
 };
 
-/**
- * Legacy cleanup when every installed plugin is already current. The plugin
- * step is a reported no-op per platform while recorded CLI-installed skill
- * copies are removed through the shared cleanup. With no record entries the
- * up-to-date output returns unchanged and no skills CLI call runs.
- */
+/** Already-current installs still run legacy cleanup; without records output is unchanged. */
 const cleanupCurrentInstalls = async (
   record: SkillsRecord | null,
   upToDate: CommandResult,
@@ -139,8 +134,7 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
     }
     targets = outcome;
   }
-  // The plugin batch runs first; recorded CLI-installed skill copies are
-  // removed afterwards, and only for platforms whose plugin step succeeded.
+  // Plugin batch first; skill cleanup runs only for succeeded platforms.
   const results = await runBatchSelected(targets, isQuiet, (platform, quiet) =>
     updateOne(platform, quiet, rawArgs.version),
   );

@@ -1,5 +1,3 @@
-/** Native Codex custom-agent naming and TOML editing helpers. */
-
 export const CODEX_AGENT_PREFIX = 'maestria-';
 
 const escapeRegExp = (value: string): string => value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -29,7 +27,6 @@ const quotedStringEnd = (content: string, start: number): number => {
   return content.length;
 };
 
-/** Locate root statements, keeping strings, comments, and container values opaque. */
 const rootStatements = (content: string): TomlStatement[] => {
   const statements: TomlStatement[] = [];
   let start = 0;
@@ -148,7 +145,6 @@ export const codexManagedAgentName = (agent: string): string => `${CODEX_AGENT_P
 export const codexManagedAgentFileName = (agent: string): string =>
   `${codexManagedAgentName(agent)}.toml`;
 
-/** Read a top-level TOML string setting without entering a table section. */
 export const parseCodexTopLevelString = (content: string, key: string): string | undefined => {
   const value = setting(content, key, rootStatements(content))?.rawValue;
   if (value === undefined) {
@@ -169,7 +165,6 @@ export const parseCodexTopLevelString = (content: string, key: string): string |
   return delimiter.startsWith("'") ? body : parseBasicString(body, multiline);
 };
 
-/** Set or remove a top-level TOML string setting while preserving other text. */
 export const setCodexTopLevelString = (
   content: string,
   key: string,
@@ -198,10 +193,7 @@ export const setCodexTopLevelString = (
   return `${prefix}${separator}${key} = ${JSON.stringify(value)}${suffix}${content.slice(position)}`;
 };
 
-/**
- * Refresh a bundled agent while preserving user-selected runtime settings.
- * Prompt/role metadata comes from the package; model tuning stays user-owned.
- */
+/** Bundled prompt/role wins; user-owned model tuning is preserved. */
 export const mergeCodexAgentSettings = (
   bundled: string,
   existing: string,

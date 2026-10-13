@@ -43,20 +43,6 @@ describe('validation', () => {
     expect(await Effect.runPromise(validation.validatePlatform('PI'))).toBe('pi');
   });
 
-  it('validation rejects unknown platform with message listing valid platforms in legacy order', async () => {
-    const result = await Effect.runPromiseExit(validation.validatePlatform('unknown'));
-    expect(result._tag).toBe('Failure');
-    if (result._tag === 'Failure') {
-      const { Cause } = await import('effect');
-      const fail = result.cause.reasons.find(Cause.isFailReason) as
-        | { error: { message: string } }
-        | undefined;
-      expect(fail?.error.message).toBe(
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex",
-      );
-    }
-  });
-
   it('validatePlatforms error message preserves legacy ordering', async () => {
     const result = await Effect.runPromiseExit(validation.validatePlatforms('opencode,unknown'));
     expect(result._tag).toBe('Failure');

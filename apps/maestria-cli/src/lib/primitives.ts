@@ -1,8 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-/** Shared low-level guards and parsers. Keep dependency-free apart from Node built-ins. */
-
 export type JsonRecord = Record<string, unknown>;
 
 export const isRecord = (value: unknown): value is JsonRecord =>

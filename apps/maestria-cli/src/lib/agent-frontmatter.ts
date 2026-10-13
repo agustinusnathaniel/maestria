@@ -1,12 +1,9 @@
-/** Shared `model:` frontmatter parsing and editing for markdown agent files. */
-
 const FRONTMATTER_BODY = /^---\r?\n(?<body>[\s\S]*?)\r?\n---/u;
 const FRONTMATTER_EDIT =
   /^(?<opening>---\r?\n)(?<body>[\s\S]*?)(?<closing>\r?\n---)(?<afterClosing>\r?\n?)/u;
 const MODEL_LINE = /^model:\s*(?<model>.+?)\s*$/mu;
 const QUOTED_MODEL_LINE = /^model:\s*(?:"(?<double>[^"]*)"|'(?<single>[^']*)'|(?<plain>.+?))\s*$/mu;
 
-/** Parse the model with the requested fallback-to-content and unquoting semantics. */
 export const parseAgentFrontmatterModel = (
   content: string,
   options: { fallbackToContent?: boolean; unquote?: boolean } = {},
@@ -21,7 +18,6 @@ export const parseAgentFrontmatterModel = (
     : match?.groups?.model;
 };
 
-/** Set or remove the model with the requested frontmatter creation and fence semantics. */
 export const setAgentFrontmatterModel = (
   content: string,
   model: string,

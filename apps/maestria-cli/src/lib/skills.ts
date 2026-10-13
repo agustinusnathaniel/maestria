@@ -4,14 +4,9 @@ import { getMaestriaConfigDir } from '@/lib/shell.js';
 import path from 'node:path';
 
 /**
- * Legacy ownership record for maestria-managed methodology skills.
- *
- * The CLI no longer installs skills: every maestria package bundles its own
- * (`create-pull-request`, `docs-update`). Selections stored per platform at
- * `$XDG_CONFIG_HOME/maestria/skills.json` exist only so update and uninstall
- * can clean up copies the CLI installed earlier. Observed tool output is kept
- * per skill, never as one shared source/path. Unknown skill keys from newer
- * writers are preserved.
+ * Legacy ownership record for CLI-installed copies. Packages bundle their own
+ * skills now; this exists only for cleanup. Ownership never comes from the
+ * filesystem, and unknown keys from newer writers are preserved.
  */
 
 export const SKILLS_RECORD_VERSION = 2;
@@ -30,10 +25,7 @@ export interface SkillAsset {
 export interface PlatformSkillSelection {
   readonly skills: string[];
   readonly updatedAt?: string;
-  /**
-   * History of our own successful operations, keyed by skill. Paths are never
-   * trusted from disk; unknown skill keys from newer writers are preserved.
-   */
+  /** Own successful operations, keyed by skill; unknown keys preserved. */
   readonly skillAssets?: Record<string, SkillAsset>;
 }
 
@@ -119,8 +111,7 @@ const parsePlatformEntry = (
       1,
     );
   }
-  // Unknown IDs are preserved: a newer writer may have stored IDs this version
-  // does not know yet.
+  // Newer writers may have stored IDs this version does not know.
   const assets = parseAssets(entry, platformId, source);
   return {
     ...(Object.keys(assets).length > 0 ? { skillAssets: assets } : {}),
@@ -175,7 +166,7 @@ export const readSkillsRecord = async (): Promise<SkillsRecord | null> => {
 
 export const writeSkillsRecord = async (record: SkillsRecord): Promise<void> => {
   const recordPath = getSkillsRecordPath();
-  // Serialize fully before touching the filesystem.
+  // Serialize before touching the filesystem.
   const payload = `${JSON.stringify(
     {
       platforms: Object.fromEntries(
@@ -195,8 +186,7 @@ export const writeSkillsRecord = async (record: SkillsRecord): Promise<void> => 
   )}\n`;
   const { mkdir, rename, rm, writeFile } = await import('node:fs/promises');
   await mkdir(path.dirname(recordPath), { recursive: true });
-  // Same-directory temp plus rename: readers never observe a half-written
-  // record. Atomic replacement only, not concurrency control.
+  // Same-directory temp plus rename: atomic replacement, not concurrency control.
   const tempPath = `${recordPath}.${process.pid}.tmp`;
   try {
     await writeFile(tempPath, payload, 'utf-8');
