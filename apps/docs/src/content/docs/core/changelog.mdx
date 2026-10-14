@@ -5,6 +5,10 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-10-14
+
+- **Trackers carry evidence.** Plans that span sessions keep one tracker line per task with the evidence that closed it, and resumed work treats done marks as claims. When you report missing work, another session wrote the tracker, or a done task fails, the orchestrator audits every done item in scope, reopens what fails, and corrects the tracker before continuing.
+
 ## 2026-10-13
 
 - **Every package ships the skills the rules rely on.** `create-pull-request` and `docs-update` now come with `@maestria/agent-plugins` (all eight plugin hosts), `@maestria/opencode`, and `@maestria/pi`, so the rules never point an agent at a skill it does not have. The CLI no longer installs them separately; `maestria update` removes the copies it installed earlier. See [Skills](/core/agents/#skills).
