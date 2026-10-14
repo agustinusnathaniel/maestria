@@ -16,11 +16,13 @@ interface Props {
    * `install_copy` event (e.g. 'home-hero', 'plugin-hero').
    */
   location?: string;
-  /** Chip alignment inside its parent column ('center' matches the homepage). */
+  /** Chip alignment inside its parent column. */
   align?: 'center' | 'start';
+  /** Show the package-runner caption under the chip. */
+  caption?: boolean;
 }
 
-const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
+const { command, location = 'plugin-hero', align = 'center', caption = true } = Astro.props;
 ---
 
 <div
@@ -30,7 +32,7 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
   ]}
   data-install-location={location}
 >
-  <div class="install-chip inline-flex items-stretch rounded-[6px] bg-home-surface border border-home-border overflow-hidden max-w-full">
+  <div class="install-chip inline-flex items-stretch rounded-[8px] bg-home-surface border border-home-border overflow-hidden max-w-full">
     <span class="flex items-center pl-4 pr-2 font-mono text-sm text-home-accent select-none" aria-hidden="true">$</span>
     <code class="flex items-center py-2.5 font-mono text-[0.8125rem] text-home-text whitespace-nowrap">{command}</code>
     <button
@@ -44,12 +46,11 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
     </button>
   </div>
   <span class="copy-live sr-only" aria-live="polite"></span>
-  <!-- Two deliberate segments: below the 480px `sm` breakpoint the runtimes
-       and the tagline break onto their own lines, so no single word wraps
-       into an orphan. Above it the caption renders as one line. -->
-  <p class="font-mono text-xs text-home-text-muted m-0">
-    npm · pnpm · yarn · bun · deno<br class="sm:hidden" /> - any runtime works
-  </p>
+  {caption && (
+    <p class="font-sans text-[0.8125rem] text-home-text-muted m-0">
+      Works with npm, pnpm, yarn, bun, or deno.
+    </p>
+  )}
 </div>
 
 <style>

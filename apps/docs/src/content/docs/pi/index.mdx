@@ -11,26 +11,18 @@ import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
 import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
 
 <div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
-
   <div class="home-inner">
     <PlatformHero
-      eyebrow="@MAESTRIA/PI"
       title="Structured workflows for Pi."
       lead="Install the Pi extension for seven specialist subagents, workflow modes, and session-aware orchestration."
-      mark={marks.piOmp}
       primaryCta={{ href: '/pi/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/pi/reference/', label: 'Reference' }}
       installCommand="npx maestria install pi"
     />
 
     <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
       title="A native Pi extension."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
