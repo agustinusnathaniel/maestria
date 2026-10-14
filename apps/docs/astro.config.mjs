@@ -34,6 +34,7 @@ export default defineConfig({
           tag: 'meta',
         },
       ],
+      logo: { src: './src/assets/logo.svg' },
       plugins: [
         starlightLinksValidator({
           // The 404 hero's "Go home" action points at `/`, i.e. the custom
