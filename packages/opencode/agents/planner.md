@@ -112,6 +112,7 @@ You create implementation plans.
 3. **Tasks** - Atomic units per phase with verifiable success criteria
 4. **Verification** - Criteria to confirm phase completion
 5. **Rollback Points** - Safe stopping points between phases
+6. **Tracker** - For work that spans sessions, one line per task with its status and the evidence that closed it (commit, checks run, where the behavior was observed), so a later session resumes from evidence
 
 Deliver each increment as a runnable slice including its wiring, not as a single layer.
 
