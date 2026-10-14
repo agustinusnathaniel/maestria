@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0
+
+### Minor Changes
+
+- [#396](https://github.com/agustinusnathaniel/maestria/pull/396) [`e62199d`](https://github.com/agustinusnathaniel/maestria/commit/e62199d505f7caff9267217fc3d47c191bb76645) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Plans that span sessions keep a tracker with evidence per task, and the orchestrator treats done marks as claims: it audits every done item in scope before resuming when the user reports missing work, another session wrote the tracker, or a done task fails.
+
 ## 0.9.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # @maestria/agent-plugins
 
+## 0.9.0
+
+### Minor Changes
+
+- [#396](https://github.com/agustinusnathaniel/maestria/pull/396) [`e62199d`](https://github.com/agustinusnathaniel/maestria/commit/e62199d505f7caff9267217fc3d47c191bb76645) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Plans that span sessions keep a tracker with evidence per task, and the orchestrator treats done marks as claims: it audits every done item in scope before resuming when the user reports missing work, another session wrote the tracker, or a done task fails.
+
+### Patch Changes
+
+- [#398](https://github.com/agustinusnathaniel/maestria/pull/398) [`fd6defa`](https://github.com/agustinusnathaniel/maestria/commit/fd6defa1cbf17205ca799b9af3d4c43aa193ae99) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Replace the plugin logo shown by Cursor and Codex with the new maestria mark: the maker's solid diamond meeting the checker's ring, in the docs site's green and brass.
+
 ## 0.8.0
 
 ### Minor Changes
