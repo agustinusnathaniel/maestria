@@ -4,755 +4,1134 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import InstallCommand from '@/components/plugin/install-command.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { agents } from '@/data/agents.js';
-import type { Agent } from '@/data/agents.js';
+import { installTargets } from '@/data/install-targets.js';
 import { markAttrs, marks } from '@/data/marks.js';
 import { platforms } from '@/data/platforms.js';
+import { lanes, routes } from '@/data/routes.js';
 
-const INSTALL_CMD = 'npx maestria install opencode';
+const INSTALL_CMD = 'npx maestria install';
+const DESCRIPTION =
+  'A portable harness for AI coding agents. Route complex work through specialists, structured handoffs, and independent review.';
+
+const agentName = new Map(agents.map((agent) => [agent.id, agent.name]));
+
+/** Columns on the score: the longest route sets the time axis for all. */
+const SCORE_COLUMNS = Math.max(...routes.map((route) => route.steps.length));
+
+const principles = [
+  {
+    body: 'Small edits run directly. Specialists join only when they add information or reduce risk.',
+    mark: 'pipeline',
+    title: 'The smallest safe route',
+  },
+  {
+    body: 'The builder never approves its own work. A reviewer who did not write it checks every change.',
+    mark: 'makerChecker',
+    title: 'A second pair of eyes',
+  },
+  {
+    body: "The same roles and rules on every host, built on each tool's own agents, skills, and plugins.",
+    mark: 'platforms',
+    title: 'One method, native tools',
+  },
+];
 ---
 
 <StarlightPage
   frontmatter={{
     title: 'maestria',
-    description:
-      'A portable harness for AI coding agents. Route complex work through specialists, structured handoffs, and independent review.',
+    description: DESCRIPTION,
     template: 'splash',
     hero: { tagline: '' },
     editUrl: false,
     lastUpdated: false,
   }}
 >
-  <div class="home">
-    <div class="home-glow" aria-hidden="true"></div>
-    <div class="home-grid" aria-hidden="true"></div>
-
+  <div class="home not-content">
+    <!-- ================================ HERO ================================ -->
     <div class="home-inner">
-      <!-- ============================== 1. HERO ============================== -->
-      <section
-        class="flex flex-col items-center text-center pt-[clamp(4.5rem,9vw,6.5rem)] max-md:pt-12 min-w-0 home-hero-anim"
-        aria-labelledby="home-title"
-      >
-        <p class="font-mono text-xs uppercase tracking-[0.14em] text-home-text-muted mb-5 max-md:mb-2">OPEN-SOURCE AGENT METHODOLOGY</p>
-        <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.04em] text-balance text-home-text max-w-[20ch] mb-6 max-md:mb-3">
-          Make every step <span class="text-home-accent">intentional.</span>
-        </h1>
-        <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-[40ch] mb-9 max-md:mb-4 mx-auto text-pretty">
-          A portable harness for AI coding agents. Route complex work through
-          specialists, structured handoffs, and independent review.
+      <section class="hero" aria-labelledby="home-title">
+        <h1 id="home-title" class="hero-title">Give your coding agent a team.</h1>
+        <p class="hero-lead">
+          Specialists for recon, design, planning, building, and review, called in only when a
+          task needs them. One method for OpenCode, Pi, Claude Code, Codex, Cursor, and more.
         </p>
-        <!-- Spacing to the install chip rides on margin-bottom: the unlayered
-             markdown reset zeroes sibling margin-top inside .home. -->
-        <div class="flex items-center justify-center flex-wrap gap-[1.4rem] max-md:gap-4 max-sm:gap-3.5 mb-6">
-          <a class="inline-flex items-center justify-center max-sm:w-full min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cli/getting-started/">Get Started</a>
-          <a class="inline-flex items-center justify-center max-sm:w-full gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="#pipeline">
-            Explore the pipeline<span aria-hidden="true">↓</span>
-          </a>
-        </div>
-        <InstallCommand command={INSTALL_CMD} location="home-hero" />
-      </section>
-
-      <!-- ========================= 2. HARNESS TRANSCRIPT ========================= -->
-      <section class="term-wrap pt-[clamp(3.5rem,7vw,5rem)] mb-[var(--home-section-gap)] min-w-0" aria-labelledby="term-title">
-        <h2 id="term-title" class="sr-only">Harness transcript example</h2>
-        <div class="term mx-auto w-full max-w-[46rem]">
-          <div class="term-bar">
-            <span class="term-title">maestria<span class="term-title-suffix"> - harness transcript</span></span>
-            <span class="term-badge">EXAMPLE</span>
-          </div>
-          <div class="term-body">
-            <p class="term-line term-cmd" style="--i: 0"><span class="term-prompt" aria-hidden="true">$ </span>npx maestria install opencode</p>
-            <p class="term-line term-out" style="--i: 1"><span class="term-ok" aria-hidden="true">✓ </span>@maestria/opencode installed - 8 agents wired</p>
-            <div class="term-spacer" aria-hidden="true"></div>
-            <p class="term-line term-cmd" style="--i: 2"><span class="term-prompt" aria-hidden="true">$ </span>maestria status</p>
-            <div class="term-row term-status-row" style="--i: 3">
-              <span class="term-cell">opencode</span>
-              <span class="term-state"><span class="term-ok" aria-hidden="true">✓ </span>connected</span>
-              <span class="term-cell">claude-code</span>
-              <span class="term-state"><span class="term-ok" aria-hidden="true">✓ </span>connected</span>
-            </div>
-            <div class="term-row term-status-row" style="--i: 4">
-              <span class="term-cell">kimi-code</span>
-              <span class="term-state"><span class="term-open" aria-hidden="true">○ </span>available</span>
-              <span class="term-cell">cursor</span>
-              <span class="term-state"><span class="term-open" aria-hidden="true">○ </span>available</span>
-            </div>
-            <div class="term-spacer" aria-hidden="true"></div>
-            <p class="term-line term-comment" style="--i: 5"># one task through the harness - thinker, worker, verifier</p>
-            <div class="term-row term-task-row" style="--i: 6">
-              <span class="term-role">thinker</span><span class="term-agent">adventurer</span>
-              <span class="term-artifact"><span aria-hidden="true">→ </span>recon report</span>
-              <span class="term-done term-ok" aria-hidden="true">✓</span>
-            </div>
-            <div class="term-row term-task-row" style="--i: 7">
-              <span class="term-role">thinker</span><span class="term-agent">architect</span>
-              <span class="term-artifact"><span aria-hidden="true">→ </span>decision record</span>
-              <span class="term-done term-ok" aria-hidden="true">✓</span>
-            </div>
-            <div class="term-row term-task-row" style="--i: 8">
-              <span class="term-role">thinker</span><span class="term-agent">planner</span>
-              <span class="term-artifact"><span aria-hidden="true">→ </span>phased plan</span>
-              <span class="term-done term-ok" aria-hidden="true">✓</span>
-            </div>
-            <div class="term-row term-task-row" style="--i: 9">
-              <span class="term-role">worker</span><span class="term-agent">builder</span>
-              <span class="term-artifact"><span aria-hidden="true">→ </span>implementation + tests</span>
-              <span class="term-done term-ok" aria-hidden="true">✓</span>
-            </div>
-            <div class="term-row term-task-row" style="--i: 10">
-              <span class="term-role">verifier</span><span class="term-agent">reviewer</span>
-              <span class="term-artifact"><span aria-hidden="true">→ </span>verdict: approved</span>
-              <span class="term-done term-ok" aria-hidden="true">✓<span class="term-cursor" aria-hidden="true">▍</span></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================ 3. THE METHOD ============================ -->
-      <section class="home-section mb-[var(--home-section-gap)]" aria-labelledby="method-title">
-        <p class="section-eyebrow">01 / THE METHOD</p>
-        <h2 id="method-title">Structure beats improvisation.</h2>
-        <div class="grid grid-cols-3 max-lg:grid-cols-1 gap-x-[clamp(2rem,4vw,3rem)] max-lg:gap-y-10">
-          <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
-            <div class="flex items-center justify-between gap-4">
-              <span class="method-num">01</span>
-              <svg class="w-[26px] h-[26px] text-home-text-muted" {...markAttrs} set:html={marks.pipeline} />
-            </div>
-            <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Pipeline composition</h3>
-            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">
-              Route work through focused stages so no single context does
-              everything.
-            </p>
-          </article>
-          <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
-            <div class="flex items-center justify-between gap-4">
-              <span class="method-num">02</span>
-              <svg class="w-[26px] h-[26px] text-home-text-muted" {...markAttrs} set:html={marks.makerChecker} />
-            </div>
-            <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Maker/checker split</h3>
-            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">The builder produces; the reviewer sees it fresh.</p>
-          </article>
-          <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
-            <div class="flex items-center justify-between gap-4">
-              <span class="method-num">03</span>
-              <svg class="w-[26px] h-[26px] text-home-text-muted" {...markAttrs} set:html={marks.platforms} />
-            </div>
-            <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Platform independence</h3>
-            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">
-              The methodology stays consistent while each platform uses its
-              native primitives.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <!-- =========================== 4. SPECIALISTS =========================== -->
-      <section class="home-section mb-[var(--home-section-gap)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
-        <p class="section-eyebrow">02 / SPECIALISTS</p>
-        <h2 id="agents-title">One dispatcher, seven specialists.</h2>
-        <div class="grid grid-cols-[minmax(0,20rem)_minmax(0,1fr)] gap-[clamp(1.5rem,3vw,2.5rem)] items-start max-lg:grid-cols-1">
-          <div class="flex flex-col" role="tablist" aria-label="Specialists">
-            {agents.map((agent: Agent, index: number) => (
-              <button
-                class="agent-tab relative flex items-center gap-3 min-h-[44px] py-2 pr-2.5 bg-transparent border-0 border-t border-home-border rounded-none text-home-text-muted font-sans text-[0.9375rem] font-medium text-left cursor-pointer transition-colors hover:text-home-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
-                role="tab"
-                aria-selected={index === 0 ? 'true' : 'false'}
-                aria-controls={`panel-${agent.id}`}
-                id={`tab-${agent.id}`}
-                tabindex={index === 0 ? 0 : -1}
-              >
-                <svg class="w-5 h-5 flex-none" {...markAttrs} set:html={marks[agent.id]} />
-                <span class="agent-tab-name whitespace-nowrap">{agent.name}</span>
-                <span class="agent-tab-role">{agent.role}</span>
-              </button>
-            ))}
-          </div>
-          <div class="border border-home-border rounded-[3px] bg-home-surface min-h-[24rem]">
-            {agents.map((agent: Agent, index: number) => (
-              <div
-                class="agent-panel p-[clamp(1.5rem,3vw,2rem)]"
-                role="tabpanel"
-                id={`panel-${agent.id}`}
-                aria-labelledby={`tab-${agent.id}`}
-                hidden={index !== 0}
-              >
-                <div class="flex items-start gap-4">
-                  <svg class="w-7 h-7 flex-none text-home-text-muted mt-[0.2rem]" {...markAttrs} set:html={marks[agent.id]} />
-                  <div>
-                    <h3 class="text-[clamp(1.375rem,2.5vw,1.75rem)] font-[560] leading-[1.15] tracking-[-0.02em] text-home-text m-0">{agent.name}</h3>
-                    <p class="mt-1 text-sm font-[550] text-home-accent">{agent.role}</p>
-                  </div>
-                </div>
-                <p class="mt-5 max-w-46rem text-[0.9375rem] leading-[1.7] text-home-text-soft">{agent.description}</p>
-                <dl class="mt-7 mb-0 p-0 border-t border-home-border">
-                  <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
-                    <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Scope</dt>
-                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agent.scope}</dd>
-                  </div>
-                  <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
-                    <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Artifact</dt>
-                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agent.artifact}</dd>
-                  </div>
-                  <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
-                    <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Constraint</dt>
-                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agent.constraint}</dd>
-                  </div>
-                </dl>
-                <a
-                  class="panel-more inline-flex items-center gap-1.5 mt-7 border-t border-home-border pt-[1rem] text-[13px] font-medium text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
-                  href="/core/agents/"
-                >
-                  Full specialist reference<span class="panel-more-arrow" aria-hidden="true">→</span>
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================ 5. ADAPTERS ============================ -->
-      <section class="home-section mb-[clamp(4rem,9vw,6rem)]" id="adapters" aria-labelledby="platforms-title">
-        <p class="section-eyebrow">03 / ADAPTERS</p>
-        <h2 id="platforms-title">One methodology, built on native primitives.</h2>
-        <div class="grid grid-cols-2 border-t border-l border-home-border max-md:grid-cols-1">
-          {platforms.map((platform) => (
-            <a
-              class:list={[
-                'group relative flex flex-col items-start gap-[0.4rem] p-[clamp(1.25rem,2.5vw,1.75rem)] border-r border-b border-home-border bg-transparent no-underline text-inherit min-w-0 transition-colors hover:border-home-border-strong hover:bg-home-surface focus-visible:border-home-border-strong focus-visible:bg-home-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]',
-                { 'platform-flagship': platform.flagship === true },
-                { 'platform-aux': platform.auxiliary === true },
-              ]}
-              href={platform.href}
-            >
-              <svg class="w-6 h-6 text-home-text-muted mb-2" {...markAttrs} set:html={marks[platform.mark]} />
-              <span class="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.9375rem] text-home-text transition-colors group-hover:text-home-accent group-focus-visible:text-home-accent">
-                {platform.name}
-                {platform.badge && <span class="platform-badge">{platform.badge}</span>}
-              </span>
-              <span class="text-[0.84375rem] leading-[1.55] text-home-text-muted">{platform.blurb}</span>
-              {platform.hosts && (
-                <span class="platform-hosts">{platform.hosts.join(' · ')}</span>
-              )}
-            </a>
-          ))}
+        <div class="hero-actions">
+          <a class="btn btn-ink" href="/cli/getting-started/">Get started</a>
+          <a class="btn btn-quiet" href="/core/how-it-works/">How it works</a>
+          <InstallCommand command={INSTALL_CMD} location="home-hero" align="start" />
         </div>
       </section>
     </div>
 
+    <!-- =========================== PIPELINE SCORE =========================== -->
+    <section class="stage" id="pipeline" aria-labelledby="stage-title">
+      <div class="home-inner">
+        <div class="stage-head">
+          <div>
+            <h2 id="stage-title" class="stage-title">Make every step intentional.</h2>
+            <p class="stage-lead">
+              Pick a task. The orchestrator sends it only through the specialists that add
+              information or reduce risk.
+            </p>
+          </div>
+          <div class="route-tabs" role="tablist" aria-label="Example tasks" data-tabs="route">
+            {routes.map((route, index) => (
+              <button
+                class="route-tab"
+                type="button"
+                role="tab"
+                id={`route-tab-${route.id}`}
+                aria-controls={`route-${route.id}`}
+                aria-selected={index === 0 ? 'true' : 'false'}
+                tabindex={index === 0 ? 0 : -1}
+              >
+                {route.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {routes.map((route, index) => {
+          const stepByAgent = new Map(route.steps.map((step, i) => [step.agent, { ...step, index: i }]));
+          const lastIndex = route.steps.length - 1;
+          return (
+            <div
+              class="score"
+              role="tabpanel"
+              id={`route-${route.id}`}
+              aria-labelledby={`route-tab-${route.id}`}
+              hidden={index !== 0}
+              style={`--columns: ${SCORE_COLUMNS}`}
+            >
+              <p class="score-task">
+                <span class="score-task-label">Task</span>
+                <span class="score-task-text">{route.task}</span>
+              </p>
+
+              <div class="score-grid" aria-hidden="true">
+                {lanes.map((group) => (
+                  <div class="lane-group">
+                    <span class="lane-stage">{group.stage}</span>
+                    {group.agents.map((id) => {
+                      const step = stepByAgent.get(id);
+                      return (
+                        <div class:list={['lane', { 'lane-idle': step === undefined }]}>
+                          <span class="lane-name">
+                            <svg class="lane-mark" {...markAttrs} set:html={marks[id]} />
+                            {agentName.get(id)}
+                          </span>
+                          {step && (
+                            <span
+                              class:list={['note', { 'note-final': step.index === lastIndex }]}
+                              style={`grid-column: ${step.index + 2} / -1`}
+                              data-step={step.index}
+                            >
+                              <span class="note-marker" />
+                              <span class="note-text">{step.artifact}</span>
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+                <div class="playhead">
+                  <span class="playhead-line" />
+                </div>
+              </div>
+
+              <ol class="sr-only">
+                {route.steps.map((step) => (
+                  <li>{agentName.get(step.agent)}: {step.artifact}</li>
+                ))}
+              </ol>
+
+              <p class="score-rationale">{route.rationale}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
     <div class="home-inner">
-      <!-- =============================== 6. FOOTER =============================== -->
+      <!-- ============================== METHOD ============================== -->
+      <section class="home-section method" aria-labelledby="method-title">
+        <h2 id="method-title" class="statement">
+          An agent that plans, builds, and grades its own work will approve its own mistakes.{' '}
+          <span class="statement-quiet">
+            maestria separates the maker from the checker, hands context forward in structured
+            briefs, and keeps each route as short as the task allows.
+          </span>
+        </h2>
+        <div class="principles">
+          {principles.map((principle) => (
+            <article class="principle">
+              <svg class="principle-mark" {...markAttrs} set:html={marks[principle.mark]} />
+              <h3>{principle.title}</h3>
+              <p>{principle.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- ============================ SPECIALISTS ============================ -->
+      <section class="home-section" id="specialists" aria-labelledby="agents-title">
+        <div class="section-head">
+          <h2 id="agents-title">Meet the specialists.</h2>
+          <p>
+            Each role has one job, one handoff, and one rule it never breaks.{' '}
+            <a href="/core/agents/">Read the full reference</a>
+          </p>
+        </div>
+        <ul class="roster" role="list">
+          {agents.map((agent) => (
+            <li class="roster-cell">
+              <svg class="roster-mark" {...markAttrs} set:html={marks[agent.id]} />
+              <h3>{agent.name}</h3>
+              <p class="roster-role">{agent.role}</p>
+              <dl>
+                <div>
+                  <dt>Hands off</dt>
+                  <dd>{agent.artifact}</dd>
+                </div>
+                <div>
+                  <dt>Rule</dt>
+                  <dd>{agent.constraint}</dd>
+                </div>
+              </dl>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <!-- ============================== INSTALL ============================== -->
+      <section class="home-section install" id="adapters" aria-labelledby="install-title">
+        <div class="install-layout">
+          <div class="section-head install-head">
+            <h2 id="install-title">Install where you already work.</h2>
+            <p>
+              Run <code>{INSTALL_CMD}</code> to detect your agents and pick from a list, or name a
+              host directly.
+            </p>
+          </div>
+
+          <div class="install-picker">
+            <div class="host-tabs" role="tablist" aria-label="Hosts" data-tabs="host">
+              {installTargets.map((target, index) => (
+                <button
+                  class="host-tab"
+                  type="button"
+                  role="tab"
+                  id={`host-tab-${target.id}`}
+                  aria-controls={`host-${target.id}`}
+                  aria-selected={index === 0 ? 'true' : 'false'}
+                  tabindex={index === 0 ? 0 : -1}
+                >
+                  {target.name}
+                </button>
+              ))}
+            </div>
+            {installTargets.map((target, index) => (
+              <div
+                class="host-panel"
+                role="tabpanel"
+                id={`host-${target.id}`}
+                aria-labelledby={`host-tab-${target.id}`}
+                hidden={index !== 0}
+              >
+                <InstallCommand command={`npx maestria install ${target.id}`} location="home-picker" align="start" caption={false} />
+                <p class="host-via">Installs {target.via}.</p>
+                <a class="text-link" href={target.href}>{target.name} setup guide</a>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <ul class="packages" role="list">
+          {platforms.map((platform) => (
+            <li>
+              <a class="package" href={platform.href}>
+                <svg class="package-mark" {...markAttrs} set:html={marks[platform.mark]} />
+                <span class="package-name">{platform.name}</span>
+                <span class="package-blurb">{platform.blurb}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <SiteFooter />
     </div>
   </div>
 </StarlightPage>
 
 <style>
-  /* Hero animation - moved from global.css */
-  @keyframes home-reveal {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .home-hero-anim,
-    .term-wrap {
-      animation: home-reveal 340ms ease-out both;
-    }
-
-    .home-hero-anim {
-      animation-delay: 40ms;
-    }
-
-    .term-wrap {
-      animation-delay: 140ms;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .home-hero-anim,
-    .term-wrap {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @media (prefers-reduced-transparency: reduce) {
-    .home-hero-anim,
-    .term-wrap {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
   /* ============================================
-     SECTION EYEBROWS - monospace identity moment
+     HERO
      ============================================ */
 
-  .section-eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
+  .hero {
+    padding-top: clamp(3.5rem, 9vw, 7.5rem);
+    margin-bottom: clamp(3.5rem, 7vw, 5.5rem);
   }
 
-  /* ============================================
-     HARNESS TRANSCRIPT
-     Fixed dark artifact in BOTH themes - literal
-     values, not theme vars.
-     ============================================ */
-
-  .term {
-    background: #0d110c;
-    border: 1px solid rgba(240, 245, 239, 0.14);
-    border-radius: 8px;
-    box-shadow: 0 24px 64px -28px rgba(0, 0, 0, 0.55);
-    color: #e7ece3;
-    overflow: hidden;
+  .hero-title {
+    font-size: clamp(3rem, 8.6vw, 7.25rem);
+    font-weight: 620;
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+    color: var(--home-text);
+    text-wrap: balance;
+    max-width: 13em;
+    margin: 0 0 clamp(2rem, 4vw, 3rem);
   }
 
-  .term-bar {
+  .hero-lead {
+    max-width: 36rem;
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    line-height: 1.55;
+    color: var(--home-text-soft);
+    text-wrap: pretty;
+    margin: 0 0 1.75rem;
+  }
+
+  .hero-actions {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.55rem 1.25rem;
-    background: rgba(240, 245, 239, 0.04);
-    border-bottom: 1px solid rgba(240, 245, 239, 0.1);
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
-  .term-title {
+  /* The install chip joins the action row; its caption hangs below it. The
+     component's default top margin is for stacked layouts. */
+  .hero-actions :global(.install-cmd) {
+    margin: 0 0 0 clamp(0.25rem, 2vw, 1.25rem);
+  }
+
+  .hero-actions :global(.install-chip) {
+    min-height: 44px;
+  }
+
+  @media (max-width: 639px) {
+    .hero-actions :global(.install-cmd) {
+      margin: 0.75rem 0 0;
+      flex-basis: 100%;
+    }
+  }
+
+  /* ============================================
+     BUTTONS & LINKS
+     ============================================ */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 580;
+    text-decoration: none;
+    transition:
+      background-color 160ms ease-out,
+      transform 120ms ease-out;
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-ink {
+    background: var(--home-ink-button);
+    color: var(--home-ink-button-text);
+  }
+
+  .btn-quiet {
+    color: var(--home-text);
+    box-shadow: inset 0 0 0 1px var(--home-border-strong);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-ink:hover {
+      background: color-mix(in srgb, var(--home-ink-button) 86%, var(--home-bg));
+    }
+
+    .btn-quiet:hover {
+      background: var(--home-surface-raised);
+    }
+  }
+
+  .btn:focus-visible,
+  .text-link:focus-visible,
+  .package:focus-visible,
+  .section-head a:focus-visible {
+    outline: 2px solid var(--home-focus);
+    outline-offset: 2px;
+  }
+
+  .text-link,
+  .section-head a {
+    color: var(--home-accent);
+    font-weight: 560;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .text-link:hover,
+  .section-head a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* ============================================
+     PIPELINE SCORE - the deep green stage band
+     ============================================ */
+
+  .stage {
+    --label: 11rem;
+    background: var(--home-band);
+    color: var(--home-band-text);
+    padding-block: clamp(3rem, 6vw, 4.5rem);
+    margin-bottom: var(--home-section-gap);
+  }
+
+  .stage-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem 3rem;
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+
+  .stage-title {
+    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--home-band-text);
+    text-wrap: balance;
+    margin: 0 0 0.75rem;
+  }
+
+  .stage-lead {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--home-band-muted);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  /* Segmented control: one track, the selected route lifts onto a raised
+     chip. */
+  .route-tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow: inset 0 0 0 1px var(--home-band-line);
+  }
+
+  .route-tab {
+    min-height: 40px;
+    padding: 0.5rem 0.9rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--home-band-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 560;
+    cursor: pointer;
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  .route-tab:hover {
+    color: var(--home-band-text);
+  }
+
+  .route-tab[aria-selected='true'] {
+    background: var(--home-band-raised);
+    color: var(--home-band-text);
+    box-shadow: inset 0 0 0 1px var(--home-band-line);
+  }
+
+  .route-tab:focus-visible {
+    outline: 2px solid var(--home-brass);
+    outline-offset: 2px;
+  }
+
+  .score[hidden] {
+    display: none;
+  }
+
+  .score-task {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin: 0 0 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--home-band-line);
+  }
+
+  .score-task-label {
+    font-size: 0.875rem;
+    color: var(--home-band-muted);
+    min-width: calc(var(--label) - 0.75rem);
+  }
+
+  .score-task-text {
     font-family: var(--font-mono);
+    font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
+    color: var(--home-band-text);
+  }
+
+  .score-grid {
+    position: relative;
+  }
+
+  .lane-group + .lane-group {
+    margin-top: 0.5rem;
+  }
+
+  .lane-stage {
+    display: block;
     font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: #9fab97;
-    /* The title bar stays one line at every width; see the suffix rule
-       below for the narrow-viewport half of this contract. */
+    color: var(--home-band-muted);
+    opacity: 0.75;
+    padding-block: 0.25rem 0.125rem;
+  }
+
+  /* One stave per specialist: a label column, then one column per step. The
+     stave line runs behind the notes; a note's text sits on the band color
+     so it interrupts the line like a mark on a score. */
+  .lane {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--label) repeat(var(--columns), minmax(0, 1fr));
+    align-items: center;
+    min-height: 2.5rem;
+  }
+
+  .lane::before {
+    content: '';
+    position: absolute;
+    left: var(--label);
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--home-band-line);
+  }
+
+  .lane-name {
+    grid-column: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+    font-weight: 540;
+    color: var(--home-band-text);
+    transition: opacity 240ms ease-out;
+  }
+
+  .lane-mark {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    color: var(--home-band-muted);
+  }
+
+  .lane-idle .lane-name {
+    opacity: 0.42;
+  }
+
+  .note {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    justify-self: start;
+    max-width: 100%;
+    padding-right: 0.625rem;
+    background: var(--home-band);
     white-space: nowrap;
   }
 
-  /* Below 480px the descriptive suffix hides, leaving "maestria" beside the
-     EXAMPLE pill - the bar can never wrap into a cramped second line. */
-  @media (max-width: 480px) {
-    .term-title-suffix {
+  .note-marker {
+    width: 11px;
+    height: 11px;
+    flex: none;
+    margin-left: -5px;
+    border-radius: 3px;
+    background: var(--home-band-text);
+    transform: rotate(45deg);
+    transition:
+      background-color 200ms ease-out,
+      box-shadow 200ms ease-out;
+  }
+
+  .note-text {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--home-band-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .note-final .note-marker {
+    background: var(--home-brass);
+  }
+
+  .playhead {
+    position: absolute;
+    inset-block: 0;
+    left: var(--label);
+    right: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .playhead-line {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-left: 2px solid var(--home-brass);
+    transform: translateX(calc(var(--pos, 0) / var(--columns) * 100% - 1px));
+  }
+
+  .score-rationale {
+    margin: 1.5rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--home-band-line);
+    padding-left: var(--label);
+    color: var(--home-band-muted);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  /* Playback. Without JS (or with reduced motion) every note is visible and
+     the playhead stays hidden. JS arms the score, then reveals each note as
+     the playhead reaches its column. */
+  .score.is-armed .note {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  .score.is-armed .note.is-on {
+    opacity: 1;
+    transform: none;
+  }
+
+  .score.is-armed .playhead {
+    opacity: 1;
+  }
+
+  .score.is-done .playhead {
+    opacity: 0;
+  }
+
+  .note.is-current .note-marker {
+    background: var(--home-brass);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--home-brass) 28%, transparent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .score.is-armed .note {
+      transition:
+        opacity 240ms ease-out,
+        transform 240ms ease-out;
+    }
+
+    .playhead {
+      transition: opacity 300ms ease-out;
+    }
+
+    .playhead-line {
+      transition: transform 420ms ease-in-out;
+    }
+  }
+
+  /* Narrow screens drop the time axis: lane order already matches step
+     order on every route, so each note sits right after its label and the
+     dimmed lanes still show which specialists were skipped. */
+  @media (max-width: 767px) {
+    .stage {
+      --label: 8.5rem;
+    }
+
+    .lane {
+      grid-template-columns: var(--label) minmax(0, 1fr);
+    }
+
+    .note {
+      grid-column: 2 / -1 !important;
+    }
+
+    .lane-name {
+      font-size: 0.875rem;
+    }
+
+    .route-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .playhead {
+      display: none;
+    }
+
+    .score-rationale {
+      padding-left: 0;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .stage {
+      --label: 7.25rem;
+    }
+
+    .lane-mark {
       display: none;
     }
   }
 
-  .term-badge {
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.14em;
-    color: #9fab97;
-    border: 1px solid rgba(240, 245, 239, 0.22);
-    border-radius: 999px;
-    padding: 0.15rem 0.6rem;
-  }
-
-  .term-body {
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    line-height: 1.75;
-    padding: 1.25rem 1.5rem;
-    overflow-x: auto;
-  }
-
-  .term-line,
-  .term-row {
-    margin: 0;
-    color: #e7ece3;
-  }
-
-  .term-prompt,
-  .term-ok {
-    color: #b7ef5f;
-  }
-
-  /* ○ status glyphs only; label text keeps #9fab97. */
-  .term-open {
-    color: #aab5a2;
-  }
-
-  .term-comment {
-    color: #97a28b;
-  }
-
-  .term-spacer {
-    height: 1.75em;
-  }
-
-  /* Status rows: fixed-width name columns keep the rhythm without
-     hand-spaced strings. The fluid columns use `minmax(0, …)` so grid items
-     can shrink below their min-content width when space runs out instead of
-     overflowing the card; text wraps rather than spills. */
-  .term-status-row {
-    display: grid;
-    grid-template-columns: 7.25rem minmax(3rem, 1fr) 7.25rem minmax(0, 1fr);
-    column-gap: 1rem;
-    padding-left: 1.5rem;
-  }
-
-  .term-status-row .term-state {
-    color: #9fab97;
-  }
-
-  /* Task rows: role / agent fixed columns, artifact fluid, verdict right. */
-  .term-task-row {
-    display: grid;
-    grid-template-columns: 4.75rem 6.75rem minmax(0, 1fr) auto;
-    column-gap: 1rem;
-    padding-left: 1.5rem;
-  }
-
-  .term-task-row .term-role {
-    color: #9fab97;
-  }
-
-  .term-done {
-    text-align: right;
-  }
-
-  /* Blinking block cursor after the last line. Kept clear of the verdict
-     glyph so the caret reads as terminal continuation, never as collision. */
-  .term-cursor {
-    display: inline-block;
-    margin-inline-start: 0.75ch;
-    color: #b7ef5f;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    @keyframes term-in {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: none;
-      }
-    }
-
-    @keyframes term-blink {
-      50% {
-        opacity: 0;
-      }
-    }
-
-    /* Progressive enhancement: lines are fully visible by default; JS adds
-       .term-play when the card enters the viewport, then lines stagger in. */
-    .term.term-play .term-line,
-    .term.term-play .term-row {
-      opacity: 0;
-      animation: term-in 220ms ease-out forwards;
-      animation-delay: calc(var(--i, 0) * 60ms);
-    }
-
-    .term-cursor {
-      animation: term-blink 1.1s step-end infinite;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .term.term-play .term-line,
-    .term.term-play .term-row {
-      opacity: 1;
-      animation: none;
-    }
-
-    .term-cursor {
-      animation: none;
-    }
-  }
-
-  /* Narrow viewports: let transcript rows reflow into intentional blocks
-     instead of soft-wrapping mid-cell. Status pairs collapse to one
-     platform-pair per line; task rows become explicit two-line entries -
-     stage tag + agent on line 1 with the verdict right-aligned, artifact
-     indented below so continuations never return flush-left (solo agents
-     keep the same slots via an empty partner span). The install output gets
-     a hanging indent for the same reason. Fluid tracks plus overflow-wrap
-     keep every cell inside the card. Desktop is untouched. */
-  @media (max-width: 480px) {
-    .term-status-row {
-      /* Four cells auto-place into two rows: one platform-pair each. */
-      grid-template-columns: minmax(0, 7.25rem) minmax(0, 1fr);
-      row-gap: 0.1em;
-    }
-
-    .term-task-row {
-      /* Line 1: role + agent left, `1fr` filler pushes the verdict right.
-         Line 2: artifact spans all tracks, indented past the stage column. */
-      grid-template-columns: auto auto minmax(0, 1fr) auto;
-      grid-template-areas:
-        'role agent . done'
-        'artifact artifact artifact artifact';
-      row-gap: 0.1em;
-    }
-
-    .term-task-row .term-role {
-      grid-area: role;
-    }
-
-    .term-task-row .term-agent {
-      grid-area: agent;
-    }
-
-    .term-task-row .term-artifact {
-      grid-area: artifact;
-      padding-inline-start: 2ch;
-    }
-
-    .term-task-row .term-done {
-      grid-area: done;
-    }
-
-    /* Hanging indent: wrapped install-output lines align under the message
-       text, not under the leading ✓. */
-    .term-out {
-      padding-left: 2ch;
-      text-indent: -2ch;
-    }
-
-    .term-line,
-    .term-row span {
-      overflow-wrap: anywhere;
-    }
-  }
-
   /* ============================================
-     METHOD MODULES - numbered, hairline top
+     SECTIONS
      ============================================ */
 
-  .method-num {
-    font-family: var(--font-mono);
-    font-size: 1.125rem;
-    line-height: 1;
-    color: var(--home-accent);
-    opacity: 0.7;
-    transition: opacity 160ms ease;
+  .home-section {
+    margin-bottom: var(--home-section-gap);
   }
 
-  .group:hover .method-num,
-  .group:focus-within .method-num {
-    opacity: 1;
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
   }
 
-  /* ============================================
-     AGENT TABS - active state upgrades
-     ============================================ */
-
-  .agent-tab[aria-selected='true'] {
+  .section-head h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
     color: var(--home-text);
-    font-weight: 560;
-    background: var(--home-surface-raised);
+    text-wrap: balance;
+    margin: 0 0 1rem;
   }
 
-  .agent-tab[aria-selected='true']::before {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--home-accent);
+  .section-head p {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--home-text-soft);
+    text-wrap: pretty;
   }
 
-  .agent-tab[aria-selected='true'] .agent-mark,
-  .agent-tab[aria-selected='true'] svg {
-    color: var(--home-accent);
+  /* Method: a two-tone statement, then three principles on hairlines. */
+  .statement {
+    max-width: 62rem;
+    font-size: clamp(1.625rem, 3.2vw, 2.625rem);
+    font-weight: 580;
+    line-height: 1.16;
+    letter-spacing: -0.028em;
+    color: var(--home-text);
+    text-wrap: pretty;
+    margin: 0 0 clamp(3rem, 6vw, 4.5rem);
   }
 
-  .agent-tab:last-child {
-    border-bottom: 1px solid var(--home-border);
-  }
-
-  /* Role snippet: right-aligned, muted, desktop only; wraps to at most two
-     lines instead of truncating mid-word. */
-  .agent-tab-role {
-    display: none;
-    margin-left: auto;
-    padding-left: 1rem;
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 1.4;
-    text-align: right;
+  .statement-quiet {
     color: var(--home-text-muted);
+  }
+
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .principle {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--home-border-strong);
+  }
+
+  .principle-mark {
+    width: 24px;
+    height: 24px;
+    color: var(--home-accent);
+    margin-bottom: 1.25rem;
+  }
+
+  .principle h3,
+  .roster-cell h3 {
+    font-size: 1.1875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    color: var(--home-text);
+    margin: 0 0 0.5rem;
+  }
+
+  .principle p {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--home-text-soft);
+    max-width: 34ch;
+  }
+
+  /* Specialists roster: a hairline grid, no floating cards. */
+  .roster {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--home-border);
+    border-left: 1px solid var(--home-border);
+  }
+
+  .roster-cell {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.25rem, 2.2vw, 1.75rem);
+    border-right: 1px solid var(--home-border);
+    border-bottom: 1px solid var(--home-border);
     min-width: 0;
   }
 
-  @media (min-width: 768px) {
-    .agent-tab-role {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      overflow: hidden;
-    }
+  .roster-mark {
+    width: 22px;
+    height: 22px;
+    color: var(--home-text-muted);
+    margin-bottom: 1.5rem;
   }
 
-  .agent-panel[hidden] {
+  .roster-role {
+    margin: 0 0 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--home-text-soft);
+    text-wrap: pretty;
+  }
+
+  .roster-cell dl {
+    margin: auto 0 0;
+    display: grid;
+    gap: 0.625rem;
+  }
+
+  .roster-cell dt {
+    font-size: 0.75rem;
+    color: var(--home-text-muted);
+    margin: 0;
+  }
+
+  .roster-cell dd {
+    margin: 0.125rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--home-text);
+  }
+
+  /* Install: copy + host picker, then the package row. */
+  .install-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 2rem clamp(2rem, 6vw, 5rem);
+    align-items: start;
+    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .install-head {
+    margin-bottom: 0;
+  }
+
+  .install-head code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    padding: 0.1em 0.35em;
+    border-radius: 5px;
+    background: var(--home-surface-raised);
+    color: var(--home-text);
+    white-space: nowrap;
+  }
+
+  .install-picker {
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-radius: 14px;
+    background: var(--home-surface);
+    box-shadow:
+      inset 0 0 0 1px var(--home-border),
+      0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .host-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .host-tab {
+    min-height: 36px;
+    padding: 0.375rem 0.75rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--home-border);
+    color: var(--home-text-soft);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 540;
+    cursor: pointer;
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  .host-tab:hover {
+    color: var(--home-text);
+    box-shadow: inset 0 0 0 1px var(--home-border-strong);
+  }
+
+  .host-tab[aria-selected='true'] {
+    background: var(--home-ink-button);
+    color: var(--home-ink-button-text);
+    box-shadow: none;
+  }
+
+  .host-tab:focus-visible {
+    outline: 2px solid var(--home-focus);
+    outline-offset: 2px;
+  }
+
+  .host-panel[hidden] {
     display: none;
   }
 
-  /* Panel footer link: the dl keeps internal separators; drop the last row's
-     border so the link's own top hairline is the single divider. */
-  .agent-panel dl > div:last-child {
-    border-bottom: 0;
+  .host-panel :global(.install-cmd) {
+    margin-top: 0;
   }
 
-  .panel-more-arrow {
-    transition: transform 160ms ease;
-  }
-
-  .panel-more:hover .panel-more-arrow,
-  .panel-more:focus-visible .panel-more-arrow {
-    transform: translateX(3px);
-  }
-
-  /* ============================================
-     PLATFORM CARDS - flagship accent + aux ring
-     ============================================ */
-
-  .platform-flagship::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 2rem;
-    height: 2px;
-    background: var(--home-accent);
-  }
-
-  .platform-aux::after {
-    content: '';
-    position: absolute;
-    inset: 0.5rem;
-    border: 1px dashed var(--home-border);
-    border-radius: 3px;
-    pointer-events: none;
-  }
-
-  .platform-hosts {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    line-height: 1.6;
-    letter-spacing: 0.02em;
+  .host-via {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
     color: var(--home-text-soft);
   }
 
-  .platform-badge {
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.08em;
+  .host-panel .text-link {
+    font-size: 0.9375rem;
+  }
+
+  .packages {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--home-border);
+  }
+
+  .packages li + li .package {
+    border-left: 1px solid var(--home-border);
+  }
+
+  .package {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    height: 100%;
+    padding: 1.5rem clamp(1rem, 2vw, 1.5rem) 0.5rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .packages li:first-child .package {
+    padding-left: 0;
+  }
+
+  .package-mark {
+    width: 20px;
+    height: 20px;
     color: var(--home-text-muted);
-    border: 1px solid var(--home-border-strong);
-    border-radius: 3px;
-    padding: 0.1rem 0.4rem;
-    line-height: 1.4;
+    margin-bottom: 0.5rem;
   }
 
-  /* Starlight markdown content margin overrides. */
-  .sl-markdown-content .flex.flex-col {
-    margin-top: 0;
+  .package-name {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--home-text);
   }
 
-  .sl-markdown-content .flex.flex-col > .agent-tab + .agent-tab {
-    margin-top: 0;
+  .package:hover .package-name {
+    color: var(--home-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .package-blurb {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--home-text-muted);
+    text-wrap: pretty;
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+
+  @media (max-width: 1099px) {
+    .roster {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .packages {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .packages li:nth-child(odd) .package {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .principles,
+    .install-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero-actions .btn {
+      flex: 1 1 auto;
+    }
+
+    .roster,
+    .packages {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .packages li + li .package {
+      border-left: 0;
+      border-top: 1px solid var(--home-border);
+    }
+
+    .package {
+      padding-inline: 0;
+      padding-bottom: 1.5rem;
+    }
   }
 </style>
 
 <script>
-  const setupAgentTabs = (): void => {
-    const tabs = document.querySelectorAll('.agent-tab');
-    const panels = document.querySelectorAll('.agent-panel');
+  /** Roving-tabindex tablist (APG pattern) shared by the route and host pickers. */
+  const setupTabs = (tablist: HTMLElement, onSelect?: (panel: HTMLElement) => void): void => {
+    const tabs = [...tablist.querySelectorAll<HTMLElement>('[role="tab"]')];
 
-    const activateTab = (tab: Element): void => {
+    const select = (tab: HTMLElement): void => {
       for (const t of tabs) {
-        t.setAttribute('aria-selected', 'false');
-        t.setAttribute('tabindex', '-1');
+        const selected = t === tab;
+        t.setAttribute('aria-selected', String(selected));
+        t.tabIndex = selected ? 0 : -1;
+        const panel = document.querySelector<HTMLElement>(`#${CSS.escape(t.getAttribute('aria-controls') ?? '')}`);
+        if (panel) {
+          panel.hidden = !selected;
+          if (selected) {onSelect?.(panel);}
+        }
       }
-      for (const p of panels) {
-        p.setAttribute('hidden', '');
-      }
-
-      tab.setAttribute('aria-selected', 'true');
-      tab.setAttribute('tabindex', '0');
-      const panelId = tab.getAttribute('aria-controls');
-      if (panelId !== null) {
-        const panel = document.querySelector<HTMLElement>(`#${CSS.escape(panelId)}`);
-        panel?.removeAttribute('hidden');
-      }
-
-      // Track agent tab click
-      if (typeof window !== 'undefined' && window.umami) {
-        const agentName = tab.querySelector('.agent-tab-name')?.textContent?.trim() || tab.textContent?.trim();
-        window.umami.track('agent_tab_click', { agent: agentName });
+      if (window.umami !== undefined) {
+        window.umami.track(`${tablist.dataset.tabs ?? 'tab'}_select`, { value: tab.textContent?.trim() });
       }
     };
 
     for (const tab of tabs) {
-      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('click', () => select(tab));
     }
 
-    document.addEventListener('keydown', (e) => {
-      const target = e.target as HTMLElement;
-      const tab = target.closest('.agent-tab');
-      if (!tab) {return;}
-
-      const tabsArray = [...tabs];
-      const index = tabsArray.indexOf(tab);
-
-      // Roving tabindex. The tablist is laid out vertically, so Up/Down are
-      // the primary APG keys; Left/Right stay as aliases. preventDefault()
-      // below keeps Up/Down from scrolling the page.
-      let nextIndex: number | null = null;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {nextIndex = (index + 1) % tabsArray.length;}
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;}
-      if (e.key === 'Home') {nextIndex = 0;}
-      if (e.key === 'End') {nextIndex = tabsArray.length - 1;}
-
-      if (nextIndex !== null) {
-        e.preventDefault();
-        activateTab(tabsArray[nextIndex]);
-        (tabsArray[nextIndex] as HTMLElement).focus();
-      }
+    tablist.addEventListener('keydown', (event) => {
+      const index = tabs.indexOf(event.target as HTMLElement);
+      if (index === -1) {return;}
+      const keys: Record<string, number> = {
+        ArrowDown: index + 1,
+        ArrowLeft: index - 1,
+        ArrowRight: index + 1,
+        ArrowUp: index - 1,
+        End: tabs.length - 1,
+        Home: 0,
+      };
+      if (!(event.key in keys)) {return;}
+      event.preventDefault();
+      const next = tabs[(keys[event.key] + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
     });
-
   };
 
-  const setupTranscript = (): void => {
-    // Harness transcript: stagger lines in once when >=30% of the card is
-    // visible. Gated behind prefers-reduced-motion; CSS keeps lines fully
-    // visible by default so this is pure progressive enhancement.
-    const term = document.querySelector('.term');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let timers: ReturnType<typeof setTimeout>[] = [];
 
-    if (
-      term &&
-      typeof IntersectionObserver !== 'undefined' &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('term-play');
-              observer.unobserve(entry.target);
-            }
-          }
-        },
-        { threshold: 0.3 },
+  /** Walk the playhead across a route's steps, revealing each note in turn. */
+  const playScore = (score: HTMLElement): void => {
+    for (const timer of timers) {clearTimeout(timer);}
+    timers = [];
+    if (reducedMotion.matches) {return;}
+
+    const notes = [...score.querySelectorAll<HTMLElement>('.note')].toSorted(
+      (a, b) => Number(a.dataset.step) - Number(b.dataset.step),
+    );
+    score.classList.remove('is-done');
+    score.classList.add('is-armed');
+    score.style.setProperty('--pos', '0');
+    for (const note of notes) {note.classList.remove('is-on', 'is-current');}
+
+    const STEP_MS = 560;
+    for (const [index, note] of notes.entries()) {
+      timers.push(
+        setTimeout(() => {
+          score.style.setProperty('--pos', String(index));
+          notes[index - 1]?.classList.remove('is-current');
+          note.classList.add('is-on', 'is-current');
+        }, 200 + index * STEP_MS),
       );
-
-      observer.observe(term);
     }
+    timers.push(
+      setTimeout(() => {
+        notes.at(-1)?.classList.remove('is-current');
+        score.classList.add('is-done');
+      }, 200 + notes.length * STEP_MS + 200),
+    );
   };
 
-  document.addEventListener('DOMContentLoaded', () => {
-    setupAgentTabs();
-    setupTranscript();
-  });
+  const routeTabs = document.querySelector<HTMLElement>('[data-tabs="route"]');
+  const hostTabs = document.querySelector<HTMLElement>('[data-tabs="host"]');
+  if (routeTabs) {setupTabs(routeTabs, playScore);}
+  if (hostTabs) {setupTabs(hostTabs);}
+
+  // Play the first route once, when the stage scrolls into view.
+  const firstScore = document.querySelector<HTMLElement>('.score:not([hidden])');
+  if (firstScore && 'IntersectionObserver' in window && !reducedMotion.matches) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          const visible = document.querySelector<HTMLElement>('.score:not([hidden])');
+          if (visible && !visible.classList.contains('is-armed')) {playScore(visible);}
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(firstScore);
+  }
 </script>

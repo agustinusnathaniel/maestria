@@ -52,7 +52,7 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
     <div class="min-w-0">
       <div class="flex items-center gap-2.5">
         <svg class="w-[22px] h-[22px] text-home-text-muted" {...markAttrs} set:html={marks.orchestrator} />
-        <span class="font-mono text-[0.9375rem] text-home-text">maestria</span>
+        <span class="text-[1rem] font-[620] tracking-[-0.01em] text-home-text">maestria</span>
       </div>
       <p class="mt-3 mb-0 text-[0.8125rem] leading-[1.6] text-home-text-muted max-w-[30ch]">Structured AI engineering workflows for your coding agent.</p>
     </div>
@@ -84,12 +84,9 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
 
 <style>
   .foot-head {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--home-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--home-text);
     margin: 0;
   }
 </style>
