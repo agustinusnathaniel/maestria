@@ -47,24 +47,27 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
 ];
 ---
 
-<footer class="mt-[clamp(3.5rem,7vw,5rem)] border-t border-home-border pt-[clamp(2.25rem,5vw,3rem)] pb-2">
-  <div class="flex flex-wrap justify-between gap-x-12 gap-y-10">
-    <div class="min-w-0">
+<!-- Spacing uses gap and padding only: the landing shells zero margin-top
+     between block siblings, and `not-content` opts out of Starlight's
+     markdown list spacing. -->
+<footer class="not-content mt-[clamp(3.5rem,7vw,5rem)] border-t border-home-border pt-[clamp(2.25rem,5vw,3rem)] pb-[clamp(2rem,5vw,3rem)]">
+  <div class="flex flex-wrap justify-between gap-x-12 gap-y-10 pb-[clamp(2rem,5vw,2.75rem)]">
+    <div class="min-w-0 flex flex-col gap-3">
       <div class="flex items-center gap-2.5">
         <Logo class="size-6 rounded-[6px]" aria-hidden="true" />
         <span class="text-[1rem] font-[620] tracking-[-0.01em] text-home-text">maestria</span>
       </div>
-      <p class="mt-3 mb-0 text-[0.8125rem] leading-[1.6] text-home-text-muted max-w-[30ch]">Structured AI engineering workflows for your coding agent.</p>
+      <p class="m-0 text-[0.8125rem] leading-[1.6] text-home-text-muted max-w-[30ch]">Structured AI engineering workflows for your coding agent.</p>
     </div>
     <nav class="grid grid-cols-2 sm:grid-cols-3 gap-x-12 gap-y-8" aria-label="Footer">
       {footerColumns.map((col) => (
-        <div>
+        <div class="flex flex-col gap-3.5">
           <p class="foot-head">{col.head}</p>
-          <ul class="m-0 mt-3 p-0 list-none space-y-2">
+          <ul class="m-0 p-0 list-none flex flex-col gap-2.5 text-sm leading-5">
             {col.links.map((link) => (
               <li>
                 <a
-                  class="inline-block text-sm text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+                  class="inline-block text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
                   href={link.href}
                   target={link.external ? '_blank' : undefined}
                   rel={link.external ? 'noopener noreferrer' : undefined}
@@ -76,7 +79,7 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
       ))}
     </nav>
   </div>
-  <div class="mt-10 pt-[1.5rem] border-t border-home-border flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-[0.8125rem] text-home-text-muted">
+  <div class="pt-6 border-t border-home-border flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-[0.8125rem] text-home-text-muted">
     <span>MIT License © 2026 maestria</span>
     <span>Built with Astro &amp; Starlight</span>
   </div>
