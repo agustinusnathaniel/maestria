@@ -37,8 +37,7 @@
     "@maestria/core": "workspace:*",
     "@maestria/shared-pi": "workspace:*",
     "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "^1.0.0",

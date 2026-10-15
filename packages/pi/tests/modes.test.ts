@@ -25,20 +25,20 @@ interface MockPi {
   setModel: ReturnType<typeof vi.fn<ExtensionAPI['setModel']>>;
 }
 
-describe('installModeCommands', () => {
-  const createMockPi = (): MockPi => {
-    const commands: Record<string, ModeCommand> = {};
-    return {
-      _commands: commands,
-      appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
-      registerCommand: (name, config) => {
-        commands[name] = config;
-      },
-      setActiveTools: vi.fn<ExtensionAPI['setActiveTools']>(),
-      setModel: vi.fn<ExtensionAPI['setModel']>(),
-    };
+const createMockPi = (): MockPi => {
+  const commands: Record<string, ModeCommand> = {};
+  return {
+    _commands: commands,
+    appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
+    registerCommand: (name, config) => {
+      commands[name] = config;
+    },
+    setActiveTools: vi.fn<ExtensionAPI['setActiveTools']>(),
+    setModel: vi.fn<ExtensionAPI['setModel']>(),
   };
+};
 
+describe('installModeCommands', () => {
   it('calls pi.registerCommand for each keyword', () => {
     const pi = createMockPi();
     const state = createInitialState();

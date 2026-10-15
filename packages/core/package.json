@@ -19,7 +19,6 @@
   "devDependencies": {
     "@types/diff": "^8.0.0",
     "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

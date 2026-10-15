@@ -88,20 +88,22 @@ export default defineConfig({
     cache: { scripts: true, tasks: true },
     tasks: {
       '@maestria/docs#build': {
-        cache: true,
+        cache: {
+          // Astro writes and reads .astro during build (cooperative thrashing) -> always miss.
+          // Exclude .astro from fingerprint and archive only dist to enable cache hit.
+          // See https://viteplus.dev/guide/automatic-data-tracking#override-inputs-and-outputs
+          input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
+          output: ['dist/**'],
+        },
         command: 'astro build',
-        // Astro writes and reads .astro during build (cooperative thrashing) -> always miss.
-        // Exclude .astro from fingerprint and archive only dist to enable cache hit.
-        // See https://viteplus.dev/guide/automatic-data-tracking#override-inputs-and-outputs
-        input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
-        output: ['dist/**'],
       },
       'check-fmt': {
-        cache: true,
+        cache: {
+          // fmt is input-heavy but doesn't need build outputs; exclude dist to stabilize cache
+          input: [{ auto: true }, '!dist/**', '!**/.astro/**', '!.astro/**'],
+          output: [],
+        },
         command: 'vp fmt --check',
-        // fmt is input-heavy but doesn't need build outputs; exclude dist to stabilize cache
-        input: [{ auto: true }, '!dist/**', '!**/.astro/**', '!.astro/**'],
-        output: [],
       },
       'check-full': {
         cache: false,
@@ -114,80 +116,83 @@ export default defineConfig({
         dependsOn: ['build', 'check-fmt', 'check-sync'],
       },
       'check-lint': {
-        cache: true,
+        cache: {
+          // type-aware lint needs build outputs, so this task must run after build
+          // Cache on source + lint config; dist is excluded but lint still fingerprint sources
+          input: [
+            { auto: true },
+            '!dist/**',
+            '!**/.astro/**',
+            '!.astro/**',
+            'vite.config.ts',
+            'tooling/lint/**',
+            'tsconfig.json',
+            'packages/*/tsconfig.json',
+            'apps/*/tsconfig.json',
+          ],
+          output: [],
+        },
         command: 'vp lint',
-        // type-aware lint needs build outputs, so this task must run after build
-        // Cache on source + lint config; dist is excluded but lint still fingerprint sources
-        input: [
-          { auto: true },
-          '!dist/**',
-          '!**/.astro/**',
-          '!.astro/**',
-          'vite.config.ts',
-          'tooling/lint/**',
-          'tsconfig.json',
-          'packages/*/tsconfig.json',
-          'apps/*/tsconfig.json',
-        ],
-        output: [],
       },
       'check-manifest-versions': {
-        cache: true,
+        cache: {
+          input: [
+            'scripts/sync-plugin-versions.ts',
+            'packages/*/package.json',
+            'packages/*/plugin.json',
+            'packages/*/.claude-plugin/plugin.json',
+            'packages/*/.codex-plugin/plugin.json',
+            'packages/*/.cursor-plugin/plugin.json',
+            'packages/*/.devin-plugin/plugin.json',
+            'packages/*/.zcode-plugin/plugin.json',
+            'packages/*/kimi.plugin.json',
+            'tsconfig.json',
+            'pnpm-lock.yaml',
+          ],
+          output: [],
+        },
         command: 'pnpm exec tsx scripts/sync-plugin-versions.ts --check',
-        input: [
-          'scripts/sync-plugin-versions.ts',
-          'packages/*/package.json',
-          'packages/*/plugin.json',
-          'packages/*/.claude-plugin/plugin.json',
-          'packages/*/.codex-plugin/plugin.json',
-          'packages/*/.cursor-plugin/plugin.json',
-          'packages/*/.devin-plugin/plugin.json',
-          'packages/*/.zcode-plugin/plugin.json',
-          'packages/*/kimi.plugin.json',
-          'tsconfig.json',
-          'pnpm-lock.yaml',
-        ],
-        output: [],
       },
       'check-sync': {
-        cache: true,
+        cache: {
+          input: [
+            { auto: false },
+            'scripts/check-sync',
+            'scripts/sync-packages',
+            'scripts/sync-consolidated-plugin.ts',
+            'scripts/sync-bundled-skills.ts',
+            'packages/core/scripts/**/*.ts',
+            'packages/core/agent-directives/**/*.md',
+            'packages/*/sync.config.ts',
+            'packages/agent-plugins/generation/**/*.ts',
+            'packages/agent-plugins/generation/**/*.json',
+            'packages/agent-plugins/generation/**/*.toml',
+            'packages/agent-plugins/plugin.json',
+            'packages/agent-plugins/.*-plugin/plugin.json',
+            'packages/agent-plugins/kimi.plugin.json',
+            'packages/agent-plugins/*.md',
+            'packages/*/package.json',
+            'packages/*/tsconfig.json',
+            // The check compares every generated file, so all outputs are inputs too.
+            'packages/*/agents/**',
+            'packages/*/commands/**',
+            'packages/*/prompts/**',
+            'packages/*/rules/**',
+            'packages/*/skills/**',
+            'packages/*/SYSTEM.md',
+            'tsconfig.json',
+            'pnpm-lock.yaml',
+          ],
+          output: [
+            'packages/*/agents/**',
+            'packages/*/commands/**',
+            'packages/*/prompts/**',
+            'packages/*/rules/**',
+            'packages/*/skills/**',
+            'packages/*/SYSTEM.md',
+          ],
+        },
         command: 'bash scripts/check-sync',
-        input: [
-          { auto: false },
-          'scripts/check-sync',
-          'scripts/sync-packages',
-          'scripts/sync-consolidated-plugin.ts',
-          'scripts/sync-bundled-skills.ts',
-          'packages/core/scripts/**/*.ts',
-          'packages/core/agent-directives/**/*.md',
-          'packages/*/sync.config.ts',
-          'packages/agent-plugins/generation/**/*.ts',
-          'packages/agent-plugins/generation/**/*.json',
-          'packages/agent-plugins/generation/**/*.toml',
-          'packages/agent-plugins/plugin.json',
-          'packages/agent-plugins/.*-plugin/plugin.json',
-          'packages/agent-plugins/kimi.plugin.json',
-          'packages/agent-plugins/*.md',
-          'packages/*/package.json',
-          'packages/*/tsconfig.json',
-          // The check compares every generated file, so all outputs are inputs too.
-          'packages/*/agents/**',
-          'packages/*/commands/**',
-          'packages/*/prompts/**',
-          'packages/*/rules/**',
-          'packages/*/skills/**',
-          'packages/*/SYSTEM.md',
-          'tsconfig.json',
-          'pnpm-lock.yaml',
-        ],
-        output: [
-          'packages/*/agents/**',
-          'packages/*/commands/**',
-          'packages/*/prompts/**',
-          'packages/*/rules/**',
-          'packages/*/skills/**',
-          'packages/*/SYSTEM.md',
-        ],
       },
       // CI splits check-full into two jobs that run in parallel on separate runners:
       // ci-check (format, sync, type-aware lint) and ci-test (tests and manifest checks).
@@ -203,19 +208,20 @@ export default defineConfig({
         dependsOn: ['build:ci', 'test-sync-plugin-versions', 'check-manifest-versions'],
       },
       'test-sync-plugin-versions': {
-        cache: true,
-        command: 'pnpm exec vitest run scripts/sync-plugin-versions.test.ts',
-        // Vitest also loads vite.config.ts and the tsconfig chain.
-        input: [
-          'scripts/sync-plugin-versions.ts',
-          'scripts/sync-plugin-versions.test.ts',
-          'scripts/tsconfig.json',
-          'tsconfig.json',
-          'vite.config.ts',
-          'tooling/lint/test-overrides.ts',
-          'pnpm-lock.yaml',
-        ],
-        output: [],
+        cache: {
+          // Vitest also loads vite.config.ts and the tsconfig chain.
+          input: [
+            'scripts/sync-plugin-versions.ts',
+            'scripts/sync-plugin-versions.test.ts',
+            'scripts/tsconfig.json',
+            'tsconfig.json',
+            'vite.config.ts',
+            'tooling/lint/test-overrides.ts',
+            'pnpm-lock.yaml',
+          ],
+          output: [],
+        },
+        command: 'vp test run scripts/sync-plugin-versions.test.ts',
       },
     },
   },
