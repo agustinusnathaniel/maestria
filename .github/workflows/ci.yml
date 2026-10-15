@@ -19,42 +19,12 @@ permissions:
 env:
   VITE_GIT_HOOKS: '0'
 
-# The check jobs run in parallel on separate runners; together they cover
-# `pnpm check` plus the docs build and the Bun load check. The `main` ruleset
-# requires only `CI Gate`, so PRs that skip the checks can still merge.
+# The jobs run in parallel on separate runners; together they cover `pnpm check`
+# plus the docs build and the Bun load check. The `main` ruleset requires all
+# three by name, so every PR runs them; renaming a job means updating the ruleset.
 jobs:
-  changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      code: ${{ steps.filter.outputs.code }}
-    steps:
-      # PRs that only touch these paths skip the checks; Cloudflare Pages builds
-      # the docs preview. Pushes to main always run them.
-      - id: filter
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          if [ "$GITHUB_EVENT_NAME" != pull_request ]; then
-            echo code=true >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          files=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[].filename')
-          if grep -qvE '^(apps/docs/|docs/|\.changeset/|\.maestria/)' <<< "$files"; then
-            echo code=true >> "$GITHUB_OUTPUT"
-          else
-            echo code=false >> "$GITHUB_OUTPUT"
-          fi
-
   check:
     name: Lint and Sync
-    needs: changes
-    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -69,8 +39,6 @@ jobs:
 
   test:
     name: Test
-    needs: changes
-    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -96,8 +64,6 @@ jobs:
 
   docs:
     name: Docs Build
-    needs: changes
-    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -107,16 +73,3 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Build docs site
         run: pnpm exec vp run --filter @maestria/docs build
-
-  gate:
-    name: CI Gate
-    needs: [changes, check, test, docs]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      # Skipped checks pass; a failed or cancelled job, including change
-      # detection, fails the gate.
-      - name: Require every job to pass or be skipped
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: exit 1
