@@ -15,15 +15,22 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR pushes are cancelled; every main commit keeps its own verification.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  contents: read
+
+env:
+  VITE_GIT_HOOKS: '0'
+
+# The jobs run in parallel on separate runners; together they cover `pnpm check`
+# plus the docs build and the Bun load check.
 jobs:
-  check-and-test:
-    name: Check and Test
+  check:
+    name: Lint and Sync
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      VITE_GIT_HOOKS: '0'
     steps:
       # Shallow clone: no workflow or build script reads git history.
       # release.yml intentionally keeps fetch-depth 0.
@@ -31,14 +38,25 @@ jobs:
         with:
           fetch-depth: 1
       - uses: ./.github/actions/setup
+      - name: Format, sync, build, and type-aware lint
+        run: pnpm check:ci:lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup
+        with:
+          # One job saves the pnpm store, from main only; PR runs restore it.
+          save-cache: ${{ github.event_name == 'push' }}
       - name: Install Bun
         run: pnpm runtime set bun 1.4.2 -g
-      - name: Generate Astro types
-        run: pnpm sync:docs
-      - name: Check (format + lint + typecheck + test) and Build
-        run: pnpm check:ci
-      - name: Build docs site
-        run: pnpm exec vp run --filter @maestria/docs build
+      - name: Build and test
+        run: pnpm check:ci:test
       - name: Verify opencode plugin loads in Bun
         run: |
           bun -e "
@@ -47,3 +65,15 @@ jobs:
               throw new Error('Unexpected plugin definition: ' + JSON.stringify(Object.keys(plugin)));
             console.log('OK opencode plugin loaded in Bun: ' + plugin.id);
           "
+
+  docs:
+    name: Docs Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup
+      - name: Build docs site
+        run: pnpm exec vp run --filter @maestria/docs build

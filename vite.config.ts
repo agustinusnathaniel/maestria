@@ -96,16 +96,6 @@ export default defineConfig({
         input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
         output: ['dist/**'],
       },
-      'check-ci': {
-        cache: false,
-        command: [
-          'vp run check-lint',
-          'vp run test-sync-plugin-versions',
-          'vp run test',
-          'vp run check-manifest-versions',
-        ],
-        dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
-      },
       'check-fmt': {
         cache: true,
         command: 'vp fmt --check',
@@ -188,6 +178,19 @@ export default defineConfig({
           'packages/*/skills/**',
           'packages/*/SYSTEM.md',
         ],
+      },
+      // CI splits check-full into two jobs that run in parallel on separate runners:
+      // ci-check (format, sync, type-aware lint) and ci-test (tests and manifest checks).
+      'ci-check': {
+        cache: false,
+        command: 'vp run check-lint',
+        // Lint type-checks the docs app, which needs the Astro-generated types.
+        dependsOn: ['build:ci', 'check-fmt', 'check-sync', '@maestria/docs#sync'],
+      },
+      'ci-test': {
+        cache: false,
+        command: 'vp run test',
+        dependsOn: ['build:ci', 'test-sync-plugin-versions', 'check-manifest-versions'],
       },
       'test-sync-plugin-versions': {
         cache: true,
