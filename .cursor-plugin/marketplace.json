@@ -11,7 +11,7 @@
     {
       "name": "maestria",
       "source": "./packages/agent-plugins",
-      "description": "maestria methodology plugin for Cursor - 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer), workflow commands (/fein, /sonar, /blitz), always-applied policy rules, and four skills"
+      "description": "maestria methodology plugin for Cursor - 4 specialist agents (adventurer, architect, builder, reviewer), workflow commands (/fein, /sonar, /blitz), always-applied policy rules, and six skills"
     }
   ]
 }

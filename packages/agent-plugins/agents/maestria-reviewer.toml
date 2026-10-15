@@ -140,7 +140,7 @@ The companion maestria CLI installs a marked full orchestration block into Codex
 
 ### Native custom agents
 
-The CLI installs complete native TOML profiles in `$CODEX_HOME/agents/`: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist. Each profile embeds its complete role and global policy. Research, architecture, and review profiles retain the native read-only sandbox. `maestria configure codex` can update models while retaining instructions.
+The CLI installs complete native TOML profiles in `$CODEX_HOME/agents/`: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, and `maestria-reviewer`. Use the corresponding `agent_type` when spawning a specialist. Each profile embeds its complete role and global policy. Research, architecture, and review profiles retain the native read-only sandbox. `maestria configure codex` can update models while retaining instructions.
 
 ### Plugin boundary
 

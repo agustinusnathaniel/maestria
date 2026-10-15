@@ -31,8 +31,7 @@ export const routes: Route[] = [
     steps: [
       { agent: 'orchestrator', artifact: 'Routes the task' },
       { agent: 'adventurer', artifact: 'Recon report' },
-      { agent: 'architect', artifact: 'Decision record' },
-      { agent: 'planner', artifact: 'Phased plan' },
+      { agent: 'architect', artifact: 'Decision + phased plan' },
       { agent: 'builder', artifact: 'Code + tests' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
@@ -44,7 +43,7 @@ export const routes: Route[] = [
     rationale: 'Root cause first, then the fix, then a review by someone who did not write it.',
     steps: [
       { agent: 'orchestrator', artifact: 'Routes the task' },
-      { agent: 'diagnose', artifact: 'Root cause' },
+      { agent: 'adventurer', artifact: 'Root cause' },
       { agent: 'builder', artifact: 'Fix + regression test' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
@@ -54,10 +53,10 @@ export const routes: Route[] = [
     id: 'docs',
     label: 'Docs change',
     rationale:
-      'The writer works from the source of truth; the reviewer checks it against the code.',
+      'The builder works from the source of truth; the reviewer checks it against the code.',
     steps: [
       { agent: 'orchestrator', artifact: 'Routes the task' },
-      { agent: 'writer', artifact: 'Updated guide' },
+      { agent: 'builder', artifact: 'Updated guide' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Document the new retry option',
@@ -77,7 +76,7 @@ export const routes: Route[] = [
  */
 export const lanes: { stage: string; agents: string[] }[] = [
   { agents: ['orchestrator'], stage: 'Routing' },
-  { agents: ['adventurer', 'architect', 'planner', 'diagnose'], stage: 'Thinkers' },
-  { agents: ['builder', 'writer'], stage: 'Workers' },
+  { agents: ['adventurer', 'architect'], stage: 'Thinkers' },
+  { agents: ['builder'], stage: 'Workers' },
   { agents: ['reviewer'], stage: 'Verifier' },
 ];

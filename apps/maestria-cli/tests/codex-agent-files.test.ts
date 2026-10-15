@@ -61,18 +61,13 @@ describe('Codex native agent files', () => {
 
   it('preserves runtime settings outside the instructions in all generated profiles', async () => {
     const profiles = await Promise.all(
-      ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'].map(
-        async (agent) => ({
-          agent,
-          bundled: await readFile(
-            new URL(
-              `../../../packages/agent-plugins/agents/maestria-${agent}.toml`,
-              import.meta.url,
-            ),
-            'utf-8',
-          ),
-        }),
-      ),
+      ['adventurer', 'architect', 'builder', 'reviewer'].map(async (agent) => ({
+        agent,
+        bundled: await readFile(
+          new URL(`../../../packages/agent-plugins/agents/maestria-${agent}.toml`, import.meta.url),
+          'utf-8',
+        ),
+      })),
     );
     for (const { agent, bundled } of profiles) {
       const settings =

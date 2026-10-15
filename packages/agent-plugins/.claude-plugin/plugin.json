@@ -23,10 +23,7 @@
     "./agents/adventurer.md",
     "./agents/architect.md",
     "./agents/builder.md",
-    "./agents/diagnose.md",
-    "./agents/planner.md",
-    "./agents/reviewer.md",
-    "./agents/writer.md"
+    "./agents/reviewer.md"
   ],
   "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
 }

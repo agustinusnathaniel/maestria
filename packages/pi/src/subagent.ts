@@ -353,8 +353,7 @@ const dispatchByMode = async (
 
 export const SUBAGENT_PARAMETERS = Type.Object({
   agent: Type.String({
-    description:
-      'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+    description: 'Specialist agent name (required): adventurer, architect, builder, reviewer',
   }),
   mode: Type.Optional(
     Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
@@ -480,10 +479,10 @@ const createSubagentTool = (
   name: 'maestria_subagent',
   parameters: SUBAGENT_PARAMETERS,
   promptGuidelines: [
-    'Use maestria_subagent when a task MUST be delegated to a specialist subagent rather than handled directly. Each specialist has focused capabilities: adventurer (recon), architect (design), builder (impl), planner (planning), diagnose (bugs), reviewer (QA), writer (docs).',
+    'Use maestria_subagent when a task MUST be delegated to a specialist subagent rather than handled directly. Each specialist has focused capabilities: adventurer (recon and read-only diagnosis), architect (design and plans), builder (implementation and docs), reviewer (QA).',
   ],
   promptSnippet:
-    'Delegate tasks to @maestria specialist subagents (adventurer, architect, builder, planner, diagnose, reviewer, writer)',
+    'Delegate tasks to @maestria specialist subagents (adventurer, architect, builder, reviewer)',
 });
 
 export const installSubagentTool = (

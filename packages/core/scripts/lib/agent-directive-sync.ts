@@ -33,13 +33,10 @@ const DECLARED_TOOLS = {
   'adventurer.md': ['read', 'grep', 'find', 'ls', 'glob'],
   'architect.md': ['read', 'bash', 'grep', 'find', 'ls'],
   'builder.md': ['read', 'bash', 'grep', 'find', 'ls', 'write', 'edit'],
-  'diagnose.md': ['read', 'bash', 'grep', 'find', 'ls'],
-  'planner.md': ['read', 'grep', 'find', 'ls'],
   'reviewer.md': ['read', 'grep', 'find', 'ls', 'glob'],
-  'writer.md': ['read', 'bash', 'grep', 'find', 'ls', 'write', 'edit'],
 } as const satisfies Record<string, readonly string[]>;
 
-/** Read-only sonar roles omit bash; architect/diagnose retain bash for evidence. */
+/** Read-only sonar roles omit bash; architect retains bash for evidence. */
 const hostToolLine = (
   agentFile: keyof typeof DECLARED_TOOLS,
   hostTools: readonly string[] | undefined,
@@ -52,7 +49,7 @@ const hostToolLine = (
 
 const agentFrontmatter = (fields: string): string => `---\n${fields}---\n\n`;
 
-// oxlint-disable-next-line max-lines-per-function -- one declarative mapping: the shared 14-file directive table inlined as data. Splitting it would fragment a single reviewable mapping and hide the platform differences as parameters.
+// oxlint-disable-next-line max-lines-per-function -- one declarative mapping: the shared 11-file directive table inlined as data. Splitting it would fragment a single reviewable mapping and hide the platform differences as parameters.
 export const agentDirectiveSync = ({
   agentFamily,
   commandPrefix,
@@ -63,14 +60,14 @@ export const agentDirectiveSync = ({
     stripFrontmatter: true,
   },
   files: {
-    // --- Canonical specialist agent types (7) ---
+    // --- Canonical specialist agent types (4) ---
 
     'adventurer.md': {
       prepend: agentFrontmatter(
         `description: >-\n` +
           `  Codebase reconnaissance specialist. Maps unknown territory, traces\n` +
-          `  call chains and dependencies, discovers module relationships, and\n` +
-          `  produces structured recon reports for downstream specialists.\n${hostToolLine(
+          `  call chains, dependencies, and root causes, discovers module relationships,\n` +
+          `  and produces structured recon reports for downstream specialists.\n${hostToolLine(
             'adventurer.md',
             hostTools,
           )}prompt_mode: append\n` +
@@ -81,9 +78,9 @@ export const agentDirectiveSync = ({
     'architect.md': {
       prepend: agentFrontmatter(
         `description: >-\n` +
-          `  Architecture decision specialist. Evaluates implementation approaches\n` +
-          `  with trade-off analysis, produces Architecture Decision Records (ADRs),\n` +
-          `  and documents technical decisions with business context.\n${hostToolLine(
+          `  Architecture decision and planning specialist. Evaluates implementation\n` +
+          `  approaches with trade-off analysis, produces Architecture Decision Records\n` +
+          `  (ADRs) and phased plans, and documents decisions with business context.\n${hostToolLine(
             'architect.md',
             hostTools,
           )}prompt_mode: append\n` +
@@ -95,7 +92,8 @@ export const agentDirectiveSync = ({
       prepend: agentFrontmatter(
         `description: >-\n` +
           `  Focused implementation specialist. Executes one atomic, verifiable\n` +
-          `  unit of work per invocation with minimal context and clean diffs.\n${hostToolLine(
+          `  unit of work per invocation, including documentation, with minimal\n` +
+          `  context and clean diffs.\n${hostToolLine(
             'builder.md',
             hostTools,
           )}prompt_mode: append\n` +
@@ -114,19 +112,6 @@ export const agentDirectiveSync = ({
     'commands/sonar.md': {
       output: 'commands/sonar.md',
       stripFrontmatter: true,
-    },
-
-    'diagnose.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Bug tracing specialist. Follows relevant evidence\n` +
-          `  from symptoms to root cause and prevention; expands to similar sites\n` +
-          `  when the cause indicates a shared defect.\n${hostToolLine(
-            'diagnose.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
     },
 
     // Both utilities project one rules.md section, so the skills cannot drift from policy.
@@ -164,22 +149,12 @@ export const agentDirectiveSync = ({
         '---\n' +
         'name: orchestrator\n' +
         'description: >-\n' +
-        '  maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
-        '  subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)\n' +
+        '  maestria agent orchestration dispatcher. Delegates work to 4 specialist\n' +
+        '  subagents (adventurer, architect, builder, reviewer)\n' +
         '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
         '  and role-based pipeline sequencing.\n' +
         '---\n' +
         '\n',
-    },
-
-    'planner.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Implementation planning specialist. Breaks complex features into\n` +
-          `  phased milestones with dependencies, timelines, verification criteria,\n` +
-          `  and rollback points.\n${hostToolLine('planner.md', hostTools)}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
     },
 
     'reviewer.md': {
@@ -208,18 +183,6 @@ export const agentDirectiveSync = ({
         '  management, commit policy, pipeline patterns, and branch discipline.\n' +
         '---\n' +
         '\n',
-    },
-    'writer.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Documentation specialist. Creates clear, structured documentation\n` +
-          `  following progressive disclosure patterns for READMEs, API docs,\n` +
-          `  changelogs, and Architecture Decision Records.\n${hostToolLine(
-            'writer.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
     },
   },
   output: 'agents',

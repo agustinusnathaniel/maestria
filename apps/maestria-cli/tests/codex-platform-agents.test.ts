@@ -6,15 +6,7 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/codex-managed-agents.js';
 
-const AGENTS = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+const AGENTS = ['adventurer', 'architect', 'builder', 'reviewer'] as const;
 
 const { join } = path;
 

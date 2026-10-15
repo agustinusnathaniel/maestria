@@ -117,7 +117,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria install --all` | Installs for every detected platform that lacks maestria |
 | `maestria install opencode --json` | Installs OpenCode, outputs JSON result |
 
-Every maestria package bundles the `create-pull-request` and `docs-update` skills, so `install` adds no separate skills. The `--skills`, `--exclude-skills`, and `--maestria-skills` flags were removed; passing one fails before any change.
+Every maestria package bundles the `create-pull-request`, `docs-update`, `diagnose`, and `plan` skills, so `install` adds no separate skills. The `--skills`, `--exclude-skills`, and `--maestria-skills` flags were removed; passing one fails before any change.
 
 ### Platform identifiers
 
@@ -134,7 +134,7 @@ Every maestria package bundles the `create-pull-request` and `docs-update` skill
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the four skills.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the six skills.
 
 ### Error handling
 
@@ -377,7 +377,7 @@ Choose the model each maestria specialist uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP discovers native root task profiles whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 4 specialists (`adventurer`, `architect`, `builder`, `reviewer`) can each use a different model. OMP discovers native root task profiles whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
 
 For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/agents/` (global, default `~/.codex/agents/`) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
@@ -385,14 +385,14 @@ For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/
 
 <AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
+Shows a group-multiselect of the 4 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
 
 ### Non-interactive (CI)
 
 <AllPackageManagers
   type="dlx"
   pkg="maestria"
-  args="configure opencode --global --quiet --set adventurer=<model-id>,writer=<model-id>"
+  args="configure opencode --global --quiet --set adventurer=<model-id>,reviewer=<model-id>"
 />
 
 - `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
@@ -405,19 +405,19 @@ For a partial assignment, set a model for any role you want to change:
 <AllPackageManagers
   type="dlx"
   pkg="maestria"
-  args="configure <platform> --global --set planner=<model-id>"
+  args="configure <platform> --global --set architect=<model-id>"
 />
 
 ### Flags
 
-| Flag        | Description                                              |
-| ----------- | -------------------------------------------------------- |
-| `--global`  | Configure the user-level config (see the table below)    |
-| `--project` | Configure the project-level config (see the table below) |
-| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`  |
-| `--json`    | Output the resulting config as JSON                      |
-| `--quiet`   | Suppress spinner output (recommended for CI)             |
-| `--compact` | Minimal machine-friendly text output                     |
+| Flag        | Description                                               |
+| ----------- | --------------------------------------------------------- |
+| `--global`  | Configure the user-level config (see the table below)     |
+| `--project` | Configure the project-level config (see the table below)  |
+| `--set`     | Set models non-interactively, e.g. `architect=<model-id>` |
+| `--json`    | Output the resulting config as JSON                       |
+| `--quiet`   | Suppress spinner output (recommended for CI)              |
+| `--compact` | Minimal machine-friendly text output                      |
 
 ### JSON schema
 

@@ -19,7 +19,7 @@ A mode keyword anywhere in a message, outside code, sets the mode and applies it
 
 ## Specialist Dispatch
 
-The extension registers seven specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, and writer. Its `maestria_subagent` tool dispatches one specialist, up to eight in parallel, or a chain, through `@gotgenes/pi-subagents`; without that extension, dispatch reports that it is unavailable.
+The extension registers four specialist agents: adventurer, architect, builder, and reviewer. Its `maestria_subagent` tool dispatches one specialist, up to eight in parallel, or a chain, through `@gotgenes/pi-subagents`; without that extension, dispatch reports that it is unavailable. Adventurer handles read-only diagnosis with the diagnose skill, except that on Pi a diagnosis that must reproduce a failure goes through builder, since adventurer has no shell tool. Architect handles phased plans with the plan skill, and builder handles implementation and documentation.
 
 ```json
 {

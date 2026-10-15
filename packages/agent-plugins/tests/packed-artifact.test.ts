@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vite-plus/test';
 
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const repoRoot = path.resolve(packageRoot, '../..');
-const roles = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
-const readOnlyRoles = ['adventurer', 'architect', 'planner', 'reviewer'];
+const roles = ['adventurer', 'architect', 'builder', 'reviewer'];
+const readOnlyRoles = ['adventurer', 'architect', 'reviewer'];
 const manifestPaths = [
   'plugin.json',
   '.claude-plugin/plugin.json',
@@ -124,13 +124,15 @@ describe('published consolidated plugin', () => {
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(4);
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(6);
       // Generated utilities plus the methodology skills bundled from the repository root.
       expect(skills.map((entry) => entry.split('/')[2]).toSorted()).toEqual([
         'create-pull-request',
+        'diagnose',
         'docs-update',
         'handoff',
         'iteration-limits',
+        'plan',
       ]);
       const agentEntries = entries.filter((entry) => entry.startsWith('package/agents/'));
       expect(agentEntries.filter((entry) => entry.endsWith('.md'))).toHaveLength(roles.length);
