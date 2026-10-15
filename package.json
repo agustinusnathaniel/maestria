@@ -14,7 +14,7 @@
     "test": "vp run -r test",
     "test-sync-plugin-versions": "vp test run scripts/sync-plugin-versions.test.ts",
     "changeset": "changeset",
-    "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
+    "version-packages": "changeset version && tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
     "check": "vp run check-full",
     "check:ci:lint": "vp run ci-check",
