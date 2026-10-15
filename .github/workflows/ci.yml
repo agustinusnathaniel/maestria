@@ -20,8 +20,7 @@ env:
   VITE_GIT_HOOKS: '0'
 
 # The jobs run in parallel on separate runners; together they cover `pnpm check`
-# plus the docs build and the Bun load check. The `main` ruleset requires all
-# three by name, so every PR runs them; renaming a job means updating the ruleset.
+# plus the docs build and the Bun load check.
 jobs:
   check:
     name: Lint and Sync
