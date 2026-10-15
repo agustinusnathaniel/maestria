@@ -4,14 +4,61 @@ runs:
   using: 'composite'
   steps:
     # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
+    # Its built-in store cache saves a new entry on every run, so the store is cached below.
     - uses: pnpm/setup@v3
       with:
-        cache: true
-        require-lockfile: true
+        install: false
+
+    - name: Resolve pnpm store
+      id: pnpm-store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+    # actions/cache saves only when the exact key missed, so an unchanged
+    # lockfile never re-uploads the store.
+    - name: Restore pnpm store
+      id: pnpm-cache
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          pnpm-store-${{ runner.os }}-
+
+    # pnpm/setup already installed the runtime from devEngines.runtime.
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile --no-runtime
+
+    # A store restored from an older lockfile is about to be saved under the
+    # new key; drop packages nothing links to so it does not grow forever.
+    - name: Prune pnpm store
+      if: steps.pnpm-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm store prune
+
+    # One entry per job and commit so every run saves its task results; restore
+    # falls back to the newest entry for the same job and lockfile, then to any entry.
     - name: Restore vp task cache
       uses: actions/cache@v6
       with:
         path: node_modules/.vite/task-cache
-        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.job }}-${{ github.sha }}
         restore-keys: |
+          vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.job }}-
+          vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
           vp-task-cache-${{ runner.os }}-
+
+    # Restored entries accumulate across runs, so start over once the cache is a
+    # week old. Never delete single archives: cache.db still points at them, and
+    # vp then stops the run on the failed lookup but exits 0, skipping later tasks.
+    - name: Expire vp task cache
+      shell: bash
+      run: |
+        dir=node_modules/.vite/task-cache
+        if [ -n "$(find "$dir/.created" -mtime +7 2>/dev/null)" ]; then
+          echo "vp task cache is older than 7 days; starting cold"
+          rm -rf "$dir"
+        fi
+        mkdir -p "$dir"
+        [ -f "$dir/.created" ] || touch "$dir/.created"
