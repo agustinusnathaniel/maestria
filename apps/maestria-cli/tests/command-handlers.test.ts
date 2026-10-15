@@ -102,7 +102,7 @@ vi.mock('@clack/prompts', () => ({
 
 const noopEffect = Effect.sync(() => {});
 
-const makePlatform = (id: PlatformId, label: string): PlatformHandler => ({
+const makePlatform = (id: PlatformId, label: string, npmPackage: string): PlatformHandler => ({
   detect: Effect.succeed(true),
   getInstalledVersion: Effect.succeed('1.0.0'),
   getLatestVersion: Effect.succeed('1.0.0'),
@@ -110,13 +110,14 @@ const makePlatform = (id: PlatformId, label: string): PlatformHandler => ({
   install: noopEffect,
   isInstalled: Effect.succeed(true),
   label,
+  npmPackage,
   uninstall: noopEffect,
   update: () => noopEffect,
 });
 
 const handlers = new Map<string, PlatformHandler>([
-  ['opencode', makePlatform('opencode', 'OpenCode')],
-  ['pi', makePlatform('pi', 'Pi')],
+  ['opencode', makePlatform('opencode', 'OpenCode', '@maestria/opencode')],
+  ['pi', makePlatform('pi', 'Pi', '@maestria/pi')],
 ]);
 
 const status = (overrides: Partial<PlatformStatus>): PlatformStatus => ({
@@ -261,6 +262,18 @@ describe('command handlers', () => {
         exitCode: 1,
         output: '@maestria/opencode is not installed for OpenCode',
       });
+    });
+
+    it('names the package the platform installs, not one derived from its id', async () => {
+      const kimi = makePlatform('kimi-code', 'Kimi Code', '@maestria/agent-plugins');
+      platformMocks.getPlatform.mockImplementation((id: string) =>
+        id === 'kimi-code' ? kimi : handlers.get(id),
+      );
+      detectMocks.detectSingle.mockReturnValue(
+        Effect.succeed(status({ id: 'kimi-code', installed: false, label: 'Kimi Code' })),
+      );
+      const missing = await handleCheck({ platform: 'kimi-code' });
+      expect(missing.output).toBe('@maestria/agent-plugins is not installed for Kimi Code');
     });
 
     it('rejects unknown platforms and --all with a platform', async () => {
