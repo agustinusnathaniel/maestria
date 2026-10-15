@@ -25,6 +25,7 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 | --- | --- | --- |
 | [@maestria/opencode](packages/opencode/) | maestria methodology plugin for OpenCode V2 (0.8.0 and earlier: OpenCode V1) | [README](packages/opencode/README.md) |
 | [@maestria/agent-plugins](packages/agent-plugins/) | Shared plugin for Codex, Claude Code, Cursor, Kimi Code, Devin, ZCode, Hermes, OMP, and Agent Plugins clients | [README](packages/agent-plugins/README.md) |
+| [@maestria/deepseek](packages/deepseek/) | maestria methodology for DeepSeek Harness (skills + Cordis plugin + agent preset) | [README](packages/deepseek/README.md) |
 | [@maestria/pi](packages/pi/) | maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 
 Canonical agent directives and the sync pipeline live in the private `@maestria/core` package (`packages/core/agent-directives/`); `packages/shared/*` holds private host-neutral utilities. Neither is published to npm.
@@ -49,6 +50,7 @@ maestria/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
 │   ├── agent-plugins/   - Shared declarative plugin and native host resources
 │   ├── opencode/        - @maestria/opencode plugin
+│   ├── deepseek/        - @maestria/deepseek plugin (DeepSeek Harness)
 │   ├── pi/              - @maestria/pi plugin
 │   └── shared/
 │       ├── mode/        - Shared neutral mode mechanics (private, pure-TS, no host SDK)

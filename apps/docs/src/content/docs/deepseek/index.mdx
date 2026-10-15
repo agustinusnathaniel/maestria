@@ -1,0 +1,59 @@
+---
+title: '@maestria/deepseek'
+description: DeepSeek Harness bundle with a maestria agent preset, specialist delegation tools, and workflow skills.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/DEEPSEEK · PROVISIONAL"
+      title="A maestria preset for DeepSeek Harness."
+      lead="Install the bundle, pick the maestria preset, and let the orchestrator route work through seven specialist subagents with independent review."
+      mark={marks.deepseek}
+      primaryCta={{ href: '/deepseek/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/deepseek/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install deepseek"
+    />
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="One preset, seven specialists."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'The maestria preset', desc: 'The standard coding agent, with the maestria orchestrator as its persona and the global rules in every agent and delegated child.' },
+          { title: 'Specialist delegation', desc: 'One tool per specialist, from maestria_adventurer to maestria_writer, each starting a child with that complete role.' },
+          { title: 'Host-enforced boundaries', desc: 'Adventurer, planner, and reviewer can only read, search, and load skills; architect and diagnose can do everything except edit or write files.' },
+          { title: 'Workflow skills', desc: 'fein, sonar, and blitz modes plus the handoff, iteration-limits, create-pull-request, and docs-update skills.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Installation', href: '/deepseek/getting-started/installation/' },
+        { label: 'Quick start', href: '/deepseek/getting-started/quick-start/' },
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'When to use maestria', href: '/core/when-to-use/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

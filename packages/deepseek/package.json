@@ -1,0 +1,57 @@
+{
+  "name": "@maestria/deepseek",
+  "version": "0.0.0",
+  "description": "maestria agent preset for DeepSeek Harness: orchestrator persona, global rules, specialist delegation tools, and skills",
+  "keywords": [
+    "agent-orchestration",
+    "deepseek-harness",
+    "dsh-bundle",
+    "maestria"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/deepseek"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "dist",
+    "locale",
+    "prompts",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "^2.9.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

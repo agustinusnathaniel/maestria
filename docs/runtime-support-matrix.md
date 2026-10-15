@@ -39,6 +39,7 @@ CLI adapters wrap host-native capabilities: they stage the published npm package
 | Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim; detail in [register](plugin-host-verification.md#codex-desktop) | [E-CODEX-DESKTOP-01](plugin-host-verification.md#codex-desktop) | 2026-08-11 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 | 2026-08-11 |
 | Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 | 2026-08-11 |
+| DeepSeek Harness | Provisional | Bundle: agent preset + Cordis plugin + skills | shipped provisional bundle, verified against a real `dsh` run with a fake model | `maestria` agent preset with host-filtered specialist delegation tools, verified end to end against DSH `0.2.0-rc.2` without live inference | E-DSH-01 to E-DSH-05 | 2026-10-14 |
 
 The per-runtime sections below are dated evidence snapshots as of their review dates, not maintenance obligations; each listed runtime's disposition is set by this table. Plugin-host detail for Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes lives in the [host verification register](plugin-host-verification.md) under the [component capability contract](agent-plugin-capabilities.md).
 
@@ -129,6 +130,33 @@ Dated evidence for the Pi tool-enforcement boundary. Enforcement here is host-ob
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-PI-TOOLS-02 | Pi | Tool-level enforcement | Tool-level enforcement is conditional on the host emitting `tool_call` for every tool invocation: that handler is the only maestria layer in this Pi extension that observes a call, and review-mode `setActiveTools` narrowing can only withhold tools the host already exposes. Whether a non-default host execution mode emits `tool_call` for in-script invocations is unverified (codemode is one example). In review mode the interceptor blocks any tool name outside the read-only set, which bounds the exposure but cannot cover a call the host never surfaces. No live host probe has been performed | unpinned - reverify before implementation | `packages/pi/src/tools.ts`; `packages/shared/pi/src/commands-core.ts`; `packages/shared/pi/src/tools-core.ts` | 2026-10-04 | not tested |
 
+## DeepSeek Harness
+
+**Support level:** Provisional. **Delivery:** a DSH bundle declaring the `maestria` agent preset. **Disposition:** shipped provisional package. **Rationale:** DSH is a developer preview; the bundle is verified end to end against a real `dsh` `0.2.0-rc.2` run with a local fake model, not against live inference. Decision: [ADR-DSH-001](adr/deepseek/ADR-DSH-001-agent-preset-bundle.md).
+
+### Evidence (reviewed 2026-10-14)
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-DSH-01 | DeepSeek Harness | Distribution | A package declaring `dsh.bundle.patch` installs with `dsh plugin --profile <name> add` and joins that profile's bundle layers; `remove` (or pnpm's `uninstall` alias) drops it. Only the shipped `web` profile mounts the agent-preset registry | `@deepseek-ai/dsh` `0.2.0-rc.2` (`dsh-v0.2.0-rc.2`, `639ed015`) | `docs/user/develop/basic/publish.md`; `apps/cli/reference/README.md`; `packages/bundle/web-app/cordis.patch.yml` | 2026-10-14 | tested: `scripts/e2e/deepseek-evidence.ts` (real `dsh` install, boot, and `uninstall`) |
+| E-DSH-02 | DeepSeek Harness | Agent presets | A preset is a `@deepseek-ai/dsh-agent-preset` row in a patch; preset directories are no longer read. A patch cannot insert into another preset's plugin list, because only `group: true` rows are indexed | `0.2.0-rc.2` | `packages/preset/agent-preset/README.md`; `vendor/include/src/index.ts` (`applyEntryPatches`) | 2026-10-14 | tested: E2E (preset activates and a session is created on it) |
+| E-DSH-03 | DeepSeek Harness | Delegation tool | `dsh-tool-subagent` rows take `persona`, `toolFilter` (`allow`/`deny`), and `maxDepth`; a child joins its parent's preset, so preset-scoped prompt sections and variables reach it. The host adds its own `subagent` tool to every spawned child after the filter | `0.2.0-rc.2` | `packages/subagent/tool-subagent/src/index.ts`; `packages/subagent/subagent/src/child-agent.ts` (`applyChildComposition`) | 2026-10-14 | tested: E2E (reviewer and architect children's personas, rules, and tool lists) |
+| E-DSH-04 | DeepSeek Harness | System prompt | `systemPrompt.variable()` values are not rescanned after substitution; a section with `interpolate: false` stays literal; `dsh-persona` requires `prefix` | `0.2.0-rc.2` | `packages/core/system-prompt/src/index.ts` (`renderPrompt`); `packages/preset/persona/src/index.ts` | 2026-10-14 | tested: E2E plus `packages/deepseek/tests/preset.test.ts` against the published `dsh-system-prompt` |
+| E-DSH-05 | DeepSeek Harness | Skills | `dsh-skill-filesystem` `customSkillDirs` roots rank above user roots and below project roots; a Loader `!!js` expression resolves the installed package's `skills/` from the profile's base URL | `0.2.0-rc.2` | `packages/skill/skill-filesystem/src/index.ts`; `packages/bundle/web-app/presets/cordis.patch.yml` | 2026-10-14 | tested: E2E (skills listed from the installed bundle path) |
+
+### Capability vs control
+
+| Evidence ID | Mechanism | Capability | Control | Note |
+| --- | --- | --- | --- | --- |
+| E-DSH-03 | `toolFilter` on specialist delegation tools | Supported | Enforced | Filtered tools are absent from the child's request; the host-added `subagent` tool remains, bounded by `maxDepth: 1` |
+| E-DSH-03, E-DSH-04 | Personas, global rules, and skills | Supported | Advisory | Guidance only; assembly is not a permission boundary |
+| E-DSH-01 | Sandbox, approvals, permission presets | Host-owned | Enforced by host | The bundle changes none of them |
+
+### Statuses and gates
+
+- **Promotion to `Native`:** a live-inference session on a released (non-preview) DSH line, plus a re-diff of the restated `standard` preset rows against that release.
+- **Rollback:** `maestria uninstall deepseek` (or `dsh plugin --profile web remove @maestria/deepseek`); remove `packages/deepseek` and the CLI handler entry.
+
 ---
 
 ## Project customization loading (reviewed 2026-09-18)
@@ -163,6 +191,7 @@ This file is the dated evidence ledger for non-plugin runtimes. Plugin-host evid
 | E-JCODE-02 | JCode | https://jcode.sh/sdk | 2026-08-11 | not tested |
 | E-CRUSH-01, E-CRUSH-02, E-CRUSH-03, E-CRUSH-04, E-CRUSH-05 | Crush | https://github.com/charmbracelet/crush | 2026-08-11 | not tested |
 | E-PI-TOOLS-02 | Pi | `packages/pi/src/tools.ts`; `packages/shared/pi/src/commands-core.ts`; `packages/shared/pi/src/tools-core.ts` (working-tree snapshot; no pinned host source read for execution-mode behavior) | 2026-10-04 | not tested |
+| E-DSH-01 to E-DSH-05 | DeepSeek Harness | `deepseek-ai/deepseek-harness` tag `dsh-v0.2.0-rc.2` (`639ed015`); `@deepseek-ai/dsh` `0.2.0-rc.2` from npm | 2026-10-14 | tested: real-host E2E with a local fake model (no live inference) |
 | E-PROJ-OC-01, E-PROJ-OC-03 | OpenCode | `packages/opencode/src/session.ts`; `scripts/e2e/opencode-evidence.ts` against OpenCode CLI `2.0.28` | 2026-10-14 | tested: real-host E2E with a local fake provider (no live model run) |
 | E-PI-SUB-01, E-PI-SUB-02, E-PI-SUB-03, E-PI-SUB-04, E-PI-TOOLS-01 | Pi | `packages/pi/node_modules/@gotgenes/pi-subagents/dist/public.d.ts` and `package.json` (resolved `21.9.0`); `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.84.2_*/node_modules/@earendil-works/pi-coding-agent/dist/` (host `0.84.2` where those claims were read; `allToolNames` re-verified unchanged in the installed `1.0.1` host on 2026-10-05) | 2026-10-02 (claims); 2026-10-05 (`allToolNames` re-verification) | tested: source inspection + package/unit tests (no live runtime E2E) |
 | E-PROJ-PI-01 | Pi | `packages/pi/src/rules.ts`; `packages/shared/pi/src/project-config.ts`; `node_modules/.pnpm/@earendil-works+pi-coding-agent@1.0.1_*/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/runner.js` (`emitBeforeAgentStart`, `emitError`) (working-tree snapshot; package peer `^1.0.0`, resolved `1.0.1` 2026-10-05; swallowing path and whole-string `systemPrompt` return re-verified in installed 1.0.1 runner source) | 2026-10-05 | tested: installed 1.0.1 source inspection + package/unit tests against real 1.0 types (no live runtime E2E) |

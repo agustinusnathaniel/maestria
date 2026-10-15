@@ -21,6 +21,8 @@ export const marks: Record<string, string> = {
   architect:
     '<rect x="4.5" y="4.5" width="15" height="15"/><rect x="9.5" y="9.5" width="5" height="5"/>',
   builder: '<path d="M10 5.5 4.5 12 10 18.5"/><path d="M14 5.5 19.5 12 14 18.5"/>',
+  deepseek:
+    '<path d="M12 5v14"/><path d="M12 5c-1.2 3.4-4 5.8-7.5 6.2 2 .8 3.4 2.2 4.2 4.3"/><path d="M12 5c1.2 3.4 4 5.8 7.5 6.2-2 .8-3.4 2.2-4.2 4.3"/>',
   diagnose: '<circle cx="10.5" cy="10.5" r="6"/><line x1="15" y1="15" x2="20.5" y2="20.5"/>',
   ecosystem:
     '<circle cx="6.5" cy="6" r="1.9"/><circle cx="17.5" cy="8" r="1.9"/><circle cx="10" cy="18" r="1.9"/><path d="M8.3 6.6 15.7 7.8"/><path d="m6.9 7.9 2.6 8.2"/><path d="m16.9 9.8-5.9 6.6"/>',

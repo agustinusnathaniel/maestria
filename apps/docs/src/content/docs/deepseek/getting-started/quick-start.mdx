@@ -1,0 +1,43 @@
+---
+title: Quick Start
+description: Route work through maestria's specialists in DeepSeek Harness.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+With `@maestria/deepseek` installed, start the web app in your project directory:
+
+```bash
+dsh web
+```
+
+<Aside type="caution" title="Choose the route that fits the task">
+  Delegation adds model work and waiting time. Use [When to Use maestria](/core/when-to-use/) before
+  sending a small task or an expensive, slow model through the full pipeline.
+</Aside>
+
+## Run a Task
+
+<Steps>
+
+1. Start a new session on the **maestria** preset and describe the task. The orchestrator picks the smallest safe route; no prefix is needed.
+
+2. Watch the delegation. Each specialist runs as a child through its tool, such as `maestria_adventurer` for reconnaissance or `maestria_reviewer` for independent review, and its result returns to the orchestrator.
+
+3. To choose the route yourself, name a mode: ask for `fein` for the full pipeline, `sonar` for research that stops before implementation, or `blitz` for the fast path on familiar work.
+
+</Steps>
+
+You can also ask for a specialist directly:
+
+```text
+Use maestria_adventurer to trace the authentication flow and report the relevant files.
+```
+
+Adventurer, planner, and reviewer children can only read, search, and load skills, and architect and diagnose children can do everything except edit or write files. DeepSeek Harness enforces those filters; everything else follows its sandbox, approvals, and permission presets.
+
+## Next Steps
+
+- [Specialist Reference](/core/agents/) for roles and boundaries
+- [Installation](/deepseek/getting-started/installation/)
+- [When to Use maestria](/core/when-to-use/)

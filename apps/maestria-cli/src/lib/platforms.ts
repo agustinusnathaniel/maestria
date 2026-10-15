@@ -282,6 +282,7 @@ export const PLATFORM_IDS = [
   'cursor',
   'claude-code',
   'codex',
+  'deepseek',
 ] as const;
 
 export type PlatformId = (typeof PLATFORM_IDS)[number];
@@ -410,15 +411,17 @@ const codex: PlatformDefinition = {
     }),
 };
 
-/** Pi and omp share one handler shape; only spelling, prefix, path, and labels differ. */
+/** Hosts with their own package installer share one handler shape; only spelling, prefix, path, and labels differ. */
 interface PiStylePlatformDefinition {
-  readonly id: 'pi' | 'omp';
+  readonly id: 'pi' | 'omp' | 'deepseek';
   readonly label: string;
   readonly binary: string;
   readonly npmPackage: string;
   /** Host installer requires `npm:` for Pi, empty for omp. */
   readonly referencePrefix: string;
   readonly commandPrefix: readonly string[];
+  /** Install verb; `dsh plugin` forwards to pnpm and documents `add`. */
+  readonly installVerb?: string;
   readonly installedPackageJsonPath: string;
   readonly prerequisite?: Effect.Effect<void>;
 }
@@ -426,7 +429,8 @@ interface PiStylePlatformDefinition {
 const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinition => {
   const packageReference = `${definition.referencePrefix}${definition.npmPackage}`;
   const taggedReference = (version: string): string => `${packageReference}@${version}`;
-  const pluginArgs = (action: 'install' | 'uninstall', reference: string): string[] => [
+  const installVerb = definition.installVerb ?? 'install';
+  const pluginArgs = (action: string, reference: string): string[] => [
     ...definition.commandPrefix,
     action,
     reference,
@@ -442,7 +446,7 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
       if (definition.prerequisite !== undefined) {
         yield* definition.prerequisite;
       }
-      yield* run(definition.binary, pluginArgs('install', packageReference), 120_000);
+      yield* run(definition.binary, pluginArgs(installVerb, packageReference), 120_000);
     }).pipe(Effect.asVoid),
     isInstalled: fileExists(definition.installedPackageJsonPath),
     label: definition.label,
@@ -459,7 +463,7 @@ const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinit
           version !== null && version !== undefined && version !== ''
             ? taggedReference(version)
             : taggedReference('latest');
-        yield* run(definition.binary, pluginArgs('install', tagged), 120_000);
+        yield* run(definition.binary, pluginArgs(installVerb, tagged), 120_000);
       }),
   };
 };
@@ -718,6 +722,22 @@ const cursor: PlatformDefinition = {
     }),
 };
 
+// DeepSeek Harness treats a blank `DSH_HOME` as unset.
+const dshHomeEnv = process.env.DSH_HOME?.trim() ?? '';
+const dshHome = dshHomeEnv === '' ? `${homedir()}/.dsh` : dshHomeEnv;
+
+// The bundle declares a preset, and only the shipped `web` profile mounts the preset registry.
+const deepseek: PlatformDefinition = piStylePlatform({
+  binary: 'dsh',
+  commandPrefix: ['plugin', '--profile', 'web'],
+  id: 'deepseek',
+  installVerb: 'add',
+  installedPackageJsonPath: `${dshHome}/profiles/web/node_modules/@maestria/deepseek/package.json`,
+  label: 'DeepSeek Harness',
+  npmPackage: '@maestria/deepseek',
+  referencePrefix: '',
+});
+
 // OMP loads the consolidated plugin natively; no hooks or model files ship.
 // Migrating from `@maestria/omp` requires manual uninstall first.
 const omp: PlatformDefinition = piStylePlatform({
@@ -738,6 +758,7 @@ export const platforms: readonly PlatformHandler[] = [
   omp,
   claudeCode,
   codex,
+  deepseek,
 ].map(resolveLatestVersion);
 
 export const getPlatform = (id: string): PlatformHandler | undefined =>

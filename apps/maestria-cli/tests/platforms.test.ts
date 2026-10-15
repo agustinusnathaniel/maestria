@@ -151,7 +151,7 @@ describe('pi subagent prerequisite', () => {
   });
 });
 
-describe('pi and omp package commands', () => {
+describe('host package installer commands', () => {
   it('drives install, update, and uninstall with exact command arrays', async () => {
     // Uninstall effects are built at module load, so the recorded call is the
     // one the handler holds; assert it before clearing the shared mock.
@@ -161,6 +161,16 @@ describe('pi and omp package commands', () => {
         (call) => call[0] === 'omp' && call[1]?.[0] === 'plugin' && call[1]?.[1] === 'uninstall',
       );
     expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/agent-plugins']);
+    const dshUninstall = vi
+      .mocked(shell.run)
+      .mock.calls.find((call) => call[0] === 'dsh' && call[1]?.[3] === 'uninstall');
+    expect(dshUninstall?.[1]).toEqual([
+      'plugin',
+      '--profile',
+      'web',
+      'uninstall',
+      '@maestria/deepseek',
+    ]);
 
     vi.clearAllMocks();
     const pi = requirePlatform('pi');
@@ -172,10 +182,13 @@ describe('pi and omp package commands', () => {
     await Effect.runPromise(omp.install);
     await Effect.runPromise(omp.update());
     await Effect.runPromise(omp.update('1.2.3'));
+    const deepseek = requirePlatform('deepseek');
+    await Effect.runPromise(deepseek.install);
+    await Effect.runPromise(deepseek.update('1.2.3'));
 
     const calls = vi
       .mocked(shell.run)
-      .mock.calls.filter((call) => call[0] === 'pi' || call[0] === 'omp')
+      .mock.calls.filter((call) => ['dsh', 'omp', 'pi'].includes(call[0]))
       .map(([cmd, args, timeoutMs]) => [cmd, args, timeoutMs]);
 
     expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi'], 120_000]);
@@ -194,6 +207,17 @@ describe('pi and omp package commands', () => {
     expect(calls).toContainEqual([
       'omp',
       ['plugin', 'install', '@maestria/agent-plugins@1.2.3'],
+      120_000,
+    ]);
+    // `dsh plugin` forwards to pnpm; DeepSeek Harness documents its `add` verb.
+    expect(calls).toContainEqual([
+      'dsh',
+      ['plugin', '--profile', 'web', 'add', '@maestria/deepseek'],
+      120_000,
+    ]);
+    expect(calls).toContainEqual([
+      'dsh',
+      ['plugin', '--profile', 'web', 'add', '@maestria/deepseek@1.2.3'],
       120_000,
     ]);
   });

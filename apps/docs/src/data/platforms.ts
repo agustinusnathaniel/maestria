@@ -68,6 +68,15 @@ export const platforms: Platform[] = [
     name: '@maestria/agent-plugins',
   },
   {
+    badge: 'PROVISIONAL',
+    blurb: 'A maestria agent preset with host-filtered specialist delegation for DeepSeek Harness.',
+    href: '/deepseek/',
+    id: 'deepseek',
+    installArgs: 'install deepseek',
+    mark: 'deepseek',
+    name: '@maestria/deepseek',
+  },
+  {
     auxiliary: true,
     blurb: 'Optional companion tooling: CodeGraph indexing and RTK.',
     href: '/ecosystem/',

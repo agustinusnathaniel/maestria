@@ -14,7 +14,7 @@ describe('validation', () => {
     ).rejects.toMatchObject({
       exitCode: 1,
       message:
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex",
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex, deepseek",
     });
   });
   it('accepts omp as a valid platform', async () => {
@@ -35,6 +35,7 @@ describe('validation', () => {
       'cursor',
       'claude-code',
       'codex',
+      'deepseek',
     ]);
   });
 
@@ -52,7 +53,7 @@ describe('validation', () => {
         | { error: { message: string } }
         | undefined;
       expect(fail?.error.message).toBe(
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex",
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex, deepseek",
       );
     }
   });

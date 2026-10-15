@@ -1,0 +1,50 @@
+---
+title: Installation & Setup
+description: Install, verify, update, and remove the @maestria/deepseek bundle.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
+`@maestria/deepseek` is a DeepSeek Harness bundle. It adds a `maestria` agent preset to the shipped `web` profile and changes no other preset.
+
+## Prerequisites
+
+- **DeepSeek Harness** `0.2.0-rc.2`, with `dsh` on your `PATH` (later releases may need a bundle update)
+- **pnpm**, which `dsh plugin` uses to install bundles
+
+<Aside type="caution" title="Provisional support">
+  DeepSeek Harness is a developer preview. This bundle is verified against a real `dsh` run on
+  `0.2.0-rc.2` with a stand-in model, not yet with live inference, and a later release may need an
+  update.
+</Aside>
+
+## Install
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install deepseek" />
+
+The CLI runs DeepSeek Harness's own installer. To run it yourself:
+
+```bash
+dsh plugin --profile web add @maestria/deepseek
+```
+
+## Verify Installation
+
+Restart `dsh web`. Open the preset picker for a new session and confirm **maestria** is listed. To use it for every new task, choose it as the default in settings.
+
+## Update
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update deepseek" />
+
+Restart `dsh web` afterwards; a running profile keeps the bundles it started with.
+
+## Uninstall
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall deepseek" />
+
+Or remove it with DeepSeek Harness directly:
+
+```bash
+dsh plugin --profile web remove @maestria/deepseek
+```

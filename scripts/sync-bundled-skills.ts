@@ -10,6 +10,7 @@ import { normalizeLineEndings } from '../packages/core/scripts/lib/transforms.js
 const SOURCE_DIR = 'packages/core/agent-directives/skills';
 const TARGET_DIRS = [
   'packages/agent-plugins/skills',
+  'packages/deepseek/skills',
   'packages/opencode/skills',
   'packages/pi/skills',
 ];
