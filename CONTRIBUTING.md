@@ -146,6 +146,8 @@ For a pull request:
 3. Explain the motivation, user-visible effect, and migration steps, if any.
 4. List the validation commands that passed.
 
+The `main` ruleset requires the `Lint and Sync`, `Test`, and `Docs Build` CI checks on every PR. The `chore: version packages` PR is opened with `GITHUB_TOKEN`, so its CI run waits until a maintainer approves it; approving is the release checkpoint.
+
 ## Documentation Locations
 
 Use the [engineering documentation index](docs/README.md) to find current guidance, design rationale, and historical records.
