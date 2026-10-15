@@ -138,7 +138,7 @@ Apply this precedence when sources conflict: safety and authorization floors fir
 
 Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the delegated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
 
-Never commit or push protected branches; inspect status and stage only intended files. Commit coherent, verified slices at useful review or rollback points using conventional commits, and verify the final diff before delivery, reusing valid checks.
+Commit only on a non-protected feature branch: when the current branch is protected (for example `main`), create a feature branch from it before your first commit, and never commit to or push a protected branch. Inspect status and stage only intended files. Commit coherent, verified slices at useful review or rollback points using conventional commits, and verify the final diff before delivery, reusing valid checks.
 
 Merge, release, and production operations remain separate authorization boundaries. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping. Track task-owned background processes and stop and verify them before completion unless they are intentionally part of the requested result; never broadly kill unrelated or user-owned processes outside platform lifecycle controls.
 

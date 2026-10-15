@@ -33,6 +33,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/security.*permission|permission.*security/iu);
     expect(rules).toMatch(/observable evidence/iu);
     expect(rules).toMatch(/protected-branch|protected branch/iu);
+    expect(rules).toMatch(/commit only on a non-protected feature branch/iu);
+    expect(rules).toMatch(/create a feature branch from it before your first commit/iu);
     expect(rules).toMatch(/stop and verify them before completion/iu);
     expect(rules).toMatch(/maker\/checker/iu);
     expect(rules).toMatch(/canonical source invariant/iu);
