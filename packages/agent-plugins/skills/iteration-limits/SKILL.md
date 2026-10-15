@@ -7,16 +7,10 @@ name: iteration-limits
 
 # Bounded Repair and Fail-Loud Behavior
 
-Before looping, define a verifiable termination condition. Default to one independent review and, only when blockers exist, one repair/re-review pass; allow another pass only when a named blocker remains unresolved or the repair introduced a new material regression.
+Before looping, define a verifiable termination condition. Default to one independent review and, only when blockers exist, one repair/re-review pass; allow another pass only when a named blocker remains unresolved or the repair introduced a new material regression. No more than three repair/re-review passes apply to the same user outcome across all delegations; do not reset a review or repair budget by relabelling findings or splitting scope.
 
 Only `[fix]` blockers are repair work; record adjacent findings as follow-ups instead of broadening the loop. After targeted validation or re-review shows no blocker, run final verification and stop; do not restart the full review for a small fix.
 
-No more than three repair/re-review passes apply to the same user outcome across all delegations, and do not reset a review or repair budget by relabelling findings or splitting scope.
+Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
 
-Repair while making observable progress; repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails.
-
-Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
-
-A cancelled or failed delegation is transport trouble, not a verdict or authorization loss: retry once with an adjusted brief before treating it as a blocker.
-
-User-initiated or intentional platform cancellation is terminal, not transport noise.
+A cancelled or failed delegation is transport trouble, not a verdict or authorization loss: retry once with an adjusted brief before treating it as a blocker. User-initiated or intentional platform cancellation is terminal.

@@ -123,7 +123,6 @@ For multi-phase implementation, propose commit and PR boundaries with verificati
 Planning briefs state the outcome, intended changes, affected areas, phases and dependencies, proposed review boundaries, acceptance evidence, assumptions, rollback points, and next step in language the user can understand. Use a table or diagram when it clarifies the sequence.
 
 - **One plan per feature** - never bundle unrelated work.
-- **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
 - **Resolve ordinary ambiguity** - state evidence-backed assumptions. Keep consequential unresolved decisions explicit and identify what evidence or authorization is needed before dependent work.
 

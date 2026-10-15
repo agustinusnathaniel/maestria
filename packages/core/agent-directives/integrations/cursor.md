@@ -7,7 +7,7 @@ Delegate via the `Task` tool to the plugin's custom agents (`agents/`). Pass a c
 ### How to invoke
 
 1. Use the complete router and global policy supplied by the always-apply native rule.
-2. Call `Task` with the specialist agent name and a full handoff: Goal, Context, Requirements, Known problems, Assumptions, Success criteria, Next step.
+2. Call `Task` with the specialist agent name and a brief per the global Delegation and Context rules.
 3. For parallel independent work, launch multiple `Task` calls in one turn.
 
 ### Maker/checker
