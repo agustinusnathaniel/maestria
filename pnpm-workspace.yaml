@@ -8,9 +8,8 @@ catalogMode: prefer
 catalog:
   '@types/node': ^26.5.1
   typescript: ^7.0.2
-  vite: npm:@voidzero-dev/vite-plus-core@0.3.1
-  vitest: 4.1.11
-  vite-plus: 0.3.1
+  vite: npm:@voidzero-dev/vite-plus-core@1.2.0
+  vite-plus: 1.2.0
   ultracite: 7.11.1
   '@changesets/cli': ^3.0.2
   '@changesets/changelog-github': ^1.0.1
@@ -33,13 +32,7 @@ catalog:
   semver: 7.8.5
   '@vercel/routing-utils': 6.6.0
 overrides:
-  vite: 'catalog:'
-  vitest: 'catalog:'
-  # Ultracite 7.11.1 configures no-unmodified-loop-condition options that require oxlint >=1.82
-  # (Vite+ 0.3.1 pins oxlint 1.81.0, which rejects the option).
-  oxlint: 1.82.0
-  # keep vitest's browser peer aligned with the catalog-pinned vitest (vite-plus bundles 4.1.11)
-  '@vitest/browser-preview': 4.1.11
+  vite@*: 'catalog:'
   # Dependency-security pins (overrides live in pnpm-workspace.yaml)
   # GHSA-mh99-v99m-4gvg (brace-expansion DoS) via minimatch 10.2.5 -> 5.0.6; 10.2.6 declares ^5.0.8
   minimatch: 10.2.6
@@ -60,10 +53,8 @@ overrides:
 peerDependencyRules:
   allowAny:
     - vite
-    - vitest
   allowedVersions:
     vite: '*'
-    vitest: '*'
     # @astrojs/check declares ^5||^6 but TS 7 verified working (typecheck + astro build pass)
     typescript: '*'
     # starlight-llms-txt depends on @astrojs/mdx 7 (peer markdown-satteri ^0.3.1) while
@@ -76,8 +67,9 @@ allowBuilds:
   onnxruntime-node: true
   protobufjs: true
   sharp: true
-# Match CI's pnpm default (one day) even when a user-level config lowers it.
-minimumReleaseAge: 1440
+# 12 hours: long enough to skip most malicious publishes, which are usually pulled within
+# hours, short enough not to hold back fresh toolchain releases. Overrides pnpm's one-day default.
+minimumReleaseAge: 720
 minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro

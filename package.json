@@ -41,7 +41,6 @@
     "tsx": "4.23.13",
     "ultracite": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "catalog:",
     "yaml": "^2.9.0"
   },
   "devEngines": {

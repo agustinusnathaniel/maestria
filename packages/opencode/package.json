@@ -53,8 +53,7 @@
     "@opencode/plugin": "^2.0.28",
     "@types/node": "catalog:",
     "effect": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@opencode/plugin": "^2.0.28",
