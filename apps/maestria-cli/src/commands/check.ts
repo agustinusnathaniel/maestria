@@ -51,6 +51,7 @@ const handleCheckAll = async (args: CheckArgs): Promise<CommandResult> => {
 const buildSingleResult = (
   platformId: string,
   label: string,
+  pluginName: string,
   status: PlatformStatus,
   args: CheckArgs,
 ): CommandResult => {
@@ -77,12 +78,12 @@ const buildSingleResult = (
       pluginInstalled: true,
     };
     const version = status.installedVersion ? ` (v${status.installedVersion})` : '';
-    text = `@maestria/${platformId} is installed for ${label}${version}`;
+    text = `${pluginName} is installed for ${label}${version}`;
     if (freshness === 'outdated') {
       text += `\nupdate available: v${status.installedVersion} -> v${status.latestVersion} (run 'maestria update ${platformId}')`;
     }
   } else {
-    text = `@maestria/${platformId} is not installed for ${label}`;
+    text = `${pluginName} is not installed for ${label}`;
     result = {
       available: true,
       installedVersion: status.installedVersion,
@@ -108,7 +109,13 @@ const handleCheckSingle = async (platformId: string, args: CheckArgs): Promise<C
     );
   }
   const status = await Effect.runPromise(detectSingle(platformId));
-  return buildSingleResult(platformId, platform.label, status, args);
+  return buildSingleResult(
+    platformId,
+    platform.label,
+    platform.npmPackage ?? 'maestria',
+    status,
+    args,
+  );
 };
 
 export const handleCheck = async (args: CheckArgs): Promise<CommandResult> => {
