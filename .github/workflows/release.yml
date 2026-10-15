@@ -17,11 +17,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-# The release App token pushes the version branch and tags and opens the
-# version PR; id-token: npm trusted publishing with provenance.
+# contents: tags and the version branch; pull-requests: the version PR;
+# id-token: npm trusted publishing with provenance.
 permissions:
-  contents: read
+  contents: write
   id-token: write
+  pull-requests: write
 
 jobs:
   release:
@@ -39,21 +40,11 @@ jobs:
         run: pnpm exec vp run check-sync
       - name: Build
         run: pnpm build:ci
-      # The version PR and release tags come from the release GitHub App, not
-      # GITHUB_TOKEN, so the version PR triggers CI without manual approval.
-      - name: Create release App token
-        id: app-token
-        uses: actions/create-github-app-token@v3
-        with:
-          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          permission-contents: write
-          permission-pull-requests: write
       - name: Create Release PR or Publish
         id: changesets
         uses: changesets/action@v2
         with:
-          github-token: ${{ steps.app-token.outputs.token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           version-script: pnpm version-packages
           publish-script: pnpm release
           pr-title: 'chore: version packages'

@@ -146,7 +146,7 @@ For a pull request:
 3. Explain the motivation, user-visible effect, and migration steps, if any.
 4. List the validation commands that passed.
 
-The `main` ruleset requires the `CI Gate` check, which passes once every CI job has passed or been skipped; PRs that only touch docs, `.changeset/`, or `.maestria/` skip the other jobs. The release workflow opens the `chore: version packages` PR with a token from the release GitHub App (`RELEASE_APP_CLIENT_ID` variable and `RELEASE_APP_PRIVATE_KEY` secret, with Contents and Pull requests write), so that PR runs CI like any other.
+The `main` ruleset requires the `CI Gate` check, which passes once every CI job has passed or been skipped; PRs that only touch docs, `.changeset/`, or `.maestria/` skip the other jobs. The `chore: version packages` PR is opened with `GITHUB_TOKEN`, so its CI run waits until a maintainer approves it; approving is the release checkpoint.
 
 ## Documentation Locations
 
