@@ -1,5 +1,5 @@
 name: 'maestria Setup'
-description: 'Install dependencies with pnpm (which brings Node too)'
+description: 'Install dependencies with pnpm (which brings Node too), restore the vp task cache'
 inputs:
   save-cache:
     description: 'Save the pnpm store after the job. Only one job per push to main should save it.'
@@ -14,3 +14,14 @@ runs:
         cache: true
         save-cache: ${{ inputs.save-cache }}
         require-lockfile: true
+    # Each job runs different tasks, so each keeps its own entry. A rerun of the same
+    # commit restores its exact key; a new commit falls back to the job's latest entry.
+    - name: Restore vp task cache
+      uses: actions/cache@v6
+      with:
+        path: node_modules/.vite/task-cache
+        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.job }}-${{ github.sha }}
+        restore-keys: |
+          vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.job }}-
+          vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          vp-task-cache-${{ runner.os }}-
