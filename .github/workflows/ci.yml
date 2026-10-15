@@ -37,8 +37,12 @@ jobs:
         run: pnpm sync:docs
       - name: Check (format + lint + typecheck + test) and Build
         run: pnpm check:ci
+      - name: 'TEMP: vp cache details (check:ci)'
+        run: pnpm exec vp run --last-details
       - name: Build docs site
         run: pnpm exec vp run --filter @maestria/docs build
+      - name: 'TEMP: vp cache details (docs)'
+        run: pnpm exec vp run --last-details
       - name: Verify opencode plugin loads in Bun
         run: |
           bun -e "
