@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, configure, doctor, and setup - with flags, options, and examples.
+description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, configure, and doctor - with flags, options, and examples.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -134,7 +134,7 @@ Every maestria package bundles the `create-pull-request` and `docs-update` skill
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in its active AGENTS.md. Marketplace-only Codex installation supplies the four skills.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the four skills.
 
 ### Error handling
 
@@ -192,13 +192,13 @@ Without `--destination`, the package is staged under:
 ~/.cache/maestria/agent-plugins/<name>/<version>/
 ```
 
-On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead.
+On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead. `<version>` is URL-encoded, or `unversioned` when the manifest has no version.
 
 Use `--destination` to choose another directory; the CLI refuses to overwrite an existing one.
 
 ### Validation report
 
-`plugin validate --json` returns `valid`, `name`, `version` when present, `root`, `skillNames`, `errors`, and `warnings`. `plugin install --json` returns the same validation fields plus `destination` and the original `source`.
+`plugin validate --json` returns `valid`, `name`, `version` when present, `root`, `skillNames`, `validationScope` (`portable-manifest-skills`), `errors`, and `warnings`. `plugin install --json` returns the same validation fields plus `destination` and the original `source`.
 
 The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, and filesystem containment. maestria ships no MCP server, so a package that declares `mcp.json` is rejected. It does not execute package code or grant permissions.
 
@@ -227,20 +227,20 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--co
 
 ### Behavior
 
-Same logic as `install`, but for already installed platforms. Before-and-after version numbers are shown when available:
+Same logic as `install`, but for already installed platforms. Before-and-after version numbers are shown when available, including for a platform that is already current:
 
 ```
-✔ OpenCode: Updated: v0.5.0 → v0.6.0
-✔ Pi: Already up to date (v0.4.1)
+✓ OpenCode: 0.5.0 → 0.6.0
+✓ Pi: 0.4.1 → 0.4.1
 ```
 
 Use `--version` to pin a specific version instead of the latest:
 
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
-Exact version pinning is not available for `claude-code`, `codex`, or `hermes`. The first two update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
+Exact version pinning is not available for `claude-code`, `codex`, or `hermes`; each returns a validation error if `--version` is passed. Claude Code and Codex update from the latest staged npm package, and Hermes updates from its Git-based plugin installation.
 
-After each successful plugin update, `update` removes the `create-pull-request` and `docs-update` copies that earlier CLI versions installed through the `skills` CLI, using the CLI's ownership record (`$XDG_CONFIG_HOME/maestria/skills.json`), and drops that record entry. Copies the record does not list, such as ones you installed yourself, are left alone. A copy whose installed path another agent still uses is kept and reported. When every installed plugin is already current, `update` still runs this cleanup for platforms that have a record entry and reports the plugin step as a no-op.
+After each successful plugin update, `update` removes the `create-pull-request` and `docs-update` copies that earlier CLI versions installed through the `skills` CLI, using the CLI's ownership record (`skills.json` in `$MAESTRIA_CONFIG_DIR` when set, otherwise `$XDG_CONFIG_HOME/maestria/` or `~/.config/maestria/`), and drops that record entry. Copies the record does not list, such as ones you installed yourself, are left alone. A copy whose installed path another agent still uses is kept and reported. When every installed plugin is already current, `update` still runs this cleanup for platforms that have a record entry and reports the plugin step as a no-op.
 
 | Invocation | What happens |
 | --- | --- |
@@ -249,11 +249,11 @@ After each successful plugin update, `update` removes the `create-pull-request` 
 | `maestria update opencode,pi` | Updates OpenCode and Pi in one run, one platform at a time |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically |
 | `maestria update --all` | Updates all installed platforms to latest |
-| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code and Codex CLI return a version-pinning validation result |
+| `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code, Codex CLI, and Hermes return a version-pinning validation result |
 
 ### Version caching
 
-The CLI queries npm for the live latest version first. When npm is unreachable, it falls back to the last known version recorded in `~/.cache/maestria/versions.json`:
+The CLI queries npm for the live latest version first. When npm is unreachable, it falls back to the last known version recorded in `versions.json` under the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`):
 
 ```json
 {
@@ -264,7 +264,7 @@ The CLI queries npm for the live latest version first. When npm is unreachable, 
 The cache stores one version per package with no time-to-live; it is an offline fallback, not a freshness window. To clear it:
 
 ```bash
-rm ~/.cache/maestria/versions.json
+rm "${XDG_CACHE_HOME:-$HOME/.cache}/maestria/versions.json"
 ```
 
 A successful update removes that package's cached entry; the next check fetches live from npm.
@@ -319,7 +319,7 @@ Uninstall also removes the skill copies earlier CLI versions installed for that 
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
-OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, move a V1 `plugin` entry to `plugins`, and replace a `@maestria/opencode-v2` preview entry; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options.
+OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, replace a maestria entry in the V1 `plugin` array with one in `plugins`, and replace a `@maestria/opencode-v2` preview entry; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options.
 
 ### Example
 
@@ -347,7 +347,7 @@ maestria check --all [--json] [--quiet]
 | `--json`      | Output as JSON. Default: `false` - human-readable text is the default.    |
 | `--quiet`     | Suppress error messages on stderr. Does not suppress the result on stdout |
 
-Unlike every other command, `check` has no `--compact` flag; `--quiet` suppresses stderr error messages, not the stdout result.
+Like `doctor` and `plugin`, `check` has no `--compact` flag; `--quiet` suppresses stderr error messages, not the stdout result.
 
 ### Behavior
 
@@ -379,7 +379,7 @@ maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]]
 
 `platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. OMP discovers native root task profiles whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
 
-For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` (global) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
+For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/agents/` (global, default `~/.codex/agents/`) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
 ### Interactive (TTY)
 
@@ -410,14 +410,14 @@ For a partial assignment, set a model for any role you want to change:
 
 ### Flags
 
-| Flag        | Description                                                             |
-| ----------- | ----------------------------------------------------------------------- |
-| `--global`  | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`) |
-| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`)        |
-| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`                 |
-| `--json`    | Output the resulting config as JSON                                     |
-| `--quiet`   | Suppress spinner output (recommended for CI)                            |
-| `--compact` | Minimal machine-friendly text output                                    |
+| Flag        | Description                                              |
+| ----------- | -------------------------------------------------------- |
+| `--global`  | Configure the user-level config (see the table below)    |
+| `--project` | Configure the project-level config (see the table below) |
+| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`  |
+| `--json`    | Output the resulting config as JSON                      |
+| `--quiet`   | Suppress spinner output (recommended for CI)             |
+| `--compact` | Minimal machine-friendly text output                     |
 
 ### JSON schema
 
@@ -438,10 +438,12 @@ An empty string means the agent inherits the session model.
 
 ### Where the config is written
 
-| Platform | Global                              | Project                    |
-| -------- | ----------------------------------- | -------------------------- |
-| opencode | `~/.config/opencode/opencode.jsonc` | `.opencode/opencode.jsonc` |
-| pi       | `~/.pi/agent/agents/<name>.md`      | `.pi/agents/<name>.md`     |
+| Platform | Global | Project |
+| --- | --- | --- |
+| opencode | First existing `opencode.jsonc` or `opencode.json` in `~/.config/opencode/` (or `$XDG_CONFIG_HOME/opencode/`); defaults to `opencode.jsonc` | First existing of `.opencode/opencode.jsonc`, `.opencode/opencode.json`, `opencode.jsonc`, `opencode.json`; defaults to `.opencode/opencode.jsonc` |
+| codex | `$CODEX_HOME/agents/maestria-<name>.toml` | `.codex/agents/maestria-<name>.toml` |
+| cursor | `~/.cursor/plugins/local/maestria/agents/<name>.md` | `.cursor/agents/<name>.md` |
+| pi | `~/.pi/agent/agents/<name>.md` | `.pi/agents/<name>.md` |
 
 opencode writes the OpenCode V2 `agents.<name>.model` key, preserving comments and other keys, and removes a V1 `agent.<name>.model` for the same agent; pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
 
@@ -470,7 +472,7 @@ maestria doctor [--json] [--quiet]
 
 ### Behavior
 
-maestria packages bundle `create-pull-request` and `docs-update`, so `doctor` looks for separate copies of them. It reports the skill record path and whether it is present, then per platform: plugin state, the record entry, and the observed copies with their install paths. A copy the record lists is a legacy CLI install, and `maestria update <platform>` removes it. A copy the record does not list duplicates the bundled skill; `doctor` prints the `skills` CLI removal command and leaves the decision to you. A corrupt record fails loud before any observation. A failed skills-list degrades into a per-platform note instead of aborting the run. Exit code is always `0`; use `--json` for machine-readable output.
+maestria packages bundle `create-pull-request` and `docs-update`, so `doctor` looks for separate copies of them. It reports the skill record path and whether it is present, then per platform: plugin state, the record entry, and the observed copies with their install paths. A copy the record lists is a legacy CLI install, and `maestria update <platform>` removes it. A copy the record does not list duplicates the bundled skill; `doctor` prints the `skills` CLI removal command and leaves the decision to you. A corrupt record fails loud with exit code `1` before any observation. A failed skills-list degrades into a per-platform note instead of aborting the run. A completed report exits with `0`; use `--json` for machine-readable output.
 
 ### Example
 

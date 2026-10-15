@@ -3,6 +3,28 @@ title: Changelog
 description: Release history for @maestria/opencode.
 ---
 
+## v0.10.0
+
+_October 14, 2026_
+
+- Plans that span sessions keep a tracker with the evidence for each task, and the orchestrator audits done items before resuming when work is reported missing; see the [methodology changelog](/core/changelog/).
+
+## v0.9.0
+
+_October 13, 2026_
+
+- **`@maestria/opencode` is now an OpenCode V2 plugin and no longer loads in OpenCode V1.** On V1, pin `@maestria/opencode@0.8.0`, the last V1 release. Install with `opencode plugin add @maestria/opencode` or `maestria install opencode`; V2 ignores the V1 `plugin` array, so move an existing entry to `plugins`.
+- Plugin options use the V2 object form: `{ "package": "@maestria/opencode", "options": { "modes": { "disabledKeywords": [...] } } }`.
+- The orchestrator and seven specialists keep their prompts and permission policy as ordered V2 permission rules. `fein`, `sonar`, and `blitz` work as bare keywords or slash commands and apply only to that turn.
+- Requires OpenCode and `@opencode/plugin` 2.0.28 with `effect` 4.
+
+## v0.8.0
+
+_October 13, 2026_
+
+- The `create-pull-request` and `docs-update` skills ship inside the plugin and register through `skills.paths`. If you installed either separately, remove that copy to avoid a duplicate (`maestria update` removes copies the CLI installed).
+- Briefs and handoffs restate the original goal and acceptance criteria, and the `handoff` and `iteration-limits` guidance is generated from the global rules; see the [methodology changelog](/core/changelog/).
+
 ## v0.7.16
 
 _September 30, 2026_

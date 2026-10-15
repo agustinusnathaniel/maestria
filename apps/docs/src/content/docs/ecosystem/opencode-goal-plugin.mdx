@@ -9,7 +9,7 @@ OpenCode Goal Plugin is an independent project under the MIT license, published 
 
 ## What It Is
 
-OpenCode Goal Plugin adds Codex-style long-running goal mode to OpenCode: a `/goal` slash command, persistent goal state for the session, completion-evidence tracking, idle continuation, and a terminal UI goal indicator. A session keeps working toward one explicit objective until it is complete, blocked, or cleared.
+OpenCode Goal Plugin adds Codex-style long-running goal mode to OpenCode: a `/goal` slash command (with `/pause_goal` and `/resume_goal`), persistent per-session goal state with history and checkpoints, optional idle continuation, and a terminal UI goal indicator. A session keeps working toward one explicit objective until it is complete, blocked, or cleared.
 
 ## Why Use It With maestria
 
@@ -19,9 +19,21 @@ Goal lifecycle tools belong to the host runtime; maestria's directives stay host
 
 ## Installation
 
-```bash
-opencode plugin @prevalentware/opencode-goal-plugin
+Current `@maestria/opencode` releases target OpenCode V2. The plugin's README documents V2 support as beta: add the package to `plugins` in `opencode.json`, and to `~/.config/opencode/cli.json` for the sidebar and command palette:
+
+```json
+{
+  "plugins": ["@prevalentware/opencode-goal-plugin"]
+}
 ```
+
+On OpenCode V1, install it globally with:
+
+```bash
+opencode plugin -g @prevalentware/opencode-goal-plugin
+```
+
+Check the [plugin README](https://github.com/prevalentWare/opencode-goal-plugin#readme) for the OpenCode 2 builds it supports.
 
 ## Quick Start
 

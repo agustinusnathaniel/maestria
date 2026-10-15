@@ -82,7 +82,7 @@ This reports the skill record path, per-platform plugin state, recorded selectio
 - The target platform installed before maestria can detect or install its integration
 - An Agent Plugins v1 client for the portable package path
 
-The CLI detects runtime platforms by their executable:
+The CLI detects runtime platforms by their executable. Kimi Code is also detected from its plugin registry or `config.toml`, and Cursor from `~/.cursor` only when neither `cursor-agent` nor `agent` is on `PATH`; a bare `agent` binary counts as Cursor only when its `--version` output names Cursor.
 
 | Platform     | Executable            |
 | ------------ | --------------------- |

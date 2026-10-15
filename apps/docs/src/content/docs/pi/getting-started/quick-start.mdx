@@ -32,11 +32,11 @@ pi
    /fein
    ```
 
-   Pi reports that the mode is set. Describe the task in your next message.
+   Pi reports that the mode is set. Describe the task in your next message. The mode stays active until you set another or run `/mode-clear`.
 
-2. Watch the pipeline. The orchestrator decomposes the work, dispatches specialists in sequence, and validates each phase before handoff.
+2. Watch the pipeline. The orchestrator decomposes the work, dispatches specialists one at a time, in parallel, or as a chain, and validates each phase before handoff.
 
-3. Check the session tree with `/maestria-status` to inspect the mode, handoff history, and each specialist's contribution.
+3. Run `/maestria-status` to see the mode, delegated specialists, touched files, and recent handoffs.
 
 </Steps>
 
