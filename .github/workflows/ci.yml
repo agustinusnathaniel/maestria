@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      contents: read
       pull-requests: read
     outputs:
       code: ${{ steps.filter.outputs.code }}
@@ -53,7 +54,7 @@ jobs:
   check:
     name: Lint and Sync
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -69,7 +70,7 @@ jobs:
   test:
     name: Test
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -96,7 +97,7 @@ jobs:
   docs:
     name: Docs Build
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
