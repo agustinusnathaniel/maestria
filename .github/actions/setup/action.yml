@@ -1,5 +1,5 @@
 name: 'maestria Setup'
-description: 'Install dependencies with pnpm (which brings Node too)'
+description: 'Install dependencies with pnpm (which brings Node too), restore vp task cache'
 inputs:
   save-cache:
     description: 'Save the pnpm store after the job. Only one job per push to main should save it.'
@@ -14,3 +14,48 @@ runs:
         cache: true
         save-cache: ${{ inputs.save-cache }}
         require-lockfile: true
+
+    # Vite-based tools read node_modules/.modules.yaml, so vp fingerprints it, and its
+    # prunedAt is the install time. Pin it so a fresh install keeps the cache hits.
+    - name: Pin pnpm install time
+      shell: bash
+      run: |
+        sed -i -E 's/("prunedAt": )"[^"]*"/\1"Thu, 01 Jan 1970 00:00:00 GMT"/' node_modules/.modules.yaml
+
+    # One entry per job and commit so every run saves its task results; restore falls
+    # back to the newest entry for the same job and lockfile, then to any entry.
+    # Vitest's result dirs are restored too, since test tasks fingerprint their listings.
+    - name: Restore vp task cache
+      uses: actions/cache@v6
+      with:
+        path: |
+          node_modules/.vite/task-cache
+          node_modules/.vite/vitest
+          apps/*/node_modules/.vite/vitest
+          packages/*/node_modules/.vite/vitest
+          packages/shared/*/node_modules/.vite/vitest
+        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.job }}-${{ github.sha }}
+        restore-keys: |
+          vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.job }}-
+          vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          vp-task-cache-${{ runner.os }}-
+
+    # Restored entries accumulate across runs, so start over once the cache is a week
+    # old. Never delete single archives: cache.db still points at them, and vp then stops
+    # the run on the failed lookup but exits 0, skipping the remaining tasks.
+    # Some test tasks fingerprint directory listings that other tasks change mid-run:
+    # tests write evidence to artifacts/, and loading a Vite config leaves an empty
+    # node_modules/.vite-temp. Create both up front so the listings match every run.
+    - name: Expire vp task cache
+      shell: bash
+      run: |
+        dir=node_modules/.vite/task-cache
+        if [ -n "$(find "$dir/.created" -mtime +7 2>/dev/null)" ]; then
+          echo "vp task cache is older than 7 days; starting cold"
+          rm -rf "$dir" node_modules/.vite/vitest */*/node_modules/.vite/vitest packages/shared/*/node_modules/.vite/vitest
+        fi
+        mkdir -p "$dir" artifacts
+        [ -f "$dir/.created" ] || touch "$dir/.created"
+        for modules in node_modules */*/node_modules packages/shared/*/node_modules; do
+          if [ -d "$modules" ]; then mkdir -p "$modules/.vite-temp"; fi
+        done
