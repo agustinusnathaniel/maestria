@@ -27,11 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      # Shallow clone: no workflow or build script reads git history.
-      # release.yml intentionally keeps fetch-depth 0.
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
       - uses: ./.github/actions/setup
       - name: Format, sync, build, and type-aware lint
         run: pnpm check:ci:lint
@@ -42,12 +38,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
       - uses: ./.github/actions/setup
         with:
-          # One job saves the pnpm store, from main only; PR runs restore it.
-          save-cache: ${{ github.event_name == 'push' }}
+          # pnpm/setup's store fingerprint changes on every run, so it would upload ~350MB per
+          # main push. Save from main only when the lockfile changes; PR runs restore it.
+          save-cache: ${{ github.event_name == 'push' && contains(toJSON(github.event.commits.*.modified), 'pnpm-lock.yaml') }}
       - name: Install Bun
         run: pnpm runtime set bun 1.4.2 -g
       - name: Build and test
@@ -67,8 +62,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
       - uses: ./.github/actions/setup
       - name: Build docs site
         run: pnpm exec vp run --filter @maestria/docs build
