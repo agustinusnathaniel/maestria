@@ -67,8 +67,9 @@ allowBuilds:
   onnxruntime-node: true
   protobufjs: true
   sharp: true
-# Match CI's pnpm default (one day) even when a user-level config lowers it.
-minimumReleaseAge: 1440
+# 12 hours: long enough to skip most malicious publishes, which are usually pulled within
+# hours, short enough not to hold back fresh toolchain releases. Overrides pnpm's one-day default.
+minimumReleaseAge: 720
 minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro
