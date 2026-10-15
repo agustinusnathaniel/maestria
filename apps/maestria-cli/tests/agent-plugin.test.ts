@@ -1,27 +1,13 @@
-import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import { AGENT_PLUGIN_PACKAGE, stageAgentPlugin } from '@/lib/agent-plugin-staging.js';
 import { validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
 
-const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
-const PORTABLE_PACKAGE = path.join(REPO_ROOT, 'packages/agent-plugins');
-const tempDirectories: string[] = [];
+import { PORTABLE_PACKAGE, useTempDirectories } from './agent-plugin-test-support.js';
 
-const makeTempDirectory = async (): Promise<string> => {
-  const directory = await mkdtemp(path.join('/tmp', 'maestria-cli-agent-plugin-'));
-  tempDirectories.push(directory);
-  return directory;
-};
-
-afterEach(async () => {
-  await Promise.all(
-    tempDirectories.splice(0).map(async (directory) => {
-      await rm(directory, { force: true, recursive: true });
-    }),
-  );
-});
+const makeTempDirectory = useTempDirectories();
 
 const writeManifest = async (root: string, manifest: Record<string, unknown>): Promise<void> => {
   await writeFile(path.join(root, 'plugin.json'), `${JSON.stringify(manifest)}\n`);
@@ -78,24 +64,6 @@ describe('Agent Plugin validation', () => {
   it('defaults portable staging to the consolidated package', () => {
     expect(AGENT_PLUGIN_PACKAGE).toBe('@maestria/agent-plugins');
   });
-
-  it('copies and revalidates a local package at an explicit destination', async () => {
-    const parent = await makeTempDirectory();
-    const destination = path.join(parent, 'staged');
-
-    const staged = await stageAgentPlugin({
-      destination,
-      source: PORTABLE_PACKAGE,
-    });
-
-    expect(staged.destination).toBe(destination);
-    expect(staged.source).toBe(PORTABLE_PACKAGE);
-    expect(staged.valid).toBe(true);
-    const manifest: unknown = JSON.parse(
-      await readFile(path.join(destination, 'plugin.json'), 'utf-8'),
-    ) as unknown;
-    expect(manifest).toMatchObject({ name: 'maestria' });
-  }, 30_000);
 
   it('fetches, stages, and revalidates an npm package source', async () => {
     const parent = await makeTempDirectory();
@@ -281,14 +249,4 @@ describe('Agent Plugin validation', () => {
     await expect(stageAgentPlugin({ destination, source })).rejects.toThrow('plugin.json');
     await expect(readdir(destination)).rejects.toMatchObject({ code: 'ENOENT' });
   }, 30_000);
-
-  it('refuses to overwrite an existing destination', async () => {
-    const parent = await makeTempDirectory();
-    const destination = path.join(parent, 'staged');
-    await mkdir(destination, { recursive: true });
-
-    await expect(stageAgentPlugin({ destination, source: PORTABLE_PACKAGE })).rejects.toThrow(
-      'Destination already exists',
-    );
-  });
 });

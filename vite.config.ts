@@ -96,16 +96,6 @@ export default defineConfig({
         input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
         output: ['dist/**'],
       },
-      'check-ci': {
-        cache: false,
-        command: [
-          'vp run check-lint',
-          'vp run test-sync-plugin-versions',
-          'vp run test',
-          'vp run check-manifest-versions',
-        ],
-        dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
-      },
       'check-fmt': {
         cache: true,
         command: 'vp fmt --check',
@@ -154,6 +144,8 @@ export default defineConfig({
           'packages/*/.devin-plugin/plugin.json',
           'packages/*/.zcode-plugin/plugin.json',
           'packages/*/kimi.plugin.json',
+          'tsconfig.json',
+          'pnpm-lock.yaml',
         ],
         output: [],
       },
@@ -175,10 +167,18 @@ export default defineConfig({
           'packages/agent-plugins/plugin.json',
           'packages/agent-plugins/.*-plugin/plugin.json',
           'packages/agent-plugins/kimi.plugin.json',
-          'packages/agent-plugins/agents/**',
+          'packages/agent-plugins/*.md',
+          'packages/*/package.json',
+          'packages/*/tsconfig.json',
+          // The check compares every generated file, so all outputs are inputs too.
+          'packages/*/agents/**',
+          'packages/*/commands/**',
+          'packages/*/prompts/**',
+          'packages/*/rules/**',
           'packages/*/skills/**',
-          'packages/agent-plugins/commands/**',
-          'packages/agent-plugins/rules/**',
+          'packages/*/SYSTEM.md',
+          'tsconfig.json',
+          'pnpm-lock.yaml',
         ],
         output: [
           'packages/*/agents/**',
@@ -189,10 +189,32 @@ export default defineConfig({
           'packages/*/SYSTEM.md',
         ],
       },
+      // CI splits check-full into two jobs that run in parallel on separate runners:
+      // ci-check (format, sync, type-aware lint) and ci-test (tests and manifest checks).
+      'ci-check': {
+        cache: false,
+        command: 'vp run check-lint',
+        // Lint type-checks the docs app, which needs the Astro-generated types.
+        dependsOn: ['build:ci', 'check-fmt', 'check-sync', '@maestria/docs#sync'],
+      },
+      'ci-test': {
+        cache: false,
+        command: 'vp run test',
+        dependsOn: ['build:ci', 'test-sync-plugin-versions', 'check-manifest-versions'],
+      },
       'test-sync-plugin-versions': {
         cache: true,
         command: 'pnpm exec vitest run scripts/sync-plugin-versions.test.ts',
-        input: ['scripts/sync-plugin-versions.ts', 'scripts/sync-plugin-versions.test.ts'],
+        // Vitest also loads vite.config.ts and the tsconfig chain.
+        input: [
+          'scripts/sync-plugin-versions.ts',
+          'scripts/sync-plugin-versions.test.ts',
+          'scripts/tsconfig.json',
+          'tsconfig.json',
+          'vite.config.ts',
+          'tooling/lint/test-overrides.ts',
+          'pnpm-lock.yaml',
+        ],
         output: [],
       },
     },

@@ -17,12 +17,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+# contents: tags and the version branch; pull-requests: the version PR;
+# id-token: npm trusted publishing with provenance.
 permissions:
   contents: write
-  packages: write
   id-token: write
   pull-requests: write
-  actions: write
 
 jobs:
   release:

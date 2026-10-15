@@ -3,7 +3,7 @@
  * after `changeset version` - into the manifests shipping with the package.
  *
  * No args syncs every manifest; `--check` verifies parity without writing and
- * exits non-zero on drift (wired into `pnpm check` / `pnpm check:ci`). Exit
+ * exits non-zero on drift (wired into `pnpm check` / `pnpm check:ci:test`). Exit
  * codes: 0 success, 1 drift/error, 2 unknown arguments.
  *
  * Fail-closed: a missing or malformed package.json, invalid semver version,
