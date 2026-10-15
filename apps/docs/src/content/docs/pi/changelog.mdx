@@ -5,11 +5,24 @@ description: Pi release history and archive of OMP's retired native package rele
 
 Entries apply to `@maestria/pi` unless otherwise noted. This page retains the former combined Pi and OMP release history. Current OMP installation and support guidance is at [maestria for OMP](/agent-plugins/installation/#omp).
 
-## Unreleased: OMP moves to the portable plugin
+## v0.10.0
 
-- **The `@maestria/omp` native package is retired.** OMP coverage continues through the `@maestria/agent-plugins` shared skills and advisory root profiles (`maestria install omp` stages the package). OMP owns activation and task execution; the package declares no runtime extension or task wrapper.
-- **Retired with the package:** session-start agent deployment, `before_agent_start` mode injection, compaction and session-state preservation, goal mirroring, tool-call interception and review-mode enforcement, the `maestria_subagent` wrapper, the `/fein`, `/sonar`, `/blitz`, `/review`, `/restore-model`, `/review-model`, `/handoff`, and `/maestria-status` commands, and per-agent model files (`maestria configure omp`).
-- **Migrating:** run `omp plugin uninstall @maestria/omp` (and remove any maestria agent files left in `~/.omp/agent/agents/`), then `maestria install omp`. Load `fein`, `sonar`, and `blitz` as skills; use OMP's task interface when delegating, following the active host's contract.
+_October 14, 2026_
+
+- Plans that span sessions keep a tracker with the evidence for each task, and the orchestrator audits done items before resuming when work is reported missing; see the [methodology changelog](/core/changelog/).
+
+## v0.9.0
+
+_October 13, 2026_
+
+- The `create-pull-request` and `docs-update` skills load from the package's `skills/` folder. If you installed either separately, remove that copy to avoid a duplicate (`maestria update` removes copies the CLI installed).
+- Briefs and handoffs restate the original goal and acceptance criteria, and the `handoff` and `iteration-limits` skills are generated from the global rules; see the [methodology changelog](/core/changelog/).
+
+## October 13, 2026: OMP moves to the Agent Plugins package
+
+- **The `@maestria/omp` native package is retired.** OMP coverage continues through `@maestria/agent-plugins`, which supplies seven task profiles, the `/fein`, `/sonar`, and `/blitz` commands, an always-apply rule, and four skills (`maestria install omp` installs it). OMP owns activation and task execution; the package declares no runtime extension or task wrapper.
+- **Retired with the package:** session-start agent deployment, `before_agent_start` mode injection, compaction and session-state preservation, goal mirroring, tool-call interception and review-mode enforcement, the `maestria_subagent` wrapper, the executable's `/fein`, `/sonar`, `/blitz`, `/review`, `/restore-model`, `/review-model`, `/handoff`, and `/maestria-status` commands (the plugin supplies its own `/fein`, `/sonar`, and `/blitz`), and per-agent model files (`maestria configure omp`).
+- **Migrating:** run `omp plugin uninstall @maestria/omp` (and remove any maestria agent files left in `~/.omp/agent/agents/`), then `maestria install omp`. Use the `/fein`, `/sonar`, and `/blitz` commands, and OMP's task interface when delegating.
 
 ## v0.8.0 (Pi) / v0.6.0 (OMP)
 

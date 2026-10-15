@@ -9,46 +9,26 @@ description: Platform-specific reference for @maestria/opencode - t3code compati
 
 ### How t3code drives OpenCode
 
-t3code spawns `opencode serve` and communicates through the `@opencode-ai/sdk/v2` HTTP API. It replaces OpenCode's normal configuration with `OPENCODE_CONFIG_CONTENT="{}"` and injects its own permission rules at session creation time ([source: opencodeRuntime.ts](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/opencodeRuntime.ts)).
+t3code runs an OpenCode server and talks to it through the `@opencode-ai/sdk/v2` client. Unless its environment already sets one, it passes `OPENCODE_CONFIG_CONTENT="{}"` to that server ([source: OpenCodeRuntime.ts](https://github.com/pingdotgg/t3code/blob/42da166d131017335a1158d0b379dd68b8985796/packages/provider-opencode/src/server/OpenCodeRuntime.ts)).
 
 ### Permission architecture
 
-OpenCode's V2 protocol uses an agent-native permission model: tool access is controlled by each agent's ordered `permissions` rules and resolved at tool-use time ([source: session create protocol](https://github.com/anomalyco/opencode/blob/dev/packages/protocol/src/groups/session.ts), [permission.ts](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/permission.ts)). There is no session-level permission override in V2. t3code sends a `permission` parameter in its `session.create()` call, but it is a legacy V1 artifact that the V2 server ignores; agent-level permissions still apply for tool authorization.
+In OpenCode V2, an agent's ordered `permissions` rules and a session's optional `permissions` ruleset are merged, agent rules first, and the last matching rule decides ([source: permission.ts](https://github.com/anomalyco/opencode/blob/81200db2a3a86fc72a60dff996557f59865a6f24/packages/core/src/permission.ts), [session create protocol](https://github.com/anomalyco/opencode/blob/81200db2a3a86fc72a60dff996557f59865a6f24/packages/protocol/src/groups/session.ts)). maestria sets only agent-level rules, so a session ruleset can override them.
 
-### What works under t3code
+t3code expresses each of its runtime modes as session rules ([source: v2 adapter](https://github.com/pingdotgg/t3code/blob/42da166d131017335a1158d0b379dd68b8985796/packages/provider-opencode/src/server/v2/adapter.ts)):
 
-- The plugin loads and registers all 8 agents (orchestrator + 7 specialists)
-- The orchestrator is selectable in t3code's agent dropdown
-- Agent prompts and system instructions load correctly
-- Task delegation between agents works
-- Agent-level permission rules are honored by native OpenCode sessions; the full-access mode can bypass them (see Known limitations)
-
-### What changes under t3code
-
-| Aspect | Native OpenCode | Under t3code |
+| t3code mode | Session rules | Effect on maestria agents |
 | --- | --- | --- |
-| **Config loading** | `opencode.jsonc` is loaded normally | Overridden by `OPENCODE_CONFIG_CONTENT="{}"` - file-based config is ignored |
-| **Permission model** | Agent-level permissions are authoritative | t3code injects session-level rules via SDK |
-| **Permission UI** | OpenCode's native prompt for approval requests | t3code intercepts `permission.asked` events and shows its own UI |
-| **Runtime mode** | Agent permissions govern tool access | t3code's `runtimeMode` setting (full-access / approval-required) affects the approval layer |
-| **Full-access mode** | Respects agent-level `deny` rules | Flattens to blanket allow-all at t3code's level - agent denials may not surface correctly |
-| **Permission flow** | Permission check -> agent config -> allow/deny/ask -> native UI | Permission check -> agent config -> allow/deny/ask -> t3code intercepts -> t3code UI -> mapped back to OpenCode |
+| Full access | Allow every action | Overrides agent-level `deny` rules, so read-only specialists such as the reviewer can edit and run shell commands |
+| Approval required | Ask for shell, edit, and external-directory actions | The builder's permitted edits and shell commands need manual approval, and read-only specialists' edit denials become approval prompts |
+| Auto-accept edits | Allow edit; ask for shell and external-directory actions | Read-only specialists can edit |
+| Plan interaction mode | Adds an edit `deny` | Edits are denied except where the agent's own path rules allow them |
 
-### Known limitations
-
-**Approval-required mode renders the orchestrator unusable.** Every tool call needs approval through t3code's UI, even tools that maestria permits freely (like `question` or `task`), so delegation steps stall on manual clicks.
-
-**Full-access mode bypasses agent-level restrictions.** The builder agent gets unrestricted bash access, and reviewer agents lose their read-only enforcement.
-
-**File-based configuration is ignored.** Custom settings in `opencode.jsonc` (tools, model preferences, agent overrides) are not loaded under t3code.
-
-### Root cause
-
-t3code was designed around OpenCode's V1 session-level permission model. Its `buildOpenCodePermissionRules()` constructs a `PermissionRuleset` that `OpenCodeAdapter.ts` passes to `session.create()` ([source](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/Layers/OpenCodeAdapter.ts)), but the V2 endpoint accepts only `{ id, agent, model, location }` with no `permission` field. The mismatch is architectural, not a bug in either project.
+maestria has not run these modes end to end under t3code; the table follows the cited source. When read-only enforcement matters, use OpenCode directly.
 
 ## Project Loading
 
-`.maestria/workflow.md` then `.maestria/rules.md` load from the project directory OpenCode reports for the plugin, or from the session directory when there is no project. They are read fresh for every agent-loop and compaction request, so edits need no restart. Missing or empty files are skipped; a present-but-unusable file fails the request before the model is called instead of running without it. See [Workflow Patterns](/core/workflow-patterns/) for order, precedence, and carry-over.
+`.maestria/workflow.md` then `.maestria/rules.md` load from the project directory OpenCode reports for the plugin, or from the session directory when there is no project. They are read fresh for every agent-loop and compaction request, so edits need no restart. Missing or empty files are skipped; a present-but-unusable file throws while OpenCode assembles the request context, so the request fails instead of running without it. See [Workflow Patterns](/core/workflow-patterns/) for order, precedence, and carry-over.
 
 ## See Also
 

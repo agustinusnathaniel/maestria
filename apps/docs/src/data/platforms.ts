@@ -69,7 +69,7 @@ export const platforms: Platform[] = [
   },
   {
     auxiliary: true,
-    blurb: 'Optional companion tooling: CodeGraph indexing and RTK.',
+    blurb: 'Optional companion tooling: CodeGraph, RTK, spec tools, and the OpenCode goal plugin.',
     href: '/ecosystem/',
     id: 'ecosystem',
     installArgs: '',

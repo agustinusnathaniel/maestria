@@ -52,7 +52,7 @@ For a single project, add it to `plugins` in that project's `opencode.json(c)` o
 }
 ```
 
-OpenCode installs missing packages when its server starts and reloads watched config changes automatically.
+OpenCode installs missing packages in the background when its server starts and reloads watched config changes automatically ([OpenCode plugins](https://opencode.ai/v2/docs/plugins/)).
 
 </details>
 
@@ -68,7 +68,7 @@ Start a new OpenCode session. The 8 agents are ready for delegation via `@` ment
 
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode" />
 
-Without the CLI, run `opencode plugin update @maestria/opencode`. OpenCode also checks unpinned plugins for updates when its server starts.
+Without the CLI, run `opencode plugin update @maestria/opencode`. OpenCode also checks unpinned plugins for updates when its server starts, without changing the installed package ([OpenCode plugins](https://opencode.ai/v2/docs/plugins/)).
 
 <Aside type="tip">
   To pin a version, run `maestria update opencode --version <version>`. It replaces the configured

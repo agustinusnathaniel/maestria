@@ -15,11 +15,11 @@ This page describes the `@maestria/pi` runtime extension. The Oh My Pi integrati
 | `/sonar` | Research-only route that stops before implementation |
 | `/blitz` | Fast path that skips optional reconnaissance and design while preserving required safeguards |
 
-Bare mode keywords at the start of a message set the mode and attach the task in one turn. Slash commands set the mode for the next message.
+A mode keyword anywhere in a message, outside code, sets the mode and applies it to that message; when several appear, the most restrictive wins (fein > sonar > blitz). A slash command sets the mode without a task. Either way the mode stays active for the session until another mode is set or you run `/mode-clear`.
 
 ## Specialist Dispatch
 
-The extension registers seven specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, and writer. Dispatch uses `@gotgenes/pi-subagents`.
+The extension registers seven specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, and writer. Its `maestria_subagent` tool dispatches one specialist, up to eight in parallel, or a chain, through `@gotgenes/pi-subagents`; without that extension, dispatch reports that it is unavailable.
 
 ```json
 {
@@ -32,7 +32,7 @@ The subagents inherit parent context. Treat handoff prompts as guidance and incl
 
 ## Session State
 
-The extension records parent task IDs and specialist names in the session tree. `/maestria-status` shows the active mode and handoff history. State handling across compaction and resumed sessions follows Pi's host lifecycle.
+The extension records subagent runs and handoff history in the session. `/maestria-status` shows the active mode and handoff history. State handling across compaction and resumed sessions follows Pi's host lifecycle.
 
 ## Review Mode
 
@@ -40,7 +40,7 @@ The extension records parent task IDs and specialist names in the session tree. 
 
 ## Project Instructions
 
-The extension checks `.maestria/workflow.md` and then `.maestria/rules.md` from the session working directory. Missing files are skipped; unreadable present files stop the workflow with a notification. See [Workflow Patterns](/core/workflow-patterns/) for precedence and carry-over.
+The extension checks `.maestria/workflow.md` and then `.maestria/rules.md` from the session working directory. Missing or empty files are skipped. A present but unusable file triggers a notification and a STOP banner in the system prompt that tells the agent not to execute the request until the file is fixed. See [Workflow Patterns](/core/workflow-patterns/) for precedence and carry-over.
 
 ## See Also
 

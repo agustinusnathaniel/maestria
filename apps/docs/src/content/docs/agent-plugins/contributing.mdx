@@ -7,7 +7,7 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 ## Ownership
 
-Canonical role, mode, routing, and policy text lives in `packages/core/agent-directives/`. The consolidation generator (`scripts/sync-consolidated-plugin.ts`) composes it with the hand-authored manifest, profile, and native metadata inputs under `packages/agent-plugins/generation/` and writes the installable resources at the package root. Do not edit emitted resources; change a generation input or the canonical directives, then regenerate.
+Canonical role, mode, routing, and policy text lives in `packages/core/agent-directives/`. The consolidation generator (`scripts/sync-consolidated-plugin.ts`) composes it with the per-role profile metadata in `packages/agent-plugins/generation/profiles.json`, validates the hand-edited host manifests at the package root, and writes the installable resources there. Do not edit emitted resources; change a generation input or the canonical directives, then regenerate.
 
 The package's `skills/` carries only skills: the `handoff` and `iteration-limits` utilities, generated from the global rules, and generated copies of `create-pull-request` and `docs-update`, whose source is `packages/core/agent-directives/skills/`. Do not recreate roles, commands, or global policy as skill facades.
 
@@ -32,6 +32,6 @@ Package checks verify resource completeness, selected paths, and native metadata
 | Cursor | Preserve `readonly` metadata and the policy rule's `alwaysApply` setting. Plugin-supplied agents did not enforce `readonly` in the 2026-10-12 probe; project `.cursor/agents/` copies did. See the [official plugin reference](https://cursor.com/docs/reference/plugins.md). |
 | Kimi Code | Keep the root `AGENTS.md` below the documented 32 KB limit (the generator fails above it) and preserve `disallowedTools` (`Write`, `Edit`, the names Kimi registers) and `subagents` metadata. Do not add a model field the plugin-agent format does not support. See the [plugin-agent contract](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents). |
 | Devin | Keep root `AGENTS.md` and `agents/` conventional; the manifest declares only `skills`. Devin has no plugin commands component or denylist, so modes are keywords and read-only is prompt-level. |
-| ZCode | List the seven agents and three commands explicitly in the manifest. Unknown frontmatter keys are ignored. |
+| ZCode | Keep the `commands/` and `skills/` directory selectors; ZCode ignores file lists and discovers `agents/` by convention. Unknown frontmatter keys are ignored. |
 | Hermes | There is no maestria Python adapter. Keep the optional host context separate from portable activation, and smoke-test with an isolated Hermes home and the packed plugin. |
 | Oh My Pi | Preserve the `package.json#omp` registration; it registers data resources, not an executable extension. The [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) records the OMP 18.4.8 probe and its limits. |

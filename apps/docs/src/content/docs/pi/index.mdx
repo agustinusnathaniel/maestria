@@ -30,8 +30,8 @@ import SiteFooter from '@/components/plugin/site-footer.astro';
         items={[
           { title: '7 specialist subagents', desc: 'Pi registers the adventurer, architect, builder, diagnose, planner, reviewer, and writer roles.' },
           { title: 'Workflow modes', desc: '/fein runs the full pipeline, /sonar stays research-only, and /blitz takes the fast path.' },
-          { title: 'Session tracking', desc: 'The extension records parent task IDs and keeps handoff state available across compaction.' },
-          { title: 'Host-owned controls', desc: 'Pi supplies the runtime and subagent tools. Read-only and lifecycle behavior follows the installed extension and host configuration.' },
+          { title: 'Session tracking', desc: 'The extension records subagent runs and handoff history in the session; `/maestria-status` summarizes the mode, delegated specialists, and recent handoffs.' },
+          { title: 'Host-owned controls', desc: 'Pi supplies the runtime; subagent dispatch needs the `@gotgenes/pi-subagents` extension, which the CLI installs. Read-only and lifecycle behavior follows the installed extension and host configuration.' },
         ]}
       />
     </PluginSection>

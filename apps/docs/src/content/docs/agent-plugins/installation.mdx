@@ -8,7 +8,7 @@ import AllPackageManagers from '@/components/all-package-managers.astro';
 
 Every host below installs the same `@maestria/agent-plugins` package. Pick your host, run its install steps, then start a fresh session. Hosts differ in what they can load; the [overview table](/agent-plugins/#hosts-at-a-glance) summarizes that, and [usage](/agent-plugins/usage/) covers day-to-day commands.
 
-The `maestria install <host>` command stages the package from npm and hands it to the host's own installer. It does not replace the host's controls for permissions, trust, and session lifecycle.
+The `maestria install <host>` command hands the published npm package to the host's own installer; Hermes instead installs from the repository's default branch through its Git-based installer. It does not replace the host's controls for permissions, trust, and session lifecycle.
 
 ## Stage or check out the package
 
@@ -366,7 +366,7 @@ Oh My Pi (OMP) uses conventional discovery on the package: seven task profiles (
 
 <Steps>
 
-1. Stage and install the package with the maestria CLI:
+1. Install the package with the maestria CLI, which runs `omp plugin install @maestria/agent-plugins`:
 
    <AllPackageManagers type="dlx" pkg="maestria@latest" args="install omp" />
 
@@ -444,6 +444,6 @@ For full policy, routing, and mode guidance, manually add the contents of the bu
 
 Hermes loads only the first applicable project context type. It searches for `.hermes.md` or `HERMES.md` from the current directory toward the Git root, then falls back to `AGENTS.md` in the current directory, followed by other supported context types. Do not create a higher-priority `.hermes.md` that hides an existing `AGENTS.md`. See the [official prompt-assembly order](https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly).
 
-Start a new session or rebuild the host prompt, then verify that the selected context includes the complete policy, router, and mode instructions. Host context-size settings can truncate the roughly 23 KB bundled guidance. Hermes subagents skip project context files, so manual delegation must explicitly pass the relevant role guidance, global policy, and task constraints to each child.
+Start a new session or rebuild the host prompt, then verify that the selected context includes the complete policy, router, and mode instructions. Host context-size settings can truncate the bundled guidance, which the generator keeps under 32 KB. Hermes subagents skip project context files, so manual delegation must explicitly pass the relevant role guidance, global policy, and task constraints to each child.
 
 Manual context remains advisory. It does not register native specialist profiles, create mode commands, or add hooks or enforcement.

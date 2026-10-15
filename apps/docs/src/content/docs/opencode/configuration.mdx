@@ -22,7 +22,7 @@ The `@maestria/opencode` plugin registers 8 agents with no model overrides, so e
 }
 ```
 
-Edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project-level). Unmentioned agents keep their existing assignments.
+Edit the global config (`opencode.jsonc` or `opencode.json` in `~/.config/opencode/`, or `$XDG_CONFIG_HOME/opencode/` when set) or the project config (`.opencode/opencode.jsonc`, `.opencode/opencode.json`, or `opencode.json(c)` at the project root). Unmentioned agents keep their existing assignments.
 
 Use `<provider>/<model-id>` with an explicit model ID copied from OpenCode's live model list, optionally followed by `#<variant>`: model IDs, availability, pricing, and aliases vary. OpenCode still accepts the V1 `agent.<name>.model` form; when both are set, the `agents` value wins ([V1 migration guide](https://opencode.ai/v2/docs/migrate-v1/)).
 
