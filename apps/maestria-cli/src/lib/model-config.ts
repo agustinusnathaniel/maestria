@@ -350,7 +350,9 @@ interface AgentFilePlatform {
   readonly id: string;
   readonly label: string;
   readonly cli: string;
-  readonly globalDir: string;
+  readonly globalDir: () => string;
+  /** Agents bundled in the installed package, for hosts that deploy them on first load. */
+  readonly bundledDir?: () => string;
   readonly projectDir: string;
   readonly listModels: Effect.Effect<string[], CommandError>;
   readonly restartHint: string;
@@ -364,19 +366,28 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
     level: ModelConfigLevel,
     agent: string,
   ): Effect.Effect<{ path: string; content: string }, CommandError> => {
-    const target = `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
-    const global = `${cfg.globalDir}/${agent}.md`;
+    const target = `${level === 'global' ? cfg.globalDir() : cfg.projectDir}/${agent}.md`;
+    const global = `${cfg.globalDir()}/${agent}.md`;
+    const bundled = cfg.bundledDir === undefined ? undefined : `${cfg.bundledDir()}/${agent}.md`;
+    const readGlobal = readTextFile(global).pipe(
+      Effect.catchTag('CommandError', (failure) =>
+        bundled === undefined ? Effect.fail(failure) : readTextFile(bundled),
+      ),
+    );
     return readTextFile(target)
       .pipe(
         Effect.catchTag('CommandError', () =>
           level === 'global'
-            ? Effect.fail(
-                new CommandError({
-                  command: `read ${target}`,
-                  message: `Agent file not found at ${target}. Run 'maestria install ${cfg.id}' first.`,
-                }),
+            ? readGlobal.pipe(
+                Effect.mapError(
+                  () =>
+                    new CommandError({
+                      command: `read ${target}`,
+                      message: `Agent file not found at ${target}. Run 'maestria install ${cfg.id}' first.`,
+                    }),
+                ),
               )
-            : readTextFile(global).pipe(
+            : readGlobal.pipe(
                 Effect.catchTag('CommandError', () =>
                   Effect.fail(
                     new CommandError({
@@ -421,8 +432,9 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
 };
 
 const pi = createAgentFileHandler({
+  bundledDir: () => `${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/agents`,
   cli: 'pi',
-  globalDir: `${homedir()}/.pi/agent/agents`,
+  globalDir: () => `${homedir()}/.pi/agent/agents`,
   id: 'pi',
   label: 'Pi',
   listModels: run('pi', ['--list-models'], 30_000).pipe(Effect.map(parsePiModels)),
@@ -433,7 +445,7 @@ const pi = createAgentFileHandler({
 const cursor = createAgentFileHandler({
   cli: 'agent',
   // Project-level configuration uses Cursor's native `.cursor/agents` overlay.
-  globalDir: `${homedir()}/.cursor/plugins/local/maestria/agents`,
+  globalDir: () => `${homedir()}/.cursor/plugins/local/maestria/agents`,
   id: 'cursor',
   isAvailable: cursorCliName().pipe(Effect.map((cli) => cli !== undefined && cli !== '')),
   label: 'Cursor',

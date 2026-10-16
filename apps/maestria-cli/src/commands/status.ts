@@ -9,6 +9,7 @@ import {
   formatStatusJson,
   renderCompactStatus,
   renderStatusTable,
+  resolveQuiet,
 } from '@/lib/output.js';
 import type { StatusOutput } from '@/types.js';
 
@@ -19,7 +20,7 @@ export interface StatusArgs {
 }
 
 export const handleStatus = async (args: StatusArgs): Promise<CommandResult> => {
-  const isQuiet = args.quiet === true || args.compact === true;
+  const isQuiet = resolveQuiet(args);
   const isCompact = args.compact === true;
 
   const spinner = createSpinner(isQuiet);

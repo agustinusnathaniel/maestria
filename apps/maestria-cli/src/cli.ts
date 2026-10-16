@@ -220,6 +220,7 @@ export const main = defineCommand({
       type: 'boolean',
     },
     version: {
+      alias: 'v',
       default: false,
       description: 'Show version number',
       type: 'boolean',

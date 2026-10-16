@@ -205,6 +205,18 @@ describe('command handlers', () => {
         output: 'opencode: available installed=1.0.0 latest=1.0.0\n',
       });
     });
+
+    it('renders spinners only for human output on a terminal', async () => {
+      setTty(true);
+      await handleStatus({ json: true });
+      setTty(false);
+      await handleStatus({});
+      expect(promptMocks.spinner).not.toHaveBeenCalled();
+
+      setTty(true);
+      await handleStatus({});
+      expect(promptMocks.spinner).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('check', () => {
@@ -466,6 +478,38 @@ describe('command handlers', () => {
       const { readSkillsRecord } = await import('@/lib/skills.js');
       const savedRecord = await readSkillsRecord();
       expect(savedRecord?.platforms.opencode).toBeUndefined();
+    });
+
+    it('reports an already-current platform as up to date in text output', async () => {
+      transactionMocks.updateOne.mockImplementation((platform: PlatformHandler) =>
+        Effect.succeed({
+          id: platform.id,
+          label: platform.label,
+          message: 'Already up to date',
+          nextVersion: '0.11.0',
+          ok: true,
+          prevVersion: '0.11.0',
+        }),
+      );
+
+      const result = await handleUpdate({ platform: 'opencode', quiet: true });
+
+      expect(result.output).toContain('OpenCode: Already up to date (0.11.0)');
+
+      const skipped =
+        'Installed v0.12.0 is newer than latest v0.11.0; skipping (use --version to pin)';
+      transactionMocks.updateOne.mockImplementation((platform: PlatformHandler) =>
+        Effect.succeed({
+          id: platform.id,
+          label: platform.label,
+          message: skipped,
+          nextVersion: '0.12.0',
+          ok: true,
+          prevVersion: '0.12.0',
+        }),
+      );
+      const newer = await handleUpdate({ platform: 'opencode', quiet: true });
+      expect(newer.output).toContain(`OpenCode: ${skipped}`);
     });
 
     it('rejects removed skill flags before any effect', async () => {

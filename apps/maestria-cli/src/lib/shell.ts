@@ -49,7 +49,13 @@ const readFailureField = (error: unknown, field: string): string => {
 const describeRunFailure = (timeoutMs: number, error: unknown): string => {
   const stderr = readFailureField(error, 'stderr');
   const stdout = readFailureField(error, 'stdout');
-  const detail = (stderr === '' ? stdout : stderr).slice(0, MAX_FAILURE_DETAIL);
+  const detail = (stderr === '' ? stdout : stderr)
+    .split('\n')
+    // Bundled host CLIs print their internal stack frames; they bury the actual error.
+    .filter((line) => !/^\s+at\s/u.test(line))
+    .join('\n')
+    .trim()
+    .slice(0, MAX_FAILURE_DETAIL);
   const suffix = detail === '' ? '' : `: ${detail}`;
   if (typeof error === 'object' && error !== null) {
     const record = error as { code?: unknown; killed?: unknown; signal?: unknown };

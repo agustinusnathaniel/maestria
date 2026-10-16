@@ -19,7 +19,7 @@ import type {
   ModelConfigHandler,
   ModelConfigLevel,
 } from '@/lib/model-config.js';
-import { createSpinner } from '@/lib/output.js';
+import { createSpinner, resolveQuiet } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
 import { failureMessage, validateOrThrow, validatePlatform } from '@/lib/validation.js';
 
@@ -62,11 +62,17 @@ const parseSetPairs = (input: string): AgentModels => {
   return models;
 };
 
-const runOrThrow = async <T>(effect: Effect.Effect<T, unknown>, fallback: string): Promise<T> => {
+const runOrThrow = async <T>(
+  effect: Effect.Effect<T, unknown>,
+  fallback: string,
+  spinner: { stop: (message?: string) => void },
+): Promise<T> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
+  // A running spinner would otherwise overwrite the error with "Canceled" on exit.
+  spinner.stop('');
   return fail(failureMessage(exit.cause) ?? fallback);
 };
 
@@ -261,6 +267,7 @@ const handleConfigureSet = async (
   const available = await runOrThrow(
     handler.listModels,
     `Failed to list models for ${handler.label}.`,
+    spinner,
   );
   spinner.stop('');
   for (const [agent, model] of Object.entries(models)) {
@@ -271,7 +278,11 @@ const handleConfigureSet = async (
     }
   }
   spinner.start(`Writing config for ${handler.label}...`);
-  await runOrThrow(handler.write(models, level), `Failed to write config for ${handler.label}.`);
+  await runOrThrow(
+    handler.write(models, level),
+    `Failed to write config for ${handler.label}.`,
+    spinner,
+  );
   spinner.stop('Done');
   return { exitCode: 0, output: renderModels(handler, level, models, isJson, isCompact) };
 };
@@ -299,6 +310,7 @@ const handleConfigureInteractive = async (
   const available = await runOrThrow(
     handler.listModels,
     `Failed to list models for ${handler.label}.`,
+    spinner,
   );
   spinner.stop('');
   if (available.length === 0) {
@@ -310,6 +322,7 @@ const handleConfigureInteractive = async (
   const current = await runOrThrow(
     handler.readCurrent(level),
     `Failed to read the current ${handler.label} configuration.`,
+    spinner,
   );
   spinner.stop('');
   const selectedAgents = await groupMultiselect({
@@ -339,13 +352,17 @@ const handleConfigureInteractive = async (
     return { exitCode: 0, output: 'No changes. Nothing to write.' };
   }
   spinner.start(`Writing config for ${handler.label}...`);
-  await runOrThrow(handler.write(models, level), `Failed to write config for ${handler.label}.`);
+  await runOrThrow(
+    handler.write(models, level),
+    `Failed to write config for ${handler.label}.`,
+    spinner,
+  );
   spinner.stop('Done');
   return { exitCode: 0, output: renderModels(handler, level, models, isJson, isCompact) };
 };
 
 export const handleConfigure = async (args: ConfigureArgs): Promise<CommandResult> => {
-  const isQuiet = args.quiet === true || args.compact === true;
+  const isQuiet = resolveQuiet(args);
   const isCompact = args.compact === true;
   const isJson = args.json === true;
   const handler = await resolveConfigureHandler(args.platform);

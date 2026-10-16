@@ -15,9 +15,11 @@ These flags apply across the CLI:
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
+Spinners render only for human-readable output on a terminal: `--json`, `--compact`, and redirected or piped stdout leave them out, so `maestria status --json | jq` reads clean JSON.
+
 `--compact` (machine-friendly text) is supported on status, install, update, uninstall, and configure. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes; examples appear on every command except `uninstall`.
 
-`maestria` with no arguments runs `maestria status`.
+`maestria` with no arguments runs `maestria status`. `maestria --version` (or `-v`) prints the CLI version.
 
 ---
 
@@ -313,13 +315,13 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria uninstall --all`     | Uninstalls every platform where maestria is installed    |
 | `maestria uninstall pi --json` | Uninstalls Pi, outputs JSON result                       |
 
-Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
+Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields. When the host uninstaller fails and maestria is not installed there, the platform reports `Not installed` and succeeds.
 
 Uninstall also removes the skill copies earlier CLI versions installed for that platform, with the same ownership and shared-path rules as `update`. A platform with no skill record keeps any copy in place and reports a manual removal command; unknown skill IDs keep their history.
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
-OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, replace a maestria entry in the V1 `plugin` array with one in `plugins`, and replace a `@maestria/opencode-v2` preview entry; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options.
+OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, replace a maestria entry in the V1 `plugin` array with one in `plugins`, and replace a `@maestria/opencode-v2` preview entry; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options. An unpinned update of the lone `@maestria/opencode` entry runs `opencode plugin update` in place and waits up to a minute while OpenCode loads the directory's plugins.
 
 ### Example
 
@@ -445,7 +447,7 @@ An empty string means the agent inherits the session model.
 | cursor | `~/.cursor/plugins/local/maestria/agents/<name>.md` | `.cursor/agents/<name>.md` |
 | pi | `~/.pi/agent/agents/<name>.md` | `.pi/agents/<name>.md` |
 
-opencode writes the OpenCode V2 `agents.<name>.model` key, preserving comments and other keys, and removes a V1 `agent.<name>.model` for the same agent; pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one.
+opencode writes the OpenCode V2 `agents.<name>.model` key, preserving comments and other keys, and removes a V1 `agent.<name>.model` for the same agent; pi sets the `model:` line in the agent's frontmatter. For pi, a missing project agent file is created from the global one, and a missing global one from the agent bundled in the installed `@maestria/pi` package, which Pi otherwise deploys on its first session.
 
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.

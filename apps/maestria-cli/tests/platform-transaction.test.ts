@@ -19,6 +19,9 @@ vi.mock('@clack/prompts', async (importOriginal) => {
   return {
     ...actual,
     spinner: () => ({
+      error: (message: string) => {
+        spinnerCalls.stop.push(message);
+      },
       message: () => {},
       start: (message: string) => {
         spinnerCalls.start.push(message);
@@ -130,6 +133,41 @@ describe('uninstallOne', () => {
       message: 'uninstall failed',
       ok: false,
     });
+  });
+
+  it('treats a platform without maestria installed as already uninstalled', async () => {
+    const result = await Effect.runPromise(
+      uninstallOne(
+        makePlatform({
+          isInstalled: Effect.succeed(false),
+          uninstall: Effect.fail(commandError('pi uninstall', 'No matching package found')),
+        }),
+        true,
+      ),
+    );
+    expect(result).toEqual({
+      id: 'opencode',
+      label: 'OpenCode',
+      message: 'Not installed',
+      ok: true,
+    });
+  });
+
+  it('still runs the host uninstaller when the install probe reports absent', async () => {
+    let uninstalled = false;
+    const result = await Effect.runPromise(
+      uninstallOne(
+        makePlatform({
+          isInstalled: Effect.succeed(false),
+          uninstall: Effect.sync(() => {
+            uninstalled = true;
+          }),
+        }),
+        true,
+      ),
+    );
+    expect(uninstalled).toBe(true);
+    expect(result.message).toBe('Uninstalled');
   });
 });
 

@@ -1,4 +1,5 @@
 import { Effect } from 'effect';
+import type { Duration } from 'effect';
 import { applyEdits, modify, parse } from 'jsonc-parser/lib/esm/main.js';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -137,6 +138,27 @@ const plugin = (args: string[]): Effect.Effect<void, CommandError> =>
   // Package fetches keep the 120s host deadline.
   run('opencode', ['plugin', ...args], 120_000).pipe(Effect.asVoid);
 
+const PLUGIN_LOAD_ATTEMPTS = 30;
+
+/**
+ * OpenCode loads package plugins per working directory in the background, so `plugin update`
+ * from a directory it has not loaded yet reports the configured package as not configured.
+ */
+const updateInPlace = (
+  target: string,
+  retryDelay: Duration.Input,
+  attempt = 1,
+): Effect.Effect<void, CommandError> =>
+  plugin(['update', target]).pipe(
+    Effect.catchTag('CommandError', (failure) =>
+      attempt < PLUGIN_LOAD_ATTEMPTS && /plugin is not configured/iu.test(failure.message)
+        ? Effect.sleep(retryDelay).pipe(
+            Effect.andThen(updateInPlace(target, retryDelay, attempt + 1)),
+          )
+        : Effect.fail(failure),
+    ),
+  );
+
 export const requireOpenCodeV2: Effect.Effect<void, CommandError> = Effect.suspend(() =>
   run('opencode', ['--version']),
 ).pipe(
@@ -227,13 +249,16 @@ export const installOpenCode: Effect.Effect<void, CommandError> = Effect.gen(
 );
 
 /** `plugin update` refreshes a lone unpinned entry in place; any other change replaces entries. */
-export const updateOpenCode = (version?: string): Effect.Effect<void, CommandError> =>
+export const updateOpenCode = (
+  version?: string,
+  retryDelay: Duration.Input = '2 seconds',
+): Effect.Effect<void, CommandError> =>
   Effect.gen(function* updateOpenCodeEffect() {
     const entries = yield* currentEntries();
     const target = version === undefined ? OPENCODE_PACKAGE : `${OPENCODE_PACKAGE}@${version}`;
     const specs = uniqueSpecs(entries);
     if (version === undefined && specs.length === 1 && specs[0] === target) {
-      yield* plugin(['update', target]);
+      yield* updateInPlace(target, retryDelay);
       return;
     }
     yield* replaceEntries(entries, target);
