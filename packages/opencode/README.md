@@ -21,7 +21,7 @@ opencode plugin add @maestria/opencode
 
 This installs the package and adds it to the global `plugins` list. Update with `opencode plugin update @maestria/opencode` and remove with `opencode plugin remove @maestria/opencode`, or let the [maestria CLI](https://maestria.sznm.dev/cli/) manage it (`maestria install opencode`, `maestria update opencode`, `maestria uninstall opencode`). For a single project, add it to `plugins` in that project's `opencode.json(c)` instead. Select the `orchestrator` agent for specialist routing; the plugin keeps your configured default agent.
 
-Coming from OpenCode V1: V2 ignores the V1 `plugin` array, so add the package with the command above. `maestria update opencode` moves a V1 entry for you and also replaces a `@maestria/opencode-v2` preview entry.
+Coming from OpenCode V1: V2 ignores the V1 `plugin` array, so add the package with the command above. `maestria update opencode` moves a V1 entry for you.
 
 ## What It Provides
 
