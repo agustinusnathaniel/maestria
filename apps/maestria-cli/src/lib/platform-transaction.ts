@@ -11,8 +11,7 @@ const runLifecycleTransaction = (
   platform: PlatformHandler,
   quiet: boolean,
   gerund: string,
-  completed: string,
-  operation: Effect.Effect<unknown, CommandError>,
+  operation: Effect.Effect<string, CommandError>,
 ): Effect.Effect<PlatformResult> =>
   Effect.gen(function* runLifecycleTransactionEffect() {
     const spinner = createSpinner(quiet);
@@ -21,10 +20,7 @@ const runLifecycleTransaction = (
     const result = yield* operation.pipe(
       Effect.match({
         onFailure: (error) => ({ message: error.message, ok: false }),
-        onSuccess: (value) => ({
-          message: typeof value === 'string' ? value : completed,
-          ok: true,
-        }),
+        onSuccess: (message) => ({ message, ok: true }),
       }),
     );
     if (result.ok) {
@@ -43,7 +39,12 @@ export const installOne = (
   platform: PlatformHandler,
   quiet: boolean,
 ): Effect.Effect<PlatformResult> =>
-  runLifecycleTransaction(platform, quiet, 'Installing', 'Installed', platform.install);
+  runLifecycleTransaction(
+    platform,
+    quiet,
+    'Installing',
+    platform.install.pipe(Effect.as('Installed')),
+  );
 
 /**
  * Host uninstallers disagree on a missing package, so a failure counts as success when maestria
@@ -57,8 +58,8 @@ export const uninstallOne = (
     platform,
     quiet,
     'Uninstalling',
-    'Uninstalled',
     platform.uninstall.pipe(
+      Effect.as('Uninstalled'),
       Effect.catchTag('CommandError', (failure) =>
         platform.isInstalled.pipe(
           Effect.flatMap((installed) =>

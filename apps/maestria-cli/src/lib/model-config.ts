@@ -367,39 +367,20 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
     agent: string,
   ): Effect.Effect<{ path: string; content: string }, CommandError> => {
     const target = `${level === 'global' ? cfg.globalDir() : cfg.projectDir}/${agent}.md`;
-    const global = `${cfg.globalDir()}/${agent}.md`;
-    const bundled = cfg.bundledDir === undefined ? undefined : `${cfg.bundledDir()}/${agent}.md`;
-    const readGlobal = readTextFile(global).pipe(
-      Effect.catchTag('CommandError', (failure) =>
-        bundled === undefined ? Effect.fail(failure) : readTextFile(bundled),
+    const sources = new Set([target, `${cfg.globalDir()}/${agent}.md`]);
+    if (cfg.bundledDir !== undefined) {
+      sources.add(`${cfg.bundledDir()}/${agent}.md`);
+    }
+    return Effect.firstSuccessOf([...sources].map((source) => readTextFile(source))).pipe(
+      Effect.mapError(
+        () =>
+          new CommandError({
+            command: `read ${target}`,
+            message: `No ${agent} agent file at ${[...sources].join(' or ')}. Run 'maestria install ${cfg.id}' first.`,
+          }),
       ),
+      Effect.map((content) => ({ content, path: target })),
     );
-    return readTextFile(target)
-      .pipe(
-        Effect.catchTag('CommandError', () =>
-          level === 'global'
-            ? readGlobal.pipe(
-                Effect.mapError(
-                  () =>
-                    new CommandError({
-                      command: `read ${target}`,
-                      message: `Agent file not found at ${target}. Run 'maestria install ${cfg.id}' first.`,
-                    }),
-                ),
-              )
-            : readGlobal.pipe(
-                Effect.catchTag('CommandError', () =>
-                  Effect.fail(
-                    new CommandError({
-                      command: `read ${global}`,
-                      message: `Neither ${target} nor ${global} exists. Run 'maestria install ${cfg.id}' first.`,
-                    }),
-                  ),
-                ),
-              ),
-        ),
-      )
-      .pipe(Effect.map((content) => ({ content, path: target })));
   };
 
   return {

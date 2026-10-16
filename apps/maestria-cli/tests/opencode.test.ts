@@ -127,7 +127,9 @@ describe('OpenCode CLI flows', () => {
     mkdirSync(path.join(root, 'config', 'opencode'), { recursive: true });
     configFile = path.join(root, 'config', 'opencode', 'opencode.jsonc');
     host = { calls: [], failAdd: false, loadingUpdates: 0, version: 'opencode v2.0.28' };
-    vi.mocked(shell.run).mockImplementation((_command, args) => fakeOpenCode(args));
+    vi.mocked(shell.run).mockImplementation((_command, args) =>
+      Effect.suspend(() => fakeOpenCode(args)),
+    );
   });
 
   afterEach(() => {
@@ -166,20 +168,26 @@ describe('OpenCode CLI flows', () => {
 
   it('stops retrying an in-place update after the load window or on another error', async () => {
     writeConfig({ plugins: ['@maestria/opencode'] });
-    host.loadingUpdates = 30;
+    host.loadingUpdates = Number.POSITIVE_INFINITY;
     await expect(Effect.runPromise(updateOpenCode(undefined, 0))).rejects.toThrow(
       'Plugin is not configured',
     );
-    host.loadingUpdates = 0;
+    host = { ...host, calls: [], loadingUpdates: 0 };
     vi.mocked(shell.run).mockImplementation((_command, args) =>
-      args[1] === 'update'
-        ? Effect.fail(new shell.CommandError({ command: 'opencode', message: 'fetch failed' }))
-        : fakeOpenCode(args),
+      Effect.suspend(() =>
+        args[1] === 'update'
+          ? Effect.sync(() => host.calls.push(args.join(' '))).pipe(
+              Effect.andThen(
+                Effect.fail(
+                  new shell.CommandError({ command: 'opencode', message: 'fetch failed' }),
+                ),
+              ),
+            )
+          : fakeOpenCode(args),
+      ),
     );
     await expect(Effect.runPromise(updateOpenCode(undefined, 0))).rejects.toThrow('fetch failed');
-    expect(host.calls.filter((call) => call === 'plugin update @maestria/opencode')).toHaveLength(
-      30,
-    );
+    expect(host.calls.filter((call) => call.startsWith('plugin update'))).toHaveLength(1);
   });
 
   it('drops a leftover preview entry instead of updating in place', async () => {

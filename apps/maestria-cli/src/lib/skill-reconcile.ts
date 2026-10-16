@@ -24,8 +24,7 @@ import type { PlatformResult } from '@/types.js';
  * path. Unrecorded copies are never removed.
  */
 
-const withNote = (message: string, note: string): string =>
-  `${message}${message.endsWith('.') ? '' : '.'} ${note}`;
+const withNote = (message: string, note: string): string => `${message}. ${note}`;
 
 const unknownSkills = (skills: readonly string[]): string[] =>
   skills.filter((skill) => !MANAGED_SKILLS.includes(skill));

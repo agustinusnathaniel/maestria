@@ -4,7 +4,6 @@ import picocolors from 'picocolors';
 import { freshnessOf } from '@/lib/freshness.js';
 import type { PlatformResult, PlatformStatus, StatusOutput } from '@/types.js';
 
-/** Spinners are for people: machine output and non-terminal stdout stay clean. */
 export const resolveQuiet = (args: {
   compact?: boolean;
   json?: boolean;

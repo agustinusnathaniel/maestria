@@ -1,4 +1,4 @@
-import { Effect } from 'effect';
+import { Effect, Schedule } from 'effect';
 import type { Duration } from 'effect';
 import { applyEdits, modify, parse } from 'jsonc-parser/lib/esm/main.js';
 import { homedir } from 'node:os';
@@ -138,8 +138,6 @@ const plugin = (args: string[]): Effect.Effect<void, CommandError> =>
   // Package fetches keep the 120s host deadline.
   run('opencode', ['plugin', ...args], 120_000).pipe(Effect.asVoid);
 
-const PLUGIN_LOAD_ATTEMPTS = 30;
-
 /**
  * OpenCode loads package plugins per working directory in the background, so `plugin update`
  * from a directory it has not loaded yet reports the configured package as not configured.
@@ -147,16 +145,13 @@ const PLUGIN_LOAD_ATTEMPTS = 30;
 const updateInPlace = (
   target: string,
   retryDelay: Duration.Input,
-  attempt = 1,
 ): Effect.Effect<void, CommandError> =>
   plugin(['update', target]).pipe(
-    Effect.catchTag('CommandError', (failure) =>
-      attempt < PLUGIN_LOAD_ATTEMPTS && /plugin is not configured/iu.test(failure.message)
-        ? Effect.sleep(retryDelay).pipe(
-            Effect.andThen(updateInPlace(target, retryDelay, attempt + 1)),
-          )
-        : Effect.fail(failure),
-    ),
+    Effect.retry({
+      schedule: Schedule.spaced(retryDelay),
+      times: 29,
+      while: (failure) => failure.message.includes('Plugin is not configured'),
+    }),
   );
 
 export const requireOpenCodeV2: Effect.Effect<void, CommandError> = Effect.suspend(() =>
