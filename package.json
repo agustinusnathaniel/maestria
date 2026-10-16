@@ -30,6 +30,7 @@
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
     "contributors:check": "all-contributors check",
+    "e2e:cli-hosts": "tsx scripts/e2e/maestria-cli-hosts-evidence.ts --out artifacts/maestria-cli-hosts-evidence.json",
     "e2e:fail-closed": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json",
     "e2e:opencode": "tsx scripts/e2e/opencode-evidence.ts --out artifacts/opencode-evidence.json",
     "e2e:opencode-cli": "tsx scripts/e2e/maestria-cli-opencode-evidence.ts --out artifacts/maestria-cli-opencode-evidence.json",
