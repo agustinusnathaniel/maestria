@@ -1,4 +1,7 @@
 import { Effect } from 'effect';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { parse } from 'jsonc-parser/lib/esm/main.js';
 
@@ -100,6 +103,27 @@ describe('Cursor model configuration availability', () => {
     }
 
     expect(await Effect.runPromise(handler.isAvailable)).toBe(false);
+  });
+});
+
+describe('Pi model configuration', () => {
+  it('seeds a global agent from the installed package before Pi first deploys it', async () => {
+    const home = mkdtempSync(path.join(tmpdir(), 'maestria-pi-configure-'));
+    vi.stubEnv('HOME', home);
+    const bundled = path.join(home, '.pi/agent/npm/node_modules/@maestria/pi/agents');
+    mkdirSync(bundled, { recursive: true });
+    writeFileSync(path.join(bundled, 'builder.md'), '---\nname: builder\n---\nBuild.\n');
+    const pi = getModelConfigHandler('pi');
+
+    try {
+      await Effect.runPromise(pi?.write({ builder: 'zai/glm-5' }, 'global') ?? Effect.void);
+
+      expect(readFileSync(path.join(home, '.pi/agent/agents/builder.md'), 'utf-8')).toBe(
+        '---\nname: builder\nmodel: zai/glm-5\n---\nBuild.\n',
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 

@@ -7,9 +7,9 @@ import {
   assertInteractiveTerminal,
   batchCommandResult,
   detectInstalledOr,
-  resolveBatchQuiet,
   runBatchSelected,
 } from '@/lib/batch-command.js';
+import { resolveQuiet } from '@/lib/output.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
@@ -108,7 +108,7 @@ const cleanupCurrentInstalls = async (
 
 export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
   assertNoRemovedSkillFlags(rawArgs);
-  const isQuiet = resolveBatchQuiet(rawArgs);
+  const isQuiet = resolveQuiet(rawArgs);
   let platformIds: string[] | undefined;
   if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {
     platformIds = await validateOrThrow(validatePlatforms(rawArgs.platform));

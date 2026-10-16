@@ -69,7 +69,7 @@ const specOf = (entry: unknown): unknown =>
 // appends a new spec and ignores a configured one, and `plugin remove` needs the exact spec.
 describe('OpenCode CLI flows', () => {
   let configFile: string;
-  let host: { version: string; failAdd: boolean; calls: string[] };
+  let host: { version: string; failAdd: boolean; calls: string[]; loadingUpdates: number };
 
   const writeConfig = (value: unknown): void => {
     writeFileSync(configFile, typeof value === 'string' ? value : JSON.stringify(value));
@@ -90,6 +90,16 @@ describe('OpenCode CLI flows', () => {
       return Effect.succeed(host.version);
     }
     const plugins = pluginsOf();
+    // A directory's first queries race OpenCode's background plugin load.
+    if (action === 'update' && host.loadingUpdates > 0) {
+      host.loadingUpdates -= 1;
+      return Effect.fail(
+        new shell.CommandError({
+          command: 'opencode',
+          message: `Command failed with exit code 1: Error: Plugin is not configured: ${spec}`,
+        }),
+      );
+    }
     if (action === 'add' && host.failAdd) {
       return Effect.fail(new shell.CommandError({ command: 'opencode', message: 'fetch failed' }));
     }
@@ -114,8 +124,10 @@ describe('OpenCode CLI flows', () => {
     vi.stubEnv('XDG_CACHE_HOME', path.join(root, 'cache'));
     mkdirSync(path.join(root, 'config', 'opencode'), { recursive: true });
     configFile = path.join(root, 'config', 'opencode', 'opencode.jsonc');
-    host = { calls: [], failAdd: false, version: 'opencode v2.0.28' };
-    vi.mocked(shell.run).mockImplementation((_command, args) => fakeOpenCode(args));
+    host = { calls: [], failAdd: false, loadingUpdates: 0, version: 'opencode v2.0.28' };
+    vi.mocked(shell.run).mockImplementation((_command, args) =>
+      Effect.suspend(() => fakeOpenCode(args)),
+    );
   });
 
   afterEach(() => {
@@ -134,6 +146,39 @@ describe('OpenCode CLI flows', () => {
     await Effect.runPromise(updateOpenCode());
     expect(host.calls).toEqual(['--version', 'plugin update @maestria/opencode']);
     expect(pluginsOf()).toEqual([{ options, package: '@maestria/opencode' }]);
+  });
+
+  it('retries an in-place update until OpenCode has loaded the directory plugins', async () => {
+    writeConfig({ plugins: ['@maestria/opencode'] });
+    host.loadingUpdates = 2;
+    await Effect.runPromise(updateOpenCode(undefined, 0));
+    expect(host.calls.filter((call) => call === 'plugin update @maestria/opencode')).toHaveLength(
+      3,
+    );
+  });
+
+  it('stops retrying an in-place update after the load window or on another error', async () => {
+    writeConfig({ plugins: ['@maestria/opencode'] });
+    host.loadingUpdates = Number.POSITIVE_INFINITY;
+    await expect(Effect.runPromise(updateOpenCode(undefined, 0))).rejects.toThrow(
+      'Plugin is not configured',
+    );
+    host = { ...host, calls: [], loadingUpdates: 0 };
+    vi.mocked(shell.run).mockImplementation((_command, args) =>
+      Effect.suspend(() =>
+        args[1] === 'update'
+          ? Effect.sync(() => host.calls.push(args.join(' '))).pipe(
+              Effect.andThen(
+                Effect.fail(
+                  new shell.CommandError({ command: 'opencode', message: 'fetch failed' }),
+                ),
+              ),
+            )
+          : fakeOpenCode(args),
+      ),
+    );
+    await expect(Effect.runPromise(updateOpenCode(undefined, 0))).rejects.toThrow('fetch failed');
+    expect(host.calls.filter((call) => call.startsWith('plugin update'))).toHaveLength(1);
   });
 
   it('pins by adding first, carrying options, and removing each old spec once', async () => {
