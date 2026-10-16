@@ -8,11 +8,15 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-const outIndex = process.argv.indexOf('--out');
-const out = outIndex === -1 ? undefined : process.argv[outIndex + 1];
+const argument = (name: string): string | undefined => {
+  const index = process.argv.indexOf(name);
+  return index === -1 ? undefined : process.argv[index + 1];
+};
+const out = argument('--out');
 if (out === undefined || out === '') {
-  throw new Error('Usage: maestria-cli-hosts-evidence.ts --out <path>');
+  throw new Error('Usage: maestria-cli-hosts-evidence.ts --out <path> [--platform <id>]');
 }
+const only = argument('--platform');
 const repo = path.resolve(import.meta.dirname, '../..');
 const cli = path.join(repo, 'apps/maestria-cli/dist/index.js');
 await fs.access(cli).catch(() => {
@@ -242,7 +246,12 @@ const sweep = async (platform: Platform): Promise<void> => {
   }
 };
 
-for (const platform of platforms) {
+const selected =
+  only === undefined ? platforms : platforms.filter((platform) => platform.id === only);
+if (selected.length === 0) {
+  throw new Error(`Unknown platform: ${only}`);
+}
+for (const platform of selected) {
   if (platform.binaries.some(onPath)) {
     await sweep(platform);
   } else {

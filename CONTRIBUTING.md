@@ -103,7 +103,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | `agent-plugins` | `generation/` manifest/profile/native metadata; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 
-For `apps/maestria-cli` command changes, run `pnpm --filter maestria build` and then `pnpm e2e:cli-hosts`. It sweeps check, install, status, update, configure, and uninstall against every host CLI on PATH in isolated homes and writes `artifacts/maestria-cli-hosts-evidence.json`. The non-required CLI Hosts workflow runs it on CLI pull requests, weekly, and on demand.
+For `apps/maestria-cli` command changes, run `pnpm --filter maestria build` and then `pnpm e2e:cli-hosts`. It sweeps check, install, status, update, configure, and uninstall against every host CLI on PATH in isolated homes and writes `artifacts/maestria-cli-hosts-evidence.json`; add `--platform <id>` to sweep one host. The non-required CLI Hosts workflow runs it on CLI pull requests, weekly, and on demand.
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.
 
