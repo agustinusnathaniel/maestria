@@ -13,7 +13,7 @@ Stop investigating when the root cause and the affected contract are supported b
 
 - Find the corresponding source file (not dist or minified output) and the exact line and function.
 - Search for unique strings when a stack trace is minified.
-- Reproduce the failure when you can, recording the exact command, input, and output.
+- Reproduce the failure with the cheapest failing check at the smallest boundary that shows it, recording the exact command, input, and output. If it does not reproduce, do not patch on a guess: report the evidence and what would reproduce it.
 
 ## 2. Rule out the environment
 
@@ -32,7 +32,7 @@ When it helps locate a regression or explain surprising behavior, run `git blame
 
 ## 4. Measure the blast radius
 
-When the cause indicates a shared defect or the scope includes an audit, search for the same unsafe pattern and report each affected site as safe or unsafe with its evidence. Use a table when comparison helps.
+When the cause indicates a shared defect or the scope includes an audit, search for the same unsafe pattern and report each affected site as safe or unsafe with its evidence, how real the risk is (happening, real but unobserved, edge case, known and accepted, needs a check), and what to do (fix now, fix when touching, ask first, skip, already in progress). Use a table when comparison helps.
 
 ## 5. Fix the root cause, or hand it off
 
@@ -48,7 +48,7 @@ If the assignment is read-only or the host does not permit edits, hand the suppo
 
 ## 6. Prevent recurrence
 
-- Add a regression test only when a durable contract or plausible recurrence justifies it and existing behavior tests leave a genuine gap; assert observable behavior, not implementation details. Consider a lint rule that catches the pattern.
+- Keep the reproduction as a regression test only when it guards a real production failure that existing behavior tests miss; name that failure and use only inputs production can produce. Consider a lint rule that catches the pattern.
 - Preserve durable diagnostic lessons: update an existing knowledge artifact when one fits; create one only when the findings have durable future value or the user or project requires a record.
 
 ## Report

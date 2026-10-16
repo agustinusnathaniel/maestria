@@ -21,7 +21,7 @@ Respect project documentation conventions, explicit docs opt-outs, and safety ru
 
 ## 3. Edit only affected sources
 
-Edit only the affected authoritative sources. Generated docs are never patched by hand: edit the canonical input and regenerate through the authorized workflow when regeneration is available; when it is not, report the blocker instead of patching the output.
+Edit only the affected authoritative sources. Trim before adding: state each concept once, as the principle and how to check it rather than its origin story. Durable docs never live only in scratch or temporary locations. Generated docs are never patched by hand: edit the canonical input and regenerate through the authorized workflow when regeneration is available; when it is not, report the blocker instead of patching the output.
 
 ## 4. Verify claims with repo tools
 

@@ -54,7 +54,7 @@ Triage findings in order: boundary-changing or safety findings stop for authoriz
 
 When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization.
 
-Brief each delegation per the global Delegation and Context rules, adding a termination condition for open-ended work. Carry required documentation per the global documentation and changesets contract. Keep assumptions, evidence, and findings separate. If the user rejects an approach twice, stop and re-evaluate it.
+Brief each delegation per the global Delegation and Context rules, adding a termination condition for open-ended work. Number the brief's items so each can be checked as done, partial, not done, or wrong. Delegates follow brief detail literally, so state scope precisely: a loose ask grows the diff. Give each PR or branch one owner that alone pushes to it; other delegates verify read-only. Verify a delegate's pushed head or produced artifact against each brief item before reporting it. Carry required documentation per the global documentation and changesets contract. Keep assumptions, evidence, and findings separate. If the user rejects an approach twice, stop and re-evaluate it.
 
 When an architect's design or plan informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
 

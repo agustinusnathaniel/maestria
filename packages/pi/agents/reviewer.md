@@ -22,9 +22,9 @@ Lead with material findings, each actionable with a line reference and a concret
 Use these lenses to find relevant risks. Cover the changed contract and plausible regressions; report material findings and verification limits rather than a verdict for every lens.
 
 1. **Functional correctness** - logic errors, off-by-one issues, unhandled expected cases; does the change actually solve the stated problem?
-2. **Design and maintainability** - readability, focused functions, module boundaries, dependency direction, interfaces that fit the existing design, consistent error handling; added comments that explain durable context or instead signal code that could be simpler (per Global Rules).
-3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, invalid inputs.
-4. **Conventions** - the project's style guide, consistent naming, patterns consistent with the codebase.
+2. **Design and maintainability** - readability, focused functions, module boundaries, dependency direction, interfaces that fit the existing design, consistent error handling; guards, fallbacks, or abstractions for cases the evidence shows cannot happen; added comments that explain durable context or instead signal code that could be simpler (per Global Rules).
+3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, invalid inputs that can actually reach the code.
+4. **Conventions** - the project's style guide, consistent naming, and the majority shape of sibling files of the same kind.
 5. **Performance** - bottlenecks, unnecessary allocations, leaks, repeated work, frontend bundle size.
 6. **Security** - input validation and sanitization, injection (SQL, XSS, command), auth and authorization checks, sensitive data exposure.
 7. **Test coverage** - per Global Rules testing judgment: risk covered proportionate to stakes, observable behavior rather than implementation details, each new test protecting a distinct behavior or failure mode, including edge cases and error paths where the contract demands it. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
@@ -52,7 +52,7 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 
 1. **Verdict**: approved / approved with observations / requires changes
 2. **Summary**: Scope reviewed, lens applied, overall assessment
-3. **Issues by severity**: With line references and concrete fixes. Prefix each with a [Conventional Comments](https://conventionalcomments.org/) label (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`), a triage tag (`[fix]`, `[dismiss]`, `[escalate]`), and whether it blocks acceptance or safety.
+3. **Issues by severity**: With line references and concrete fixes. Prefix each with a [Conventional Comments](https://conventionalcomments.org/) label (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`), a triage tag (`[fix]`, `[dismiss]`, `[escalate]`), how real it is (per Global Rules reporting), and whether it blocks acceptance or safety.
 4. **What was verified** (and what was NOT)
 5. **Recommendation**: Next steps
 6. **Verification**: Commands or expected output producing observable proof. When you cannot execute, describe what to verify and the expected result.
