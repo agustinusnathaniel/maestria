@@ -119,20 +119,11 @@ const EXPECTED_AGENTS: readonly string[] = [
   'adventurer.md',
   'architect.md',
   'builder.md',
-  'diagnose.md',
   'orchestrator.md',
-  'planner.md',
   'reviewer.md',
-  'writer.md',
 ];
 
-const RECON_AGENTS: readonly string[] = [
-  'adventurer.md',
-  'architect.md',
-  'planner.md',
-  'reviewer.md',
-  'writer.md',
-];
+const RECON_AGENTS: readonly string[] = ['adventurer.md', 'architect.md', 'reviewer.md'];
 
 const E2E_GUARDED_GIT =
   'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
@@ -221,9 +212,6 @@ const sectionPermissionNarrowing = (): void => {
     check('builder allows edits', other('builder.md').edit === 'allow'),
     check('orchestrator delegates to builder', task('orchestrator.md').builder === 'allow'),
     check('orchestrator denies open task routing', task('orchestrator.md')['*'] === 'deny'),
-    check('planner asks on edits', other('planner.md').edit === 'ask'),
-    check('writer allows edits', other('writer.md').edit === 'allow'),
-    check('diagnose allows edits', other('diagnose.md').edit === 'allow'),
   ];
   sections.push({
     checks: [...denies, ...allows, ...restoredReconChecks(bash), ...stillDeniedReconChecks(bash)],

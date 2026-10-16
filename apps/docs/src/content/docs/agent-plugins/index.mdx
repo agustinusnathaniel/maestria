@@ -5,20 +5,20 @@ description: One package that installs maestria's specialists, workflow commands
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-`@maestria/agent-plugins` packages maestria's agents, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes four [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request` and `docs-update` [methodology skills](/core/agents/#skills) the rules tell agents to load.
+`@maestria/agent-plugins` packages maestria's agents, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes six [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request`, `docs-update`, `diagnose`, and `plan` [methodology skills](/core/agents/#skills) the rules tell agents to load.
 
 <Aside type="tip" title="Native hosts get the full methodology">
-  Portable installation supplies the four skills. Native host integrations add seven specialist
+  Portable installation supplies the six skills. Native host integrations add four specialist
   profiles, three workflow modes, and policy through the host's own interfaces. Choose your host in
   [Installation](/agent-plugins/installation/) before installing.
 </Aside>
 
 ## What you get
 
-- **Seven specialists:** adventurer, architect, builder, diagnose, planner, reviewer, and writer, each embedding its complete role and the global policy.
+- **Four specialists:** adventurer, architect, builder, and reviewer, each embedding its complete role and the global policy. Adventurer handles reconnaissance and read-only diagnosis with the diagnose skill; architect handles decisions and phased plans with the plan skill; builder handles implementation and documentation.
 - **Three workflow modes:** `fein` (full route), `sonar` (research and plan, then stop), and `blitz` (smallest safe route).
 - **Always-on policy and routing,** on hosts that can load it.
-- **Four skills:** `handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`, on every host.
+- **Six skills:** `handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, and `plan`, on every host.
 
 Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent-plugins/usage/) for commands and dispatch.
 
@@ -26,16 +26,16 @@ Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent
 
 | Host | Specialists | Workflow modes | Always-on policy | Read-only roles |
 | --- | --- | --- | --- | --- |
-| [Claude Code](/agent-plugins/installation/#claude-code) | 7 native | 3 native commands (`/maestria:fein` and others) | In the commands | Write and Edit tools denied |
-| [Codex](/agent-plugins/installation/#codex) | 7 native, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | `sandbox_mode = "read-only"` |
-| [Cursor](/agent-plugins/installation/#cursor) | 7 native | 3 commands | Always-apply rule | Declared, not enforced for plugin agents |
-| [Kimi Code](/agent-plugins/installation/#kimi-code) | 7 native | 3 commands | `systemPromptPath` to `AGENTS.md` | Write and Edit tools denied |
-| [Devin](/agent-plugins/installation/#devin) | 7 root profiles, local only | Mode keywords | Root `AGENTS.md` | Prompt-level |
-| [ZCode](/agent-plugins/installation/#zcode) | 7 native | 3 commands | In the profiles and commands (no rules component) | Write and Edit removed from subagent tools; shell remains |
-| [OMP](/agent-plugins/installation/#omp) | 7 task profiles | 3 commands | Always-apply rule | Prompt-level |
+| [Claude Code](/agent-plugins/installation/#claude-code) | 4 native | 3 native commands (`/maestria:fein` and others) | In the commands | Write and Edit tools denied |
+| [Codex](/agent-plugins/installation/#codex) | 4 native, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | `sandbox_mode = "read-only"` |
+| [Cursor](/agent-plugins/installation/#cursor) | 4 native | 3 commands | Always-apply rule | Declared, not enforced for plugin agents |
+| [Kimi Code](/agent-plugins/installation/#kimi-code) | 4 native | 3 commands | `systemPromptPath` to `AGENTS.md` | Write and Edit tools denied |
+| [Devin](/agent-plugins/installation/#devin) | 4 root profiles, local only | Mode keywords | Root `AGENTS.md` | Prompt-level |
+| [ZCode](/agent-plugins/installation/#zcode) | 4 native | 3 commands | In the profiles and commands (no rules component) | Write and Edit removed from subagent tools; shell remains |
+| [OMP](/agent-plugins/installation/#omp) | 4 task profiles | 3 commands | Always-apply rule | Prompt-level |
 | [Hermes](/agent-plugins/installation/#hermes) | None | None | Optional manual context | Not applicable |
 
-Every host also gets the four skills. Codex marketplace installation supplies only the skills; the specialists and routing come from `maestria install codex`. Hermes supplies the skills, with optional [manual context](/agent-plugins/installation/#hermes-manual-context) for routing.
+Every host also gets the six skills. Codex marketplace installation supplies only the skills; the specialists and routing come from `maestria install codex`. Hermes supplies the skills, with optional [manual context](/agent-plugins/installation/#hermes-manual-context) for routing.
 
 [OpenCode](/opencode/) and [Pi](/pi/) keep their separate native runtime packages. The [compatibility matrix](/agent-plugins/compatibility/) distinguishes documented resources, package validation, loader probes, and live runtime verification. See the official [compatible clients](https://agent-plugins.org/compatible-clients) list for portable format support; the table above describes maestria resources, not live verification.
 
@@ -47,8 +47,10 @@ Every host also gets the four skills. Codex marketplace installation supplies on
 | `iteration-limits`    | Bound repair and review loops with explicit termination conditions   |
 | `create-pull-request` | Draft or revise a pull request title and body                        |
 | `docs-update`         | Keep documentation and changesets in step with a change              |
+| `diagnose`            | Trace a failure to its root cause before fixing                      |
+| `plan`                | Write a phased plan with verification criteria                       |
 
-These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and `create-pull-request` and `docs-update` are copied from maestria's core methodology. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
+These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and `create-pull-request`, `docs-update`, `diagnose`, and `plan` are copied from maestria's core methodology. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
 
 ## Runtime boundaries
 

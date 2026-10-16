@@ -11,11 +11,11 @@ When a task needs more than direct execution, maestria can separate it into thre
 
 | Stage | Question | Specialists | Output |
 | --- | --- | --- | --- |
-| Thinker | What do we know, and what should we do? | adventurer, architect, planner, diagnose | Reconnaissance, a decision, a plan, or a confirmed cause |
-| Worker | Can we produce the requested result? | builder, writer | The implementation or documentation change |
+| Thinker | What do we know, and what should we do? | adventurer, architect | Reconnaissance, a decision, a phased plan, or a confirmed cause |
+| Worker | Can we produce the requested result? | builder | The implementation or documentation change |
 | Verifier | Does the result meet the evidence and quality requirements? | reviewer | An independent review with actionable findings |
 
-Thinkers analyze and plan; workers produce the artifact (diagnose may apply a confirmed fix); verifiers inspect without editing. The separation keeps one agent from approving its own work.
+Thinkers analyze and plan; workers produce the artifact (builder loads the diagnose skill when the cause is not established); verifiers inspect without editing. The separation keeps one agent from approving its own work.
 
 ## Flow
 
@@ -32,10 +32,8 @@ Each handoff carries the outcome, context and constraints, acceptance evidence, 
 
 Adapt the route to the task:
 
-- Use adventurer when the code or dependency path is unfamiliar.
-- Use architect when the approach has meaningful trade-offs.
-- Use planner when delivery needs milestones, verification criteria, or rollback points.
-- Use diagnose when a failure's cause is not established.
+- Use adventurer when the code or dependency path is unfamiliar, or when a failure needs a read-only diagnosis (it loads the diagnose skill and hands the cause to builder, or builder loads it directly for a small local fix).
+- Use architect when the approach has meaningful trade-offs, or when delivery needs milestones, verification criteria, or rollback points (it loads the plan skill for phased work).
 - Skip the thinker when the task is familiar and already scoped, or stop after it for research-only requests.
 
 If a verifier rejects the result, route an implementation defect back to the worker and a design or scope defect back to a thinker. Do not ask the worker to guess at a rejected design.

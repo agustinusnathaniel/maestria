@@ -77,13 +77,20 @@ const permissionMaps = {
   files: {
     'adventurer.md': {
       frontmatter: {
-        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
+        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains and root causes, and reporting verified context without implementing changes.`,
         mode: 'subagent',
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
             [
-              ...allow('git status*', 'git rev-parse*', 'opensrc*', 'agent-browser*', 'rtk*'),
+              ...allow(
+                'git status*',
+                'git rev-parse*',
+                'git blame*',
+                'opensrc*',
+                'agent-browser*',
+                'rtk*',
+              ),
               ...guardedReconGit(),
             ],
           ),
@@ -101,7 +108,7 @@ const permissionMaps = {
     },
     'architect.md': {
       frontmatter: {
-        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
+        description: `Architecture decision and planning agent for comparing implementation approaches, boundaries, threat models, ADR decisions, and phased plans.`,
         mode: 'subagent',
         permission: {
           bash: bashPermissions(
@@ -121,7 +128,7 @@ const permissionMaps = {
     },
     'builder.md': {
       frontmatter: {
-        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
+        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, refactor, or documentation change.`,
         mode: 'subagent',
         permission: {
           // du* follows stat* in the established projection.
@@ -157,32 +164,6 @@ const permissionMaps = {
       output: 'commands/sonar.md',
       stripFrontmatter: true,
     },
-    'diagnose.md': {
-      frontmatter: {
-        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [],
-            [
-              ...allow('git status*', 'git blame*'),
-              ['env', 'allow'],
-              ['pwd', 'allow'],
-              ['*', 'ask'],
-            ],
-          ),
-          edit: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-        },
-      },
-    },
     'orchestrator.md': {
       frontmatter: {
         description: `maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
@@ -204,33 +185,10 @@ const permissionMaps = {
             adventurer: 'allow',
             architect: 'allow',
             builder: 'allow',
-            diagnose: 'allow',
-            planner: 'allow',
             reviewer: 'allow',
-            writer: 'allow',
           },
           todowrite: 'allow',
           webfetch: 'deny',
-        },
-      },
-    },
-    'planner.md': {
-      frontmatter: {
-        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [...allow('git status*', 'git rev-parse*', 'mkdir*'), ...guardedReconGit()],
-          ),
-          edit: 'ask',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
         },
       },
     },
@@ -268,29 +226,6 @@ const permissionMaps = {
       output: '../rules/modes.md',
       section: 'Modes',
       source: '../core/agent-directives/specialists/orchestrator.md',
-    },
-    'writer.md': {
-      frontmatter: {
-        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [
-              ...allow('git status*', 'git rev-parse*', 'npm view *', 'vp*', 'mkdir*'),
-              ...guardedReconGit(),
-            ],
-          ),
-          edit: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-        },
-      },
     },
   },
   output: 'agents',

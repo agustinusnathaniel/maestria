@@ -9,7 +9,7 @@ import {
   stripFrontmatter,
 } from '../packages/core/scripts/lib/transforms.js';
 
-const ROLES = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
+const ROLES = ['adventurer', 'architect', 'builder', 'reviewer'];
 const MODES = ['fein', 'sonar', 'blitz'];
 const UTILITIES = ['handoff', 'iteration-limits'] as const;
 // Each utility skill projects one rules.md section, so it cannot drift from policy.

@@ -21,7 +21,6 @@ export const marks: Record<string, string> = {
   architect:
     '<rect x="4.5" y="4.5" width="15" height="15"/><rect x="9.5" y="9.5" width="5" height="5"/>',
   builder: '<path d="M10 5.5 4.5 12 10 18.5"/><path d="M14 5.5 19.5 12 14 18.5"/>',
-  diagnose: '<circle cx="10.5" cy="10.5" r="6"/><line x1="15" y1="15" x2="20.5" y2="20.5"/>',
   ecosystem:
     '<circle cx="6.5" cy="6" r="1.9"/><circle cx="17.5" cy="8" r="1.9"/><circle cx="10" cy="18" r="1.9"/><path d="M8.3 6.6 15.7 7.8"/><path d="m6.9 7.9 2.6 8.2"/><path d="m16.9 9.8-5.9 6.6"/>',
   makerChecker:
@@ -34,12 +33,8 @@ export const marks: Record<string, string> = {
     '<circle cx="12" cy="12" r="8.25"/><path d="M12 3.75a8.25 8.25 0 0 1 0 16.5Z" fill="currentColor"/>',
   pipeline:
     '<polyline points="4 6 8 6 8 12 12 12 12 18 16 18"/><polyline points="13.5 16.75 16 18 13.5 19.25"/>',
-  planner:
-    '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/>',
   platforms:
     '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
   reviewer:
     '<rect x="4.5" y="4.5" width="15" height="15"/><polyline points="8.25 12.25 11.25 15.25 16 9"/>',
-  writer:
-    '<path d="M12 4.5 18.75 18.75 12 16 5.25 18.75 Z"/><line x1="12" y1="4.5" x2="12" y2="16"/>',
 };

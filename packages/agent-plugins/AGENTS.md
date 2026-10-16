@@ -27,15 +27,12 @@ Per-turn keywords when the host supports them: `fein` requests the full route wi
 
 | Agent | Role | Delegate when you see |
 | --- | --- | --- |
-| `@adventurer` | Codebase reconnaissance | unfamiliar code, tracing, mapping, or locating behavior |
-| `@architect` | Architecture decisions | trade-offs, technology, boundaries, threat model, or ADR decisions |
-| `@builder` | Atomic implementation | a concrete feature, bug fix, test, or refactor with no identified uncertainty |
-| `@diagnose` | Root-cause analysis | a bug, regression, failure, crash, or unclear cause |
-| `@planner` | Phased planning | a multi-phase feature, rollout, or migration plan |
+| `@adventurer` | Codebase reconnaissance and read-only diagnosis | unfamiliar code, tracing, mapping, locating behavior, or a bug, regression, failure, or crash with an unknown cause |
+| `@architect` | Architecture decisions and phased plans | trade-offs, technology, boundaries, threat model, ADR decisions, or a multi-phase feature, rollout, or migration plan |
+| `@builder` | Atomic implementation and documentation | a concrete feature, bug fix, test, refactor, README, changelog, API doc, or structured prose with no identified uncertainty |
 | `@reviewer` | Independent quality review | post-implementation validation or explicit review |
-| `@writer` | Documentation | README, changelog, API docs, or structured prose |
 
-Thinkers (`@adventurer`, `@architect`, `@planner`) analyze and plan; `@diagnose` analyzes the bug, applies the minimal fix, and verifies the repair; workers (`@builder`, `@writer`) produce artifacts; `@reviewer` independently verifies. Delegate to `@builder` directly when the task is concrete and atomic. Add reconnaissance, architecture, planning, or diagnosis only for an identified need - never to fill a turn that could be direct. The sequence is dynamic: route implementation findings to `@builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
+Thinkers (`@adventurer`, `@architect`) analyze and plan; the worker (`@builder`) produces artifacts; `@reviewer` independently verifies. Methods travel as skills named in the brief: for a bug, regression, failure, crash, or unclear cause, have `@adventurer` load the `diagnose` skill for a read-only diagnosis and `@builder` apply the fix, or have `@builder` load it directly when the fix is small and local; for a phased plan, have `@architect` load the `plan` skill. Delegate to `@builder` directly when the task is concrete and atomic. Add reconnaissance, architecture, planning, or diagnosis only for an identified need - never to fill a turn that could be direct. The sequence is dynamic: route implementation findings to `@builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
 
 ## Review and Triage
 
@@ -49,7 +46,7 @@ When the host has not already supplied them, load project-root `.maestria/workfl
 
 Brief each delegation per the global Delegation and Context rules, adding a termination condition for open-ended work. Carry required documentation per the global documentation and changesets contract. Keep assumptions, evidence, and findings separate. If the user rejects an approach twice, stop and re-evaluate it.
 
-When an architect or planner informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
+When an architect's design or plan informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
 
 ## Continuation and Delivery
 
@@ -153,7 +150,7 @@ Activate the `full` route. Use the dynamic thinker -> worker -> verifier pipelin
 
 ## MODE: sonar (Research Only)
 
-Activate research-only mode. Use only read-only `@adventurer` or `@planner` specialists: start with the owning specialist, add a second only for a distinct unresolved required output.
+Activate research-only mode. Use only read-only `@adventurer` or `@architect` specialists: start with the owning specialist, add a second only for a distinct unresolved required output.
 
 Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties. Do not implement, write code, or create production files.
 
@@ -173,7 +170,7 @@ Each section below applies only on the host it names; skip the others.
 
 Devin discovers the conventional root `agents/*.md` as plugin subagents. Every profile includes complete canonical role and global policy; Devin loads this file, the package's root `AGENTS.md`, always-on for policy and routing. Custom plugin subagents are available in local CLI and Desktop sessions, not cloud sessions. Use the subagent controls the host exposes and preserve maker/checker separation.
 
-Devin documents an `allowed-tools` allowlist but no denylist or read-only field, so research, architecture, and review roles rely on their prompt-level read-only instructions; profile keys meant for other hosts are undocumented for Devin. Devin has no plugin commands component: trigger workflow modes with the natural-language mode keywords routed by the always-on policy (for example `fein: <task>`). The overlay selects only the four skills.
+Devin documents an `allowed-tools` allowlist but no denylist or read-only field, so research, architecture, and review roles rely on their prompt-level read-only instructions; profile keys meant for other hosts are undocumented for Devin. Devin has no plugin commands component: trigger workflow modes with the natural-language mode keywords routed by the always-on policy (for example `fein: <task>`). The overlay selects only the six skills.
 
 See [Devin plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview).
 
@@ -181,7 +178,7 @@ See [Devin plugin file format](https://docs.devin.ai/cli/extensibility/plugins/o
 
 #### Specialist → Subagent Routing
 
-The Kimi manifest selects the shared root `agents/` directory, whose seven native Markdown profiles embed the complete role and global policy. Dispatch through Kimi's native Agent tool using the selected specialist identity: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, or `writer`. Carry the task constraints and complete handoff; neither parent skill loading nor built-in coder/plan/explore mappings supply these identities.
+The Kimi manifest selects the shared root `agents/` directory, whose four native Markdown profiles embed the complete role and global policy. Dispatch through Kimi's native Agent tool using the selected specialist identity: `adventurer`, `architect`, `builder`, or `reviewer`. Carry the task constraints and complete handoff; neither parent skill loading nor built-in coder/plan/explore mappings supply these identities.
 
 Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Research, architecture, and review profiles deny `Write` and `Edit`, and every profile sets `subagents: []` so specialists do not delegate further. This is a tool filter, not a shell sandbox. Profiles set no model; Kimi ignores keys meant for other hosts, such as `readonly`, and the active host chooses the model.
 
@@ -199,11 +196,11 @@ The companion maestria CLI installs a marked full orchestration block into Codex
 
 #### Native custom agents
 
-The CLI installs complete native TOML profiles in `$CODEX_HOME/agents/`: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist. Each profile embeds its complete role and global policy. Research, architecture, and review profiles retain the native read-only sandbox. `maestria configure codex` can update models while retaining instructions.
+The CLI installs complete native TOML profiles in `$CODEX_HOME/agents/`: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, and `maestria-reviewer`. Use the corresponding `agent_type` when spawning a specialist. Each profile embeds its complete role and global policy. Research, architecture, and review profiles retain the native read-only sandbox. `maestria configure codex` can update models while retaining instructions.
 
 #### Plugin boundary
 
-Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`); orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
+Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only the six skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, and `plan`); orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
 
 See [Codex custom agents](https://developers.openai.com/codex/subagents) and [plugin packaging](https://developers.openai.com/plugins/build/plugins).
 
@@ -211,6 +208,6 @@ See [Codex custom agents](https://developers.openai.com/codex/subagents) and [pl
 
 Hermes consumes the portable root Agent Plugins v1 manifest and the four root skills. Enable the package with the host's plugin flow, then discover the qualified skill names using `skills_list` and load them using `skill_view`. Hermes generates an `agent-plugin-<slug>-<hash>` namespace; do not assume `maestria:<skill>`.
 
-Portable installation supplies only the four skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, this file, the package's root `AGENTS.md`, contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
+Portable installation supplies only the six skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, and `plan`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, this file, the package's root `AGENTS.md`, contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
 
 See [Hermes portable packages](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).

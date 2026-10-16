@@ -6,15 +6,7 @@ import { parse } from 'yaml';
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const pluginRoot = packageRoot;
 const manifestPath = path.join(pluginRoot, '.claude-plugin/plugin.json');
-const roles = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+const roles = ['adventurer', 'architect', 'builder', 'reviewer'] as const;
 const modes = ['fein', 'sonar', 'blitz'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -54,9 +46,7 @@ describe('Claude Code native plugin loading', () => {
     for (const role of roles) {
       const agentPath = path.join(pluginRoot, `agents/${role}.md`);
       const { body, metadata } = parseFrontmatter(fs.readFileSync(agentPath, 'utf-8'), agentPath);
-      const expectedDisallowedTools = ['adventurer', 'architect', 'planner', 'reviewer'].includes(
-        role,
-      )
+      const expectedDisallowedTools = ['adventurer', 'architect', 'reviewer'].includes(role)
         ? ['Write', 'Edit']
         : undefined;
 

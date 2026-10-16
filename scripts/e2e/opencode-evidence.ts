@@ -304,21 +304,9 @@ try {
   );
   const directoryQuery = `?directory=${encodeURIComponent(path.join(root, 'work'))}`;
   for (const [route, names] of [
-    [
-      'agent',
-      [
-        'orchestrator',
-        'adventurer',
-        'architect',
-        'builder',
-        'diagnose',
-        'planner',
-        'reviewer',
-        'writer',
-      ],
-    ],
+    ['agent', ['orchestrator', 'adventurer', 'architect', 'builder', 'reviewer']],
     ['command', ['fein', 'sonar', 'blitz']],
-    ['skill', ['create-pull-request', 'docs-update']],
+    ['skill', ['create-pull-request', 'diagnose', 'docs-update', 'plan']],
   ] as const) {
     const registry = rows(record(await api(`/api/${route}${directoryQuery}`)).data);
     registries.push({ entries: registry, name: route });
@@ -330,7 +318,7 @@ try {
       const agents = registry.filter((item) => names.some((name) => item.id === name));
       check(
         'agent systems and permissions present',
-        agents.length === 8 &&
+        agents.length === 5 &&
           agents.every(
             (item) =>
               typeof item.system === 'string' &&
@@ -348,10 +336,8 @@ try {
         rows(agents.find((a) => a.id === id)?.permissions ?? []).some(
           (r) => r.action === action && r.resource === resource && r.effect === effect,
         );
-      for (const id of ['builder', 'diagnose']) {
-        check(`${id}: shell fallback asks`, hasRule(id, 'shell', 'ask'));
-      }
-      check('planner asks on edit', hasRule('planner', 'edit', 'ask'));
+      check('builder: shell fallback asks', hasRule('builder', 'shell', 'ask'));
+      check('adventurer denies edit', hasRule('adventurer', 'edit', 'deny'));
       check(
         'orchestrator denies shell and edit, allows builder',
         hasRule('orchestrator', 'shell', 'deny') &&

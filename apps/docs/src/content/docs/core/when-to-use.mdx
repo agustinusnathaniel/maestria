@@ -10,7 +10,7 @@ maestria adds structure through delegation, handoffs, and review. That structure
 ## Default Rule
 
 1. **Direct execution first.** Familiar code, a clear scope, and easy verification make the platform's normal agent the fastest and cheapest path.
-2. **One specialist when one capability is missing.** Unfamiliar code (adventurer), unknown cause (diagnose), a consequential choice (architect), or a second pair of eyes (reviewer). Then implement directly.
+2. **One specialist when one capability is missing.** Unfamiliar code or unknown cause (adventurer, with the diagnose skill for read-only diagnosis), a consequential choice or phased plan (architect, with the plan skill), or a second pair of eyes (reviewer). Then implement directly.
 3. **Orchestrator only when the task needs staged handoffs, parallel work, or independent review:** cross-module features, migrations, high-risk changes, unfamiliar systems, or durable handoffs across sessions.
 
 ## Quick Decision
@@ -18,11 +18,11 @@ maestria adds structure through delegation, handoffs, and review. That structure
 | Task | Start with |
 | --- | --- |
 | One or two known files and an obvious change | Direct execution |
-| Small bug in unfamiliar code | adventurer or diagnose, then direct |
+| Small bug in unfamiliar code | adventurer (diagnose skill), then direct |
 | UI, copy, or interactive iteration | Direct execution or blitz |
 | Research or feasibility question | sonar (stop, no implementation) |
 | Cross-module feature, migration, high-risk or long-running work | Orchestrator or fein |
-| Sharing handoffs and repair limits across clients | [Portable Agent Plugin](/agent-plugins/) (four skills; full workflow uses the selected host integration) |
+| Sharing handoffs and repair limits across clients | [Portable Agent Plugin](/agent-plugins/) (six skills; full workflow uses the selected host integration) |
 
 Mode keywords are defined in the [mode table](/core/agents/#modes).
 

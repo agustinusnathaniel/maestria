@@ -58,9 +58,9 @@ const syncConfigs: Record<string, SyncConfig> = {
 };
 
 describe('canonical specialist roster', () => {
-  it('derives eight specialist files and seven delegable roles', () => {
-    expect(canonicalFiles).toHaveLength(8);
-    expect(delegableNames).toHaveLength(7);
+  it('derives five specialist files and four delegable roles', () => {
+    expect(canonicalFiles).toHaveLength(5);
+    expect(delegableNames).toHaveLength(4);
   });
 
   it('keeps the consolidated profile registry aligned with the delegable roles', () => {

@@ -86,11 +86,8 @@ describe('agent transform', () => {
       'adventurer',
       'architect',
       'builder',
-      'diagnose',
       'orchestrator',
-      'planner',
       'reviewer',
-      'writer',
     ]);
     const orchestrator = drafts.get('orchestrator');
     expect(orchestrator?.mode).toBe('all');
@@ -162,7 +159,12 @@ describe('skill transform', () => {
       update: () => {},
     });
 
-    expect([...skills.keys()].toSorted()).toEqual(['create-pull-request', 'docs-update']);
+    expect([...skills.keys()].toSorted()).toEqual([
+      'create-pull-request',
+      'diagnose',
+      'docs-update',
+      'plan',
+    ]);
     for (const [id, skill] of skills) {
       expect(skill.description?.length).toBeGreaterThan(0);
       expect(skill.path.endsWith(`skills/${id}/SKILL.md`)).toBe(true);

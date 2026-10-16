@@ -7,7 +7,7 @@ maestria is a set of free, open-source plugins that give AI coding agents a shar
 
 ## How the Workflow Fits Together
 
-An orchestrator coordinates seven specialists: adventurer (reconnaissance), architect (approach and trade-offs), builder (atomic implementation), diagnose (root-cause analysis), planner (phased plans), reviewer (independent review), and writer (documentation).
+An orchestrator coordinates four specialists: adventurer (reconnaissance and read-only diagnosis with the diagnose skill), architect (approach, trade-offs, and phased plans with the plan skill), builder (atomic implementation and documentation), and reviewer (independent review).
 
 Two patterns guide their work: **pipeline composition** (select the thinker, worker, and verifier stages needed and pass context and evidence between them) and the **maker/checker split** (a separate reviewer checks the maker's result; no agent approves its own output).
 
@@ -17,7 +17,7 @@ Choose a route with [When to Use maestria](/core/when-to-use/); [How It Works](/
 
 Host installation flows support OpenCode, Kimi Code, Pi, Hermes, Claude Code, Codex CLI, Cursor, and Oh My Pi. OpenCode and Pi use native runtime packages; the other hosts use the consolidated Agent Plugins package with different native capabilities. Install one with `npx maestria install <platform>`; the [CLI guide](/cli/getting-started/) lists platform IDs and prerequisites.
 
-For clients that support Agent Plugins v1, [`@maestria/agent-plugins`](/agent-plugins/) provides four portable skills (`handoff`, `iteration-limits`, `create-pull-request`, and `docs-update`): run `npx maestria plugin install` to stage the package, then activate it through the client's installer. Runtime permissions and delegation behavior depend on the host.
+For clients that support Agent Plugins v1, [`@maestria/agent-plugins`](/agent-plugins/) provides six portable skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, and `plan`): run `npx maestria plugin install` to stage the package, then activate it through the client's installer. Runtime permissions and delegation behavior depend on the host.
 
 ## Why maestria Exists
 

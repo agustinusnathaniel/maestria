@@ -166,7 +166,7 @@ describe('canonical directive behavioral contracts', () => {
   it('supports verified incremental commits and reviewable PR slices', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
-    const planner = readDirective('specialists', 'planner.md');
+    const planSkill = readDirective('skills', 'plan', 'SKILL.md');
     const prSkill = readDirective('skills', 'create-pull-request', 'SKILL.md');
 
     expect(rules).toMatch(/commit coherent, verified slices at useful review or rollback points/iu);
@@ -181,21 +181,35 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(
       /independently review each meaningful PR diff and their combined behavior/iu,
     );
-    expect(planner).toMatch(/propose commit and PR boundaries with verification for each slice/iu);
+    expect(planSkill).toMatch(
+      /propose commit and PR boundaries with verification for each slice/iu,
+    );
     expect(prSkill).toMatch(/each PR's scope, acceptance evidence, base branch, prerequisites/iu);
   });
 
-  it('shows architect or planner designs to the user before dependent implementation', () => {
+  it('shows architect designs and plans to the user before dependent implementation', () => {
     const architect = readDirective('specialists', 'architect.md');
-    const planner = readDirective('specialists', 'planner.md');
+    const planSkill = readDirective('skills', 'plan', 'SKILL.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
     expect(architect).toMatch(/include a concise design brief/iu);
-    expect(planner).toMatch(/planning briefs state.*language the user can understand/iu);
+    expect(planSkill).toMatch(/planning briefs state.*language the user can understand/iu);
+    expect(architect).toMatch(/load the `plan` skill/iu);
     expect(orchestrator).toMatch(
       /present the proposed design or plan to the user before dependent edits/iu,
     );
     expect(orchestrator).toMatch(/continue under the existing authorization rules/iu);
+  });
+
+  it('routes diagnosis and planning through bundled skills the specialists load', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const adventurer = readDirective('specialists', 'adventurer.md');
+    const architect = readDirective('specialists', 'architect.md');
+
+    expect(orchestrator).toMatch(/`@adventurer` load the `diagnose` skill/iu);
+    expect(orchestrator).toMatch(/`@architect` load the `plan` skill/iu);
+    expect(adventurer).toMatch(/load the `diagnose` skill/iu);
+    expect(architect).toMatch(/load the `plan` skill/iu);
   });
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
