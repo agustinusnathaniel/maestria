@@ -34,7 +34,7 @@ When it helps locate a regression or explain surprising behavior, run `git blame
 
 ## 4. Measure the blast radius
 
-When the cause indicates a shared defect or the scope includes an audit, search for the same unsafe pattern and report each affected site as safe or unsafe with its evidence. Use a table when comparison helps.
+When the cause indicates a shared defect or the scope includes an audit, search for the same unsafe pattern and report each affected site as safe or unsafe with its evidence, how real the risk is (happening, real but unobserved, edge case, known and accepted, needs a check), and what to do (fix now, fix when touching, ask first, skip, already in progress). Use a table when comparison helps.
 
 ## 5. Fix the root cause, or hand it off
 

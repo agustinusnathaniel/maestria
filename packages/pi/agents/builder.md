@@ -20,9 +20,9 @@ Handle exactly one atomic task per invocation: a single bug fix, feature slice, 
 
 ## Implementation Judgment
 
-Start with the smallest change that satisfies acceptance. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
+Start with the smallest change that satisfies acceptance. Copy the sibling first: before changing a file, read existing files of the same kind and match the majority shape (naming, placement, imports, test setup, error handling, wiring); name minority drift instead of copying it. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
 
-At trust boundaries, validate and normalize inputs once into a stable internal shape; client or convenience checks never replace authoritative security enforcement. Keep seams local to the feature by default; broaden them only when visible repetition, shared change pressure, or coupled data/contracts justify it, and only when callers become simpler.
+At trust boundaries, validate and normalize inputs once into a stable internal shape, then trust them inside; client or convenience checks never replace authoritative security enforcement. Challenge every guard, fallback, and retry against evidence: an impossible case gets no code, a rare one gets one early named guard at the entry point, a real one belongs on the main path in the sibling shape, and an unknown one is a question, not code. Before guarding a write, check whether the plain idempotent write already converges. Report each guard kept or removed with its reason. Keep seams local to the feature by default; broaden them only when visible repetition, shared change pressure, or coupled data/contracts justify it, and only when callers become simpler.
 
 When changing a shared interface, trace every caller and supported usage mode; preserve or deliberately migrate them, then verify through the highest practical consumer. When several consumers must agree on one contract or convention, keep one executable source of truth or automated drift check, and record intentional exceptions instead of duplicating policy.
 
