@@ -1,0 +1,88 @@
+name: CLI Hosts
+
+# Not a required check: it installs the latest release of every host CLI, so an upstream host
+# change can fail it without a maestria change. The weekly run catches those changes.
+on:
+  pull_request:
+    paths:
+      - apps/maestria-cli/**
+      - scripts/e2e/maestria-cli-hosts-evidence.ts
+      - .github/workflows/cli-hosts.yml
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  VITE_GIT_HOOKS: '0'
+
+# An explicit bash shell adds pipefail, so a failed download in `curl | bash` fails the step.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sweep:
+    name: Real-host CLI sweep (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # One job per host so the slowest install sets the wall time instead of the sum of all of them.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: opencode
+            binary: opencode
+            install: npm install -g @opencode/cli
+          - platform: pi
+            binary: pi
+            install: npm install -g @earendil-works/pi-coding-agent
+          - platform: omp
+            binary: omp
+            install: pnpm runtime set bun 1.4.2 -g && bun install -g @oh-my-pi/pi-coding-agent
+          - platform: kimi-code
+            binary: kimi
+            install: npm install -g @moonshot-ai/kimi-code
+          - platform: hermes
+            binary: hermes
+            install: curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --skip-setup --skip-browser --skip-computer-use
+          - platform: cursor
+            binary: cursor-agent
+            install: curl -fsS https://cursor.com/install | bash
+          - platform: claude-code
+            binary: claude
+            install: npm install -g @anthropic-ai/claude-code
+          - platform: codex
+            binary: codex
+            install: npm install -g @openai/codex
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - name: Build the CLI
+        run: pnpm --filter maestria build
+      - name: Install ${{ matrix.binary }}
+        run: |
+          echo "$(npm prefix -g)/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          ${{ matrix.install }}
+      # The sweep skips a host it cannot find, so a missing binary must fail here instead.
+      - name: Verify ${{ matrix.binary }}
+        run: |
+          command -v ${{ matrix.binary }}
+          ${{ matrix.binary }} --version
+      - name: Sweep maestria commands against ${{ matrix.platform }}
+        run: pnpm e2e:cli-hosts --platform ${{ matrix.platform }}
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestria-cli-hosts-evidence-${{ matrix.platform }}
+          path: artifacts/maestria-cli-hosts-evidence.json
+          if-no-files-found: error
