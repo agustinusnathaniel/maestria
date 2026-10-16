@@ -5,6 +5,11 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-10-16
+
+- **Your work stays safe.** Agents never `git reset`, restore, clean, revert, or force-push existing work unless you asked for that operation, never bypass repository hooks, and wait for CI after each push, fixing or reporting failures before calling delivery complete.
+- **Habits you kept asking for.** Agents answer a direct question before continuing, never shrink requested work by human time estimates, re-check their claims when you say "cmiiw", and fix pre-existing failures in the files and checks a change touches instead of stopping at them.
+
 ## 2026-10-15
 
 - **Four specialists, more skills.** maestria now ships `adventurer`, `architect`, `builder`, and `reviewer`. Diagnosis and planning become bundled skills: `adventurer` loads `diagnose` for a read-only diagnosis and `builder` applies the fix, and `architect` loads `plan` for phased plans. `builder` takes over documentation work. Usage data from about 5,400 delegations showed the retired agents were rarely used or were already acting as one of the remaining four.
