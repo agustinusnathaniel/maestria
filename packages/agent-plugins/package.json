@@ -1,6 +1,6 @@
 {
   "name": "@maestria/agent-plugins",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "description": "maestria consolidated methodology plugin with portable skills and native host overlays",
   "keywords": [

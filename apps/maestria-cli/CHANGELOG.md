@@ -1,5 +1,11 @@
 # maestria
 
+## 0.16.1
+
+### Patch Changes
+
+- [#410](https://github.com/agustinusnathaniel/maestria/pull/410) [`b64d5fc`](https://github.com/agustinusnathaniel/maestria/commit/b64d5fc4cfd61f01d126d23a41371c178298b2ed) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - `maestria check <platform>` now names the package the platform actually installs. Kimi Code, Cursor, OMP, Claude Code, Codex, and Hermes report `@maestria/agent-plugins` instead of a nonexistent `@maestria/<platform>` package such as `@maestria/kimi-code`; OpenCode and Pi messages are unchanged.
+
 ## 0.16.0
 
 ### Minor Changes

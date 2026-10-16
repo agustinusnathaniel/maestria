@@ -1,5 +1,25 @@
 # @maestria/agent-plugins
 
+## 0.10.0
+
+### Minor Changes
+
+- [#413](https://github.com/agustinusnathaniel/maestria/pull/413) [`14f6662`](https://github.com/agustinusnathaniel/maestria/commit/14f666247deb5ce8379d3c881915837732d9537c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agents now reproduce a bug with the cheapest failing check before patching it, and report the evidence instead of patching when it does not reproduce. They keep that reproduction as a regression test only when it guards a real production failure existing tests miss, and every kept test names that failure and uses inputs production can produce.
+  
+  Plans list their PRs before any code (fixes first, refactors last, shared-behavior changes never riding along with a feature) with each PR's pre-merge and post-merge steps, and record settled decisions in the plan's decision log. PR bodies gain an optional `## Merge steps` section, a ready check runs before a PR is marked ready, and the title and body are re-read against the new head after every push.
+  
+  Agents treat handoffs and delegate reports as leads to verify, check whether an item is already done before calling it pending, rate each finding by how real it is and what to do about it, ask one decision at a time with a concrete scenario and a recommendation, and put a requested draft last. Builders copy the shape of sibling files and challenge every guard against evidence, reviewers flag guards for impossible cases, and the orchestrator numbers brief items, gives each PR or branch one pushing owner, and verifies pushed work before reporting it.
+
+- [#406](https://github.com/agustinusnathaniel/maestria/pull/406) [`1f82d9b`](https://github.com/agustinusnathaniel/maestria/commit/1f82d9bfac8acc5272b8c039f3dc8837e202d58a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Delivery ownership moves from the global rules into the orchestrator: workflow modes, autonomous commit, push, and PR creation, PR slicing, and the PR skill pointer. Commands and always-on routing context still carry the complete policy, while each specialist profile and specialist request drops about 250 words of rules it could not act on. A specialist invoked directly, without a workflow command or the orchestrator, still follows commit and protected-branch rules but no longer pushes or opens PRs without asking. On OpenCode, the plugin keeps sending the delivery rules to OpenCode's own agents such as `build` and `plan`, so only maestria's specialist subagents drop them.
+
+- [#408](https://github.com/agustinusnathaniel/maestria/pull/408) [`952116f`](https://github.com/agustinusnathaniel/maestria/commit/952116f391d0385877ae61c4703060b2e3b2ec87) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Specialists go from seven to four: `adventurer`, `architect`, `builder`, and `reviewer`. The retired `diagnose`, `planner`, and `writer` agents become methods: the new bundled `diagnose` skill (adventurer runs a read-only diagnosis, builder applies the fix) and `plan` skill (loaded by architect), while builder takes over documentation work with the docs skills. Every package now ships the `diagnose` and `plan` skills. `maestria update` removes retired Codex profiles; on Pi, delete `diagnose.md`, `planner.md`, and `writer.md` from `~/.pi/agent/agents` if you no longer want them listed.
+
+- [#412](https://github.com/agustinusnathaniel/maestria/pull/412) [`dad26aa`](https://github.com/agustinusnathaniel/maestria/commit/dad26aa93daf62a75bcdb9b4b4730a1affcf1685) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agents now keep your work safe and follow a few habits you kept asking for: they never `git reset`, restore, clean, revert, or force-push existing work unless you asked for that operation; they let repository hooks run instead of bypassing them; and the delivery owner waits for CI after each push and fixes or reports failures before calling delivery complete. They answer your direct questions before continuing, never shrink requested work by human time estimates, re-check their claims when you say "cmiiw", and fix pre-existing failures in the files and checks a change touches instead of stopping at them.
+
+### Patch Changes
+
+- [#405](https://github.com/agustinusnathaniel/maestria/pull/405) [`f04e56d`](https://github.com/agustinusnathaniel/maestria/commit/f04e56dd0fae8120f1dcfa6dd26b16efe5978d49) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agent rules and specialist prompts are shorter: duplicated rules, step lists that only restated the obvious, generic review checklists, and stale lines are gone, while every behavioral obligation is kept, moved to the skill that already owned it, or retired with a stated reason. Specialist profiles and workflow commands each carry about 160 to 435 fewer words.
+
 ## 0.9.0
 
 ### Minor Changes
