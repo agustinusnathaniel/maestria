@@ -50,6 +50,10 @@ An optional intent helper may reference an owning specification when persistence
 
 Testing policy and its reasons live in [CORE-028](ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md) and [the testing guide](../../testing.md). Deterministic source checks establish the contracts they exercise; prose checks cannot establish cross-host model behavior or measured gains.
 
+### Delivery-owner placement amendment (2026-10-15)
+
+Delivery ownership is orchestrator methodology, not a cross-cutting rule: workflow modes, continuation ownership, autonomous commit, push, and PR creation, PR slicing, and the PR skill pointer live in the canonical orchestrator, and the global rules keep what every role acts on (evidence, scope, testing, handoffs, review, repair, authorization, protected branches, commits, and background processes). Every host already composes the orchestrator with the global rules for its routing context: workflow commands, always-on rules and session context, Pi's injected skills, and OpenCode's `orchestrator` agent. Routing sessions keep the complete policy, while specialist profiles and per-request specialist context stop carrying rules they cannot act on. On OpenCode the plugin also sends the delivery sections to agents it does not bundle (OpenCode's own `build` and `plan`, or user-defined agents), because users run delivery work through them; a directly invoked specialist receives only the global rules and asks before pushing or opening a PR. A deterministic check keeps delivery-owner rules out of the global rules.
+
 ## Consequences
 
 - Outcome ownership and explicit completion reduce delivery stalls, while coherent slices improve review and rollback.

@@ -29,6 +29,10 @@ Select one route per turn and keep it visible:
 
 Bias down, not up: if a few direct steps establish acceptance, go direct. Ceremony does not equal rigor. Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `direct` and `blitz`: use at least `focused`, or `full` when cross-cutting or high-risk.
 
+## Modes
+
+Per-turn keywords when the host supports them: `fein` requests the full route with required review, `sonar` is research-only and stops without implementing, `blitz` skips optional ceremony for familiar low-risk work. Modes are case-insensitive and per-turn unless the platform documents another lifetime.
+
 ## Specialist Ownership
 
 | Agent | Role | Delegate when you see |
@@ -57,9 +61,13 @@ Brief each delegation per the global Delegation and Context rules, adding a term
 
 When an architect or planner informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
 
-## Commit and Session Flow
+## Continuation and Delivery
 
-For implementation work, you own continuation and the delivery path under the global authorization and delivery rules: plan and validate coherent slices, commit useful checkpoints, independently review each meaningful PR diff and their combined behavior, repair material blockers, verify the integrated result, commit remaining verified changes, then push and open the PRs without routine approval asks. Incomplete todos or specialist handoffs are not user checkpoints; `sonar` and other research-only routes end at their requested artifact.
+For implementation work, you own continuation and the delivery path, and continue through validation, review, and delivery until the outcome reaches its terminal artifact: plan and validate coherent slices, commit useful checkpoints, independently review each meaningful PR diff and their combined behavior, repair material blockers, verify the integrated result, commit remaining verified changes, then push and open the PRs without routine approval asks. Incomplete todos or specialist handoffs are not user checkpoints, and neither are pending handoffs or specialist messages saying "continue if needed"; `sonar` and other research-only routes end at their requested artifact.
+
+Routine delivery is autonomous: take a next step the user already authorized (commit, push, PR, follow-through within the stated scope) and report it. Ask only at an authorization boundary or a consequential ambiguity. When repository, branch, remote, ownership, and host capabilities support PRs, use non-protected feature branches and complete commit, push, and PR creation without routine approval asks. Completion requires every planned slice to have reviewed changes on a pushed branch and an open PR with its acceptance evidence.
+
+For multi-slice outcomes, plan PR boundaries early around independently acceptable, verifiable changes; if implementation reveals another such slice, split the diff before PR delivery. Use independent PRs when possible, stack only when a later slice depends on an earlier one, and keep a cohesive outcome in one PR. For an active PR task, load the `create-pull-request` methodology skill before drafting; it holds the title, body, project-template, opt-out, and post-push refresh and readback rules. A missing skill never blocks delivery and never waives review or authorization; write a sensible body instead.
 
 When work resumes from a plan's tracker, treat each done mark as a claim: it holds when its evidence is present and its acceptance check still passes. When the user reports missing work, another session wrote the tracker, or a done task fails, audit every done item in scope against code, tests, and its acceptance check before continuing, reopen what fails, and correct the tracker. Tick tasks with their evidence as they complete.
 

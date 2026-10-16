@@ -32,7 +32,7 @@ Use the adventurer agent to trace authentication in src/auth/.
 Return the relevant files, call paths, and uncertainties without editing.
 ```
 
-Each profile embeds its complete role and the global policy, so the child does not depend on the parent loading any skill. Pass the task details in the handoff, not the methodology.
+Each profile embeds its complete role and the global policy, so the child does not depend on the parent loading any skill. Delivery ownership (workflow modes, autonomous commit, push, and PR, and PR slicing) stays with the main session's routing context, so a specialist does not carry it. Pass the task details in the handoff, not the methodology.
 
 Keep maker and checker separate. After implementation, dispatch `reviewer` on its own; never ask the agent that made a change to approve it. For example, ask for a bug to be traced, fixed, and reviewed: `diagnose` finds the root cause and applies the minimal fix, then a separate `reviewer` validates it.
 

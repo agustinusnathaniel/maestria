@@ -33,7 +33,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/security.*permission|permission.*security/iu);
     expect(rules).toMatch(/observable evidence/iu);
     expect(rules).toMatch(/protected-branch|protected branch/iu);
-    expect(rules).toMatch(/routine delivery is autonomous/iu);
+    expect(rules).toMatch(/commit only on a non-protected feature branch/iu);
+    expect(rules).toMatch(/create a feature branch from it before your first commit/iu);
     expect(rules).toMatch(/stop and verify them before completion/iu);
     expect(rules).toMatch(/maker\/checker/iu);
     expect(rules).toMatch(/canonical source invariant/iu);
@@ -113,13 +114,23 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toContain('follow-ups');
   });
 
+  it('keeps delivery-owner policy out of the rules every specialist embeds', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(rules).not.toMatch(/^## Modes$/mu);
+    expect(rules).not.toMatch(/routine delivery is autonomous|without routine approval asks/iu);
+    expect(rules).not.toMatch(/plan PR boundaries early/iu);
+    expect(orchestrator).toMatch(/^## Modes$/mu);
+  });
+
   it('continues incomplete work and freezes scope across delegations', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
     const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
 
-    expect(rules).toMatch(/orchestrator owns continuation for implementation and delivery work/iu);
-    expect(rules).toMatch(/not a user checkpoint/iu);
+    expect(orchestrator).toMatch(/routine delivery is autonomous/iu);
+    expect(orchestrator).toMatch(/continue if needed.*research-only routes end/iu);
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
@@ -138,9 +149,11 @@ describe('canonical directive behavioral contracts', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
-    expect(rules).toMatch(/for implementation work, continue through validation/iu);
-    expect(rules).toMatch(/complete commit, push, and PR creation without routine approval asks/iu);
-    expect(rules).toMatch(/completion requires every planned slice/iu);
+    expect(orchestrator).toMatch(/continue through validation, review, and delivery/iu);
+    expect(orchestrator).toMatch(
+      /complete commit, push, and PR creation without routine approval asks/iu,
+    );
+    expect(orchestrator).toMatch(/completion requires every planned slice/iu);
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
@@ -158,13 +171,13 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(rules).toMatch(/commit coherent, verified slices at useful review or rollback points/iu);
     expect(rules).toMatch(/verify the final diff before delivery/iu);
-    expect(rules).toMatch(
+    expect(orchestrator).toMatch(
       /plan PR boundaries early around independently acceptable, verifiable changes/iu,
     );
-    expect(rules).toMatch(
+    expect(orchestrator).toMatch(
       /implementation reveals another such slice.*split the diff before PR delivery/iu,
     );
-    expect(rules).toMatch(/stack only when a later slice depends on an earlier one/iu);
+    expect(orchestrator).toMatch(/stack only when a later slice depends on an earlier one/iu);
     expect(orchestrator).toMatch(
       /independently review each meaningful PR diff and their combined behavior/iu,
     );
