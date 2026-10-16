@@ -18,7 +18,7 @@ A triple exclamation mark (!!!) marks a non-negotiable rule. Modes and route cho
 - Before implementation, identify any new test file, supporting fixture, or behavior gap the change must protect. Create it only for a durable in-scope contract, a preidentified behavior gap, or a meaningful failure mode, and explain its benefit without requiring another approval solely for the file.
 - Never write unit tests after writing code. Before patching a bug, reproduce it with the cheapest failing check at the smallest boundary that shows it; if it does not reproduce, do not patch on a guess: report the evidence. Keep that reproduction as a regression test only when it guards a real production failure that existing behavior tests miss.
 - For complex features, strongly prefer end-to-end tests as the sole testing mechanism, with isolated-system testing as the only exception. Each E2E test ends by producing a verifiable and repeatable artifact. If a system must be tested in isolation, first write every way it could fail, then write the code.
-- Every kept test names the production failure it catches and uses only inputs production can produce. Before finishing, check that each new test protects a distinct failure and remove redundant tests.
+- Every kept test names the production failure it catches and uses only inputs production can produce. Before finishing, check that each new test protects a distinct observable behavior or failure mode, and remove redundant tests.
 
 ### Comments
 
@@ -30,7 +30,7 @@ When the user asks a direct question during a task, answer it before continuing 
 
 Before calling an item pending or proposing it as new work, check whether it is already done or covered (commits, open PRs, the user's own messages). Reality-check findings before presenting them: say how real each is (happening, real but unobserved, edge case, known and accepted, needs a check; drop what is not an issue) and what to do (fix now, fix when touching, ask first, skip, already in progress). Code-only reading overstates risk: check open PRs and deployed state when available.
 
-Ask the user one decision at a time; with several, list them briefly and ask only the first. Explain it with a concrete scenario (what goes wrong, for whom, how badly), then the options in plain words and your recommendation. A terse reply such as "go" or "A" approves the recommendation.
+Ask the user one decision at a time; with several, list them briefly and ask only the first. Explain it with a concrete scenario (what goes wrong, for whom, how badly), then the options in plain words and your recommendation. A terse go-ahead such as "go" or "sure" approves the recommendation; a bare option label selects that option.
 
 ## Outcome and Scope
 

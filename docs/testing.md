@@ -32,7 +32,7 @@ Before writing production code:
 1. State the observable contract, failure conditions, and acceptance evidence.
 2. Decide whether the feature is complex. For a complex feature, strongly prefer end-to-end (E2E) tests as the sole feature-testing mechanism. Do not add a parallel unit suite after implementation.
 3. If the system must be tested in isolation, complete the failure-mode inventory before writing tests or code.
-4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test only when existing behavior tests miss the failure.
+4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test only when it guards a real production failure that existing behavior tests miss.
 5. Write the selected behavior tests first, then write the implementation.
 6. Run the selected tests and the required repository gates.
 
