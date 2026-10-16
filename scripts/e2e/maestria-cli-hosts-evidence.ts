@@ -1,7 +1,7 @@
 /* oxlint-disable no-await-in-loop -- Platforms run one at a time so sandboxes never pile up in /tmp. */
 // Drives the built maestria CLI against every real host CLI on PATH, each in its own isolated home:
 // check, install, status, update, a failing pinned update, configure, uninstall, and a repeat
-// uninstall. Mocked `run` unit tests miss these command branches.
+// uninstall.
 import { spawnSync } from 'node:child_process';
 import { accessSync, constants } from 'node:fs';
 import fs from 'node:fs/promises';
@@ -15,6 +15,9 @@ if (out === undefined || out === '') {
 }
 const repo = path.resolve(import.meta.dirname, '../..');
 const cli = path.join(repo, 'apps/maestria-cli/dist/index.js');
+await fs.access(cli).catch(() => {
+  throw new Error(`Missing ${cli}. Run \`pnpm --filter maestria build\` first.`);
+});
 
 interface Platform {
   /** Host CLI names detection accepts. */
@@ -81,7 +84,6 @@ const parseJson = (text: string): unknown => {
 const record = (value: unknown): Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value) ? { ...value } : {};
 const list = (value: unknown): readonly unknown[] => (Array.isArray(value) ? value : []);
-// `update` and `uninstall` print one result per platform.
 const firstResult = (result: Result): Record<string, unknown> => record(list(result.json)[0]);
 const reportsInstalled = (result: Result, installed: boolean): boolean =>
   record(result.json).pluginInstalled === installed;
@@ -182,7 +184,7 @@ const commandChecks = (platform: Platform): Check[] => {
 };
 
 const sweep = async (platform: Platform): Promise<void> => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), `maestria-cli-${platform.id}-`));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), `maestria-cli-hosts-${platform.id}-`));
   const env = sandboxEnv(root);
   await fs.mkdir(env.HOME, { recursive: true });
   // Non-zero exits are kept as results: several checks expect `maestria` to exit 1.
