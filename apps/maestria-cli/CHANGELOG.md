@@ -1,5 +1,13 @@
 # maestria
 
+## 0.16.2
+
+### Patch Changes
+
+- [#414](https://github.com/agustinusnathaniel/maestria/pull/414) [`bffec3c`](https://github.com/agustinusnathaniel/maestria/commit/bffec3cf423ed63b8baf432f91613d61ba3c87b2) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix CLI commands found broken in a full real-host sweep. `maestria update opencode` no longer fails with "Plugin is not configured" when OpenCode has not yet loaded the plugins for the current directory. `--json` and piped output no longer contain spinner frames. `uninstall` succeeds with "Not installed" when a platform has nothing to remove. `configure pi` works right after `install pi`. Text update output reports already-current platforms as up to date, host failures omit internal stack frames, `configure` failures no longer end in a bare "Canceled", and `-v` prints the version.
+
+- [#416](https://github.com/agustinusnathaniel/maestria/pull/416) [`6a3d319`](https://github.com/agustinusnathaniel/maestria/commit/6a3d31914fd3e8c7497096a26daa49e49dba5822) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - `maestria install` and `update opencode` no longer migrate a `@maestria/opencode-v2` preview entry; that internal preview package is deprecated in favor of `@maestria/opencode`. Remove a leftover entry with `opencode plugin remove @maestria/opencode-v2`.
+
 ## 0.16.1
 
 ### Patch Changes
