@@ -27,10 +27,10 @@ A triple exclamation mark (!!!) marks a non-negotiable rule. Modes and route cho
 ### Testing
 
 - **!!! Test behavior, not implementation shape.** Reuse existing suites first and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Assert observable behavior and mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
-- Before implementation, identify any new test file, supporting fixture, or behavior gap the change must protect. Create it only for a durable in-scope contract, a preidentified behavior gap, or a meaningful failure mode, and explain its benefit without requiring another approval solely for the file. Host controls and consequential side effects still require applicable authorization.
-- Never write unit tests after writing code. Add a regression test for a bug fix only when behavior testing has a genuine gap.
+- Before implementation, identify any new test file, supporting fixture, or behavior gap the change must protect. Create it only for a durable in-scope contract, a preidentified behavior gap, or a meaningful failure mode, and explain its benefit without requiring another approval solely for the file.
+- Never write unit tests after writing code. Before patching a bug, reproduce it with the cheapest failing check at the smallest boundary that shows it; if it does not reproduce, do not patch on a guess: report the evidence. Keep that reproduction as a regression test only when it guards a real production failure that existing behavior tests miss.
 - For complex features, strongly prefer end-to-end tests as the sole testing mechanism, with isolated-system testing as the only exception. Each E2E test ends by producing a verifiable and repeatable artifact. If a system must be tested in isolation, first write every way it could fail, then write the code.
-- Before finishing, check that each new test protects a distinct observable behavior or failure mode, and remove redundant tests.
+- Every kept test names the production failure it catches and uses only inputs production can produce. Before finishing, check that each new test protects a distinct failure and remove redundant tests.
 
 ### Comments
 
@@ -42,7 +42,7 @@ When the user asks a direct question during a task, answer it before continuing 
 
 ## Outcome and Scope
 
-Before substantial work or delegation, define the primary user outcome, acceptance evidence, and non-goals, and measure progress against them, not activity. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or its evidence changes.
+Before substantial work or delegation, define and freeze the primary user outcome, acceptance evidence, non-goals, and repair limits; measure progress against them, not activity, and re-plan only when the outcome or its evidence changes.
 
 Keep file, package, and runtime scope explicit, and edit or delete only what the stated change needs. Classify other findings as in-scope defects, design blockers, platform limitations, or follow-ups, and report them instead of making collateral edits. Fix pre-existing failures inside the touched scope (the files you change and the checks or flows the change must pass) instead of stopping at them, and report pre-existing issues outside it. Expand scope further only when a finding invalidates acceptance or creates an immediate safety or production risk, or when the user asks.
 

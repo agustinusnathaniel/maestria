@@ -32,7 +32,7 @@ Before writing production code:
 1. State the observable contract, failure conditions, and acceptance evidence.
 2. Decide whether the feature is complex. For a complex feature, strongly prefer end-to-end (E2E) tests as the sole feature-testing mechanism. Do not add a parallel unit suite after implementation.
 3. If the system must be tested in isolation, complete the failure-mode inventory before writing tests or code.
-4. For a bug fix, run the existing behavior test first. Add a regression test only when there is a genuine gap in behavior testing, and write it before the fix when a new test is needed.
+4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test only when existing behavior tests miss the failure.
 5. Write the selected behavior tests first, then write the implementation.
 6. Run the selected tests and the required repository gates.
 
@@ -46,7 +46,9 @@ At the end of each E2E test, produce a verifiable and repeatable artifact. The a
 
 ## Bug fixes and regression coverage
 
-Do not create a regression test for every fix. A regression test is justified only when existing behavior testing has a genuine gap. The test must be capable of failing before the fix and catching the same failure if it returns. A test that merely repeats the fix, restates the implementation, or duplicates an existing behavior check is harmful.
+Reproduce every bug before patching it, using the cheapest failing check at the smallest boundary that shows the failure: an existing behavior test, a typecheck, a command, or a new test. If it does not reproduce, do not patch on a guess; report the evidence and what would reproduce it.
+
+Do not keep a regression test for every fix. Keep the reproduction as a regression test only when it guards a real production failure that existing behavior tests miss. A kept test names the production failure it catches, uses only inputs production can produce, fails before the fix, and catches the same failure if it returns. A test that merely repeats the fix, restates the implementation, or duplicates an existing behavior check is harmful.
 
 ## Isolated systems
 
