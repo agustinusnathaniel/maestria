@@ -26,7 +26,7 @@ Coming from OpenCode V1: V2 ignores the V1 `plugin` array, so add the package wi
 ## What It Provides
 
 - **Agents**: `orchestrator` (delegates to the 7 specialists) plus `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`, each with its own permission rules.
-- **Global rules**: added to every agent-loop and compaction request. Delivery ownership (workflow modes, autonomous commit, push, and PR, and PR slicing) lives in the `orchestrator` agent, so other agents, including OpenCode's built-in ones, do not receive it.
+- **Global rules**: added to every agent-loop and compaction request. Delivery ownership (workflow modes, autonomous commit, push, and PR, and PR slicing) lives in the `orchestrator` agent; the plugin also adds it for OpenCode's own agents such as `build` and `plan`, so only maestria's specialist subagents go without it.
 - **Workflow modes**: `fein`, `sonar`, and `blitz` as slash commands or bare keywords.
 - **Skills**: `create-pull-request` and `docs-update`, which the global rules name. A project skill with the same ID takes precedence.
 - **Project customization**: `.maestria/workflow.md` and `.maestria/rules.md` at the project root are read on every model request, so edits apply without a reload. A missing file is skipped; a directory, unreadable file, or link resolving outside the project fails the request instead of running without it.

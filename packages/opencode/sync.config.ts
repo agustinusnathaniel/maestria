@@ -259,6 +259,16 @@ const permissionMaps = {
     'rules.md': {
       output: '../rules/AGENTS.md',
     },
+    'rules-delivery.md': {
+      output: '../rules/delivery.md',
+      section: 'Continuation and Delivery',
+      source: '../core/agent-directives/specialists/orchestrator.md',
+    },
+    'rules-modes.md': {
+      output: '../rules/modes.md',
+      section: 'Modes',
+      source: '../core/agent-directives/specialists/orchestrator.md',
+    },
     'writer.md': {
       frontmatter: {
         description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,

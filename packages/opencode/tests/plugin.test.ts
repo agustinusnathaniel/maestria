@@ -251,4 +251,25 @@ describe('model context', () => {
       expect(messages[0].content[0].text).toBe('plain hello');
     }
   });
+
+  it('adds delivery policy only for agents maestria does not bundle', async () => {
+    const { registrations } = await load();
+    const systemFor = async (agent: string): Promise<string> => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the hook reads only agent, system, and messages.
+      const event = {
+        agent,
+        messages: [],
+        sessionID: 'session-test',
+        system: [],
+      } as unknown as SessionContext;
+      await Effect.runPromise(registrations.context?.(event) ?? Effect.void);
+      return event.system.map((part) => (part.type === 'text' ? part.text : '')).join('\n');
+    };
+    const build = await systemFor('build');
+    const builder = await systemFor('builder');
+    expect(build).toContain('# Continuation and Delivery');
+    expect(build).toContain('# Modes');
+    expect(builder).toContain('# Global Agent Rules');
+    expect(builder).not.toContain('# Continuation and Delivery');
+  });
 });

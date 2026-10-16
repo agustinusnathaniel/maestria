@@ -7,7 +7,7 @@ This changelog tracks meaningful changes to how maestria-powered agents behave -
 
 ## 2026-10-15
 
-- **Specialists stop carrying delivery rules.** Workflow modes, autonomous commit, push, and PR creation, and PR slicing now live with the orchestrator instead of the global rules every specialist embeds. The main session keeps the complete policy; each specialist drops about 250 words it could not act on. A specialist you invoke directly still follows commit and protected-branch rules but asks before pushing or opening a PR. On OpenCode, built-in agents such as `build` and `plan` no longer receive the delivery rules, so select `orchestrator` when you want autonomous delivery.
+- **Specialists stop carrying delivery rules.** Workflow modes, autonomous commit, push, and PR creation, and PR slicing now live with the orchestrator instead of the global rules every specialist embeds. The main session keeps the complete policy; each specialist drops about 250 words it could not act on. A specialist you invoke directly still follows commit and protected-branch rules but asks before pushing or opening a PR. On OpenCode, the plugin still gives OpenCode's own agents such as `build` and `plan` the delivery rules, so autonomous delivery works there too.
 - **Leaner rules and specialist prompts.** Rules that every agent already receives are no longer repeated inside specialist prompts, the reviewer's checklist is one line per lens, generic step lists and an unused complexity-class taxonomy are gone, and PR template, opt-out, and readback details live only in the `create-pull-request` skill. Behavior is unchanged; each specialist profile and workflow command carries about 160 to 435 fewer words.
 
 ## 2026-10-14
