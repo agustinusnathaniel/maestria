@@ -9,6 +9,9 @@ This changelog tracks meaningful changes to how maestria-powered agents behave -
 
 - **Your work stays safe.** Agents never `git reset`, restore, clean, revert, or force-push existing work unless you asked for that operation, never bypass repository hooks, and wait for CI after each push, fixing or reporting failures before calling delivery complete.
 - **Habits you kept asking for.** Agents answer a direct question before continuing, never shrink requested work by human time estimates, re-check their claims when you say "cmiiw", and fix pre-existing failures in the files and checks a change touches instead of stopping at them.
+- **Bugs are reproduced before they are patched.** Agents reproduce a bug with the cheapest failing check first and report the evidence instead of patching when it does not reproduce. They keep the reproduction as a regression test only when it guards a real production failure existing tests miss, and every kept test names that failure and uses inputs production can produce.
+- **PRs are shaped before code.** Plans list their PRs first (fixes first, refactors last, shared-behavior changes never riding along with a feature) with each PR's pre-merge and post-merge steps. PR bodies can carry a `## Merge steps` section, a ready check runs before a PR is marked ready, and the title and body are re-read against the new head after every push.
+- **Findings and reports are checked, not relayed.** Agents treat handoffs and delegate reports as leads to verify, check whether something is already done before calling it pending, and say how real each finding is and what to do about it. They ask one decision at a time with a concrete scenario and a recommendation, and put a requested draft last. Builders match sibling files and challenge every guard against evidence, and the orchestrator gives each PR or branch one pushing owner and verifies pushed work against numbered brief items.
 
 ## 2026-10-15
 
