@@ -48,7 +48,7 @@ If the assignment is read-only or the host does not permit edits, hand the suppo
 
 ## 6. Prevent recurrence
 
-- Consider a regression test only where a durable contract or plausible recurrence justifies it (per the global testing rules), and a lint rule that catches the pattern.
+- Add a regression test only when a durable contract or plausible recurrence justifies it and existing behavior tests leave a genuine gap; assert observable behavior, not implementation details. Consider a lint rule that catches the pattern.
 - Preserve durable diagnostic lessons: update an existing knowledge artifact when one fits; create one only when the findings have durable future value or the user or project requires a record.
 
 ## Report
