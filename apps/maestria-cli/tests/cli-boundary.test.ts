@@ -58,11 +58,14 @@ describe('CLI boundary', () => {
     expect(process.exitCode).toBe(0);
   });
 
-  it('prints the version for --version without detecting platforms', async () => {
-    await runCommand(main, { rawArgs: ['--version'] });
+  it.each(['--version', '-v'])(
+    'prints the version for %s without detecting platforms',
+    async (flag) => {
+      await runCommand(main, { rawArgs: [flag] });
 
-    expect(console.log).toHaveBeenCalledWith(version);
-    expect(detectMocks.detectAll).not.toHaveBeenCalled();
-    expect(process.exitCode).toBe(0);
-  });
+      expect(console.log).toHaveBeenCalledWith(version);
+      expect(detectMocks.detectAll).not.toHaveBeenCalled();
+      expect(process.exitCode).toBe(0);
+    },
+  );
 });

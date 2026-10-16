@@ -11,8 +11,7 @@ const runLifecycleTransaction = (
   platform: PlatformHandler,
   quiet: boolean,
   gerund: string,
-  completed: string,
-  operation: Effect.Effect<void, CommandError>,
+  operation: Effect.Effect<string, CommandError>,
 ): Effect.Effect<PlatformResult> =>
   Effect.gen(function* runLifecycleTransactionEffect() {
     const spinner = createSpinner(quiet);
@@ -21,10 +20,14 @@ const runLifecycleTransaction = (
     const result = yield* operation.pipe(
       Effect.match({
         onFailure: (error) => ({ message: error.message, ok: false }),
-        onSuccess: () => ({ message: completed, ok: true }),
+        onSuccess: (message) => ({ message, ok: true }),
       }),
     );
-    spinner.stop(result.ok ? completed : `Failed: ${result.message}`);
+    if (result.ok) {
+      spinner.stop(result.message);
+    } else {
+      spinner.error(`Failed: ${result.message}`);
+    }
     return {
       id: platform.id,
       label: platform.label,
@@ -36,13 +39,36 @@ export const installOne = (
   platform: PlatformHandler,
   quiet: boolean,
 ): Effect.Effect<PlatformResult> =>
-  runLifecycleTransaction(platform, quiet, 'Installing', 'Installed', platform.install);
+  runLifecycleTransaction(
+    platform,
+    quiet,
+    'Installing',
+    platform.install.pipe(Effect.as('Installed')),
+  );
 
+/**
+ * Host uninstallers disagree on a missing package, so a failure counts as success when maestria
+ * is not installed. The host still runs first: its install probes report absent when they fail.
+ */
 export const uninstallOne = (
   platform: PlatformHandler,
   quiet: boolean,
 ): Effect.Effect<PlatformResult> =>
-  runLifecycleTransaction(platform, quiet, 'Uninstalling', 'Uninstalled', platform.uninstall);
+  runLifecycleTransaction(
+    platform,
+    quiet,
+    'Uninstalling',
+    platform.uninstall.pipe(
+      Effect.as('Uninstalled'),
+      Effect.catchTag('CommandError', (failure) =>
+        platform.isInstalled.pipe(
+          Effect.flatMap((installed) =>
+            installed ? Effect.fail(failure) : Effect.succeed('Not installed'),
+          ),
+        ),
+      ),
+    ),
+  );
 
 const previewVersionDiff = (ref: string, before: string, after: string): string => {
   if (before === 'unknown' && after !== 'unknown') {
@@ -148,7 +174,7 @@ export const updateOne = (
       Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
     );
     if (errorMessage !== null) {
-      spinner.stop(`Failed: ${errorMessage}`);
+      spinner.error(`Failed: ${errorMessage}`);
       return {
         id: platform.id,
         label: platform.label,

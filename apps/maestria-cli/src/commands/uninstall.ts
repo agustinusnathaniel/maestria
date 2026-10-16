@@ -5,9 +5,9 @@ import {
   assertInteractiveTerminal,
   batchCommandResult,
   detectInstalledOr,
-  resolveBatchQuiet,
   runBatchSelected,
 } from '@/lib/batch-command.js';
+import { resolveQuiet } from '@/lib/output.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
@@ -60,7 +60,7 @@ const collectUninstallTargets = async (
 };
 
 export const handleUninstall = async (args: UninstallArgs): Promise<CommandResult> => {
-  const isQuiet = resolveBatchQuiet(args);
+  const isQuiet = resolveQuiet(args);
   const record = await readSkillsRecord();
   const targets = await collectUninstallTargets(args.platform, args.all === true, isQuiet);
   if (!Array.isArray(targets)) {

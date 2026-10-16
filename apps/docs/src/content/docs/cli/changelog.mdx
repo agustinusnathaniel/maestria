@@ -3,6 +3,16 @@ title: Changelog
 description: Release history for the maestria CLI.
 ---
 
+## v0.16.2
+
+### Command fixes from a full host sweep
+
+- `maestria update opencode` no longer fails with "Plugin is not configured" when OpenCode has not yet loaded the plugins for the current directory; it waits up to a minute for the load.
+- `--json`, `--compact`, and piped output no longer contain spinner frames.
+- `uninstall` reports `Not installed` and succeeds when a platform has nothing to remove, instead of failing on Pi, OMP, Hermes, and Claude Code.
+- `configure pi` works right after `install pi`, before Pi's first session has deployed the agent files.
+- Update text output reports an already-current platform as `Already up to date`, host errors omit internal stack frames, `configure` failures show the error instead of a bare `Canceled`, and `-v` prints the version.
+
 ## v0.16.0
 
 ### OpenCode V2 plugin management

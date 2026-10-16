@@ -4,9 +4,19 @@ import picocolors from 'picocolors';
 import { freshnessOf } from '@/lib/freshness.js';
 import type { PlatformResult, PlatformStatus, StatusOutput } from '@/types.js';
 
+export const resolveQuiet = (args: {
+  compact?: boolean;
+  json?: boolean;
+  quiet?: boolean;
+}): boolean =>
+  args.quiet === true || args.compact === true || args.json === true || !process.stdout.isTTY;
+
 export const createSpinner = (quiet: boolean) => {
   if (quiet) {
     return {
+      error: () => {
+        /* empty */
+      },
       message: () => {
         /* empty */
       },
@@ -63,6 +73,10 @@ export const renderResults = (results: PlatformResult[]): string => {
     let msg: string;
     if (!r.ok) {
       msg = `  ${r.label}: ${picocolors.red(r.message)}`;
+    } else if (r.message === 'Already up to date') {
+      msg = `  ${r.label}: ${r.message}${r.prevVersion === undefined ? '' : ` (${r.prevVersion})`}`;
+    } else if (r.prevVersion !== undefined && r.prevVersion === r.nextVersion) {
+      msg = `  ${r.label}: ${r.message}`;
     } else if (r.prevVersion !== undefined && r.prevVersion !== null && r.prevVersion !== '') {
       msg = `  ${r.label}: ${r.prevVersion} → ${r.nextVersion}`;
     } else {
