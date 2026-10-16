@@ -8,9 +8,6 @@ import { CommandError, fileExists, getCacheDir, readTextFile, run } from '@/lib/
 
 export const OPENCODE_PACKAGE = '@maestria/opencode';
 
-/** The OpenCode V2 preview package (0.1.x), replaced by `@maestria/opencode` 0.9.0. */
-const PREVIEW_PACKAGE = '@maestria/opencode-v2';
-
 /** The oldest OpenCode release whose plugin API `@maestria/opencode` targets. */
 const MIN_OPENCODE_VERSION = [2, 0, 28] as const;
 
@@ -70,13 +67,11 @@ const packageName = (spec: string): string => {
   return versionAt === -1 ? spec : spec.slice(0, versionAt);
 };
 
-const isCurrent = (entry: PluginEntry): boolean => packageName(entry.spec) === OPENCODE_PACKAGE;
-
 const uniqueSpecs = (entries: readonly PluginEntry[]): string[] => [
   ...new Set(entries.map((entry) => entry.spec)),
 ];
 
-/** maestria entries, including the preview package, in V2 `plugins` or the V1 `plugin` array V2 ignores. */
+/** maestria entries in V2 `plugins` or the V1 `plugin` array V2 ignores. */
 export const maestriaEntries = (text: string, key: 'plugin' | 'plugins'): PluginEntry[] => {
   const config: unknown = parse(text);
   const list: unknown = isRecord(config) ? config[key] : undefined;
@@ -85,7 +80,7 @@ export const maestriaEntries = (text: string, key: 'plugin' | 'plugins'): Plugin
   }
   return list.flatMap((entry: unknown, index) => {
     const spec = entrySpec(entry);
-    if (spec === undefined || ![OPENCODE_PACKAGE, PREVIEW_PACKAGE].includes(packageName(spec))) {
+    if (spec === undefined || packageName(spec) !== OPENCODE_PACKAGE) {
       return [];
     }
     return [{ index, options: isRecord(entry) ? entry.options : undefined, spec }];
@@ -163,10 +158,10 @@ export const isOpenCodeInstalled: Effect.Effect<boolean> = Effect.suspend(readCo
   ),
 );
 
-/** Reads the newest cached package for the configured spec; V1-only and preview entries report `unknown`. */
+/** Reads the newest cached package for the configured spec; V1-only entries report `unknown`. */
 export const openCodeInstalledVersion: Effect.Effect<string> = Effect.suspend(readConfig).pipe(
   Effect.flatMap(({ text }) => {
-    const entry = maestriaEntries(text, 'plugins').find(isCurrent);
+    const [entry] = maestriaEntries(text, 'plugins');
     if (entry === undefined) {
       return Effect.succeed('unknown');
     }
@@ -220,7 +215,7 @@ const currentEntries = (): Effect.Effect<PluginEntry[], CommandError> =>
 export const installOpenCode: Effect.Effect<void, CommandError> = Effect.gen(
   function* installOpenCodeEffect() {
     const entries = yield* currentEntries();
-    if (!entries.some(isCurrent)) {
+    if (entries.length === 0) {
       yield* replaceEntries(entries, OPENCODE_PACKAGE);
     }
   },

@@ -319,7 +319,7 @@ Uninstall also removes the skill copies earlier CLI versions installed for that 
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
-OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, replace a maestria entry in the V1 `plugin` array with one in `plugins`, and replace a `@maestria/opencode-v2` preview entry; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options.
+OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, and replace a maestria entry in the V1 `plugin` array with one in `plugins`; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options.
 
 ### Example
 
