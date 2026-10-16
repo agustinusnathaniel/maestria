@@ -1,0 +1,65 @@
+name: CLI Hosts
+
+# Not a required check: it installs the latest release of every host CLI, so an upstream host
+# change can fail it without a maestria change. The weekly run catches those changes.
+on:
+  pull_request:
+    paths:
+      - apps/maestria-cli/**
+      - scripts/e2e/maestria-cli-hosts-evidence.ts
+      - .github/workflows/cli-hosts.yml
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  VITE_GIT_HOOKS: '0'
+
+# An explicit bash shell adds pipefail, so a failed download in `curl | bash` fails the step.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sweep:
+    name: Real-host CLI sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - name: Build the CLI
+        run: pnpm --filter maestria build
+      - name: Install host CLIs
+        run: |
+          echo "$(npm prefix -g)/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          npm install -g @opencode/cli @earendil-works/pi-coding-agent @moonshot-ai/kimi-code @anthropic-ai/claude-code @openai/codex
+          pnpm runtime set bun 1.4.2 -g
+          bun install -g @oh-my-pi/pi-coding-agent
+          curl -fsS https://cursor.com/install | bash
+          curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --skip-setup
+      # The sweep skips a host it cannot find, so a missing binary must fail here instead.
+      - name: Verify host CLIs
+        run: |
+          for binary in opencode pi omp kimi hermes cursor-agent claude codex; do
+            command -v "$binary"
+            "$binary" --version
+          done
+      - name: Sweep maestria commands against every host
+        run: pnpm e2e:cli-hosts
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestria-cli-hosts-evidence
+          path: artifacts/maestria-cli-hosts-evidence.json
+          if-no-files-found: error
