@@ -1,5 +1,5 @@
 ---
-description: Draft or revise a pull request title and body. Use when preparing a PR, reviewing its text, or refreshing it after a push.
+description: Draft or revise a pull request title and body and check it is ready for review. Use when preparing a PR, reviewing its text, refreshing it after a push, or before marking it ready.
 name: create-pull-request
 ---
 
@@ -19,7 +19,7 @@ If the project forbids PR creation, stop only that operation and report it as th
 
 ## Multiple PRs
 
-For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft. Check that the description covers only its own diff.
+For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft. Check that the description covers only its own diff and that no open PR already covers the scope.
 
 ## Title
 
@@ -34,6 +34,7 @@ Use literal `##` headings in this order:
 3. `## Verification`
 4. `## Visual evidence` (only when the change has a rendered surface)
 5. `## Breaking changes` (only when applicable)
+6. `## Merge steps` (only when merging needs more than the merge itself)
 
 Project template precedence: when the project defines an explicit PR template, follow that template while preserving the required information above. Do not impose these literal headings on a replacement template. Map content across, then confirm nothing required was dropped.
 
@@ -61,11 +62,17 @@ Default body template (use when no project template applies):
 ## Breaking changes
 
 [Only when applicable: migration guidance.]
+
+## Merge steps
+
+[Only when applicable: pre-merge and post-merge steps in order: feature flags (needed, exists, default off), deploy order (consumers before producers), indexes or migrations, follow-ups.]
 ```
 
 Rules for `## Changes`: describe the actual change and practical purpose, not the editing action. Group related files with one rationale. List only symbols that help review. Omit session IDs and internal metadata.
 
 Rules for `## Verification`: list checks and results honestly. Carry unresolved acceptance gaps. Never claim unverified results.
+
+Rules for `## Merge steps`: give the complete list before the PR is ready, never surface a step after the merge. Changes to existing shared paths are live on deploy, so state that they are safe with any new flag off.
 
 ## Completion
 
@@ -96,6 +103,10 @@ Read back the actual PR body yourself; confirm attachments render or links resol
 
 When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file.
 
+## Ready check
+
+Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, every CI check and automated review comment is read and triaged with evidence (fixed, or answered with why not), earlier human review comments are resolved, and the title and body are true at the head.
+
 ## Freshness
 
-After any push that changes the cumulative diff or verification evidence, update the title and body to match, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.
+After every push, re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.
