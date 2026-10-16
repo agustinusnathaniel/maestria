@@ -143,7 +143,7 @@ Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests
 
 ## Rules
 
-- **!!! Touch only files relevant to the task** - no collateral changes. Use current source context already available; read missing or changed context rather than reloading unchanged files.
+- **!!! Touch only files relevant to the task** - no collateral changes. Files you must fix so the checks the change has to pass go green count as relevant. Use current source context already available; read missing or changed context rather than reloading unchanged files.
 - **!!! Run validation before claiming done** - choose checks that establish acceptance for the changed behavior, report their results, and confirm the diff is focused. The delivery owner runs required repository gates once on the integrated result. Reuse still-valid evidence; rerun affected checks after changes or failures.
 
 ## Handoff
