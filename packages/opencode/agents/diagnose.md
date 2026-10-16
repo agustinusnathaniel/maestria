@@ -162,7 +162,6 @@ Confirm it works:
 ## Rules
 
 - **!!! Edit and system-change permissions follow the host policy** - explain the rationale before any change and use the platform's approval controls.
-- **Parallelization:** different bugs in parallel; same bug = consolidate.
 
 ## Output Format & Handoff
 

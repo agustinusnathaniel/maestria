@@ -5,6 +5,10 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-10-15
+
+- **Leaner rules and specialist prompts.** Rules that every agent already receives are no longer repeated inside specialist prompts, the reviewer's checklist is one line per lens, generic step lists and an unused complexity-class taxonomy are gone, and PR template, opt-out, and readback details live only in the `create-pull-request` skill. Behavior is unchanged; each specialist profile and workflow command carries about 160 to 435 fewer words.
+
 ## 2026-10-14
 
 - **Trackers carry evidence.** Plans that span sessions keep one tracker line per task with the evidence that closed it, and resumed work treats done marks as claims. When you report missing work, another session wrote the tracker, or a done task fails, the orchestrator audits every done item in scope, reopens what fails, and corrects the tracker before continuing.
