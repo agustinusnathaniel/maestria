@@ -5,6 +5,10 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-10-23
+
+- **PR evidence is attached, not committed.** On GitHub, agents upload visual evidence with `gh pr create --attach` or `gh pr edit --attach` instead of committing screenshots to the branch, and every PR in a stack carries its own evidence. UI changes default to a before/after table.
+
 ## 2026-10-16
 
 - **Your work stays safe.** Agents never `git reset`, restore, clean, revert, or force-push existing work unless you asked for that operation, never bypass repository hooks, and wait for CI after each push, fixing or reporting failures before calling delivery complete.
