@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "maestria handoff, iteration-limit, pull request, and documentation-update skills for Codex; full methodology is installed by the companion maestria CLI",
   "author": {
     "name": "agustinusnathaniel"

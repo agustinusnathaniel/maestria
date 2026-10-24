@@ -1,5 +1,11 @@
 # @maestria/agent-plugins
 
+## 0.10.1
+
+### Patch Changes
+
+- [#419](https://github.com/agustinusnathaniel/maestria/pull/419) [`b77d6b7`](https://github.com/agustinusnathaniel/maestria/commit/b77d6b7d31f2c3d72e4de1be0a015fb68deb4868) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - On GitHub, agents now upload PR visual evidence with `gh pr create --attach` or `gh pr edit --attach` instead of committing screenshots to the branch, and every PR in a stack carries its own evidence. UI changes default to a before/after table (Area | Before | After | What changed).
+
 ## 0.10.0
 
 ### Minor Changes

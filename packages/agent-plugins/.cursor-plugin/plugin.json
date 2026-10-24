@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "displayName": "maestria",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "maestria native specialists, workflow commands, always-applied policy, and skills for Cursor",
   "author": {
     "name": "agustinusnathaniel"
