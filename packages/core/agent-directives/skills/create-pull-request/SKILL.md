@@ -70,7 +70,7 @@ Rules for `## Changes`: describe the actual change and practical purpose, not th
 
 Rules for `## Verification`: list checks and results honestly. Carry unresolved acceptance gaps. Never claim unverified results.
 
-Rules for `## Merge steps`: give the complete list before the PR is ready, never surface a step after the merge. Changes to existing shared paths are live on deploy, so state that they are safe with any new flag off.
+Rules for `## Merge steps`: give the complete list unasked before the PR is ready and whenever you call it approved, ready, or mergeable; never surface a step after the merge. Changes to existing shared paths are live on deploy, so state that they are safe with any new flag off.
 
 ## Completion
 
@@ -103,8 +103,8 @@ When a later change affects captured appearance or behavior, replace affected ca
 
 ## Ready check
 
-Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, every CI check and automated review comment is read and triaged with evidence (fixed, or answered with why not), earlier human review comments are resolved, and the title and body are true at the head.
+Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, the whole diff has had a correctness pass, every CI check and review thread (bot threads included) is read and triaged with evidence (fixed, or answered with why not), no unresolved thread blocks merge, and the title and body are true at the head. Fix correctness findings by default; decline one only with evidence the case cannot occur (call order, locks, stored state) or a one-line known-limit reason in the body, and answer every part of a multi-part finding.
 
 ## Freshness
 
-After every push, re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.
+After every push, re-read the approval and merge state, since a push can drop an approval, and re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.

@@ -23,7 +23,7 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 
 1. **Functional correctness** - logic errors, off-by-one issues, unhandled expected cases; does the change actually solve the stated problem?
 2. **Design and maintainability** - readability, focused functions, module boundaries, dependency direction, interfaces that fit the existing design, consistent error handling; guards, fallbacks, or abstractions for cases the evidence shows cannot happen; added comments that explain durable context or instead signal code that could be simpler (per Global Rules).
-3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, invalid inputs that can actually reach the code.
+3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, duplicate, out-of-order, or retried events, partial failure (one write succeeds, the next fails), invalid inputs that can actually reach the code.
 4. **Conventions** - the project's style guide, consistent naming, and the majority shape of sibling files of the same kind.
 5. **Performance** - bottlenecks, unnecessary allocations, leaks, repeated work, frontend bundle size.
 6. **Security** - input validation and sanitization, injection (SQL, XSS, command), auth and authorization checks, sensitive data exposure.
