@@ -36,6 +36,8 @@ The portable v1 manifest exposes the five skills. It does not establish native a
 | OMP | Four shared task profiles | Three shared commands and one always-apply `rules/global.md` | No denylist; read-only is prompt-level; `.toml` files not loaded |
 | Hermes | No portable native profiles | Optional manual project context, separate from skill installation | No Python route; project-context precedence and subagent context skipping matter |
 
+On Cursor, Kimi Code, and OMP, which also load the policy always-on, each mode command repeats the full router and policy (about 3,900 words per invocation). This is deliberate: the command still fails safe if the always-on rule is not loaded.
+
 ## Verification levels
 
 Evidence detail, versions, and dates live in the [host verification register](plugin-host-verification.md); this contract records only what ships and how far verification reaches. Plugin read-only metadata is host-dependent and recorded per host rather than assumed.
