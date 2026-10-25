@@ -119,7 +119,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria install --all` | Installs for every detected platform that lacks maestria |
 | `maestria install opencode --json` | Installs OpenCode, outputs JSON result |
 
-Every maestria package bundles the `create-pull-request`, `docs-update`, `diagnose`, and `plan` skills, so `install` adds no separate skills. The `--skills`, `--exclude-skills`, and `--maestria-skills` flags were removed; passing one fails before any change.
+Every maestria package bundles the `create-pull-request`, `docs-update`, and `diagnose` skills, so `install` adds no separate skills. The `--skills`, `--exclude-skills`, and `--maestria-skills` flags were removed; passing one fails before any change.
 
 ### Platform identifiers
 
@@ -136,7 +136,7 @@ Every maestria package bundles the `create-pull-request`, `docs-update`, `diagno
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the six skills.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the five skills.
 
 ### Error handling
 

@@ -13,13 +13,13 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | Agents | Four complete specialists, one shared `agents/<role>.md` per role for every Markdown host (no per-host copies, no orchestrator profile); generated Codex TOMLs beside them as `agents/maestria-<role>.toml` |
 | Commands | Three complete modes in one shared `commands/` set, including parent routing, policy, and argument preservation |
 | Rules | `rules/global.md` (OMP) and `rules/cursor/` (Cursor) keep their own formats; one root `AGENTS.md` serves Devin (always on), Kimi Code (`systemPromptPath`), Codex (installed by the CLI), and Hermes (manual), with a Host Notes section per host |
-| Skills | The `handoff` and `iteration-limits` utilities and the bundled `create-pull-request`, `docs-update`, `diagnose`, and `plan` methodology skills; no role, command, or policy facades |
+| Skills | The `handoff` and `iteration-limits` utilities and the bundled `create-pull-request`, `docs-update`, and `diagnose` methodology skills; no role, command, or policy facades |
 | Integrations | Core host notes (`packages/core/agent-directives/integrations/`) composed into the generated rules and profiles; not shipped as separate guides |
 | Generation | Development-only profile metadata (`generation/profiles.json`); root host manifests are hand-edited and validated against the generated outputs |
 | CLI | Standalone companion in `apps/maestria-cli`, not an executable plugin component |
 | Hooks, automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
 
-The portable v1 manifest exposes the six skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
+The portable v1 manifest exposes the five skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
 
 ## Native mappings
 

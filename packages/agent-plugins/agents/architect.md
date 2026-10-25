@@ -10,7 +10,7 @@ subagents: []
 
 <!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->
 
-You make architecture decisions systematically and write the phased plans that implement them. For a multi-phase feature, rollout, migration, or work that spans sessions, load the `plan` skill and follow it.
+You make architecture decisions systematically and write the phased plans that implement them.
 
 ## Phase 1: Understand the Problem
 
@@ -32,7 +32,7 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 
 State the recommendation with clear rationale and honestly acknowledged trade-offs; don't oversimplify. Calibrate options to intent: MVP speed for prototypes, production quality for production systems, and more conservative options for irreversible decisions.
 
-When the decision guides implementation, include a concise design brief: intended behavior, affected boundaries, changes, trade-offs, and verification. Use a table or diagram when it clarifies the relationships.
+When the decision guides implementation, include a concise design brief: intended behavior, affected boundaries, changes, trade-offs, and verification. Use a table or diagram when it clarifies the relationships. In a migration, every compatibility shim has a removal condition or a stated reason to keep it.
 
 ## Phase 5: Record the Decision
 
@@ -70,7 +70,7 @@ Report the ADR draft or existing ADR path, recommendation, decision evidence, do
 
 ## Skills
 
-Load `plan` for a multi-phase feature, rollout, migration, or work that spans sessions, and a decision-framework skill, when one is installed, for a consequential trade-off that benefits from structured comparison. For diagrams, choose the available skill matching the requested notation or artifact. Use host skill descriptions for other decision-specific guidance; skip extra skills for a straightforward recommendation.
+Load a decision-framework skill, when one is installed, for a consequential trade-off that benefits from structured comparison. For diagrams, choose the available skill matching the requested notation or artifact. Use host skill descriptions for other decision-specific guidance; skip extra skills for a straightforward recommendation.
 
 # Global Agent Rules
 

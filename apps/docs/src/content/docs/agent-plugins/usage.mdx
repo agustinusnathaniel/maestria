@@ -3,7 +3,7 @@ title: Usage
 description: Run maestria workflows, dispatch specialists, and use the skills on any Agent Plugins host.
 ---
 
-Once [installed](/agent-plugins/installation/), hosts with native support offer the same three workflow modes and four specialists; Hermes and marketplace-only Codex installs supply only the six skills. The syntax differs by host; the [per-host table](#per-host-syntax) lists it. For small tasks, read [When to use maestria](/core/when-to-use/) before choosing the full route.
+Once [installed](/agent-plugins/installation/), hosts with native support offer the same three workflow modes and four specialists; Hermes and marketplace-only Codex installs supply only the five skills. The syntax differs by host; the [per-host table](#per-host-syntax) lists it. For small tasks, read [When to use maestria](/core/when-to-use/) before choosing the full route.
 
 ## Run a workflow
 
@@ -51,7 +51,7 @@ None of these is a shell sandbox, and the host keeps control of permissions. See
 
 ## Skills
 
-Six skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step; `iteration-limits` bounds repair and review loops with explicit stop conditions; `create-pull-request` drafts PR titles and bodies; and `docs-update` keeps docs and changesets in step with a change. Two more methodology skills load on trigger: `diagnose` traces a failure to its root cause before fixing, and `plan` writes a phased plan with verification criteria. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
+Five skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step; `iteration-limits` bounds repair and review loops with explicit stop conditions; `create-pull-request` drafts PR titles and bodies; and `docs-update` keeps docs and changesets in step with a change. One more methodology skill loads on trigger: `diagnose` traces a failure to its root cause before fixing. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
 
 ```text
 Use the handoff utility to summarize this task's outcome, constraints,
@@ -64,11 +64,11 @@ evidence, blockers, and next step.
 | --- | --- | --- | --- |
 | Claude Code | `/maestria:fein <goal>`, `/maestria:sonar <goal>`, `/maestria:blitz <goal>` | Agent tool identities `maestria:<role>`, for example `maestria:adventurer` | `maestria:<skill>`, for example `maestria:handoff` |
 | Codex | Keywords `FEIN:`, `SONAR:`, `BLITZ:` (case-insensitive, per turn) or a marker such as `[MODE: sonar]`; needs the companion CLI install | `agent_type: "maestria-<role>"`, for example `maestria-adventurer` | `$maestria:<skill>`, for example `$maestria:handoff` |
-| Cursor | `/fein <goal>`, `/sonar <goal>`, `/blitz <goal>` in Agent chat (IDE or CLI) | Ask Agent chat to use a specialist, for example the builder agent; it runs as a Task agent | The six skills by name, for example `handoff` |
-| Kimi Code | Choose `fein`, `sonar`, or `blitz` from the command picker and add the task | Ask for a plugin agent by role name, for example the adventurer plugin agent | The six skills by name, for example `handoff` |
-| Devin | Keywords `fein: <goal>`, `sonar: <goal>`, `blitz: <goal>`; there are no plugin commands | Devin's subagent controls in local CLI and Desktop sessions only | The six skills by name, for example `handoff` |
-| ZCode | Choose the fein, sonar, or blitz command from the prompt picker | Native subagent controls with a complete task handoff | The six skills in the Skills group |
-| OMP | `/fein <goal>`, `/sonar <goal>`, `/blitz <goal>` | Native `task(agent, task)` with a role name as the agent | The six skills by name, for example `handoff` |
+| Cursor | `/fein <goal>`, `/sonar <goal>`, `/blitz <goal>` in Agent chat (IDE or CLI) | Ask Agent chat to use a specialist, for example the builder agent; it runs as a Task agent | The five skills by name, for example `handoff` |
+| Kimi Code | Choose `fein`, `sonar`, or `blitz` from the command picker and add the task | Ask for a plugin agent by role name, for example the adventurer plugin agent | The five skills by name, for example `handoff` |
+| Devin | Keywords `fein: <goal>`, `sonar: <goal>`, `blitz: <goal>`; there are no plugin commands | Devin's subagent controls in local CLI and Desktop sessions only | The five skills by name, for example `handoff` |
+| ZCode | Choose the fein, sonar, or blitz command from the prompt picker | Native subagent controls with a complete task handoff | The five skills in the Skills group |
+| OMP | `/fein <goal>`, `/sonar <goal>`, `/blitz <goal>` | Native `task(agent, task)` with a role name as the agent | The five skills by name, for example `handoff` |
 | Hermes | None; manual context only | Delegate manually and pass the role guidance, policy, and constraints to each child | Qualified names from `skills_list`, loaded with `skill_view` |
 
 A few host details are worth knowing:

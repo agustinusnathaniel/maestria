@@ -306,7 +306,7 @@ try {
   for (const [route, names] of [
     ['agent', ['orchestrator', 'adventurer', 'architect', 'builder', 'reviewer']],
     ['command', ['fein', 'sonar', 'blitz']],
-    ['skill', ['create-pull-request', 'diagnose', 'docs-update', 'plan']],
+    ['skill', ['create-pull-request', 'diagnose', 'docs-update']],
   ] as const) {
     const registry = rows(record(await api(`/api/${route}${directoryQuery}`)).data);
     registries.push({ entries: registry, name: route });

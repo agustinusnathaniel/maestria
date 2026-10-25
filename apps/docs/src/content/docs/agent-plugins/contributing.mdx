@@ -9,7 +9,7 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 Canonical role, mode, routing, and policy text lives in `packages/core/agent-directives/`. The consolidation generator (`scripts/sync-consolidated-plugin.ts`) composes it with the per-role profile metadata in `packages/agent-plugins/generation/profiles.json`, validates the hand-edited host manifests at the package root, and writes the installable resources there. Do not edit emitted resources; change a generation input or the canonical directives, then regenerate.
 
-The package's `skills/` carries only skills: the `handoff` and `iteration-limits` utilities, generated from the global rules, and generated copies of `create-pull-request`, `docs-update`, `diagnose`, and `plan`, whose source is `packages/core/agent-directives/skills/`. Do not recreate roles, commands, or global policy as skill facades.
+The package's `skills/` carries only skills: the `handoff` and `iteration-limits` utilities, generated from the global rules, and generated copies of `create-pull-request`, `docs-update`, and `diagnose`, whose source is `packages/core/agent-directives/skills/`. Do not recreate roles, commands, or global policy as skill facades.
 
 Markdown hosts share one profile per role in `agents/<role>.md` (four roles, no orchestrator) and one command set in `commands/{fein,sonar,blitz}.md`. Do not add per-host copies. Only OMP (`rules/global.md`) and Cursor (`rules/cursor/`) keep their own rule files, because their formats differ; Devin, Kimi Code, Codex, and Hermes share the root `AGENTS.md`, with each host's note under its Host Notes heading. Generated Codex profiles live beside the Markdown as `agents/maestria-<role>.toml`; Codex plugins cannot ship agents, so `maestria install codex` copies them to `$CODEX_HOME/agents/`. Each host manifest selects only the resources that host can load.
 
@@ -28,7 +28,7 @@ Package checks verify resource completeness, selected paths, and native metadata
 | Host | Also check |
 | --- | --- |
 | Claude Code | Run `claude plugin validate ./packages/agent-plugins --strict`. List the four agent files and three commands explicitly, because Claude rejects directory agent selectors. Keep `model` out of profiles and preserve the read-only roles' `disallowedTools`. |
-| Codex | Run `pnpm --filter maestria test` for the companion installer. Native read-only sandbox metadata belongs in the agent TOMLs; marketplace installation supplies the six skills only. |
+| Codex | Run `pnpm --filter maestria test` for the companion installer. Native read-only sandbox metadata belongs in the agent TOMLs; marketplace installation supplies the five skills only. |
 | Cursor | Preserve `readonly` metadata and the policy rule's `alwaysApply` setting. Plugin-supplied agents did not enforce `readonly` in the 2026-10-12 probe; project `.cursor/agents/` copies did. See the [official plugin reference](https://cursor.com/docs/reference/plugins.md). |
 | Kimi Code | Keep the root `AGENTS.md` below the documented 32 KB limit (the generator fails above it) and preserve `disallowedTools` (`Write`, `Edit`, the names Kimi registers) and `subagents` metadata. Do not add a model field the plugin-agent format does not support. See the [plugin-agent contract](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents). |
 | Devin | Keep root `AGENTS.md` and `agents/` conventional; the manifest declares only `skills`. Devin has no plugin commands component or denylist, so modes are keywords and read-only is prompt-level. |

@@ -42,7 +42,7 @@ export const agents: Agent[] = [
     artifact: 'Decision record (ADR)',
     constraint: 'Decisions documented, not coded',
     description:
-      'Makes architecture decisions systematically and writes the phased plans that implement them. Clarifies the problem, presents options with trade-offs, documents decisions as Architecture Decision Records, and loads the plan skill for multi-phase work.',
+      'Makes architecture decisions systematically and writes the phased plans that implement them. Clarifies the problem, presents options with trade-offs, and documents decisions as Architecture Decision Records.',
     icon: '🏛️',
     id: 'architect',
     name: 'Architect',

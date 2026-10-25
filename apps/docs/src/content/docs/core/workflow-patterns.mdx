@@ -12,7 +12,7 @@ Use this page to choose a starting point for a task. [Specialist Reference](/cor
 | Familiar, atomic change | Direct execution | Review only if the risk warrants it |
 | Unfamiliar codebase or dependency path | adventurer | Implement directly or hand the map to builder |
 | Architecture or technology choice | architect | Record the decision, then implement |
-| Multi-step feature or migration | architect (plan skill) | builder for each atomic milestone, then reviewer |
+| Multi-step feature or migration | architect | builder for each atomic milestone, then reviewer |
 | Bug with an unclear cause | adventurer (diagnose skill) | builder implements the confirmed fix, then review |
 | Documentation or release notes | builder | Review the rendered or published result |
 | Pre-merge validation | reviewer | Fix findings, then rerun the relevant checks |
@@ -40,7 +40,7 @@ Prefer links to existing artifacts, omit empty fields, and keep the brief propor
 ## Common Sequences
 
 - **Understand, then implement** - `adventurer -> direct implementation or builder -> reviewer when needed`. Stop reconnaissance once the entry points, dependencies, and constraints are known.
-- **Decide, then implement** - `architect -> builder -> reviewer`. Architect loads the plan skill when delivery needs ordered milestones, verification criteria, or rollback points.
+- **Decide, then implement** - `architect -> builder -> reviewer`. Architect writes a phased plan when delivery needs ordered milestones, verification criteria, or rollback points.
 - **Diagnose, then fix** - `adventurer (diagnose skill) -> builder or direct implementation -> reviewer`. Hand over the confirmed cause, affected paths, smallest safe fix, and prevention evidence. For a small local fix, builder loads the diagnose skill directly.
 - **Research only** - `adventurer -> architect -> stop`. sonar packages this boundary where the platform supports it; a research result states what was learned, what remains uncertain, and what would justify implementation.
 

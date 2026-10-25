@@ -21,7 +21,7 @@ Input → @adventurer (recon) → @architect (plan/design)
   → @builder (implement) → @reviewer (validate) → Output
 ```
 
-Each arrow carries a concise, material handoff, not a loose "figure it out" delegation. Architect owns both design and phased plans (loading the plan skill for multi-phase work); adventurer handles reconnaissance and read-only diagnosis (loading the diagnose skill, with builder applying the fix). The output of one stage is the input briefing for the next.
+Each arrow carries a concise, material handoff, not a loose "figure it out" delegation. Architect owns both design and phased plans; adventurer handles reconnaissance and read-only diagnosis (loading the diagnose skill, with builder applying the fix). The output of one stage is the input briefing for the next.
 
 ### Sub-Elements
 
@@ -88,9 +88,9 @@ How each platform implements this pattern:
 | **Cursor** | Native profiles, commands, and policy | Complete selected agents and workflow commands use canonical methodology; an always-applied rule activates policy. Root skills are the two utilities and the four bundled methodology skills, never role or command facades. |
 | **Claude Code** | Full native profiles and commands | Explicit profiles contain complete role and policy; three native commands contain parent routing and modes. Write/Edit exclusions are tool-schema controls; no hooks ship here. |
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
-| **Oh My Pi** | Native task profiles, commands, and global rule | Four task profiles, three modes, one always-applied policy/router rule, and six skills. Generic profile tool permissions remain advisory; no executable adapter or hooks. |
-| **Codex** | Skills plus companion-installed full methodology | Marketplace installs the six skills. The CLI installs complete native TOMLs and a marked global policy/router/mode block; FEIN/SONAR/BLITZ keywords select per-turn modes. |
-| **Hermes** | Portable skills with optional manual context | Installation supplies the six skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
+| **Oh My Pi** | Native task profiles, commands, and global rule | Four task profiles, three modes, one always-applied policy/router rule, and five skills. Generic profile tool permissions remain advisory; no executable adapter or hooks. |
+| **Codex** | Skills plus companion-installed full methodology | Marketplace installs the five skills. The CLI installs complete native TOMLs and a marked global policy/router/mode block; FEIN/SONAR/BLITZ keywords select per-turn modes. |
+| **Hermes** | Portable skills with optional manual context | Installation supplies the five skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
 | **Agent Plugins v1 (portable)** | Utility-only standard surface | Root handoff and iteration-limit skills follow portable discovery. Native profiles, modes, policy, and runtime controls are outside that standard. |
 
 ---
@@ -159,5 +159,5 @@ Self-review fails for three reasons, each documented from real sessions:
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
 | **Oh My Pi** | Native task dispatch with advisory generic profiles | Commands/rules provide complete methodology, but role prompts do not grant per-role tool restrictions or guarantee model compliance. |
 | **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, and reviewer. The utility skills and instruction text are advisory, and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
-| **Hermes** | Portable skills with optional manual context | Installation supplies the six skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
+| **Hermes** | Portable skills with optional manual context | Installation supplies the five skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
 | **Agent Plugins v1 (portable)** | Utility-only standard surface | Root handoff and iteration-limit skills follow portable discovery. Native profiles, modes, policy, and runtime controls are outside that standard. |

@@ -25,7 +25,6 @@ describe('Agent Plugin validation', () => {
       'docs-update',
       'handoff',
       'iteration-limits',
-      'plan',
     ]);
     expect(report.errors).toEqual([]);
   });

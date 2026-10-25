@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, and 2026-10-13.
+Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, 2026-10-13, and 2026-10-25.
 
 ## Context
 
@@ -52,7 +52,7 @@ Ship one root `AGENTS.md` for every host that reads a plain session context: Dev
 
 ### Four-role roster amendment (2026-10-15)
 
-Ship four specialist profiles: `adventurer`, `architect`, `builder`, and `reviewer`. A separate agent earns its place through isolated context, host-enforced tool limits, independent checking, or parallel work; methods that need none of those ship as bundled methodology skills that any role loads. Delegation history showed `diagnose` mostly running read-only diagnoses that builder then fixed, `planner` rarely used because architect already produced plans, and `writer` acting as a documentation-only builder, while builder, adventurer, reviewer, and architect each relied on their own context or tool limits. So `diagnose` and `plan` become bundled skills (adventurer or builder loads `diagnose`, architect loads `plan`), and documentation work moves to builder with the docs skills. The CLI removes retired Codex profiles through its managed-file manifest; Pi never overwrites or removes deployed agent files, so retired Pi agent files remain until the user deletes them, and the maestria dispatcher refuses them.
+Ship four specialist profiles: `adventurer`, `architect`, `builder`, and `reviewer`. A separate agent earns its place through isolated context, host-enforced tool limits, independent checking, or parallel work; methods that need none of those ship as bundled methodology skills that any role loads. Delegation history showed `diagnose` mostly running read-only diagnoses that builder then fixed, `planner` rarely used because architect already produced plans, and `writer` acting as a documentation-only builder, while builder, adventurer, reviewer, and architect each relied on their own context or tool limits. So `diagnose` and `plan` become bundled skills (adventurer or builder loads `diagnose`, architect loads `plan`), and documentation work moves to builder with the docs skills. Amended 2026-10-25: `plan` is retired because current models and host plan modes plan well; architect writes phased plans directly, and its durable rules (a tracker that closes tasks with evidence and a decision log for work spanning sessions, removal conditions for compatibility shims) live in the orchestrator and architect. The CLI removes retired Codex profiles through its managed-file manifest; Pi never overwrites or removes deployed agent files, so retired Pi agent files remain until the user deletes them, and the maestria dispatcher refuses them.
 
 ## Consequences
 
