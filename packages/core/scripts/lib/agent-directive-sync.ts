@@ -140,7 +140,7 @@ export const agentDirectiveSync = ({
         '  running too long.\n' +
         '---\n' +
         '\n',
-      section: 'Bounded Repair and Fail-Loud Behavior',
+      section: ['Repair Budget', 'Fail-Loud Repair'],
       source: '../core/agent-directives/rules.md',
     },
     'orchestrator.md': {

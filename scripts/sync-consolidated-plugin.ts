@@ -3,19 +3,28 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
 import {
-  extractSection,
+  extractSections,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
 } from '../packages/core/scripts/lib/transforms.js';
 
 const ROLES = ['adventurer', 'architect', 'builder', 'reviewer'];
+// rules.md is split into `# ` parts; each specialist profile embeds only the parts its role acts on,
+// because subagents on several hosts never see the main session's always-on rules.
+const RULE_PARTS = ['Every Agent', 'Implementation and Review', 'Writing Changes', 'Main Session'];
+const ROLE_RULE_PARTS: Record<string, readonly string[]> = {
+  adventurer: ['Every Agent'],
+  architect: ['Every Agent'],
+  builder: ['Every Agent', 'Implementation and Review', 'Writing Changes'],
+  reviewer: ['Every Agent', 'Implementation and Review'],
+};
 const MODES = ['fein', 'sonar', 'blitz'];
 const UTILITIES = ['handoff', 'iteration-limits'] as const;
-// Each utility skill projects one rules.md section, so it cannot drift from policy.
-const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
-  handoff: 'Delegation and Context',
-  'iteration-limits': 'Bounded Repair and Fail-Loud Behavior',
+// Each utility skill projects rules.md sections, so it cannot drift from policy.
+const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], readonly string[]> = {
+  handoff: ['Delegation and Context'],
+  'iteration-limits': ['Repair Budget', 'Fail-Loud Repair'],
 };
 // Hosts whose canonical integration note is composed into a shipped rule, context, or profile.
 const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
@@ -71,6 +80,7 @@ interface Inputs {
   arguments: string;
   contexts: Record<string, string>;
   modes: Record<string, { body: string; metadata: Record<string, unknown> }>;
+  roleRules: Record<string, string>;
   roles: Record<string, string>;
   rules: string;
   utilities: Record<string, string>;
@@ -82,12 +92,41 @@ const requiredHeading = (source: string, heading: string, label: string): void =
   }
 };
 
-const utilitySection = (rules: string, heading: string): string => {
-  const section = extractSection(rules, heading);
-  if (section === null) {
-    throw new Error(`Missing canonical heading ## ${heading}: rules.md`);
+const splitRuleParts = (rules: string): { parts: Map<string, string>; preamble: string } => {
+  const lines = rules.split('\n');
+  const starts = lines.flatMap((line, index) =>
+    index > 0 && line.startsWith('# ') ? [index] : [],
+  );
+  const parts = new Map<string, string>();
+  for (const [position, start] of starts.entries()) {
+    const name = lines[start].slice(2).trim();
+    if (parts.has(name) || !RULE_PARTS.includes(name)) {
+      throw new Error(`Unexpected or duplicate rules.md part: # ${name}`);
+    }
+    parts.set(name, lines.slice(start, starts[position + 1]).join('\n'));
   }
-  return section;
+  if ([...parts.keys()].join('\n') !== RULE_PARTS.join('\n')) {
+    throw new Error(`rules.md must contain the parts ${RULE_PARTS.join(', ')} in order`);
+  }
+  return { parts, preamble: lines.slice(0, starts[0]).join('\n') };
+};
+
+const roleRules = (rules: string): Record<string, string> => {
+  const { parts, preamble } = splitRuleParts(rules);
+  return Object.fromEntries(
+    ROLES.map((role) => [
+      role,
+      compose(preamble, ...ROLE_RULE_PARTS[role].map((part) => parts.get(part) ?? '')),
+    ]),
+  );
+};
+
+const utilitySection = (rules: string, headings: readonly string[]): string => {
+  const result = extractSections(rules, headings);
+  if ('missing' in result) {
+    throw new Error(`Missing canonical heading ## ${result.missing}: rules.md`);
+  }
+  return result.section;
 };
 
 const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
@@ -141,6 +180,7 @@ const readCanonicalInputs = (repoRoot: string): Inputs => {
     arguments: args,
     contexts,
     modes: Object.fromEntries(MODES.map((mode) => [mode, readMode(coreRoot, mode)])),
+    roleRules: roleRules(rules),
     roles,
     rules,
     utilities: Object.fromEntries(
@@ -232,7 +272,7 @@ const codexProfile = (profile: Profile, instructions: string): string => {
 const addProfiles = (plan: Map<string, string>, packageRoot: string, input: Inputs): void => {
   const profiles = profileMetadata(packageRoot);
   for (const role of ROLES) {
-    const body = compose(input.roles[role], input.rules);
+    const body = compose(input.roles[role], input.roleRules[role]);
     addOutput(plan, `agents/${role}.md`, document(body, nativeMetadata(profiles[role])));
     addOutput(
       plan,

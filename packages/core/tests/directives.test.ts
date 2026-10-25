@@ -10,8 +10,8 @@ const readDirective = (...segments: string[]): string =>
   readFileSync(path.join(DIRECTIVES_DIR, ...segments), 'utf-8');
 
 /** The `handoff` and `iteration-limits` skills are projections of these rules sections. */
-const readUtilitySkill = (heading: string): string =>
-  extractSection(readDirective('rules.md'), heading) ?? '';
+const readUtilitySkill = (...headings: string[]): string =>
+  headings.map((heading) => extractSection(readDirective('rules.md'), heading) ?? '').join('\n');
 
 const assertOrdered = (document: string, headings: string[]): void => {
   let previous = -1;
@@ -62,16 +62,25 @@ describe('canonical directive behavioral contracts', () => {
     expect(blitz).toMatch(/review|branch/iu);
   });
 
-  it('orders outcome, delegation, acceptance, repair, authorization, and source rules', () => {
+  it('orders the rules into every-agent, implementation, writing, and main-session parts', () => {
     const rules = readDirective('rules.md');
 
     assertOrdered(rules, [
-      '## Outcome and Scope',
-      '## Delegation and Context',
+      '# Every Agent',
+      '## Universal Floors',
+      '## Scope',
+      '## Authorization Stops',
+      '# Implementation and Review',
       '## Acceptance and Blind Review',
-      '## Bounded Repair and Fail-Loud Behavior',
-      '## Authorization, Lifecycle, and Branches',
+      '# Writing Changes',
+      '## Branches, Commits, and Hooks',
       '## Canonical Source Invariant',
+      '## Fail-Loud Repair',
+      '# Main Session',
+      '## Outcome',
+      '## Delegation and Context',
+      '## Repair Budget',
+      '## Precedence and Shipping',
     ]);
 
     expect(rules).toMatch(/primary user outcome/u);
@@ -94,7 +103,7 @@ describe('canonical directive behavioral contracts', () => {
   it('continues incomplete work and freezes scope across delegations', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
-    const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
+    const iteration = readUtilitySkill('Repair Budget', 'Fail-Loud Repair');
 
     expect(orchestrator).toMatch(/routine delivery is autonomous/iu);
     expect(orchestrator).toMatch(/continue if needed.*research-only routes end/iu);
@@ -232,7 +241,7 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
     const rules = readDirective('rules.md');
-    const iteration = readUtilitySkill('Bounded Repair and Fail-Loud Behavior');
+    const iteration = readUtilitySkill('Repair Budget', 'Fail-Loud Repair');
 
     expect(rules).toMatch(
       /one independent review and.*only when blockers exist.*one repair\/re-review pass/iu,
@@ -332,7 +341,9 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps the documentation contract portable without unconditional mandates', () => {
     const rules = readDirective('rules.md');
-    const section = rules.slice(rules.indexOf('### Documentation and release notes'));
+    const start = rules.indexOf('## Documentation and Release Notes');
+    expect(start).toBeGreaterThanOrEqual(0);
+    const section = rules.slice(start);
 
     expect(section).not.toMatch(/apps\/docs|CHANGELOG\.mdx?|\.changeset\/|docs\//u);
     expect(rules).not.toMatch(

@@ -11,7 +11,7 @@ import { atomicWrite } from './file.js';
 import type { SyncFileResult } from './sync.js';
 import {
   applyReplaceOps,
-  extractSection,
+  extractSections,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
@@ -133,11 +133,11 @@ const buildTransformedContent = (raw: string, fileCfg: ResolvedFileConfig): stri
     content = stripFrontmatter(content);
   }
   if (fileCfg.section !== undefined) {
-    const section = extractSection(content, fileCfg.section);
-    if (section === null) {
-      throw new Error(`Missing section "## ${fileCfg.section}"`);
+    const result = extractSections(content, fileCfg.section);
+    if ('missing' in result) {
+      throw new Error(`Missing section "## ${result.missing}"`);
     }
-    content = section;
+    content = result.section;
   }
   if (fileCfg.replace.length > 0) {
     ({ content } = applyReplaceOps(content, fileCfg.replace));
