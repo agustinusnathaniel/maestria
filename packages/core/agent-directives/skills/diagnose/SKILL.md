@@ -13,7 +13,7 @@ Stop investigating when the root cause and the affected contract are supported b
 
 - Find the corresponding source file (not dist or minified output) and the exact line and function.
 - Search for unique strings when a stack trace is minified.
-- Reproduce the failure with the cheapest failing check at the smallest boundary that shows it, recording the exact command, input, and output. If it does not reproduce, do not patch on a guess: report the evidence and what would reproduce it.
+- Reproduce the failure with the cheapest failing check at the smallest boundary that shows it, recording the exact command, input, and output. If it does not reproduce, do not patch on a guess: report the evidence and what would reproduce it. If the user still wants a defensive fix, label it unverified.
 
 ## 2. Rule out the environment
 
@@ -48,7 +48,7 @@ If the assignment is read-only or the host does not permit edits, hand the suppo
 
 ## 6. Prevent recurrence
 
-- Keep the reproduction as a regression test only when it guards a real production failure that existing behavior tests miss; name that failure and use only inputs production can produce. Consider a lint rule that catches the pattern.
+- Keep the reproduction as a regression test unless an existing test already pins the behavior; name the failure it catches and use only inputs production can produce. Consider a lint rule that catches the pattern.
 - Preserve durable diagnostic lessons: update an existing knowledge artifact when one fits; create one only when the findings have durable future value or the user or project requires a record.
 
 ## Report

@@ -32,7 +32,7 @@ Before writing production code:
 1. State the observable contract, failure conditions, and acceptance evidence.
 2. Decide whether the feature is complex. For a complex feature, prefer end-to-end (E2E) coverage that ends in a reproducible artifact over many unit tests. Do not backfill a parallel unit suite after implementation.
 3. If the system must be tested in isolation, complete the failure-mode inventory before writing tests or code.
-4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test only when it guards a real production failure that existing behavior tests miss.
+4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test unless an existing test already pins the behavior.
 5. Write the selected behavior tests first, then write the implementation.
 6. Run the selected tests and the required repository gates.
 
@@ -46,9 +46,9 @@ At the end of each E2E test, produce a verifiable and repeatable artifact. The a
 
 ## Bug fixes and regression coverage
 
-Reproduce every bug before patching it, using the cheapest failing check at the smallest boundary that shows the failure: an existing behavior test, a typecheck, a command, or a new test. If it does not reproduce, do not patch on a guess; report the evidence and what would reproduce it.
+Reproduce every bug before patching it, using the cheapest failing check at the smallest boundary that shows the failure: an existing behavior test, a typecheck, a command, or a new test. If it does not reproduce, do not patch on a guess; report the evidence and what would reproduce it. If the user still wants a defensive fix, it is allowed, clearly labeled unverified.
 
-Do not keep a regression test for every fix. Keep the reproduction as a regression test only when it guards a real production failure that existing behavior tests miss. A kept test names the production failure it catches, uses only inputs production can produce, fails before the fix, and catches the same failure if it returns. A test that merely repeats the fix, restates the implementation, or duplicates an existing behavior check is harmful.
+Keep the reproduction as a regression test unless an existing test already pins the behavior. A kept test names the production failure it catches, uses only inputs production can produce, fails before the fix, and catches the same failure if it returns. A test that merely repeats the fix, restates the implementation, or duplicates an existing behavior check is harmful.
 
 ## Isolated systems
 
