@@ -7,6 +7,24 @@ const packageRoot = path.resolve(import.meta.dirname, '..');
 const pluginRoot = packageRoot;
 const manifestPath = path.join(pluginRoot, '.claude-plugin/plugin.json');
 const roles = ['adventurer', 'architect', 'builder', 'reviewer'] as const;
+const ruleParts = ['Every Agent', 'Implementation and Review', 'Writing Changes', 'Main Session'];
+// Subagents on several hosts never see the main session's always-on rules, so each profile
+// embeds the rules.md parts its role acts on, and only those.
+const partsByRole: Record<(typeof roles)[number], readonly string[]> = {
+  adventurer: ['Every Agent'],
+  architect: ['Every Agent'],
+  builder: ['Every Agent', 'Implementation and Review', 'Writing Changes'],
+  reviewer: ['Every Agent', 'Implementation and Review'],
+};
+
+const readRuleParts = (rules: string): Map<string, string> => {
+  const sections = rules.split(/^(?=# )/mu);
+  return new Map(
+    sections
+      .filter((section) => ruleParts.some((part) => section.startsWith(`# ${part}\n`)))
+      .map((section) => [section.slice(2, section.indexOf('\n')), section.trim()]),
+  );
+};
 const modes = ['fein', 'sonar', 'blitz'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -37,7 +55,7 @@ const readManifest = (): Record<string, unknown> => {
 };
 
 describe('Claude Code native plugin loading', () => {
-  it('embeds complete role and policy context while retaining native metadata', () => {
+  it('embeds the complete role and its own rules parts while retaining native metadata', () => {
     const manifest = readManifest();
     const agentPaths = manifest.agents;
 
@@ -58,7 +76,16 @@ describe('Claude Code native plugin loading', () => {
       expect(body).toContain(
         fs.readFileSync(path.join(core, `specialists/${role}.md`), 'utf-8').trim(),
       );
-      expect(body).toContain(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8').trim());
+      const parts = readRuleParts(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8'));
+      expect([...parts.keys()]).toEqual(ruleParts);
+      expect(body).toContain('## Universal Floors');
+      for (const [part, text] of parts) {
+        if (partsByRole[role].includes(part)) {
+          expect(body, `${role} misses ${part}`).toContain(text);
+        } else {
+          expect(body, `${role} carries ${part}`).not.toContain(`# ${part}\n`);
+        }
+      }
       expect(body).not.toMatch(/(?:global-rules|reviewer)\/SKILL\.md/u);
     }
   });

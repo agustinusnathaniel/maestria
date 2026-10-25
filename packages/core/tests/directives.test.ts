@@ -62,16 +62,24 @@ describe('canonical directive behavioral contracts', () => {
     expect(blitz).toMatch(/review|branch/iu);
   });
 
-  it('orders outcome, delegation, acceptance, repair, authorization, and source rules', () => {
+  it('orders the rules into every-agent, implementation, writing, and main-session parts', () => {
     const rules = readDirective('rules.md');
 
     assertOrdered(rules, [
-      '## Outcome and Scope',
-      '## Delegation and Context',
+      '# Every Agent',
+      '## Universal Floors',
+      '## Scope',
+      '## Authorization Stops',
+      '# Implementation and Review',
       '## Acceptance and Blind Review',
-      '## Bounded Repair and Fail-Loud Behavior',
-      '## Authorization, Lifecycle, and Branches',
+      '# Writing Changes',
+      '## Branches, Commits, and Hooks',
       '## Canonical Source Invariant',
+      '# Main Session',
+      '## Outcome',
+      '## Delegation and Context',
+      '## Bounded Repair and Fail-Loud Behavior',
+      '## Precedence and Shipping',
     ]);
 
     expect(rules).toMatch(/primary user outcome/u);
@@ -332,7 +340,9 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps the documentation contract portable without unconditional mandates', () => {
     const rules = readDirective('rules.md');
-    const section = rules.slice(rules.indexOf('### Documentation and release notes'));
+    const start = rules.indexOf('## Documentation and Release Notes');
+    expect(start).toBeGreaterThanOrEqual(0);
+    const section = rules.slice(start);
 
     expect(section).not.toMatch(/apps\/docs|CHANGELOG\.mdx?|\.changeset\/|docs\//u);
     expect(rules).not.toMatch(
