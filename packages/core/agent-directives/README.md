@@ -34,6 +34,8 @@ The consolidated compiler is the sole writer for this package's composed resourc
 
 Methodology skills that the directives name (`create-pull-request`, `diagnose`, `docs-update`, `plan`) are authored once under `skills/` here. `scripts/sync-bundled-skills.ts` (run by `scripts/sync-all`, guarded by `scripts/check-sync`) copies each into `skills/` of `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi`; edit the skill here, never a copy. Runtimes maestria does not package get the agent-plugins copies through `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source. Directives refer to any other skill by capability only (for example "a browser-automation skill, when one is installed"), so they never depend on a skill maestria does not ship, and such skills are never vendored here. [CORE-005](../../../docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records these three ownership tiers.
 
+maestria and agustinusnathaniel/skills are independent. maestria holds how the agent works on every task (floors, routing, delegation, review, delivery) and only the method skills its own workflow calls; task-triggered know-how belongs in the skills repo. Neither depends on the other; overlap is fine if they never contradict.
+
 Host notes live under `integrations/`; they define native invocation and activation without becoming independent role or mode sources. Native profile metadata belongs in generation inputs, while complete child instructions are composed from canonical specialists and policy. Canonical mode files define workflow behavior; generated entry points supply their required parent context and preserve user arguments.
 
 ## Reuse a Canonical Input in a Projection

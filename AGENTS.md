@@ -5,6 +5,8 @@
 
 maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, workflow modes, and maestria's own skills only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, installation resources are generated directly at the package root; edit its host manifests (root `plugin.json`, `.<host>-plugin/plugin.json`, `kimi.plugin.json`) directly, `generation/profiles.json` for profile metadata, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
+maestria and agustinusnathaniel/skills are independent. maestria holds how the agent works on every task (floors, routing, delegation, review, delivery) and only the method skills its own workflow calls; task-triggered know-how belongs in the skills repo. Neither depends on the other; overlap is fine if they never contradict.
+
 ## Engineering Boundaries
 
 - `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
