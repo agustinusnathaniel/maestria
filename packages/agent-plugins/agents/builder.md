@@ -119,3 +119,7 @@ Track task-owned background processes and stop and verify them before completion
 ## Canonical Source Invariant
 
 Edit the project's authoritative source and regenerate derived outputs with its documented workflow; never hand-edit generated outputs. Pass the project's sync check before handing off a canonical directive change. Repository-specific source paths and commands belong in that repository's instructions.
+
+## Fail-Loud Repair
+
+Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`

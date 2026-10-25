@@ -79,6 +79,12 @@ describe('Claude Code native plugin loading', () => {
       const parts = readRuleParts(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8'));
       expect([...parts.keys()]).toEqual(ruleParts);
       expect(body).toContain('## Universal Floors');
+      if (role === 'builder') {
+        // The builder repairs its own work, so it fails loud without the main session's budget.
+        expect(body).toContain('## Fail-Loud Repair');
+        expect(body).toContain('Tried X, Y, Z.');
+        expect(body).not.toContain('## Repair Budget');
+      }
       for (const [part, text] of parts) {
         if (partsByRole[role].includes(part)) {
           expect(body, `${role} misses ${part}`).toContain(text);

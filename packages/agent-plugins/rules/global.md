@@ -144,6 +144,10 @@ Track task-owned background processes and stop and verify them before completion
 
 Edit the project's authoritative source and regenerate derived outputs with its documented workflow; never hand-edit generated outputs. Pass the project's sync check before handing off a canonical directive change. Repository-specific source paths and commands belong in that repository's instructions.
 
+## Fail-Loud Repair
+
+Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
+
 # Main Session
 
 ## Outcome
@@ -156,13 +160,11 @@ Delegate only when another context, expertise, independent check, or parallel wo
 
 Check completion claims against that original goal and acceptance, not against the latest sub-step, at each handoff and again at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Start any independent work in parallel instead of idling while another result is pending, keep writers non-overlapping, and integrate results before review. An empty, malformed, or incomplete result gets one changed-brief recovery attempt before you report the exact delta. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files, validation, blockers, unanswered user questions, and next step.
 
-## Bounded Repair and Fail-Loud Behavior
+## Repair Budget
 
 Before looping, define a verifiable termination condition. Default to one independent review and, only when blockers exist, one repair/re-review pass; allow another pass only when a named blocker remains unresolved or the repair introduced a new material regression. No more than three repair/re-review passes apply to the same user outcome across all delegations; do not reset a review or repair budget by relabelling findings or splitting scope.
 
 Only `[fix]` blockers are repair work; record adjacent findings as follow-ups instead of broadening the loop. After targeted validation or re-review shows no blocker, run final verification and stop; do not restart the full review for a small fix.
-
-Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
 
 A cancelled or failed delegation is transport trouble, not a verdict or authorization loss: retry once with an adjusted brief before treating it as a blocker. User-initiated or intentional platform cancellation is terminal.
 

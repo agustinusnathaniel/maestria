@@ -17,8 +17,8 @@ export type ResolvedReplaceOp = ReplaceOp & { scope: 'default' | 'file' };
 export interface FileConfig {
   /** Canonical input override, relative to the config directory (per-file only). */
   source?: string;
-  /** Project only this `## heading` section of the source, titled by it (per-file only). */
-  section?: string;
+  /** Project only these `## heading` sections of the source, each titled by it (per-file only). */
+  section?: string | readonly string[];
   output?: string;
   stripFrontmatter?: boolean;
   replace?: ReplaceOp[];
@@ -48,7 +48,7 @@ export interface ResolvedSyncConfig {
 
 export interface ResolvedFileConfig {
   source?: string;
-  section?: string;
+  section?: string | readonly string[];
   output: string;
   stripFrontmatter: boolean;
   replace: ResolvedReplaceOp[];
@@ -106,7 +106,9 @@ const resolveFileConfig = (
   }
   if (
     fileCfg.section !== undefined &&
-    (typeof fileCfg.section !== 'string' || fileCfg.section.trim() === '')
+    (typeof fileCfg.section === 'string' ? [fileCfg.section] : fileCfg.section).some(
+      (heading) => typeof heading !== 'string' || heading.trim() === '',
+    )
   ) {
     throw new ConfigError(`Invalid section for ${filename}`);
   }

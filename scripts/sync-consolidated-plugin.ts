@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
 import {
-  extractSection,
+  extractSections,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
@@ -21,10 +21,10 @@ const ROLE_RULE_PARTS: Record<string, readonly string[]> = {
 };
 const MODES = ['fein', 'sonar', 'blitz'];
 const UTILITIES = ['handoff', 'iteration-limits'] as const;
-// Each utility skill projects one rules.md section, so it cannot drift from policy.
-const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], string> = {
-  handoff: 'Delegation and Context',
-  'iteration-limits': 'Bounded Repair and Fail-Loud Behavior',
+// Each utility skill projects rules.md sections, so it cannot drift from policy.
+const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], readonly string[]> = {
+  handoff: ['Delegation and Context'],
+  'iteration-limits': ['Repair Budget', 'Fail-Loud Repair'],
 };
 // Hosts whose canonical integration note is composed into a shipped rule, context, or profile.
 const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
@@ -121,12 +121,12 @@ const roleRules = (rules: string): Record<string, string> => {
   );
 };
 
-const utilitySection = (rules: string, heading: string): string => {
-  const section = extractSection(rules, heading);
-  if (section === null) {
-    throw new Error(`Missing canonical heading ## ${heading}: rules.md`);
+const utilitySection = (rules: string, headings: readonly string[]): string => {
+  const result = extractSections(rules, headings);
+  if ('missing' in result) {
+    throw new Error(`Missing canonical heading ## ${result.missing}: rules.md`);
   }
-  return section;
+  return result.section;
 };
 
 const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {

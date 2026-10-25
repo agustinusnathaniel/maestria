@@ -1101,7 +1101,7 @@ describe('secondary source loop', () => {
     expect(out).toContain('# Handoff Contract');
   });
 
-  it('projects one rules section as a standalone document and fails closed when it is missing', async () => {
+  it('projects rules sections as a standalone document and fails closed when one is missing', async () => {
     const sourceDir = join(tmpDir, 'specialists');
     const outputDir = join(tmpDir, 'output');
     mkdirSync(sourceDir, { recursive: true });
@@ -1110,7 +1110,7 @@ describe('secondary source loop', () => {
       '# Rules\n\nIntro.\n\n## Handoffs\n\nBrief the goal.\n\n### Detail\n\nKeep it short.\n\n## Repair\n\nStop.\n',
       'utf-8',
     );
-    const sectionConfig = (section: string): ResolvedSyncConfig => ({
+    const sectionConfig = (section: string | readonly string[]): ResolvedSyncConfig => ({
       configDir: tmpDir,
       configPath: join(tmpDir, 'sync.config.ts'),
       files: {
@@ -1131,8 +1131,13 @@ describe('secondary source loop', () => {
     expect(out).not.toContain('Intro.');
     expect(out).not.toContain('Repair');
 
+    await runSync({ config: sectionConfig(['Repair', 'Handoffs']) });
+    expect(readFileSync(join(outputDir, 'handoff', 'SKILL.md'), 'utf-8')).toContain(
+      '# Repair\n\nStop.\n\n# Handoffs\n\nBrief the goal.',
+    );
+
     rmSync(outputDir, { force: true, recursive: true });
-    await expect(runSync({ config: sectionConfig('Missing') })).rejects.toThrow(
+    await expect(runSync({ config: sectionConfig(['Handoffs', 'Missing']) })).rejects.toThrow(
       /Missing section "## Missing" in handoff/u,
     );
     expect(existsSync(outputDir)).toBe(false);
