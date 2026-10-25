@@ -107,7 +107,7 @@ When a platform's behavior differs from the core contract, document the boundary
 
 ## Tests and Quality Gates
 
-Use the testing discipline in `packages/core/agent-directives/rules.md` and the definitions and workflow in `docs/testing.md`. Pre-code selection is required; post-code unit tests and duplicate regression tests are out. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
+Use the testing discipline in `packages/core/agent-directives/rules.md` and the definitions and workflow in `docs/testing.md`. Choose coverage before implementation rather than backfilling tests to fit the code, and leave out duplicate regression tests. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
 
 Validate each coherent implementation slice before committing it. Before delivery, the delivery owner runs the integrated gates:
 

@@ -42,4 +42,4 @@ The report should let the next agent start work immediately without re-exploring
 
 ## Skills
 
-Load on trigger: `agent-browser` (web/Electron verification), `mermaid-diagrams` (architecture visualization), `session-handoff` (formal handoff artifacts). Skip skill loads for single-file lookups.
+When installed, use a browser-automation skill for web or Electron verification and a diagramming skill for architecture visualization. Skip skill loads for single-file lookups.

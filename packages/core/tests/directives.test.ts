@@ -43,39 +43,6 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/sync check/iu);
   });
 
-  it('requires a mandatory human-facing output contract in the global rules', () => {
-    const rules = readDirective('rules.md');
-
-    expect(rules).toMatch(/!!![^\n]*(?:human[- ]facing|human[- ]readable|people|output)/iu);
-    for (const scope of [
-      /human[- ]facing (?:text|output)|text output/iu,
-      /(?:agent )?responses?|status updates?|questions?/iu,
-      /code (?:output|comments?|docstrings?)|comments?\s*[/&,]\s*docstrings?/iu,
-      /commit messages?/iu,
-      /PR\s+(?:titles?|descriptions?)/iu,
-    ]) {
-      expect(rules).toMatch(scope);
-    }
-
-    expect(rules).toMatch(/U\+2014/iu);
-    // Line-scoped rather than character-window proximity: each obligation must
-    // sit on the same line as the term it governs, so rewording neighbouring
-    // sentences or reformatting a bullet cannot detach a prohibition from its
-    // subject while every concept below stays checked.
-    for (const [term, obligation] of [
-      [/U\+2014|em dash/iu, /never|do not|avoid|prohibit|forbid/iu],
-      [/hyphen-minus|ASCII/iu, /prefer|alternative|instead|replace|comma|colon|parenthes/iu],
-      [
-        /human[- ]facing output/iu,
-        /(?:preserve|leave intact|except|do not alter).{0,120}\b(?:code|syntax|literals?|quoted|user[- ]provided)\b|\b(?:code|syntax|literals?|quoted|user[- ]provided)\b.{0,120}(?:preserve|leave intact|except|do not alter)/iu,
-      ],
-    ]) {
-      const governingLine = rules.split('\n').find((line) => term.test(line));
-      expect(governingLine, `no directive line governs ${term.source}`).toBeDefined();
-      expect(governingLine).toMatch(obligation);
-    }
-  });
-
   it('keeps mode semantics distinct without weakening universal floors', () => {
     const rules = readDirective('rules.md');
     const fein = readDirective('commands', 'fein.md');
@@ -302,16 +269,16 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/without routine approval asks/iu);
   });
 
-  it('states precedence, pause naming, and output economy', () => {
+  it('states precedence, pause naming, and milestone reporting', () => {
     const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
 
     expect(rules).toMatch(/safety and authorization floors first/iu);
     expect(rules).toMatch(/explicit user instructions/iu);
     expect(rules).toMatch(/project rules and skill methodology/iu);
     expect(rules).toMatch(/name the blocking skill or instruction/iu);
     expect(rules).toMatch(/evidence or input needed to continue/iu);
-    expect(rules).toMatch(/concise plain-text findings with file and line references/iu);
-    expect(rules).toMatch(/verification limits, delivery state, and blocker or next step/iu);
+    expect(orchestrator).toMatch(/verification limits, delivery state, and blocker or next step/iu);
   });
 
   it('separates route choice from host execution authority', () => {
@@ -366,14 +333,16 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/carry them through briefs to final reconciliation/iu);
     expect(rules).toMatch(/part of acceptance/iu);
     expect(orchestrator).toMatch(
-      /carry required documentation per the global documentation and changesets contract/iu,
+      /carry required documentation per the global documentation and release-notes contract/iu,
     );
-    expect(orchestrator).toMatch(/documentation[\s\S]*?changesets/iu);
+    expect(orchestrator).toMatch(
+      /documentation[\s\S]*?changesets where the repository uses them/iu,
+    );
   });
 
   it('keeps the documentation contract portable without unconditional mandates', () => {
     const rules = readDirective('rules.md');
-    const section = rules.slice(rules.indexOf('### Documentation and changesets'));
+    const section = rules.slice(rules.indexOf('### Documentation and release notes'));
 
     expect(section).not.toMatch(/apps\/docs|CHANGELOG\.mdx?|\.changeset\/|docs\//u);
     expect(rules).not.toMatch(

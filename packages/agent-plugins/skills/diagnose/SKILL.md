@@ -59,4 +59,4 @@ State what was investigated, what was ruled out, the root cause with its evidenc
 
 ## Skills
 
-Load on trigger: `agent-browser` or `webapp-testing` for browser-visible failures, `logging-best-practices` for missing or misleading logs, `dependency-updater` for dependency-caused failures. Skip when no skill matches the bug category.
+When installed, use a browser-automation skill for browser-visible failures, a logging skill for missing or misleading logs, and a dependency skill for dependency-caused failures. Skip when no skill matches the bug category.
