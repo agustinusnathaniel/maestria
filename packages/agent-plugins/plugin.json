@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "maestria",
   "version": "0.11.0",
-  "description": "maestria handoff, iteration-limit, pull request, and documentation-update skills, with native host components in the same package",
+  "description": "maestria handoff, iteration-limit, pull request, documentation-update, and diagnosis skills, with native host components in the same package",
   "author": {
     "name": "agustinusnathaniel",
     "url": "https://github.com/agustinusnathaniel"
