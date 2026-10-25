@@ -252,7 +252,7 @@ Profiles embed complete role and global policy, so no role skill preload is need
 
 ## Kimi Code
 
-The Kimi manifest points at the four shared profiles in `agents/`, the three shared commands in `commands/`, and, through `systemPromptPath`, the root `AGENTS.md` it shares with Devin, Codex, and Hermes. Root `skills/` carries the five skills.
+The Kimi manifest points at the four shared profiles in `agents/`, the three shared commands in `commands/`, and, through `systemPromptPath`, the root `kimi.system-prompt.md`: the same session context as the shared `AGENTS.md`, carrying only the Kimi host note. Root `skills/` carries the five skills.
 
 **Prerequisites.** A Kimi Code version that supports native plugin agents, commands, and `systemPromptPath` (see the [official plugin guide](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html)), and Node.js 22.12 or later with npm for the maestria CLI.
 
@@ -283,7 +283,7 @@ Updates replace the managed package, so back up local changes first. Your own pe
 | --- | --- |
 | Four native specialists | Complete role and global policy for adventurer, architect, builder, and reviewer |
 | Three native commands | Complete fein, sonar, and blitz workflows with task arguments (`$ARGUMENTS` is substituted) |
-| `systemPromptPath` to `AGENTS.md` | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
+| `systemPromptPath` to `kimi.system-prompt.md` | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
 | Five skills | `handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose` |
 
 The integration uses neither `sessionStart.skill` nor `skillInstructions`. Native specialists replace the former mapping to the built-in coder, explore, and plan agents. Child methodology does not depend on a parent loading role skills.
@@ -296,7 +296,7 @@ The integration uses neither `sessionStart.skill` nor `skillInstructions`. Nativ
 | --- | --- |
 | Plugin missing | Run `/plugins list` and `/plugins info maestria`; verify the installation directory |
 | Old skills or agents appear | Remove the former standalone plugin, then `/reload` or start a new session |
-| Session context does not load | Confirm the host supports `systemPromptPath` and the package's root `AGENTS.md` exists |
+| Session context does not load | Confirm the host supports `systemPromptPath` and the package's root `kimi.system-prompt.md` exists |
 | Native role missing | Confirm the host supports plugin agents and the manifest points at `./agents/` |
 | Reviewer can edit through a shell | Native write-tool denial does not restrict shell execution |
 

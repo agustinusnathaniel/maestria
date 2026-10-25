@@ -18,7 +18,7 @@
   "license": "MIT",
   "skills": "./skills/",
   "commands": "./commands/",
-  "systemPromptPath": "./AGENTS.md",
+  "systemPromptPath": "./kimi.system-prompt.md",
   "interface": {
     "displayName": "maestria Agent Pack",
     "shortDescription": "Native specialists and workflow commands for Kimi Code",
