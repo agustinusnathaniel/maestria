@@ -4,7 +4,7 @@
 
 Single evidence register for declarative plugin hosts (Claude Code, Codex CLI and desktop, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes). Each host section holds its dated probes and results plus its evidence rows with pinned versions, dates, sources, and test status. The [capability contract](agent-plugin-capabilities.md) defines what ships per host; the [runtime support matrix](runtime-support-matrix.md) keeps non-plugin runtimes.
 
-Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is four shared task profiles (`agents/<role>.md`, no orchestrator), three shared workflows, per-host global policy, and six root skills (two generated utilities and four methodology skills bundled from `packages/core/agent-directives/skills/`; `create-pull-request` and `docs-update` since 2026-10-13). Results dated 2026-10-13 or earlier that cite seven profiles and four skills describe the previous layout.
+Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is four shared task profiles (`agents/<role>.md`, no orchestrator), three shared workflows, per-host global policy, and five root skills (two generated utilities and three methodology skills bundled from `packages/core/agent-directives/skills/`; `create-pull-request` and `docs-update` since 2026-10-13). Results dated 2026-10-13 or earlier that cite seven profiles and four skills describe the previous layout.
 
 ## Claude Code
 
@@ -227,7 +227,7 @@ The Hermes loader supplies skills and optional MCP resources. Portable installat
 - Claude's explicit agent-file form passes strict validation; directory form is rejected. Acceptance of extra frontmatter does not establish runtime enforcement.
 - Kimi native profiles, command/bootstrap resources, and size limits have package/schema evidence; live dispatch and reload remain unverified.
 - Cursor plugin agents do not enforce `readonly` (see above). Devin discovery is verified, but Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist, so their read-only roles are prompt-level. ZCode removes `disallowedTools` from subagent tools per its source, but no live ZCode run was performed.
-- Codex marketplace exposes only the six skills; its complete agent/policy/mode context is supplied by the managed CLI path.
+- Codex marketplace exposes only the five skills; its complete agent/policy/mode context is supplied by the managed CLI path.
 - A doctor check or install dry-run is not proof of a plugin loading, and earlier fourteen-skill/zero-command and eight-profile probes describe retired layouts.
 
 Run the completion gates as well as these probes. Regenerate affected evidence when native contexts, selectors, or installation behavior changes; unchanged source bodies and metadata-only descriptions do not require repeating provider-independent lifecycle work without a named concern.

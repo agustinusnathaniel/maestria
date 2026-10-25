@@ -124,7 +124,7 @@ describe('published consolidated plugin', () => {
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(6);
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(5);
       // Generated utilities plus the methodology skills bundled from the repository root.
       expect(skills.map((entry) => entry.split('/')[2]).toSorted()).toEqual([
         'create-pull-request',
@@ -132,7 +132,6 @@ describe('published consolidated plugin', () => {
         'docs-update',
         'handoff',
         'iteration-limits',
-        'plan',
       ]);
       const agentEntries = entries.filter((entry) => entry.startsWith('package/agents/'));
       expect(agentEntries.filter((entry) => entry.endsWith('.md'))).toHaveLength(roles.length);

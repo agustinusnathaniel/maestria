@@ -3,8 +3,8 @@
   "groupings": [
     {
       "title": "Methodology",
-      "description": "Workflow skills for diagnosing failures, planning phased work, documentation updates, and pull request drafts.",
-      "skills": ["create-pull-request", "diagnose", "docs-update", "plan"]
+      "description": "Workflow skills for diagnosing failures, documentation updates, and pull request drafts.",
+      "skills": ["create-pull-request", "diagnose", "docs-update"]
     },
     {
       "title": "Utilities",

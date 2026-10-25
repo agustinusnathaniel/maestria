@@ -19,7 +19,6 @@ const EXPECTED_SKILL_NAMES = [
   'docs-update',
   'handoff',
   'iteration-limits',
-  'plan',
 ];
 const scriptDir = import.meta.dirname;
 const repoRoot = path.resolve(scriptDir, '../..');

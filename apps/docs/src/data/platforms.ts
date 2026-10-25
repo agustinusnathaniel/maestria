@@ -59,7 +59,7 @@ export const platforms: Platform[] = [
   },
   {
     blurb:
-      "One declarative package: four specialists, three workflow modes, always-on policy, and six skills, loaded through each host's own plugin system.",
+      "One declarative package: four specialists, three workflow modes, always-on policy, and five skills, loaded through each host's own plugin system.",
     hosts: ['Claude Code', 'Codex', 'Cursor', 'Kimi Code', 'Devin', 'ZCode', 'OMP', 'Hermes'],
     href: '/agent-plugins/',
     id: 'agent-plugins',
