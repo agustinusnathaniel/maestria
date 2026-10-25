@@ -139,7 +139,7 @@ Documentation is done when factual claims match current code and config, links w
 
 ## Skills
 
-Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests), `pnpm` (package/lockfile changes), `mcp-builder` (MCP servers), `webapp-testing` (browser-level testing), `frontend-design` (UI build tasks), `commit-work` (staging and commit messages), `diagnose` (a bug fix whose root cause is not yet established), `docs-update` (keeping docs truthful after a change), `writing-clearly-and-concisely` (substantial prose drafting or editing), `humanizer` (an explicit tone or de-slopping pass), `crafting-effective-readmes` (README structure), and the matching document-format skill for Word, PDF, presentations, or spreadsheets. Skip skill loads for mechanical one-line fixes and mechanical text fixes.
+Load `diagnose` for a bug fix whose root cause is not yet established and `docs-update` to keep docs truthful after a change. When such skills are installed, use a browser-automation skill for UI verification, the project's package-manager skill for dependency or lockfile changes, a writing skill for substantial prose, and the matching document-format skill for Word, PDF, presentations, or spreadsheets. Skip skill loads for mechanical one-line fixes and mechanical text fixes.
 
 ## Rules
 

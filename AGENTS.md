@@ -5,6 +5,8 @@
 
 maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, workflow modes, and maestria's own skills only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform projections are generated. In `agent-plugins`, installation resources are generated directly at the package root; edit its host manifests (root `plugin.json`, `.<host>-plugin/plugin.json`, `kimi.plugin.json`) directly, `generation/profiles.json` for profile metadata, or package usage docs instead. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
+maestria and agustinusnathaniel/skills are independent. maestria holds how the agent works on every task (floors, routing, delegation, review, delivery) and only the method skills its own workflow calls; task-triggered know-how belongs in the skills repo. Neither depends on the other; overlap is fine if they never contradict.
+
 ## Engineering Boundaries
 
 - `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
@@ -17,9 +19,11 @@ maestria packages a shared agent methodology as platform-specific integrations. 
 
 Use existing context and inspect missing or changed evidence needed for the task. Read project vision and patterns when the change depends on methodology; do not build a full repository map for a familiar edit.
 
-Follow the canonical testing discipline in `packages/core/agent-directives/rules.md` and the detailed workflow in `docs/testing.md`. Select behavior coverage before implementation, do not add post-code unit tests or duplicate regression tests, and leave a reproducible artifact for each complex-feature E2E test. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
+Follow the canonical testing discipline in `packages/core/agent-directives/rules.md` and the detailed workflow in `docs/testing.md`. Select behavior coverage before implementation instead of backfilling tests to fit the code, do not add duplicate regression tests, and leave a reproducible artifact for each complex-feature E2E test. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
 
 Run affected checks during implementation and fix failures caused by the requested change. Reuse still-valid evidence; rerun checks when a relevant change, failure, or unresolved concern warrants it. Validate each coherent slice before committing it. Before delivery, the delivery owner runs the [completion gates](docs/checklist.md) on the integrated result. Independent review is required for meaningful implementation; formatting, comments, and mechanical non-behavioral edits need it only when risk is uncertain. The implementer may validate its work but must not approve its own required review.
+
+Never use the U+2014 em dash in text you write for this repository (docs, directives, code comments, commits, PR text); use commas, colons, parentheses, or a hyphen.
 
 Lint and format use Ultracite presets in `vite.config.ts`. Use `vp check`, `vp check --fix`, or `vp staged`; do not run `ultracite fix` or `oxlint` directly. `vp check` is the built-in format/lint/type check; `pnpm check` runs the repository build/test/verification pipeline.
 

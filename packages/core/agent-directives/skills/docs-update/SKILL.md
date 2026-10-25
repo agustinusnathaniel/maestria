@@ -13,7 +13,7 @@ Name the behavior change (code, API, config, or operator workflow) and locate th
 
 ## 2. Assess each category separately
 
-Assess internal docs, user-facing docs, changelog or release notes, and required changesets separately. For each category, either update it or record a concise reason it needs no update. Keep the assessment proportionate to the change.
+Assess internal docs, user-facing docs, changelog or release notes, and changesets (where the repository uses them) separately. For each category, either update it or record a concise reason it needs no update. Keep the assessment proportionate to the change.
 
 Respect project documentation conventions, explicit docs opt-outs, and safety rules. The absence of docs is not permission to create a large new hierarchy. Do not invent ADRs for a trivial change or new requirements; update plans and ADRs only when a recorded decision or status actually changed, preserving the historical record with amendments rather than rewriting history.
 

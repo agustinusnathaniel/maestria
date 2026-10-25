@@ -30,29 +30,29 @@ Tautological and change-detector tests are harmful. They add maintenance cost wi
 Before writing production code:
 
 1. State the observable contract, failure conditions, and acceptance evidence.
-2. Decide whether the feature is complex. For a complex feature, strongly prefer end-to-end (E2E) tests as the sole feature-testing mechanism. Do not add a parallel unit suite after implementation.
+2. Decide whether the feature is complex. For a complex feature, prefer end-to-end (E2E) coverage that ends in a reproducible artifact over many unit tests. Do not backfill a parallel unit suite after implementation.
 3. If the system must be tested in isolation, complete the failure-mode inventory before writing tests or code.
-4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test only when it guards a real production failure that existing behavior tests miss.
+4. For a bug fix, reproduce the bug with a failing check before patching it, then keep that check as a regression test unless an existing test already pins the behavior.
 5. Write the selected behavior tests first, then write the implementation.
 6. Run the selected tests and the required repository gates.
 
-**Never write unit tests after writing code.** If a unit test is needed, select it from the pre-code contract or the isolated-system failure-mode inventory and write it before the implementation it exercises.
+**Choose coverage before implementation instead of backfilling tests to fit finished code.** If a unit test is needed, select it from the pre-code contract or the isolated-system failure-mode inventory and write it before the implementation it exercises.
 
 ## Complex features and E2E artifacts
 
-For a complex feature, E2E is the preferred and default feature-testing mechanism. Existing lint, typecheck, build, sync, and package checks remain verification gates, but they are not substitutes for pre-code test selection and do not authorize a post-code unit suite.
+For a complex feature, E2E is the preferred feature-testing mechanism. Existing lint, typecheck, build, sync, and package checks remain verification gates, but they are not substitutes for pre-code test selection and do not authorize a post-code unit suite.
 
 At the end of each E2E test, produce a verifiable and repeatable artifact. The artifact can be a fixture, report, screenshot, captured output, or another inspectable result. Record its path, how to regenerate it, and the expected signal. This test artifact is distinct from rendered UI evidence required for a visual change; classify visual evidence separately.
 
 ## Bug fixes and regression coverage
 
-Reproduce every bug before patching it, using the cheapest failing check at the smallest boundary that shows the failure: an existing behavior test, a typecheck, a command, or a new test. If it does not reproduce, do not patch on a guess; report the evidence and what would reproduce it.
+Reproduce every bug before patching it, using the cheapest failing check at the smallest boundary that shows the failure: an existing behavior test, a typecheck, a command, or a new test. If it does not reproduce, do not patch on a guess; report the evidence and what would reproduce it. If the user still wants a defensive fix, it is allowed, clearly labeled unverified.
 
-Do not keep a regression test for every fix. Keep the reproduction as a regression test only when it guards a real production failure that existing behavior tests miss. A kept test names the production failure it catches, uses only inputs production can produce, fails before the fix, and catches the same failure if it returns. A test that merely repeats the fix, restates the implementation, or duplicates an existing behavior check is harmful.
+Keep the reproduction as a regression test unless an existing test already pins the behavior. A kept test names the production failure it catches, uses only inputs production can produce, fails before the fix, and catches the same failure if it returns. A test that merely repeats the fix, restates the implementation, or duplicates an existing behavior check is harmful.
 
 ## Isolated systems
 
-Isolation is an exception, not a shortcut. If a system must be tested separately, first write every way it could fail, then write the code.
+Isolation is an exception, not a shortcut. If a system must be tested separately, list the ways it could fail before writing the code.
 
 The failure-mode inventory must cover the applicable cases before implementation:
 

@@ -163,4 +163,4 @@ Report the ADR draft or existing ADR path, recommendation, decision evidence, do
 
 ## Skills
 
-Load `plan` for a multi-phase feature, rollout, migration, or work that spans sessions, and `architecture-decision-framework` when a consequential trade-off benefits from structured comparison. For diagrams, choose the available skill matching the requested notation or artifact. Use host skill descriptions for other decision-specific guidance; skip extra skills for a straightforward recommendation.
+Load `plan` for a multi-phase feature, rollout, migration, or work that spans sessions, and a decision-framework skill, when one is installed, for a consequential trade-off that benefits from structured comparison. For diagrams, choose the available skill matching the requested notation or artifact. Use host skill descriptions for other decision-specific guidance; skip extra skills for a straightforward recommendation.

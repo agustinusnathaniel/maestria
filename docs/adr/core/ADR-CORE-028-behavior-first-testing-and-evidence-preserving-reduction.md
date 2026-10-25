@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-09-24). Confidence: High. Correction (2026-09-28): [scripts/check-sync](../../../scripts/check-sync) regenerates expected projections and detects content differences, including generated provenance headers, so per-package prose assertions over those headers add no separate contract. Condensed 2026-10-03; the decision remains in force. Amended 2026-10-16: every bug is reproduced with a failing check before it is patched, and only a reproduction guarding a real production failure that existing tests miss is kept.
+Accepted (2026-09-24). Confidence: High. Correction (2026-09-28): [scripts/check-sync](../../../scripts/check-sync) regenerates expected projections and detects content differences, including generated provenance headers, so per-package prose assertions over those headers add no separate contract. Condensed 2026-10-03; the decision remains in force. Amended 2026-10-16: every bug is reproduced with a failing check before it is patched, and only a reproduction guarding a real production failure that existing tests miss is kept. Amended 2026-10-25: coverage is chosen before implementation instead of banning tests after it, E2E is preferred over many unit tests rather than required as the sole mechanism, a reproduction is kept as a regression test unless an existing test already pins the behavior, and a defensive fix for a bug that does not reproduce is allowed only when the user asks for it, labeled unverified.
 
 ## Context
 
@@ -14,9 +14,9 @@ This decision sets the shared testing policy. It does not add test infrastructur
 
 The binding cross-platform contract lives in [the canonical agent rules](../../../packages/core/agent-directives/rules.md); definitions, procedures, and examples live in [Testing Philosophy](../../testing.md).
 
-- Before production code, state the observable contract and acceptance evidence, select the test boundary, and write selected behavior tests first. Never write unit tests after implementation.
-- For a bug fix, reproduce the failure with the cheapest failing check before patching, and do not patch what does not reproduce. Keep the reproduction as a regression test only for a genuine gap: it names the production failure, uses production-reachable inputs, fails before the fix, and catches the same failure if it returns.
-- For a complex feature, strongly prefer E2E as the sole feature-testing mechanism. Each E2E test must leave a verifiable, repeatable artifact with a stable location, reproduction steps, and expected signal. Classify UI evidence separately.
+- Before production code, state the observable contract and acceptance evidence, select the test boundary, and write selected behavior tests first. Choose coverage before implementation instead of backfilling tests to fit finished code.
+- For a bug fix, reproduce the failure with the cheapest failing check before patching, and do not patch what does not reproduce; a defensive fix the user still asks for is labeled unverified. Keep the reproduction as a regression test unless an existing test already pins the behavior: it names the production failure, uses production-reachable inputs, fails before the fix, and catches the same failure if it returns.
+- For a complex feature, prefer E2E coverage over many unit tests. Each E2E test must leave a verifiable, repeatable artifact with a stable location, reproduction steps, and expected signal. Classify UI evidence separately.
 - If a system must be tested in isolation, inventory its applicable failure modes before tests or code, including expected behavior, planned check, and evidence for each. Derive tests from that inventory.
 - Keep relevant lint, typecheck, build, sync, and existing package checks as repository gates. Host permissions and authorization still govern production access, data changes, and consequential side effects.
 - Keep checks for machine-readable contracts, manifests and file layout, safety and authorization boundaries, host-specific adapters, and actual executable behavior.

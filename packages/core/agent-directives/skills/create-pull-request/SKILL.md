@@ -70,7 +70,7 @@ Rules for `## Changes`: describe the actual change and practical purpose, not th
 
 Rules for `## Verification`: list checks and results honestly. Carry unresolved acceptance gaps. Never claim unverified results.
 
-Rules for `## Merge steps`: give the complete list before the PR is ready, never surface a step after the merge. Changes to existing shared paths are live on deploy, so state that they are safe with any new flag off.
+Rules for `## Merge steps`: give the complete list unasked before the PR is ready and whenever you call it approved, ready, or mergeable; never surface a step after the merge. Changes to existing shared paths are live on deploy, so state that they are safe with any new flag off.
 
 ## Completion
 
@@ -93,7 +93,7 @@ Present evidence concisely by changed screen or behavior: label each artifact wi
 
 For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals.
 
-Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the tool current help for upload support instead of relying on cached syntax. Capture and upload are separate capabilities. On GitHub, upload captures with `gh pr create --attach` or `gh pr edit --attach` so they are hosted on GitHub's CDN, and never commit evidence files to any branch. In a PR stack, every PR carries its own evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation.
+Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the tool current help for upload support instead of relying on cached syntax. Capture and upload are separate capabilities. On GitHub, upload captures with `gh pr create --attach` or `gh pr edit --attach` (requires a recent `gh`; confirm flag support in its help) so they are hosted on GitHub's CDN, and do not commit evidence files to any branch unless project policy requires it. In a PR stack, every PR carries its own evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation.
 
 If required visual evidence is missing, the published result is incomplete: state the checked limitation. Do not report delivery as complete until the evidence is published in the PR body and you have read back the published body to verify its inclusion; local paths, session-log references, and comments alone do not satisfy this requirement. Do not waive an explicit user or project evidence requirement because tooling is missing: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
 
@@ -103,8 +103,8 @@ When a later change affects captured appearance or behavior, replace affected ca
 
 ## Ready check
 
-Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, every CI check and automated review comment is read and triaged with evidence (fixed, or answered with why not), earlier human review comments are resolved, and the title and body are true at the head.
+Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, the whole diff has had a correctness pass, every CI check and review thread (bot threads included) is read and triaged with evidence (fixed, or answered with why not), no unresolved thread blocks merge, and the title and body are true at the head. Fix correctness findings by default; decline one only with evidence the case cannot occur (call order, locks, stored state) or a one-line known-limit reason in the body, and answer every part of a multi-part finding.
 
 ## Freshness
 
-After every push, re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.
+After every push, re-read the approval and merge state, since a push can drop an approval, and re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.

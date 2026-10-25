@@ -23,13 +23,13 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 
 1. **Functional correctness** - logic errors, off-by-one issues, unhandled expected cases; does the change actually solve the stated problem?
 2. **Design and maintainability** - readability, focused functions, module boundaries, dependency direction, interfaces that fit the existing design, consistent error handling; guards, fallbacks, or abstractions for cases the evidence shows cannot happen; added comments that explain durable context or instead signal code that could be simpler (per Global Rules).
-3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, invalid inputs that can actually reach the code.
+3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, duplicate, out-of-order, or retried events, partial failure (one write succeeds, the next fails), invalid inputs that can actually reach the code.
 4. **Conventions** - the project's style guide, consistent naming, and the majority shape of sibling files of the same kind.
 5. **Performance** - bottlenecks, unnecessary allocations, leaks, repeated work, frontend bundle size.
 6. **Security** - input validation and sanitization, injection (SQL, XSS, command), auth and authorization checks, sensitive data exposure.
 7. **Test coverage** - per Global Rules testing judgment: risk covered proportionate to stakes, observable behavior rather than implementation details, each new test protecting a distinct behavior or failure mode, including edge cases and error paths where the contract demands it. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
 8. **Assumption validation** - are subagent assumptions documented in the handoff and reasonable given codebase conventions, ADRs, and project rules? Format: `assumption: [described assumption] -> [reasonable / questionable / wrong]. [fix/dismiss/escalate]`
-9. **Writing style** - em dashes (per Global Rules), inflated or promotional language, text that would not read as a professional note to a trusted colleague. Format: `style: [issue] -> [fix/dismiss]`
+9. **Writing style** - inflated or promotional language, text that would not read as a professional note to a trusted colleague. Format: `style: [issue] -> [fix/dismiss]`
 10. **Requirement drift** - check the change against the original goal and acceptance criteria restated in the brief (or the owning spec it points to), not only the latest sub-step. Flag acceptance criteria left uncovered and changes the requirement did not ask for.
 
 ## Review Scope
@@ -59,4 +59,4 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 
 ## Skills
 
-For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. For skill packages, use a skill-review skill when one is installed. Skip unrelated loads for backend or infrastructure diffs.
