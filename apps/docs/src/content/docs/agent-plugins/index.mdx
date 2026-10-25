@@ -54,7 +54,7 @@ These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` 
 
 ## Runtime boundaries
 
-Markdown hosts share one profile per role in `agents/<role>.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. OMP and Cursor keep their own rule files because their formats differ; Devin, Kimi Code, Codex, and Hermes share the root `AGENTS.md`. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
+Markdown hosts share one profile per role in `agents/<role>.md`. Profiles contain their complete methodology, so they do not depend on role or global-rules skill preloads. Claude Code, ZCode, and OMP use the complete commands in `commands/`; Cursor and Kimi Code, which already load the policy always-on, use the mode-only commands in `mode-commands/`. OMP and Cursor keep their own rule files because their formats differ; Devin, Kimi Code, Codex, and Hermes share the root `AGENTS.md`. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
 
 ## Resources
 

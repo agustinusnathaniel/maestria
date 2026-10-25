@@ -14,7 +14,7 @@
   "tags": ["agents", "orchestration", "code-review", "workflow"],
   "logo": "assets/logo.svg",
   "agents": "./agents/",
-  "commands": "./commands/",
+  "commands": "./mode-commands/",
   "rules": "./rules/cursor/",
   "skills": "./skills/"
 }

@@ -17,7 +17,7 @@
   "homepage": "https://github.com/agustinusnathaniel/maestria",
   "license": "MIT",
   "skills": "./skills/",
-  "commands": "./commands/",
+  "commands": "./mode-commands/",
   "systemPromptPath": "./AGENTS.md",
   "interface": {
     "displayName": "maestria Agent Pack",

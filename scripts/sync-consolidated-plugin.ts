@@ -282,15 +282,27 @@ const addSessionContext = (plan: Map<string, string>, input: Inputs, complete: s
   addOutput(plan, 'AGENTS.md', context);
 };
 
+// Cursor and Kimi Code load routerPolicy always-on, so their manifests select MODE_ONLY_COMMANDS
+// instead of repeating it per invocation. Claude Code and ZCode have no always-on plugin policy,
+// and OMP and ZCode always scan the root `commands/`, so that set stays complete.
+const MODE_ONLY_COMMANDS = 'mode-commands';
+const MODE_ONLY_NOTE =
+  'The maestria router and global policy are already loaded always-on in this session; apply them to this workflow.';
+
 const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {
   for (const mode of MODES) {
     const { body, metadata } = input.modes[mode];
-    const command = compose(body, routerPolicy, input.arguments);
+    // Hosts name commands by filename; ZCode warns on an unknown `name` key.
+    const frontmatter = { description: metadata.description };
     addOutput(
       plan,
       `commands/${mode}.md`,
-      // Hosts name commands by filename; ZCode warns on an unknown `name` key.
-      document(command, { description: metadata.description }),
+      document(compose(body, routerPolicy, input.arguments), frontmatter),
+    );
+    addOutput(
+      plan,
+      `${MODE_ONLY_COMMANDS}/${mode}.md`,
+      document(compose(body, MODE_ONLY_NOTE, input.arguments), frontmatter),
     );
   }
 };
@@ -331,6 +343,8 @@ const validateManifestResources = (packageRoot: string, plan: Map<string, string
     if (!isRecord(manifest)) {
       throw new Error(`Invalid plugin manifest: ${output}`);
     }
+    let selectsModeOnly = false;
+    let selectsPolicy = false;
     for (const field of ['skills', 'agents', 'commands', 'rules', 'systemPromptPath']) {
       const selected = manifest[field];
       const relatives: unknown[] = [];
@@ -355,7 +369,14 @@ const validateManifestResources = (packageRoot: string, plan: Map<string, string
         ) {
           throw new Error(`Unreachable ${field} resource in ${output}: ${relative}`);
         }
+        selectsModeOnly ||=
+          field === 'commands' &&
+          (normalized === MODE_ONLY_COMMANDS || normalized.startsWith(`${MODE_ONLY_COMMANDS}/`));
+        selectsPolicy ||= field === 'rules' || field === 'systemPromptPath';
       }
+    }
+    if (selectsModeOnly && !selectsPolicy) {
+      throw new Error(`Mode-only commands in ${output} require an always-on policy selector`);
     }
   }
 };

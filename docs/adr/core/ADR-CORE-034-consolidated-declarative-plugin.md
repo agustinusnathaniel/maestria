@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, and 2026-10-13.
+Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, 2026-10-13, 2026-10-15, and 2026-10-25.
 
 ## Context
 
@@ -54,10 +54,16 @@ Ship one root `AGENTS.md` for every host that reads a plain session context: Dev
 
 Ship four specialist profiles: `adventurer`, `architect`, `builder`, and `reviewer`. A separate agent earns its place through isolated context, host-enforced tool limits, independent checking, or parallel work; methods that need none of those ship as bundled methodology skills that any role loads. Delegation history showed `diagnose` mostly running read-only diagnoses that builder then fixed, `planner` rarely used because architect already produced plans, and `writer` acting as a documentation-only builder, while builder, adventurer, reviewer, and architect each relied on their own context or tool limits. So `diagnose` and `plan` become bundled skills (adventurer or builder loads `diagnose`, architect loads `plan`), and documentation work moves to builder with the docs skills. The CLI removes retired Codex profiles through its managed-file manifest; Pi never overwrites or removes deployed agent files, so retired Pi agent files remain until the user deletes them, and the maestria dispatcher refuses them.
 
+### Mode-only commands amendment (2026-10-25)
+
+This amends the shared native profiles decision that each mode ships once as `commands/<mode>.md` for every Markdown host. Ship two generated command sets: complete `commands/<mode>.md` (mode, router, global policy, and argument contract) and mode-only `mode-commands/<mode>.md` (mode, a one-line note that the policy is already loaded, and the argument contract). A host manifest selects the mode-only set only when the same manifest also selects an always-on policy (`rules` or `systemPromptPath`); the generator rejects any other selection before writing. Cursor (always-apply `rules/cursor/` rule) and Kimi Code (`systemPromptPath` to the root `AGENTS.md`) select it, saving about 3,360 words of duplicated router and policy text per command invocation. Claude Code and ZCode have no always-on plugin policy and keep the complete set; OMP has always-on `rules/global.md` but loads commands only from the root `commands/`, which ZCode also always scans, so it keeps the complete set and carries the policy twice. The [host verification register](../../plugin-host-verification.md) holds the per-host evidence.
+
+The mode-only set is a sibling directory rather than `commands/mode/`, because Kimi walks a selected command directory recursively and Cursor's recursion is undocumented, and the package keeps `commands/` free of subfolders. The cost is a second generated command set and a dependency on host policy loading: Cursor's application of plugin rules was not observed in a headless CLI probe (which expanded no plugin commands either), and Kimi skips a plugin's system prompt when all enabled plugins exceed its 64 KB budget, leaving mode-only commands without the policy.
+
 ## Consequences
 
 - Users and maintainers share one declarative plugin identity and release lifecycle: `@maestria/agent-plugins`.
-- One shared profile and command set removes per-host copies; manifests select it explicitly where a host requires file lists, and per-host subfolders no longer exist to be swept by recursive discovery.
+- One shared profile set and one complete command set, plus a mode-only command set for hosts with always-on policy, remove per-host copies; manifests select it explicitly where a host requires file lists, and per-host subfolders no longer exist to be swept by recursive discovery.
 - Host enforcement still differs: a shared key is a request that each host honors on its own terms, so the capability contract records which hosts enforce read-only.
 - Native dispatch, permissions, persistence, and trust remain host-owned; a portable package does not establish runtime parity.
 - Existing users update through their host installer or the maestria CLI; package names and source layout change.
@@ -69,6 +75,8 @@ Ship four specialist profiles: `adventurer`, `architect`, `builder`, and `review
 
 - **Keep independent declarative packages:** preserves old source paths but retains redundant release and discovery surfaces.
 - **One universal runtime adapter:** rejected because hosts expose different execution, permission, and lifecycle contracts.
+- **Complete commands on every host (pre-2026-10-25):** simplest selection, but Cursor and Kimi Code then carried the router and policy twice per invocation.
+- **Mode-only commands under `commands/mode/`:** rejected because Kimi recursively walks a selected `commands/` directory and the package keeps that directory flat.
 - **Per-host copies of identical profiles:** retired on 2026-10-12. The copies differed only in frontmatter that every host reads selectively, and their subfolders were themselves exposed to recursive discovery. Rules keep host folders because their formats genuinely differ.
 - **Maintain compatibility packages indefinitely:** rejected by the owner because current adoption does not justify that additional maintenance surface.
 
@@ -87,4 +95,4 @@ Ship four specialist profiles: `adventurer`, `architect`, `builder`, and `review
 
 ## Date
 
-2026-10-10; amended 2026-10-11, 2026-10-12, and 2026-10-13.
+2026-10-10; amended 2026-10-11, 2026-10-12, 2026-10-13, 2026-10-15, and 2026-10-25.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Record the complete component audit for the consolidated package, reviewed 2026-10-12. Component support, selected resources, loader verification, and model behavior are separate claims. A runtime supporting a component does not require maestria to ship an unused hook, MCP service, or scheduled task.
+Record the complete component audit for the consolidated package, reviewed 2026-10-12; command selection re-audited 2026-10-25. Component support, selected resources, loader verification, and model behavior are separate claims. A runtime supporting a component does not require maestria to ship an unused hook, MCP service, or scheduled task.
 
 ## Semantic ownership
 
@@ -11,7 +11,7 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | Component | Package contract |
 | --- | --- |
 | Agents | Four complete specialists, one shared `agents/<role>.md` per role for every Markdown host (no per-host copies, no orchestrator profile); generated Codex TOMLs beside them as `agents/maestria-<role>.toml` |
-| Commands | Three complete modes in one shared `commands/` set, including parent routing, policy, and argument preservation |
+| Commands | Three complete modes in `commands/`, including parent routing, policy, and argument preservation, for hosts without always-on plugin policy; three mode-only modes in `mode-commands/` (mode body, a policy-already-loaded note, and arguments) for hosts whose manifest also selects always-on policy |
 | Rules | `rules/global.md` (OMP) and `rules/cursor/` (Cursor) keep their own formats; one root `AGENTS.md` serves Devin (always on), Kimi Code (`systemPromptPath`), Codex (installed by the CLI), and Hermes (manual), with a Host Notes section per host |
 | Skills | The `handoff` and `iteration-limits` utilities and the bundled `create-pull-request`, `docs-update`, `diagnose`, and `plan` methodology skills; no role, command, or policy facades |
 | Integrations | Core host notes (`packages/core/agent-directives/integrations/`) composed into the generated rules and profiles; not shipped as separate guides |
@@ -27,13 +27,13 @@ The portable v1 manifest exposes the six skills. It does not establish native ag
 | --- | --- | --- | --- |
 | Claude Code / Desktop Code | Four shared profiles, listed explicitly | Three shared commands carry complete context | Agent-directory selectors are rejected by the validator; `disallowedTools` Write/Edit exclusion is enforced but is not a shell sandbox; no `model` key |
 | Claude Cowork / Chat | Availability differs; Chat ignores plugin agents | Commands and utilities are supported | Do not promise Code's agents/settings/hooks on every Claude surface |
-| Cursor | Four shared profiles (`agents/`) | Shared commands (`commands/`) and always-applied `rules/cursor/` rule | `readonly` is declared but not enforced for plugin-supplied agents; enforced for project `.cursor/agents/` copies written by `maestria configure cursor` at project level |
+| Cursor | Four shared profiles (`agents/`) | Mode-only commands (`mode-commands/`) and always-applied `rules/cursor/` rule carrying router and policy | `readonly` is declared but not enforced for plugin-supplied agents; enforced for project `.cursor/agents/` copies written by `maestria configure cursor` at project level |
 | Codex CLI / local desktop | Companion-installed complete TOMLs from `agents/maestria-<role>.toml` (plugins cannot ship agents); `sandbox_mode = "read-only"` on adventurer, architect, reviewer | Companion-managed marked AGENTS block includes router, policy, and per-turn mode keywords | Portable marketplace installation alone exposes utilities |
 | ChatGPT / generic portable clients | No portable role component | No portable mode or policy component | Skill-only discovery; no implied companion installation |
-| Kimi Code | Four shared profiles | Shared commands and complete systemPromptPath bootstrap | `disallowedTools: [Write, Edit]` (tool names are in the [register](plugin-host-verification.md#kimi-code)); unknown keys ignored; no built-in-profile remapping; no agent model field |
+| Kimi Code | Four shared profiles | Mode-only commands (`mode-commands/`) and complete systemPromptPath bootstrap | `disallowedTools: [Write, Edit]` (tool names are in the [register](plugin-host-verification.md#kimi-code)); unknown keys ignored; no built-in-profile remapping; no agent model field |
 | Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; no plugin commands component, so modes use keywords such as `fein: <task>` | Manifest selects only `skills`; no denylist, so read-only is prompt-level; no invented commands/agents selector |
 | ZCode | Four shared profiles (discovered from `agents/`) | Three shared commands, with policy in their context | `disallowedTools` removes `Write`/`Edit` from subagent tools per ZCode source, not live-run; ZCode has no plugin rules component |
-| OMP | Four shared task profiles | Three shared commands and one always-apply `rules/global.md` | No denylist; read-only is prompt-level; `.toml` files not loaded |
+| OMP | Four shared task profiles | Three complete commands and one always-apply `rules/global.md` | OMP loads commands only from the root `commands/`, which ZCode also always scans, so it keeps the complete set and carries policy twice per invocation; no denylist; read-only is prompt-level; `.toml` files not loaded |
 | Hermes | No portable native profiles | Optional manual project context, separate from skill installation | No Python route; project-context precedence and subagent context skipping matter |
 
 ## Verification levels

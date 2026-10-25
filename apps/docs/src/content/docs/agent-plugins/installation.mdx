@@ -236,7 +236,7 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 | `agents/*.md` | Four complete specialist Task agents (shared across hosts) |
 | `skills/*/SKILL.md` | `handoff` and `iteration-limits` utilities and the bundled `create-pull-request`, `docs-update`, `diagnose`, and `plan` skills |
 | `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing (`alwaysApply: true`) |
-| `commands/*.md` | Complete workflow slash commands (shared) |
+| `mode-commands/*.md` | Workflow slash commands carrying only the mode and arguments, because the always-apply rule already supplies policy and routing |
 
 Profiles embed complete role and global policy, so no role skill preload is needed. Other hosts' frontmatter keys do not affect Cursor loading.
 
@@ -252,7 +252,7 @@ Profiles embed complete role and global policy, so no role skill preload is need
 
 ## Kimi Code
 
-The Kimi manifest points at the four shared profiles in `agents/`, the three shared commands in `commands/`, and, through `systemPromptPath`, the root `AGENTS.md` it shares with Devin, Codex, and Hermes. Root `skills/` carries the six skills.
+The Kimi manifest points at the four shared profiles in `agents/`, the three mode-only commands in `mode-commands/`, and, through `systemPromptPath`, the root `AGENTS.md` it shares with Devin, Codex, and Hermes. Root `skills/` carries the six skills.
 
 **Prerequisites.** A Kimi Code version that supports native plugin agents, commands, and `systemPromptPath` (see the [official plugin guide](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html)), and Node.js 22.12 or later with npm for the maestria CLI.
 
@@ -282,7 +282,7 @@ Updates replace the managed package, so back up local changes first. Your own pe
 | Component | Purpose |
 | --- | --- |
 | Four native specialists | Complete role and global policy for adventurer, architect, builder, and reviewer |
-| Three native commands | Complete fein, sonar, and blitz workflows with task arguments (`$ARGUMENTS` is substituted) |
+| Three native commands | fein, sonar, and blitz mode instructions with task arguments (`$ARGUMENTS` is substituted); policy and routing come from `AGENTS.md` once per session instead of once per command |
 | `systemPromptPath` to `AGENTS.md` | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
 | Six skills | `handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, `plan` |
 

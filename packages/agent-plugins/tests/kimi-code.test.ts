@@ -6,7 +6,6 @@ import { parse } from 'yaml';
 const root = path.resolve(import.meta.dirname, '..');
 const roles = ['adventurer', 'architect', 'builder', 'reviewer'];
 const readOnlyRoles = new Set(['adventurer', 'architect', 'reviewer']);
-const modes = ['fein', 'sonar', 'blitz'];
 
 type Manifest = Record<string, unknown>;
 const isRecord = (value: unknown): value is Manifest =>
@@ -60,6 +59,8 @@ describe('Kimi native methodology loading', () => {
     const config = await manifest();
     // Kimi, Devin, Hermes, and the Codex installer share the one root AGENTS.md.
     expect(config.systemPromptPath).toBe('./AGENTS.md');
+    // That always-on policy is why Kimi selects the mode-only commands.
+    expect(config.commands).toBe('./mode-commands/');
     const systemPromptPath = String(config.systemPromptPath);
     const context = await readFile(path.join(root, systemPromptPath), 'utf-8');
     expect(Buffer.byteLength(context)).toBeLessThanOrEqual(32 * 1024);
@@ -85,23 +86,6 @@ describe('Kimi native methodology loading', () => {
       expect(metadata.disallowedTools).toEqual(
         readOnlyRoles.has(role) ? ['Write', 'Edit'] : undefined,
       );
-    }
-  });
-
-  it('carries complete context and arguments in each native mode command', async () => {
-    const config = await manifest();
-    expect(config.commands).toBe('./commands/');
-    const commands = await Promise.all(
-      modes.map(async (mode) => ({
-        command: await readFile(path.join(root, `commands/${mode}.md`), 'utf-8'),
-        mode,
-      })),
-    );
-    for (const { command, mode } of commands) {
-      expect(command).toContain(`[MODE: ${mode}]`);
-      expect(command).toContain('$ARGUMENTS');
-      expect(command).toContain('## Routing');
-      expect(command).toContain('## Universal Floors');
     }
   });
 });

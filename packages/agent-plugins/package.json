@@ -37,6 +37,7 @@
     "README.md",
     "LICENSE",
     "commands",
+    "mode-commands",
     "rules",
     "AGENTS.md"
   ],

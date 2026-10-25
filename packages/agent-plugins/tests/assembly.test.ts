@@ -128,6 +128,26 @@ describe('consolidated plugin assembly', () => {
     }
   });
 
+  it('rejects mode-only commands on a host without always-on policy before writes', () => {
+    const root = fixture();
+    const packageRoot = path.join(root, 'packages/agent-plugins');
+    const target = path.join(packageRoot, 'rules/global.md');
+    fs.writeFileSync(target, 'drift\n');
+    const manifestPath = path.join(packageRoot, '.zcode-plugin/plugin.json');
+    const manifest = fs.readFileSync(manifestPath, 'utf-8');
+    expect(manifest).toContain('"commands": "./commands/"');
+    for (const selector of ['"./mode-commands/"', '["./mode-commands/fein.md"], "rules": []']) {
+      fs.writeFileSync(
+        manifestPath,
+        manifest.replace('"commands": "./commands/"', `"commands": ${selector}`),
+      );
+
+      expect(main(['--preflight'], root)).toBe(2);
+      expect(() => syncConsolidatedPlugin(root)).toThrow(/always-on policy/u);
+      expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
+    }
+  });
+
   it('rejects a missing canonical role before changing outputs', () => {
     const root = fixture();
     const packageRoot = path.join(root, 'packages/agent-plugins');

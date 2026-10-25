@@ -149,6 +149,33 @@ describe('published consolidated plugin', () => {
       expect(entries.filter((entry) => /^package\/commands\/[^/]+\.md$/u.test(entry))).toHaveLength(
         3,
       );
+      expect(
+        entries.filter((entry) => /^package\/mode-commands\/[^/]+\.md$/u.test(entry)),
+      ).toHaveLength(3);
+      // Complete commands carry router and policy for hosts without always-on plugin policy;
+      // mode-only commands rely on the host's always-on rule or system prompt instead.
+      for (const mode of ['fein', 'sonar', 'blitz']) {
+        const complete = fs.readFileSync(path.join(packedRoot, `commands/${mode}.md`), 'utf-8');
+        const modeOnly = fs.readFileSync(
+          path.join(packedRoot, `mode-commands/${mode}.md`),
+          'utf-8',
+        );
+        for (const command of [complete, modeOnly]) {
+          expect(command).toContain(`[MODE: ${mode}]`);
+          expect(command).toContain('$ARGUMENTS');
+        }
+        for (const policy of ['## Routing', '## Universal Floors']) {
+          expect(complete).toContain(policy);
+          expect(modeOnly).not.toContain(policy);
+        }
+        expect(modeOnly).toContain('global policy are already loaded always-on');
+      }
+      const cursorRule = fs.readFileSync(
+        path.join(packedRoot, 'rules/cursor/maestria-global.mdc'),
+        'utf-8',
+      );
+      expect(cursorRule).toMatch(/^alwaysApply: true$/mu);
+      expect(cursorRule).toContain('## Universal Floors');
       expect(entries).toContain('package/rules/global.md');
       expect(packageManifest.private).toBe(false);
       expect(packageManifest.publishConfig).toEqual({ access: 'public', provenance: true });
@@ -170,7 +197,7 @@ describe('published consolidated plugin', () => {
       expect(manifests[5].commands).toBe('./commands/');
       expect(manifests[6].agents).toBe('./agents/');
       expect(manifests[6].skills).toBe('./skills/');
-      expect(manifests[6].commands).toBe('./commands/');
+      expect(manifests[6].commands).toBe('./mode-commands/');
       expect(manifests[6].systemPromptPath).toBe('./AGENTS.md');
       expect(manifests[1].commands).toEqual([
         './commands/fein.md',
@@ -178,7 +205,7 @@ describe('published consolidated plugin', () => {
         './commands/blitz.md',
       ]);
       expect(manifests[2].agents).toBe('./agents/');
-      expect(manifests[2].commands).toBe('./commands/');
+      expect(manifests[2].commands).toBe('./mode-commands/');
       expect(manifests[4].skills).toBe('./skills/');
       expect(manifests[2].rules).toBe('./rules/cursor/');
       for (const role of roles) {
