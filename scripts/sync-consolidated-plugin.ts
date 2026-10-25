@@ -304,22 +304,27 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   );
 };
 
-// One root AGENTS.md serves every host that reads a plain session context: Devin loads it
-// always-on, Kimi Code through `systemPromptPath`, the CLI installs it into Codex's AGENTS.md,
-// and Hermes users add it manually. Each host note sits under its own heading.
-const SESSION_HOSTS = ['devin', 'kimi-code', 'codex', 'hermes'];
+// One root AGENTS.md serves hosts that read a plain session context: Devin loads it always-on,
+// the CLI installs it into Codex's AGENTS.md, and Hermes users add it manually. Each host note
+// sits under its own heading.
+const SESSION_HOSTS = ['devin', 'codex', 'hermes'];
 const HOST_NOTES_INTRO =
   '## Host Notes\n\nEach section below applies only on the host it names; skip the others.';
+// Kimi Code reads its own copy through `systemPromptPath` and ignores one over 32 KB, so it
+// carries only its own host note.
+const KIMI_CONTEXT = 'kimi.system-prompt.md';
+const KIMI_CONTEXT_LIMIT = 32 * 1024;
 const demote = (markdown: string): string =>
   markdown.replaceAll(/^(?<hashes>#{2,5}) /gmu, '#$<hashes> ');
 
 const addSessionContext = (plan: Map<string, string>, input: Inputs, complete: string): void => {
   const notes = SESSION_HOSTS.map((host) => demote(input.contexts[host]));
-  const context = document(compose(complete, HOST_NOTES_INTRO, ...notes));
-  if (Buffer.byteLength(context) > 32 * 1024) {
-    throw new Error("AGENTS.md exceeds Kimi Code's documented 32 KB system prompt limit");
+  addOutput(plan, 'AGENTS.md', document(compose(complete, HOST_NOTES_INTRO, ...notes)));
+  const kimi = document(compose(complete, '## Host Notes', demote(input.contexts['kimi-code'])));
+  if (Buffer.byteLength(kimi) > KIMI_CONTEXT_LIMIT) {
+    throw new Error(`${KIMI_CONTEXT} exceeds Kimi Code's documented 32 KB system prompt limit`);
   }
-  addOutput(plan, 'AGENTS.md', context);
+  addOutput(plan, KIMI_CONTEXT, kimi);
 };
 
 const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {

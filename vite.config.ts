@@ -21,6 +21,7 @@ export default defineConfig({
         'packages/*/prompts/**',
         'packages/*/rules/**',
         'packages/agent-plugins/AGENTS.md',
+        'packages/agent-plugins/kimi.system-prompt.md',
         // Generated skill copies; the canonical core skills stay formatted.
         'packages/*/skills/**',
         'packages/*/SYSTEM.md',

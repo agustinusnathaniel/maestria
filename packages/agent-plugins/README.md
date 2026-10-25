@@ -8,7 +8,7 @@ maestria ships one directly installable plugin with native host components and f
 | --- | --- | --- |
 | `agents/` | One profile per specialist for every Markdown host, plus a generated Codex TOML beside each | Core `specialists/` and `generation/profiles.json` |
 | `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
-| `rules/`, `AGENTS.md` | `rules/global.md` (OMP) and `rules/cursor/` (Cursor); the root `AGENTS.md` serves Devin, Kimi Code, Codex, and Hermes | Core `rules.md` and integration notes |
+| `rules/`, `AGENTS.md`, `kimi.system-prompt.md` | `rules/global.md` (OMP) and `rules/cursor/` (Cursor); the root `AGENTS.md` serves Devin, Codex, and Hermes, and `kimi.system-prompt.md` is Kimi Code's `systemPromptPath` copy with only its own host note | Core `rules.md` and integration notes |
 | `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request` and `docs-update` methodology skills | One core `rules.md` section per utility; core `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
 | `generation/` | Development-only profile metadata (`profiles.json`); not shipped | Hand-authored mechanical input |
 | `assets/` | Logo shared by the host manifests | Hand-authored package file |

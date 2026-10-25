@@ -38,7 +38,8 @@
     "LICENSE",
     "commands",
     "rules",
-    "AGENTS.md"
+    "AGENTS.md",
+    "kimi.system-prompt.md"
   ],
   "type": "module",
   "publishConfig": {

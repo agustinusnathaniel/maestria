@@ -170,7 +170,8 @@ describe('published consolidated plugin', () => {
       expect(manifests[6].agents).toBe('./agents/');
       expect(manifests[6].skills).toBe('./skills/');
       expect(manifests[6].commands).toBe('./commands/');
-      expect(manifests[6].systemPromptPath).toBe('./AGENTS.md');
+      expect(manifests[6].systemPromptPath).toBe('./kimi.system-prompt.md');
+      expect(entries).toContain('package/kimi.system-prompt.md');
       expect(manifests[1].commands).toEqual([
         './commands/fein.md',
         './commands/sonar.md',
