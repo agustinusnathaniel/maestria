@@ -144,6 +144,5 @@ export const agentDirectiveSync = ({
     },
   },
   output: 'agents',
-  preserve: ['.gitkeep'],
   source: '../core/agent-directives/specialists',
 });
