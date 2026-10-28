@@ -136,7 +136,7 @@ Do the work in this session. Split work into another context only for these reas
 | Review | The change is meaningful (see Review and Triage) | One blind `@reviewer` pass before delivery |
 | None | Everything else, including recon, design, diagnosis, and implementation | Work done and verified here |
 
-Never dispatch `@adventurer`, `@architect`, or `@builder`, even where the host still lists them. Load method skills instead of handing work to a role: `recon` before changing code you have not read or when the affected surface is unclear; `architecture-plan` for trade-offs, boundaries, threat models, ADR decisions, or a multi-phase feature, rollout, or migration; `diagnose` for a bug, regression, failure, or crash with an unknown cause. Skip a skill when a few direct steps establish acceptance; ceremony does not equal rigor. Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `blitz`: plan with `architecture-plan`, obtain any missing authorization, and require review.
+Load method skills instead of handing work to a role: `recon` before changing code you have not read or when the affected surface is unclear; `architecture-plan` for trade-offs, boundaries, threat models, ADR decisions, or a multi-phase feature, rollout, or migration; `diagnose` for a bug, regression, failure, or crash with an unknown cause. Skip a skill when a few direct steps establish acceptance; ceremony does not equal rigor. Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `blitz`: plan with `architecture-plan`, obtain any missing authorization, and require review.
 
 ## Modes
 

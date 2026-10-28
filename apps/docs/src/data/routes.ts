@@ -1,7 +1,7 @@
 /**
- * Example routes for the homepage pipeline score. Each route is one task the
- * orchestrator sends through only the specialists it needs, mirroring the
- * route guidance in /core/pipeline/ and /core/when-to-use/.
+ * Example routes for the homepage pipeline score. Each route is work the main
+ * loop does itself, plus reviewer when an independent check is needed,
+ * mirroring the route guidance in /core/pipeline/ and /core/when-to-use/.
  *
  * `agent` keys into src/data/agents.ts; `artifact` is what that step hands
  * forward. Steps play in order, one column per step.
@@ -27,12 +27,10 @@ export const routes: Route[] = [
   {
     id: 'feature',
     label: 'New feature',
-    rationale: 'Unfamiliar code with real trade-offs: every stage earns its place.',
+    rationale:
+      'Unfamiliar code with real trade-offs: method skills earn their place, then an independent check.',
     steps: [
-      { agent: 'orchestrator', artifact: 'Routes the task' },
-      { agent: 'adventurer', artifact: 'Recon report' },
-      { agent: 'architect', artifact: 'Decision + phased plan' },
-      { agent: 'builder', artifact: 'Code + tests' },
+      { agent: 'orchestrator', artifact: 'Investigate, plan, implement' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Add rate limiting to the upload API',
@@ -40,11 +38,10 @@ export const routes: Route[] = [
   {
     id: 'bug',
     label: 'Bug fix',
-    rationale: 'Root cause first, then the fix, then a review by someone who did not write it.',
+    rationale:
+      'Root cause first with diagnose, then the fix, then a review by someone who did not write it.',
     steps: [
-      { agent: 'orchestrator', artifact: 'Routes the task' },
-      { agent: 'adventurer', artifact: 'Root cause' },
-      { agent: 'builder', artifact: 'Fix + regression test' },
+      { agent: 'orchestrator', artifact: 'Root cause + fix' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Uploads over 10 MB fail without an error',
@@ -53,10 +50,9 @@ export const routes: Route[] = [
     id: 'docs',
     label: 'Docs change',
     rationale:
-      'The builder works from the source of truth; the reviewer checks it against the code.',
+      'The main loop works from the source of truth; the reviewer checks it against the code.',
     steps: [
-      { agent: 'orchestrator', artifact: 'Routes the task' },
-      { agent: 'builder', artifact: 'Updated guide' },
+      { agent: 'orchestrator', artifact: 'Updated guide' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Document the new retry option',
@@ -64,19 +60,17 @@ export const routes: Route[] = [
   {
     id: 'small',
     label: 'Small edit',
-    rationale: 'Known, low-risk work: the orchestrator does it directly. No handoffs needed.',
+    rationale: 'Known, low-risk work: the main loop does it directly. No review needed.',
     steps: [{ agent: 'orchestrator', artifact: 'Done directly' }],
     task: 'Fix a typo in the README',
   },
 ];
 
 /**
- * Lane order on the score, grouped by pipeline stage. The orchestrator sits
- * above the three stages it routes between.
+ * Lane order on the score. The main loop sits above the reviewer that checks
+ * it.
  */
 export const lanes: { stage: string; agents: string[] }[] = [
-  { agents: ['orchestrator'], stage: 'Routing' },
-  { agents: ['adventurer', 'architect'], stage: 'Thinkers' },
-  { agents: ['builder'], stage: 'Workers' },
-  { agents: ['reviewer'], stage: 'Verifier' },
+  { agents: ['orchestrator'], stage: 'Main loop' },
+  { agents: ['reviewer'], stage: 'Check' },
 ];

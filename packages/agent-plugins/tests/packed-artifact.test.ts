@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vite-plus/test';
 
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const repoRoot = path.resolve(packageRoot, '../..');
-const roles = ['adventurer', 'architect', 'builder', 'reviewer'];
-const readOnlyRoles = ['adventurer', 'architect', 'reviewer'];
+const roles = ['reviewer'];
+const readOnlyRoles = ['reviewer'];
 const manifestPaths = [
   'plugin.json',
   '.claude-plugin/plugin.json',

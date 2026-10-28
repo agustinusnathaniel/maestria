@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import type { Mock } from 'vite-plus/test';
 
 import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { ModeKeyword } from '@maestria/shared-pi/state-core';
 import { installToolInterceptors } from '@/tools.js';
 import type { ToolApi } from '@/tools.js';
 import type { ToolCallHandler, ToolCallResult } from '@maestria/shared-pi/tools-core';
@@ -128,31 +129,46 @@ describe('installToolInterceptors', () => {
       expect(result).toBeUndefined();
     });
 
-    it('blocks mutation bash when workflow mode is active in orchestrator session', async () => {
-      const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
-      install(pi, state);
+    it('allows edits, writes, and mutating bash under the full-method and fast modes', async () => {
+      await Promise.all(
+        (['fein', 'blitz'] as ModeKeyword[]).map(async (mode) => {
+          const pi = createMockPi(['subagent', 'read', 'bash']);
+          const state = { ...createInitialState(), mode };
+          install(pi, state);
 
-      const handler = getHandler(pi);
-      const result = await handler({ input: { command: 'rm -rf dist' }, toolName: 'bash' }, {});
-      expect(getBlockedResult(result).block).toBe(true);
+          const handler = getHandler(pi);
+          const editResult = await handler({ input: { path: 'a.ts' }, toolName: 'edit' }, {});
+          expect(editResult).toBeUndefined();
+          const writeResult = await handler({ input: { path: 'a.ts' }, toolName: 'write' }, {});
+          expect(writeResult).toBeUndefined();
+          const bashResult = await handler(
+            { input: { command: 'rm -rf dist' }, toolName: 'bash' },
+            {},
+          );
+          expect(bashResult).toBeUndefined();
+        }),
+      );
     });
 
-    it('blocks edit and write when workflow mode is active in orchestrator session', async () => {
+    it('blocks edits, writes, and mutating bash under the research-only mode', async () => {
+      const mode = 'sonar' as ModeKeyword;
       const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
+      const state = { ...createInitialState(), mode };
       install(pi, state);
 
       const handler = getHandler(pi);
       const editResult = await handler({ input: { path: 'a.ts' }, toolName: 'edit' }, {});
-      const writeResult = await handler({ input: { path: 'a.ts' }, toolName: 'write' }, {});
       expect(getBlockedResult(editResult).block).toBe(true);
+      const writeResult = await handler({ input: { path: 'a.ts' }, toolName: 'write' }, {});
       expect(getBlockedResult(writeResult).block).toBe(true);
+      const bashResult = await handler({ input: { command: 'rm -rf dist' }, toolName: 'bash' }, {});
+      expect(getBlockedResult(bashResult).block).toBe(true);
     });
 
-    it('allows read-only bash when workflow mode is active in orchestrator session', async () => {
+    it('allows read-only bash under the research-only mode', async () => {
+      const mode = 'sonar' as ModeKeyword;
       const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
+      const state = { ...createInitialState(), mode };
       install(pi, state);
 
       const handler = getHandler(pi);
@@ -164,8 +180,9 @@ describe('installToolInterceptors', () => {
     });
 
     it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {
+      const mode = 'sonar' as ModeKeyword;
       const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
+      const state = { ...createInitialState(), mode };
       install(pi, state);
 
       const handler = getHandler(pi);
@@ -176,9 +193,10 @@ describe('installToolInterceptors', () => {
       expect(getBlockedResult(result).block).toBe(true);
     });
 
-    it('blocks command substitution in bash when workflow mode is active', async () => {
+    it('blocks command substitution in bash under the research-only mode', async () => {
+      const mode = 'sonar' as ModeKeyword;
       const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
+      const state = { ...createInitialState(), mode };
       install(pi, state);
 
       const handler = getHandler(pi);
@@ -189,9 +207,10 @@ describe('installToolInterceptors', () => {
       expect(getBlockedResult(result).block).toBe(true);
     });
 
-    it('allows read-only bash pipelines when workflow mode is active', async () => {
+    it('allows read-only bash pipelines under the research-only mode', async () => {
+      const mode = 'sonar' as ModeKeyword;
       const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
+      const state = { ...createInitialState(), mode };
       install(pi, state);
 
       const handler = getHandler(pi);
@@ -207,9 +226,10 @@ describe('installToolInterceptors', () => {
       expect(result).toBeUndefined();
     });
 
-    it('allows read-only tools (read, grep) when workflow mode is active in orchestrator session', async () => {
+    it('allows read-only tools (read, grep) under the research-only mode', async () => {
+      const mode = 'sonar' as ModeKeyword;
       const pi = createMockPi(['subagent', 'read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
+      const state = { ...createInitialState(), mode };
       install(pi, state);
 
       const handler = getHandler(pi);
@@ -219,7 +239,40 @@ describe('installToolInterceptors', () => {
       expect(grepResult).toBeUndefined();
     });
 
-    it('allows maestria_subagent calls when workflow mode is active in orchestrator session', async () => {
+    it('blocks subagent dispatch under the research-only mode and allows it otherwise', async () => {
+      const blockedPi = createMockPi(['subagent', 'read', 'bash']);
+      const blockedState = {
+        ...createInitialState(),
+        mode: 'sonar' as ModeKeyword,
+      };
+      install(blockedPi, blockedState);
+
+      const blockedHandler = getHandler(blockedPi);
+      const blockedResult = await blockedHandler({ toolName: 'subagent' }, {});
+      expect(getBlockedResult(blockedResult).block).toBe(true);
+
+      await Promise.all(
+        (['fein', 'blitz'] as ModeKeyword[]).map(async (mode) => {
+          const pi = createMockPi(['subagent', 'read', 'bash']);
+          const state = { ...createInitialState(), mode };
+          install(pi, state);
+
+          const handler = getHandler(pi);
+          const result = await handler({ toolName: 'subagent' }, {});
+          expect(result).toBeUndefined();
+        }),
+      );
+
+      const unblockedPi = createMockPi(['subagent', 'read', 'bash']);
+      const unblockedState = { ...createInitialState(), mode: null };
+      install(unblockedPi, unblockedState);
+
+      const unblockedHandler = getHandler(unblockedPi);
+      const unblockedResult = await unblockedHandler({ toolName: 'subagent' }, {});
+      expect(unblockedResult).toBeUndefined();
+    });
+
+    it('allows maestria_subagent calls when no mode blocks them', async () => {
       const pi = createMockPi(['subagent', 'read', 'bash']);
       const state = { ...createInitialState(), mode: 'fein' as const };
       install(pi, state);
@@ -229,7 +282,7 @@ describe('installToolInterceptors', () => {
       expect(result).toBeUndefined();
     });
 
-    it('does not block when subagent tool is absent (subagent session)', async () => {
+    it('does not block mutating bash under the full-method mode when the subagent tool is absent', async () => {
       const pi = createMockPi(['read', 'bash']);
       const state = { ...createInitialState(), mode: 'fein' as const };
       install(pi, state);

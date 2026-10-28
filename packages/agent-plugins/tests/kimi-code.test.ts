@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vite-plus/test';
 import { parse } from 'yaml';
 
 const root = path.resolve(import.meta.dirname, '..');
-const roles = ['adventurer', 'architect', 'builder', 'reviewer'];
-const readOnlyRoles = new Set(['adventurer', 'architect', 'reviewer']);
+const roles = ['reviewer'];
+const readOnlyRoles = new Set(['reviewer']);
 const modes = ['fein', 'sonar', 'blitz'];
 
 type Manifest = Record<string, unknown>;

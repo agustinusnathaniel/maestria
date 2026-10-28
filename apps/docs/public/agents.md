@@ -1,6 +1,6 @@
 # maestria agent instructions
 
-maestria provides installable plugins for structured AI engineering work. An orchestrator routes tasks to four specialists: adventurer, architect, builder, and reviewer. Small, familiar tasks can run directly in the host session; delegation and permissions depend on the platform.
+maestria provides installable plugins for structured AI engineering work. The main loop investigates, designs, implements, and delivers each outcome itself, loading method skills when a task needs them, and sends meaningful changes to one independent reviewer. Permissions depend on the platform.
 
 ## When to use maestria
 
@@ -9,10 +9,10 @@ Use maestria when you need to:
 - Install or wire structured agent-methodology plugins into a supported coding platform: OpenCode, Pi, Claude Code, Codex CLI, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes.
 - Install the five portable skills (handoff, iteration-limits, create-pull-request, docs-update, diagnose) when your client supports Agent Plugins v1. Full methodology requires the selected host integration: https://maestria.sznm.dev/agent-plugins/
 - Install on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes (one section per host): https://maestria.sznm.dev/agent-plugins/installation/
-- Run workflow modes and dispatch specialists on each host: https://maestria.sznm.dev/agent-plugins/usage/
+- Run workflow modes and request independent review on each host: https://maestria.sznm.dev/agent-plugins/usage/
 - Check live smoke results and client-specific activation steps: https://maestria.sznm.dev/agent-plugins/compatibility/
-- Decide how to route a task: direct execution vs specialist dispatch vs the full staged pipeline (thinker, worker, verifier).
-- Enforce maker/checker review: the builder never approves its own work; an independent reviewer signs off.
+- Decide how to work: directly in the main loop, with method skills for recon, design, or diagnosis, and independent review for meaningful changes.
+- Enforce maker/checker review: the implementer never approves its own work; an independent reviewer signs off.
 
 ## How to call maestria
 

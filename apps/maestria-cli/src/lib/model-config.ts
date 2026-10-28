@@ -25,7 +25,7 @@ import { CommandError, fileExists, readTextFile, run } from '@/lib/shell.js';
 
 export type ModelConfigLevel = 'global' | 'project';
 
-export const MAESTRIA_AGENTS = ['adventurer', 'architect', 'builder', 'reviewer'] as const;
+export const MAESTRIA_AGENTS = ['reviewer'] as const;
 export type AgentName = (typeof MAESTRIA_AGENTS)[number];
 
 /** Empty string means "inherit" (session model). */
@@ -183,7 +183,7 @@ export const createCodexAgentConfig = (
   model: string,
   nativeName = codexManagedAgentName(agent),
 ): string => {
-  const readOnly = new Set<AgentName>(['adventurer', 'architect', 'reviewer']);
+  const readOnly = new Set<AgentName>(['reviewer']);
   const description = `maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
   const instructions = [
     `Load the $maestria:${agent} skill before acting.`,

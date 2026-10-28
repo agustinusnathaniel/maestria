@@ -1,43 +1,43 @@
 ---
 title: When to Use maestria
-description: Choose between direct execution, a specialist, and the full pipeline based on task risk, uncertainty, and model cost.
+description: Choose between direct execution, method skills, and independent review based on task risk, uncertainty, and model cost.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-maestria adds structure through delegation, handoffs, and review. That structure costs model work, context transfer, and waiting time, so it is not the default.
+maestria adds structure through method skills, review briefs, and independent review. That structure costs model work, context transfer, and waiting time, so it is not the default.
 
 ## Default Rule
 
 1. **Direct execution first.** Familiar code, a clear scope, and easy verification make the platform's normal agent the fastest and cheapest path.
-2. **One specialist when one capability is missing.** Unfamiliar code or unknown cause (adventurer, with the diagnose skill for read-only diagnosis), a consequential choice or phased plan (architect), or a second pair of eyes (reviewer). Then implement directly.
-3. **Orchestrator only when the task needs staged handoffs, parallel work, or independent review:** cross-module features, migrations, high-risk changes, unfamiliar systems, or durable handoffs across sessions.
+2. **One method skill when one capability is missing.** Unfamiliar code or an unclear surface (`recon`), a consequential choice or phased plan (`architecture-plan`), an unknown cause (`diagnose`), or a second pair of eyes (reviewer). Then implement directly.
+3. **Full method with review only when the task needs staged work, parallel checks, or independent validation:** cross-module features, migrations, high-risk changes, unfamiliar systems, or durable handoffs across sessions.
 
 ## Quick Decision
 
 | Task | Start with |
 | --- | --- |
 | One or two known files and an obvious change | Direct execution |
-| Small bug in unfamiliar code | adventurer (diagnose skill), then direct |
-| UI, copy, or interactive iteration | Direct execution or blitz |
-| Research or feasibility question | sonar (stop, no implementation) |
-| Cross-module feature, migration, high-risk or long-running work | Orchestrator or fein |
+| Small bug in unfamiliar code | `recon` or `diagnose` in the main loop, then direct |
+| UI, copy, or interactive iteration | Direct execution or the fast mode |
+| Research or feasibility question | Research-only mode (stop, no implementation) |
+| Cross-module feature, migration, high-risk or long-running work | Main loop in the full-method mode with reviewer |
 | Sharing handoffs and repair limits across clients | [Portable Agent Plugin](/agent-plugins/) (five skills; full workflow uses the selected host integration) |
 
-Mode keywords are defined in the [mode table](/core/agents/#modes).
+Mode behavior is defined by ModeKeyword in `packages/shared/pi/src/state-core.ts` (full-method, research-only, and fast modes); details are in the [mode table](/core/agents/#modes).
 
 <Aside type="caution" title="Overhead without payoff">
-  Several steps or a large repository do not justify the orchestrator. Delegation that adds
+  Several steps or a large repository do not justify method skills and review. Work that adds
   round-trips but no new information, speedup, or independent check only slows the task down.
 </Aside>
 
 ## Costs
 
-Each delegated stage adds a model turn, context transfer, waiting, and possible repair work. Strong or expensive models favor direct execution or one specialist; fast, inexpensive models can make narrow delegation a reasonable trade. Read the platform guide before assuming a route, permission, or lifecycle behavior transfers unchanged.
+Each review adds a model turn, context transfer, waiting, and possible repair work. Strong or expensive models favor direct execution or one skill; fast, inexpensive models can make narrow review a reasonable trade. Read the platform guide before assuming a route, permission, or lifecycle behavior transfers unchanged.
 
 <Aside type="tip" title="A practical rule">
-  If the task is one atomic edit, start directly. If a wrong assumption is expensive, add a
-  specialist or independent review.
+  If the task is one atomic edit, start directly. If a wrong assumption is expensive, add a method
+  skill or independent review.
 </Aside>
 
 ## Related Documentation

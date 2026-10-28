@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-28). Confidence: medium.
+Superseded (2026-10-28) by [ADR-CORE-035](../core/ADR-CORE-035-main-loop-with-one-reviewer.md), which folds every host. Confidence: medium.
 
 ## Context
 

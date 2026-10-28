@@ -10,7 +10,7 @@ export const MAESTRIA_EVENTS = {
 } as const;
 
 /** The set of specialist agent types maestria supports. */
-export const ALLOWED_AGENTS = ['adventurer', 'architect', 'builder', 'reviewer'] as const;
+export const ALLOWED_AGENTS = ['reviewer'] as const;
 
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 

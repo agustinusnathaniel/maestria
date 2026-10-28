@@ -136,7 +136,7 @@ Every maestria package bundles the `create-pull-request`, `docs-update`, and `di
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives complete native agent TOMLs under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the five skills.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI first stages the published npm package in the maestria cache directory (`$XDG_CACHE_HOME/maestria/` when set, otherwise `~/.cache/maestria/`). Claude Code configuration remains host-owned; Codex also receives the complete native reviewer agent TOML under `$CODEX_HOME/agents/` and a marked global policy and routing block in `$CODEX_HOME/AGENTS.override.md` when that file is in use, otherwise `$CODEX_HOME/AGENTS.md` (`$CODEX_HOME` defaults to `~/.codex`). Marketplace-only Codex installation supplies the five skills.
 
 ### Error handling
 
@@ -373,13 +373,13 @@ With `--all`, the exit code is `1` when no detected platform is available, or wh
 
 ## `configure`
 
-Choose the model each maestria specialist uses, per platform.
+Choose the model the maestria reviewer uses, per platform.
 
 ```bash
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The 4 specialists (`adventurer`, `architect`, `builder`, `reviewer`) can each use a different model. OMP discovers native root task profiles whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The reviewer can use a different model from the session. OMP discovers the native reviewer task profile whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
 
 For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/agents/` (global, default `~/.codex/agents/`) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
@@ -387,14 +387,14 @@ For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/
 
 <AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 4 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
+Shows a model picker for the reviewer, pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, or `pi --list-models`).
 
 ### Non-interactive (CI)
 
 <AllPackageManagers
   type="dlx"
   pkg="maestria"
-  args="configure opencode --global --quiet --set adventurer=<model-id>,reviewer=<model-id>"
+  args="configure opencode --global --quiet --set reviewer=<model-id>"
 />
 
 - `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
@@ -402,24 +402,24 @@ Shows a group-multiselect of the 4 specialists, then a per-agent model picker pr
 - Explicit model IDs come from the platform's live list and are validated before writing.
 - `--set` changes only the agents you name. Unmentioned agents keep their existing assignments.
 
-For a partial assignment, set a model for any role you want to change:
+For a partial assignment, set a model for the reviewer:
 
 <AllPackageManagers
   type="dlx"
   pkg="maestria"
-  args="configure <platform> --global --set architect=<model-id>"
+  args="configure <platform> --global --set reviewer=<model-id>"
 />
 
 ### Flags
 
-| Flag        | Description                                               |
-| ----------- | --------------------------------------------------------- |
-| `--global`  | Configure the user-level config (see the table below)     |
-| `--project` | Configure the project-level config (see the table below)  |
-| `--set`     | Set models non-interactively, e.g. `architect=<model-id>` |
-| `--json`    | Output the resulting config as JSON                       |
-| `--quiet`   | Suppress spinner output (recommended for CI)              |
-| `--compact` | Minimal machine-friendly text output                      |
+| Flag        | Description                                                          |
+| ----------- | -------------------------------------------------------------------- |
+| `--global`  | Configure the user-level config (see the table below)                |
+| `--project` | Configure the project-level config (see the table below)             |
+| `--set`     | Set the reviewer model non-interactively, e.g. `reviewer=<model-id>` |
+| `--json`    | Output the resulting config as JSON                                  |
+| `--quiet`   | Suppress spinner output (recommended for CI)                         |
+| `--compact` | Minimal machine-friendly text output                                 |
 
 ### JSON schema
 
@@ -429,9 +429,7 @@ For a partial assignment, set a model for any role you want to change:
   "label": "OpenCode",
   "level": "global",
   "models": {
-    "adventurer": "<model-id>",
-    "builder": "<model-id>",
-    "reviewer": ""
+    "reviewer": "<model-id>"
   }
 }
 ```

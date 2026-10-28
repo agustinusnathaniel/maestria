@@ -10,8 +10,8 @@ import {
 // ── Constants ──────────────────────────────────────────────────────
 
 describe('ALLOWED_AGENTS', () => {
-  it('contains the 4 maestria specialist agents', () => {
-    expect(ALLOWED_AGENTS).toEqual(['adventurer', 'architect', 'builder', 'reviewer']);
+  it('contains only the reviewer specialist agent', () => {
+    expect(ALLOWED_AGENTS).toEqual(['reviewer']);
   });
 
   it('contains no duplicate agent names', () => {

@@ -30,13 +30,10 @@ export interface AgentDirectiveSyncOptions {
  * name is inert, not an alias for a different capability.
  */
 const DECLARED_TOOLS = {
-  'adventurer.md': ['read', 'grep', 'find', 'ls', 'glob'],
-  'architect.md': ['read', 'bash', 'grep', 'find', 'ls'],
-  'builder.md': ['read', 'bash', 'grep', 'find', 'ls', 'write', 'edit'],
   'reviewer.md': ['read', 'grep', 'find', 'ls', 'glob'],
 } as const satisfies Record<string, readonly string[]>;
 
-/** Read-only sonar roles omit bash; architect retains bash for evidence. */
+/** The reviewer is read-only and omits bash. */
 const hostToolLine = (
   agentFile: keyof typeof DECLARED_TOOLS,
   hostTools: readonly string[] | undefined,
@@ -60,46 +57,7 @@ export const agentDirectiveSync = ({
     stripFrontmatter: true,
   },
   files: {
-    // --- Canonical specialist agent types (4) ---
-
-    'adventurer.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Codebase reconnaissance specialist. Maps unknown territory, traces\n` +
-          `  call chains, dependencies, and root causes, discovers module relationships,\n` +
-          `  and produces structured recon reports for downstream specialists.\n${hostToolLine(
-            'adventurer.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
-
-    'architect.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Architecture decision and planning specialist. Evaluates implementation\n` +
-          `  approaches with trade-off analysis, produces Architecture Decision Records\n` +
-          `  (ADRs) and phased plans, and documents decisions with business context.\n${hostToolLine(
-            'architect.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
-
-    'builder.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Focused implementation specialist. Executes one atomic, verifiable\n` +
-          `  unit of work per invocation, including documentation, with minimal\n` +
-          `  context and clean diffs.\n${hostToolLine(
-            'builder.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
+    // --- Canonical specialist agent type (1) ---
 
     'commands/blitz.md': {
       output: 'commands/blitz.md',
@@ -149,10 +107,10 @@ export const agentDirectiveSync = ({
         '---\n' +
         'name: orchestrator\n' +
         'description: >-\n' +
-        '  maestria agent orchestration dispatcher. Delegates work to 4 specialist\n' +
-        '  subagents (adventurer, architect, builder, reviewer)\n' +
-        '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
-        '  and role-based pipeline sequencing.\n' +
+        '  maestria main loop. Investigates, designs, and implements with the recon,\n' +
+        '  architecture-plan, and diagnose skills, sends meaningful changes to one blind\n' +
+        '  reviewer subagent, and owns delivery. Enforces the maker/checker split and\n' +
+        '  commit protocol.\n' +
         '---\n' +
         '\n',
     },

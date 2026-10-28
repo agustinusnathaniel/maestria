@@ -79,18 +79,19 @@ const isMutationToolEvent = (
   return ['bash', 'edit', 'patch', 'write'].includes(name);
 };
 
-const DELEGATION_HINT = "Use 'maestria_subagent' to delegate mutations to specialists.";
+const SONAR_HINT =
+  'sonar is research-only: investigate and report without changing files or dispatching subagents.';
 
-const checkOrchestratorBlock = (
+const checkSonarBlock = (
   state: MaestriaState,
   event: ToolCallEventLike,
   options: ToolCallHandlerOptions,
   delegationTool: string,
 ): { block: boolean; reason: string } | undefined => {
-  if (state.mode === null || !options.getActiveTools().some((tool) => tool === delegationTool)) {
+  if (state.mode !== 'sonar') {
     return undefined;
   }
-  if (!isMutationToolEvent(event, options) || event.toolName === delegationTool) {
+  if (event.toolName !== delegationTool && !isMutationToolEvent(event, options)) {
     return undefined;
   }
   if (options.isBashTool(event)) {
@@ -100,10 +101,7 @@ const checkOrchestratorBlock = (
       return undefined;
     }
   }
-  return {
-    block: true,
-    reason: `Tool '${event.toolName}' is blocked for the orchestrator. ${DELEGATION_HINT}`,
-  };
+  return { block: true, reason: `Tool '${event.toolName}' is blocked. ${SONAR_HINT}` };
 };
 
 const checkDangerousPattern = async (
@@ -172,9 +170,9 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
       return undefined;
     }
     const state = options.getState();
-    const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool);
-    if (orchestrator !== undefined) {
-      return orchestrator;
+    const sonar = checkSonarBlock(state, event, options, delegationTool);
+    if (sonar !== undefined) {
+      return sonar;
     }
     const reviewBlocked =
       state.reviewMode &&

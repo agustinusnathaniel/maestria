@@ -7,7 +7,7 @@ import type { ModelConfigHandler } from '@/lib/model-config.js';
 import { createTtyTestSupport } from './tty-test-support.js';
 
 const modelConfigMocks = vi.hoisted(() => ({
-  agents: ['architect', 'builder'],
+  agents: ['reviewer'],
   getHandler: vi.fn(),
 }));
 const groupMocks = vi.hoisted(() => ({
@@ -85,21 +85,21 @@ describe('configure handlers', () => {
       json: true,
       platform: 'opencode',
       quiet: true,
-      set: 'builder=model-b',
+      set: 'reviewer=model-b',
     });
 
     expect(result.exitCode).toBe(0);
     expect(JSON.parse(result.output)).toEqual({
       label: 'OpenCode',
       level: 'global',
-      models: { architect: '', builder: 'model-b' },
+      models: { reviewer: 'model-b' },
       platform: 'opencode',
     });
   });
 
   it('reports no changes when the interactive selection resolves to inherit', async () => {
     setTty(true);
-    groupMocks.groupMultiselect.mockResolvedValue(['builder']);
+    groupMocks.groupMultiselect.mockResolvedValue(['reviewer']);
     promptMocks.select.mockResolvedValue('');
 
     const result = await handleConfigure({ global: true, platform: 'opencode', quiet: true });

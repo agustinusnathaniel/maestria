@@ -11,24 +11,24 @@ This page describes the `@maestria/pi` runtime extension. The Oh My Pi integrati
 
 | Command | Behavior |
 | --- | --- |
-| `/fein` | Full pipeline with reconnaissance, design, implementation, and review |
+| `/fein` | Full method with reconnaissance, design, implementation, and review |
 | `/sonar` | Research-only route that stops before implementation |
 | `/blitz` | Fast path that skips optional reconnaissance and design while preserving required safeguards |
 
-A mode keyword anywhere in a message, outside code, sets the mode and applies it to that message; when several appear, the most restrictive wins (fein > sonar > blitz). A slash command sets the mode without a task. Either way the mode stays active for the session until another mode is set or you run `/mode-clear`.
+The modes are defined by ModeKeyword in `packages/shared/pi/src/state-core.ts`. A mode keyword anywhere in a message, outside code, sets the mode and applies it to that message; when several appear, the most restrictive wins (full-method over research-only over fast). A slash command sets the mode without a task. Either way the mode stays active for the session until another mode is set or you run `/mode-clear`.
 
-## Specialist Dispatch
+## Reviewer Dispatch
 
-The extension registers four specialist agents: adventurer, architect, builder, and reviewer. Its `maestria_subagent` tool dispatches one specialist, up to eight in parallel, or a chain, through `@gotgenes/pi-subagents`; without that extension, dispatch reports that it is unavailable. Adventurer handles read-only diagnosis with the diagnose skill, except that on Pi a diagnosis that must reproduce a failure goes through builder, since adventurer has no shell tool. Architect handles phased plans, and builder handles implementation and documentation.
+The main loop investigates, designs, and implements each outcome itself; its `maestria_subagent` tool dispatches only the reviewer, for independent blind review, through `@gotgenes/pi-subagents`; without that extension, dispatch reports that it is unavailable. The main loop loads `diagnose` for a bug, regression, failure, or crash with an unknown cause, implements the fix, and sends meaningful changes to the reviewer for validation.
 
 ```json
 {
-  "agent": "adventurer",
-  "task": "Map the authentication flow in the auth module"
+  "agent": "reviewer",
+  "task": "Review the authentication change at <commit or branch> against <acceptance criteria> without editing"
 }
 ```
 
-The subagents inherit parent context. Treat handoff prompts as guidance and include the goal, constraints, acceptance evidence, and next step needed by each child.
+The reviewer inherits parent context. Treat handoff prompts as guidance and include the goal, constraints, acceptance evidence, and next step needed by each child.
 
 ## Session State
 

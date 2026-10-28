@@ -4,7 +4,7 @@ Canonical source of truth for agent directives across all plugins and the portab
 
 ## Purpose
 
-This directory holds the shared methodology, rules, workflow modes, and skill prescriptions that define how pipeline agents operate. Every plugin-specific agent or skill file (`@adventurer`, `@architect`, etc.) is derived from these canonical sources.
+This directory holds the shared methodology, rules, workflow modes, and skill prescriptions that define how pipeline agents operate. Every plugin-specific agent or skill file (`@reviewer`, the mode commands, the method skills) is derived from these canonical sources.
 
 **Do not edit plugin-specific agent files directly.** Edit here, then run the sync tool to propagate changes to all plugins.
 
@@ -15,16 +15,12 @@ agent-directives/
   README.md          - This file
   COMPOSITION.md     - Human-facing composition guidance
   integrations/      - Host-specific notes that explain native adapter behavior
-  specialists/       - Role definitions for the 5 pipeline agents (orchestrator + 4 specialists)
-    adventurer.md    - Codebase reconnaissance
-    architect.md     - Architecture decisions and ADRs
-    builder.md       - Focused implementation
-    orchestrator.md  - Routing and delivery ownership
-    reviewer.md      - Code review with quality gates
+  specialists/       - The main loop and its one subagent
+    orchestrator.md  - Main loop: recon, design, implementation, review triage, and delivery
+    reviewer.md      - Independent blind review with quality gates
   rules.md           - Shared rules used across all agents
   skills/            - maestria's own methodology skills (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `recon`)
   commands/          - Workflow-mode sources (`fein`, `sonar`, `blitz`)
-  opencode/          - OpenCode-only main-loop orchestrator and modes (ADR-OC-008); edit shared review, delivery, and reporting rules here too
 ```
 
 The consolidated `@maestria/agent-plugins` package lives at `packages/agent-plugins/` and is directly installable. Core remains the authoring home: roles belong to `specialists/`, modes to `commands/`, and policy to `rules.md` and host integration notes. Host manifests are hand-edited at the package root and validated by the generator; per-role profile metadata lives in the package's `generation/profiles.json`. Host integration notes stay here under `integrations/` and are composed into rules and Codex profiles; the package ships no separate integration guides.

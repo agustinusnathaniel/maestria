@@ -6,14 +6,11 @@ import { parse } from 'yaml';
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const pluginRoot = packageRoot;
 const manifestPath = path.join(pluginRoot, '.claude-plugin/plugin.json');
-const roles = ['adventurer', 'architect', 'builder', 'reviewer'] as const;
+const roles = ['reviewer'] as const;
 const ruleParts = ['Every Agent', 'Implementation and Review', 'Writing Changes', 'Main Session'];
 // Subagents on several hosts never see the main session's always-on rules, so each profile
 // embeds the rules.md parts its role acts on, and only those.
 const partsByRole: Record<(typeof roles)[number], readonly string[]> = {
-  adventurer: ['Every Agent'],
-  architect: ['Every Agent'],
-  builder: ['Every Agent', 'Implementation and Review', 'Writing Changes'],
   reviewer: ['Every Agent', 'Implementation and Review'],
 };
 
@@ -64,9 +61,7 @@ describe('Claude Code native plugin loading', () => {
     for (const role of roles) {
       const agentPath = path.join(pluginRoot, `agents/${role}.md`);
       const { body, metadata } = parseFrontmatter(fs.readFileSync(agentPath, 'utf-8'), agentPath);
-      const expectedDisallowedTools = ['adventurer', 'architect', 'reviewer'].includes(role)
-        ? ['Write', 'Edit']
-        : undefined;
+      const expectedDisallowedTools = ['Write', 'Edit'];
 
       expect(metadata.name).toBe(role);
       expect(metadata.model).toBeUndefined();
@@ -79,12 +74,6 @@ describe('Claude Code native plugin loading', () => {
       const parts = readRuleParts(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8'));
       expect([...parts.keys()]).toEqual(ruleParts);
       expect(body).toContain('## Universal Floors');
-      if (role === 'builder') {
-        // The builder repairs its own work, so it fails loud without the main session's budget.
-        expect(body).toContain('## Fail-Loud Repair');
-        expect(body).toContain('Tried X, Y, Z.');
-        expect(body).not.toContain('## Repair Budget');
-      }
       for (const [part, text] of parts) {
         if (partsByRole[role].includes(part)) {
           expect(body, `${role} misses ${part}`).toContain(text);

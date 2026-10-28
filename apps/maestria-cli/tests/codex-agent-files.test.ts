@@ -11,13 +11,13 @@ import {
 
 describe('Codex native agent files', () => {
   it('uses a collision-resistant native role name', () => {
-    expect(codexManagedAgentName('builder')).toBe('maestria-builder');
-    expect(codexManagedAgentFileName('builder')).toBe('maestria-builder.toml');
+    expect(codexManagedAgentName('reviewer')).toBe('maestria-reviewer');
+    expect(codexManagedAgentFileName('reviewer')).toBe('maestria-reviewer.toml');
   });
 
   it('reads and edits only top-level TOML settings', () => {
     const content = [
-      'name = "maestria-builder"',
+      'name = "maestria-reviewer"',
       'model = "old/model" # user choice',
       '',
       '[mcp_servers.docs]',
@@ -61,7 +61,7 @@ describe('Codex native agent files', () => {
 
   it('preserves runtime settings outside the instructions in all generated profiles', async () => {
     const profiles = await Promise.all(
-      ['adventurer', 'architect', 'builder', 'reviewer'].map(async (agent) => ({
+      ['reviewer'].map(async (agent) => ({
         agent,
         bundled: await readFile(
           new URL(`../../../packages/agent-plugins/agents/maestria-${agent}.toml`, import.meta.url),

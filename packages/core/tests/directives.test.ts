@@ -50,14 +50,19 @@ describe('canonical directive behavioral contracts', () => {
     const blitz = readDirective('commands', 'blitz.md');
 
     expect(rules).toMatch(/modes.*never\s+waive|modes.*cannot.*waive/iu);
-    expect(fein).toMatch(/`full` route/iu);
+    expect(fein).toMatch(/full method/iu);
+    expect(fein).toMatch(/recon.*architecture-plan/iu);
+    expect(fein).toMatch(/main loop/iu);
     expect(fein).toMatch(/review/iu);
     expect(sonar).toMatch(/research-only|read-only/iu);
-    expect(sonar).toMatch(/do not implement|no implementation/iu);
+    expect(sonar).toMatch(/change no files and dispatch no subagents/iu);
+    expect(sonar).toMatch(/do not implement/iu);
     expect(blitz).toMatch(/low-risk|optional.*ceremony/iu);
-    expect(blitz).toMatch(/direct.*host permits|host permits.*direct/iu);
-    expect(blitz).toMatch(/otherwise delegate.*specialist|otherwise.*permitted specialist/iu);
-    expect(blitz).not.toMatch(/route code changes through.*builder|all code.*builder/iu);
+    expect(blitz).toMatch(/main loop/iu);
+    expect(blitz).toMatch(
+      /otherwise delegate.*permitted specialist|otherwise.*permitted specialist/iu,
+    );
+    expect(blitz).toMatch(/recon.*architecture-plan/iu);
     expect(blitz).toMatch(/safety.*authorization|authorization.*safety/iu);
     expect(blitz).toMatch(/review|branch/iu);
   });
@@ -106,7 +111,7 @@ describe('canonical directive behavioral contracts', () => {
     const iteration = readUtilitySkill('Repair Budget', 'Fail-Loud Repair');
 
     expect(orchestrator).toMatch(/routine delivery is autonomous/iu);
-    expect(orchestrator).toMatch(/continue if needed.*research-only routes end/iu);
+    expect(orchestrator).toMatch(/research-only routes end/iu);
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
@@ -114,9 +119,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/iu);
     expect(rules).toMatch(/do not reset a review or repair budget/iu);
     expect(orchestrator).toMatch(/you own continuation and the delivery path/iu);
-    expect(orchestrator).toMatch(
-      /incomplete todos or specialist handoffs are not user checkpoints/iu,
-    );
+    expect(orchestrator).toMatch(/incomplete todos are not user checkpoints/iu);
     expect(iteration).toMatch(/same user outcome/iu);
     expect(iteration).toMatch(/adjacent findings as follow-ups/iu);
   });
@@ -159,23 +162,21 @@ describe('canonical directive behavioral contracts', () => {
     expect(prSkill).toMatch(/each PR's scope, acceptance evidence, base branch, prerequisites/iu);
   });
 
-  it('shows architect designs and plans to the user before dependent implementation', () => {
-    const architect = readDirective('specialists', 'architect.md');
+  it('shows architecture-plan designs to the user before dependent implementation', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
-    expect(architect).toMatch(/include a concise design brief/iu);
     expect(orchestrator).toMatch(
       /present the proposed design or plan to the user before dependent edits/iu,
     );
     expect(orchestrator).toMatch(/continue under the existing authorization rules/iu);
   });
 
-  it('routes diagnosis through the bundled skill the specialists load', () => {
+  it('loads diagnosis, recon, and architecture-plan skills in the main loop', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
-    const adventurer = readDirective('specialists', 'adventurer.md');
 
-    expect(orchestrator).toMatch(/`@adventurer` load the `diagnose` skill/iu);
-    expect(adventurer).toMatch(/load the `diagnose` skill/iu);
+    expect(orchestrator).toMatch(/`diagnose` for a bug, regression, failure, or crash/iu);
+    expect(orchestrator).toMatch(/`recon` before changing code/iu);
+    expect(orchestrator).toMatch(/`architecture-plan` for trade-offs/iu);
   });
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
@@ -219,7 +220,6 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps rendered evidence distinct from builds and attachment support', () => {
     const rules = readDirective('rules.md');
-    const builder = readDirective('specialists', 'builder.md');
     const prSkill = readDirective('skills', 'create-pull-request', 'SKILL.md');
 
     expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
@@ -235,8 +235,6 @@ describe('canonical directive behavioral contracts', () => {
     expect(prSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
     expect(prSkill).toMatch(/unnecessary with a concrete reason/iu);
     expect(prSkill).toMatch(/explicit user or project.*requirement/iu);
-    expect(builder).toMatch(/evidence artifacts and unresolved verification gaps/iu);
-    expect(builder).not.toMatch(/tests or type checks to confirm correctness/iu);
   });
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
@@ -280,7 +278,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/verification limits, delivery state, and blocker or next step/iu);
   });
 
-  it('separates route choice from host execution authority', () => {
+  it('separates split choice from host execution authority', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
     // Canonical owner of the section heading. Platform suites asserted
@@ -289,15 +287,16 @@ describe('canonical directive behavioral contracts', () => {
     // test omits it.
     expect(orchestrator).toContain('Runtime Authority');
     expect(orchestrator).toContain('host runtime defines');
-    expect(orchestrator).toContain('direct work is unavailable or disallowed');
+    expect(orchestrator).toContain('unavailable or disallowed');
     expect(orchestrator).toContain('direct work is available');
     expect(orchestrator).toMatch(/never bypass runtime role boundaries/iu);
     expect(orchestrator).toContain(
       'When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.',
     );
-    for (const route of ['direct', 'focused', 'full']) {
-      expect(orchestrator).toContain(`| \`${route}\` |`);
+    for (const split of ['Review', 'None']) {
+      expect(orchestrator).toContain(`| ${split} |`);
     }
+    expect(orchestrator).toMatch(/one blind `@reviewer` pass/iu);
 
     // Durable concepts, not prose inventory: both files, root-only order,
     // host-supplied reuse, normal absence, surfaced read errors, subordination.
@@ -358,17 +357,15 @@ describe('canonical directive behavioral contracts', () => {
 
 describe('OpenCode main-loop directives', () => {
   const shared = readDirective('specialists', 'orchestrator.md');
-  const loop = readDirective('opencode', 'orchestrator.md');
-  const modes = ['fein', 'sonar', 'blitz'].map((mode) =>
-    readDirective('opencode', 'commands', `${mode}.md`),
-  );
+  const loop = readDirective('specialists', 'orchestrator.md');
+  const modes = ['fein', 'sonar', 'blitz'].map((mode) => readDirective('commands', `${mode}.md`));
 
   it('does the work in the main loop with method skills and one blind reviewer', () => {
     for (const skill of ['recon', 'architecture-plan', 'diagnose']) {
       expect(loop).toContain(`\`${skill}\``);
     }
     expect(loop).toMatch(/one blind `@reviewer` pass/iu);
-    expect(loop).toMatch(/never dispatch `@adventurer`, `@architect`, or `@builder`/iu);
+    expect(loop).not.toMatch(/thinker -> worker|focused or full route/iu);
     for (const mode of modes) {
       expect(mode).not.toMatch(
         /use only read-only `@adventurer`|thinker -> worker|focused or full route/iu,

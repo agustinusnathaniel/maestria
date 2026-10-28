@@ -9,15 +9,14 @@ import { Aside, Code } from '@astrojs/starlight/components';
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-The `@maestria/opencode` plugin registers 5 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agents.<name>.model` path, which works for any agent.
+The `@maestria/opencode` plugin registers 2 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agents.<name>.model` path, which works for any agent.
 
 ## Per-Agent Models
 
 ```jsonc
 {
   "agents": {
-    "adventurer": { "model": "<model-id>" },
-    "reviewer": { "model": "<model-id>#high" },
+    "reviewer": { "model": "<model-id>" },
   },
 }
 ```
@@ -30,12 +29,12 @@ Use `<provider>/<model-id>` with an explicit model ID copied from OpenCode's liv
 
 Model assignment follows a chain. In OpenCode V2, a primary agent uses the session's selected model, and a subagent without its own model inherits the model of the session that launched it ([agents documentation](https://opencode.ai/v2/docs/agents/)).
 
-The 4 specialists are subagents of the orchestrator, so they inherit the orchestrator's model unless overridden individually. Read [When to use maestria](/core/when-to-use/) before assigning the same model to every agent.
+The reviewer is a subagent of the main loop, so it inherits the main loop's model unless overridden individually. Read [When to use maestria](/core/when-to-use/) before assigning the same model to every agent.
 
 <Aside type="tip">
-  To put every specialist on the same model, set{' '}
-  <Code code="agents.orchestrator.model" lang="jsonc" />. Add entries only for the agents you want
-  to diverge.
+  To put the main loop and reviewer on the same model, set{' '}
+  <Code code="agents.orchestrator.model" lang="jsonc" />. Add a `agents.reviewer.model` entry only
+  to diverge the reviewer.
 </Aside>
 
 ## Selective Assignment
@@ -45,7 +44,7 @@ The CLI validates a model ID against OpenCode's live model list and changes only
 <AllPackageManagers
   type="dlx"
   pkg="maestria@latest"
-  args="configure opencode --global --set adventurer=<model-id>,reviewer=<model-id>"
+  args="configure opencode --global --set reviewer=<model-id>"
 />
 
 See the [configure reference](/cli/commands/#configure) for supported platforms and options.

@@ -29,6 +29,16 @@ Security, authentication, and permission boundaries are mandatory stops when app
 
 # Implementation and Review
 
+## Implementation Judgment
+
+Start with the smallest change that satisfies acceptance. Copy the sibling first: read existing files of the same kind and match the majority shape (naming, placement, imports, tests, error handling, wiring); name minority drift instead of copying it. Add a dependency or layer only when it beats a small local implementation on fit, maintenance, compatibility, and security.
+
+Validate and normalize inputs once at trust boundaries, then trust them inside; client or convenience checks never replace authoritative enforcement. Challenge every guard, fallback, and retry against evidence: an impossible case gets no code, a rare one gets one named guard at the entry point, a real one belongs on the main path, and an unknown one is a question, not code. Before guarding a write, check whether the plain idempotent write already converges. Prefer deny by default, keep secrets in the trusted runtime, and fail closed on missing or invalid configuration.
+
+When changing a shared interface, trace every caller and supported usage mode, migrate them deliberately, and verify through the highest practical consumer; keep one executable source of truth or drift check for a contract several consumers share. Keep seams local until repetition or shared change pressure justifies broadening them and callers become simpler.
+
+Keep mechanical chores separate from behavior changes and prefer small reviewable increments. When superseding code, mark the old path do-not-extend and remove it in an isolated change once migration completes. Flag code that seems unnecessary, with your reasoning, instead of deleting it.
+
 ## Testing
 
 - **!!! Test behavior, not implementation shape.** Reuse existing suites first and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Assert observable behavior and mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
@@ -47,7 +57,7 @@ For rendered changes (UI, documentation sites, visible CLI output), classify vis
 
 ## Documentation and Release Notes
 
-Required affected docs are part of acceptance; carry them through briefs to final reconciliation. Before finishing a change to behavior, interfaces, configuration, or user-facing workflows, load the `docs-update` methodology skill and follow it to classify and update affected docs and release notes, including changesets where the repository uses them. A missing skill never blocks ordinary docs work.
+Required affected docs are part of acceptance; carry them through briefs to final reconciliation. Before finishing a change to behavior, interfaces, configuration, or user-facing workflows, load the `docs-update` methodology skill and follow it to classify and update affected docs and release notes, including changesets where the repository uses them. Write docs for their reader (why first, then usage with examples) and verify every factual claim against current code and config. A missing skill never blocks ordinary docs work.
 
 ## Acceptance and Blind Review
 
