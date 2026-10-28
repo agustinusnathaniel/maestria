@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "maestria handoff, iteration-limit, recon, architecture-plan, pull request, documentation-update, and diagnosis skills for Codex; full methodology is installed by the companion maestria CLI",
   "author": {
     "name": "agustinusnathaniel"

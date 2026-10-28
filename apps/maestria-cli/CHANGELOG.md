@@ -1,5 +1,11 @@
 # maestria
 
+## 0.17.0
+
+### Minor Changes
+
+- [#432](https://github.com/agustinusnathaniel/maestria/pull/432) [`830b22d`](https://github.com/agustinusnathaniel/maestria/commit/830b22db5b9e6381837f89f38f5b161d06e56f7e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - **Breaking:** `@adventurer`, `@architect`, and `@builder` are removed on every host. The main session now works as one main loop: it does recon, design, and implementation itself, loads the new `recon` and `architecture-plan` method skills when a task needs them, and dispatches only `@reviewer` for an independent check of meaningful changes. The builder's implementation judgment now lives in the always-on rules. On OpenCode the orchestrator can read, search, edit, and run the same shell commands the builder could. On Pi, modes no longer block main-session edits, and `sonar` blocks edits and subagent dispatch. `maestria configure` lists only `reviewer`, and stored model settings for the removed roles are ignored.
+
 ## 0.16.2
 
 ### Patch Changes
