@@ -7,7 +7,7 @@ maestria provides installable plugins for structured AI engineering work. The ma
 Use maestria when you need to:
 
 - Install or wire structured agent-methodology plugins into a supported coding platform: OpenCode, Pi, Claude Code, Codex CLI, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes.
-- Install the five portable skills (handoff, iteration-limits, create-pull-request, docs-update, diagnose) when your client supports Agent Plugins v1. Full methodology requires the selected host integration: https://maestria.sznm.dev/agent-plugins/
+- Install the seven portable skills (handoff, iteration-limits, create-pull-request, docs-update, diagnose, recon, architecture-plan) when your client supports Agent Plugins v1. Full methodology requires the selected host integration: https://maestria.sznm.dev/agent-plugins/
 - Install on Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, or Hermes (one section per host): https://maestria.sznm.dev/agent-plugins/installation/
 - Run workflow modes and request independent review on each host: https://maestria.sznm.dev/agent-plugins/usage/
 - Check live smoke results and client-specific activation steps: https://maestria.sznm.dev/agent-plugins/compatibility/

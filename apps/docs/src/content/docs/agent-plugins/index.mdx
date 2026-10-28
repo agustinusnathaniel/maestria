@@ -5,7 +5,7 @@ description: One package that installs maestria's reviewer profile, workflow com
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-`@maestria/agent-plugins` packages maestria's reviewer profile, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes five [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request`, `docs-update`, and `diagnose` [methodology skills](/core/agents/#skills) the rules tell agents to load.
+`@maestria/agent-plugins` packages maestria's reviewer profile, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes seven [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` [methodology skills](/core/agents/#skills) the rules tell agents to load.
 
 <Aside type="tip" title="Native hosts get the full methodology">
   Portable installation supplies the seven skills. Native host integrations add one reviewer
@@ -48,8 +48,10 @@ Every host also gets the seven skills. Codex marketplace installation supplies o
 | `create-pull-request` | Draft or revise a pull request title and body                        |
 | `docs-update`         | Keep documentation and changesets in step with a change              |
 | `diagnose`            | Trace a failure to its root cause before fixing                      |
+| `recon`               | Map unfamiliar code before changing it                               |
+| `architecture-plan`   | Compare approaches and write a phased plan with rollback             |
 
-These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and `create-pull-request`, `docs-update`, and `diagnose` are copied from maestria's core methodology. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
+These skills live at `skills/<name>/SKILL.md`; `handoff` and `iteration-limits` are generated from the global rules, and `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` are copied from maestria's core methodology. Portable clients choose their invocation syntax and qualified names. Loading them does not register specialist agents, activate routing, or create workflow commands. Agent Plugins v1 standardizes skills and optional MCP configuration; its portable contract does not provide native subagent registration or declare native agents, commands, rules, or hooks. This package ships no MCP server.
 
 ## Runtime boundaries
 

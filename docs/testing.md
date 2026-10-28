@@ -6,7 +6,7 @@ This guide defines how maestria selects tests before implementation and verifies
 
 ## Audience
 
-Contributors, builders, diagnosticians, and reviewers who choose or assess tests for a change.
+Contributors, implementers, and reviewers who choose or assess tests for a change.
 
 ## Test from contracts, not implementation
 

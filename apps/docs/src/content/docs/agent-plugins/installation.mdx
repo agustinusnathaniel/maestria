@@ -90,7 +90,7 @@ claude plugin validate ./packages/agent-plugins --strict
 | --- | --- |
 | Native agents | `maestria:reviewer` through the Agent tool |
 | Native commands | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` |
-| Skills | `maestria:handoff`, `maestria:iteration-limits`, `maestria:create-pull-request`, `maestria:docs-update`, `maestria:diagnose` |
+| Skills | `maestria:handoff`, `maestria:iteration-limits`, `maestria:create-pull-request`, `maestria:docs-update`, `maestria:diagnose`, `maestria:recon`, `maestria:architecture-plan` |
 
 **Limits.** `disallowedTools: Write, Edit` filters those tools for the read-only reviewer. Shell-mediated writes are outside the filter, and role text remains guidance. Profiles set no `model`, so Claude uses the main conversation's model. Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter for plugin-loaded agents; maestria ships no hooks or MCP server and does not modify `CLAUDE.md`. Strict validation passes on Claude Code `2.1.295`, and an offline fixture (2026-10-12) loaded the reviewer from the shared profile with Write and Edit unavailable and the full role and global policy in the child context. Model judgment, shell isolation, other CLI versions, account sync, Cowork, and Desktop behavior are not covered. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [compatibility](/agent-plugins/compatibility/).
 
@@ -134,7 +134,7 @@ The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, the
    <AllPackageManagers type="dlx" pkg="maestria@latest" args="check codex" />
 
 2. List the installed plugin with `codex plugin list --json` and look for `maestria@maestria` with `installed: true`.
-3. Start a fresh Codex session, since plugin discovery is session-sensitive, and confirm the seven skills (`$maestria:handoff`, `$maestria:iteration-limits`, `$maestria:create-pull-request`, `$maestria:docs-update`, `$maestria:diagnose`) are available.
+3. Start a fresh Codex session, since plugin discovery is session-sensitive, and confirm the seven skills (`$maestria:handoff`, `$maestria:iteration-limits`, `$maestria:create-pull-request`, `$maestria:docs-update`, `$maestria:diagnose`, `$maestria:recon`, `$maestria:architecture-plan`) are available.
 4. Confirm `~/.codex/agents/maestria-reviewer.toml` exists (or the equivalent `$CODEX_HOME/agents/` directory). Ask Codex to dispatch the reviewer with `agent_type: "maestria-reviewer"` for independent review.
 5. Ask for a meaningful task without a skill prefix and confirm the primary session follows the routing guidance. Try `SONAR: trace authentication without editing`.
 
@@ -234,7 +234,7 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 | --- | --- |
 | `.cursor-plugin/plugin.json` | Plugin manifest |
 | `agents/*.md` | One complete reviewer Task agent (shared across hosts) |
-| `skills/*/SKILL.md` | `handoff` and `iteration-limits` utilities and the bundled `create-pull-request`, `docs-update`, and `diagnose` skills |
+| `skills/*/SKILL.md` | `handoff` and `iteration-limits` utilities and the bundled `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` skills |
 | `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing (`alwaysApply: true`) |
 | `commands/*.md` | Complete workflow slash commands (shared) |
 
@@ -398,7 +398,7 @@ Or remove the package with `omp plugin uninstall @maestria/agent-plugins`. If th
 
 The profile, commands, and rules are generated from canonical sources and shared with other Markdown hosts, so no role or global-rules skill preload is needed. By default, profiles inherit the parent model.
 
-**Limits.** The data-only integration declares no executable extension, task wrapper, lifecycle hook, review interceptor, goal wrapper, automation, or MCP server; the retired runtime's enforcement does not carry over. OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced and read-only is prompt-level. A real OMP `18.4.8` loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-13) on the packed archive and a git root found 7 agents, 3 commands, 1 rule, and 4 skills for the previous layout (the package now ships 1 reviewer profile and 5 skills), and did not load `.toml` files. A real isolated install lifecycle run (2026-10-13) passed 39 of 39 checks with the previous four skills; an earlier probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran, so model judgment and runtime permission enforcement are unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). For the separate Pi runtime extension, use the [Pi reference](/pi/reference/).
+**Limits.** The data-only integration declares no executable extension, task wrapper, lifecycle hook, review interceptor, goal wrapper, automation, or MCP server; the retired runtime's enforcement does not carry over. OMP has no denylist, so the shared `readonly` and `disallowedTools` keys are not enforced and read-only is prompt-level. A real OMP `18.4.8` loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-13) on the packed archive and a git root found 7 agents, 3 commands, 1 rule, and 4 skills for the previous layout (the package now ships 1 reviewer profile and 7 skills), and did not load `.toml` files. A real isolated install lifecycle run (2026-10-13) passed 39 of 39 checks with the previous four skills; an earlier probe (2026-10-11) covered the previous eight-profile layout. No inference or task spawning ran, so model judgment and runtime permission enforcement are unverified. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md). For the separate Pi runtime extension, use the [Pi reference](/pi/reference/).
 
 ## Hermes
 

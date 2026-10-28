@@ -1,6 +1,6 @@
 # maestria Design Patterns
 
-This document catalogs the two design patterns that maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
+This document catalogs the two design patterns that maestria adapts to each platform's native primitives. The patterns are shared; their review dispatch, context, and tool enforcement are not identical.
 
 If you're porting maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to the target runtime's native agents, skills, commands, hooks, or extension APIs.
 
@@ -85,7 +85,7 @@ How each platform implements this pattern:
 | --- | --- | --- |
 | **OpenCode** | `task()` subagents | The main loop investigates, designs, implements, and delivers itself with writer tools, and dispatches only `@reviewer`. Each agent is a markdown file with frontmatter permissions. The main loop can read, edit, and run shell commands; the reviewer is read-only. |
 | **Kimi Code** | Native plugin agents and commands | The reviewer profile carries role and policy; systemPromptPath supplies primary routing and modes. Named write-tool filters are not shell sandboxes. |
-| **Cursor** | Native profiles, commands, and policy | The reviewer profile and workflow commands use canonical methodology; an always-applied rule activates policy. Root skills are the two utilities and the four bundled methodology skills, never role or command facades. |
+| **Cursor** | Native profiles, commands, and policy | The reviewer profile and workflow commands use canonical methodology; an always-applied rule activates policy. Root skills are the two utilities and the five bundled methodology skills, never role or command facades. |
 | **Claude Code** | Full native profiles and commands | The reviewer profile contains complete role and policy; three native commands contain parent routing and modes. Write/Edit exclusions are tool-schema controls; no hooks ship here. |
 | **Pi** | `maestria_subagent` | The main loop does recon, design, and implementation itself; dispatch sends only the reviewer through `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
 | **Oh My Pi** | Native task profiles, commands, and global rule | One reviewer task profile, three modes, one always-applied policy/router rule, and seven skills. Generic profile tool permissions remain advisory; no executable adapter or hooks. |
@@ -99,7 +99,7 @@ How each platform implements this pattern:
 
 ### What It Is
 
-The agent that produces work should not be the agent that validates it. In a full pipeline, a different agent performs verification. The strength of that boundary depends on the platform: OpenCode enforces it at the tool layer, while other platforms may provide only persona guidance unless users configure review-only permissions or sessions.
+The agent that produces work should not be the agent that validates it. In the full method, a different agent performs verification. The strength of that boundary depends on the platform: OpenCode enforces it at the tool layer, while other platforms may provide only persona guidance unless users configure review-only permissions or sessions.
 
 The model that produced a result has already committed to it, so its later reasoning is biased toward confirming correctness instead of finding flaws. A fresh agent, seeing the work for the first time, can catch what the implementer overlooked.
 

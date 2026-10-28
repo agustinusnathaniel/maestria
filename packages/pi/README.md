@@ -1,6 +1,6 @@
 # @maestria/pi
 
-A [Pi coding agent](https://pi.software/) extension that brings maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
+A [Pi coding agent](https://pi.software/) extension that brings maestria's main loop, workflow modes, and reviewer checks to Pi.
 
 > This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -20,9 +20,9 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 ## What It Provides
 
 - **Methodology skills** (9 as of 2026-10-28; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - the `maestria` main loop, global agent rules, handoff contract, and iteration limits, injected into every session, plus the bundled `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` skills the rules name.
-- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi/) for the current list) - `/fein` (full method), `/sonar` (research only), `/blitz` (fast implementation).
 - **Compaction preservation** - session state survives compaction with structured summaries.
-- **Subagent dispatch** - delegation to specialist subagents via the `@gotgenes/pi-subagents` peer package.
+- **Subagent dispatch** - dispatch of the reviewer for independent blind review via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
 - **Root project customization** - `.maestria/workflow.md` then `.maestria/rules.md` from the session directory, injected every turn as subordinate guidance (never waives safety, authorization, or host permissions).
 

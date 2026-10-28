@@ -31,11 +31,11 @@ For unfamiliar, multi-file, or high-risk work, hand it to the `maestria` agent:
 @maestria I need to add rate limiting to the API. Plan and implement it.
 ```
 
-The `maestria` agent works as one main loop: it explores, plans, and implements the change itself, loading the `recon`, `architecture-plan`, and `diagnose` skills when the task needs them, and sends meaningful changes to `@reviewer` for an independent check before delivery. Modes adjust that loop: the full-method mode for the full method with required review, the research-only mode for research only, the fast mode for fast implementation. Pick a mode with its keyword in the prompt or with `/fein`, `/sonar`, or `/blitz`. See the [Agent Reference](/core/agents/).
+The `maestria` agent works as one main loop: it explores, plans, and implements the change itself, loading the `recon`, `architecture-plan`, and `diagnose` skills when the task needs them, and sends meaningful changes to `@reviewer` for an independent check before delivery. Modes adjust that loop: the full-method mode loads `recon` and `architecture-plan` before implementing with required review, the research-only mode investigates without editing or dispatching, and the fast mode works directly on familiar code. Pick a mode with its keyword in the prompt or with `/fein`, `/sonar`, or `/blitz`. See the [Agent Reference](/core/agents/).
 
 For longer autonomous runs, the independent [OpenCode Goal Plugin](/ecosystem/opencode-goal-plugin/) adds Codex-style goal mode; maestria neither requires nor activates it.
 
 ## Next Steps
 
 - [Agent Reference](/core/agents/) - Full docs for the main loop and reviewer
-- [Workflow Patterns](/core/workflow-patterns/) - Orchestration and pipeline patterns
+- [Workflow Patterns](/core/workflow-patterns/) - Main-loop and review patterns
