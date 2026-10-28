@@ -29,7 +29,7 @@ Three workflow modes control method depth; activation and enforcement depend on 
 | --- | --- | --- | --- |
 | **fein** | Full method | `recon` and `architecture-plan` skills -> implementation in the main loop -> required blind review | Production-grade work, mandatory validation |
 | **sonar** | Research only | `recon` or `architecture-plan` in the main loop, read-only, change no files and dispatch no subagents - STOP before implementation | Understanding before committing |
-| **blitz** | Fast implementation | Direct execution in the main loop when permitted; otherwise the permitted specialist, skipping optional skill loads but keeping required safeguards and review. | Quick fixes, known territory |
+| **blitz** | Fast implementation | Direct execution in the main loop when permitted; otherwise report the host limit, skipping optional skill loads but keeping required safeguards and review. | Quick fixes, known territory |
 
 The modes are defined by ModeKeyword in `packages/shared/pi/src/state-core.ts` as the full-method, research-only, and fast modes. Where keyword detection is supported, mode keywords are recognized anywhere in a message and case-insensitively; matches inside code fences or inline code are ignored, and the most restrictive mode wins when several appear (full-method over research-only over fast).
 

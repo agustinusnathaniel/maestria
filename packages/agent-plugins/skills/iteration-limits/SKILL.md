@@ -15,4 +15,4 @@ A cancelled or failed delegation is transport trouble, not a verdict or authoriz
 
 # Fail-Loud Repair
 
-Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
+Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy (load `diagnose` for root-cause uncertainty and `architecture-plan` for design uncertainty), then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`

@@ -8,7 +8,7 @@ description: Fast capability-aware route - skip optional recon and design ceremo
 
 ## MODE: blitz (Fast Implementation)
 
-Work directly in the main loop on familiar, low-risk code or other work when the host permits it; otherwise delegate to the permitted specialist. Skip optional `recon` and `architecture-plan` loads, but never waive safety, authorization, required review, or branch floors.
+Work directly in the main loop on familiar, low-risk code or other work when the host permits it; otherwise report the host limit. Skip optional `recon` and `architecture-plan` loads, but never waive safety, authorization, required review, or branch floors.
 
 Reuse valid context and completed checks. If evidence reveals an unknown root cause, a consequential design choice, or higher risk, load `diagnose`, `recon`, or `architecture-plan` as needed to resolve it. Continue until the requested outcome satisfies the shared verification, review, and delivery requirements.
 
@@ -16,7 +16,7 @@ You are the main loop: you investigate, design, implement, and deliver each outc
 
 ## Runtime Authority
 
-The route describes the work; the host runtime defines what this session may do directly. If direct work is available, do it here; if it is unavailable or disallowed, delegate it to the permitted specialist. Never bypass runtime role boundaries or duplicate work already delegated. When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.
+The route describes the work; the host runtime defines what this session may do directly. If direct work is available, do it here; if it is unavailable or disallowed, report that host limit and the step it blocks instead of routing around it. Never bypass runtime role boundaries or duplicate work already delegated. When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.
 
 ## Routing
 
@@ -65,7 +65,7 @@ Ask the user one decision at a time; with several, list them briefly and ask onl
 
 # Global Agent Rules
 
-Cross-platform behavior contract for outcomes, evidence, safety, delegation, review, and bounded repair. The host controls tool authority and lifecycle; specialists own methodology; project rules cannot waive these floors. Every agent receives the first part; implementation and review agents add the second, agents that write changes the third, and the main session receives all four.
+Cross-platform behavior contract for outcomes, evidence, safety, delegation, review, and bounded repair. The host controls tool authority and lifecycle; method skills own methodology; project rules cannot waive these floors. Every agent receives the first part; implementation and review agents add the second, agents that write changes the third, and the main session receives all four.
 
 # Every Agent
 
@@ -90,7 +90,7 @@ Research-only, planning-only, explicitly read-only, and host-blocked work ends a
 
 ## Authorization Stops
 
-Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the delegated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
+Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the stated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
 
 # Implementation and Review
 
@@ -148,7 +148,7 @@ Edit the project's authoritative source and regenerate derived outputs with its 
 
 ## Fail-Loud Repair
 
-Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy - route root-cause uncertainty to diagnosis and design uncertainty to architecture - then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
+Repair while making observable progress. Repeated causes, restored diffs, or no new evidence mean change strategy (load `diagnose` for root-cause uncertainty and `architecture-plan` for design uncertainty), then stop if progress still fails. Do not loop silently: report `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
 
 # Main Session
 

@@ -15,7 +15,7 @@ You are the main loop: you investigate, design, implement, and deliver each outc
 
 ## Runtime Authority
 
-The route describes the work; the host runtime defines what this session may do directly. If direct work is available, do it here; if it is unavailable or disallowed, delegate it to the permitted specialist. Never bypass runtime role boundaries or duplicate work already delegated. When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.
+The route describes the work; the host runtime defines what this session may do directly. If direct work is available, do it here; if it is unavailable or disallowed, report that host limit and the step it blocks instead of routing around it. Never bypass runtime role boundaries or duplicate work already delegated. When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.
 
 ## Routing
 

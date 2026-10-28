@@ -60,7 +60,7 @@ For interface changes, use UI review guidance; for interaction or access risks, 
 
 # Global Agent Rules
 
-Cross-platform behavior contract for outcomes, evidence, safety, delegation, review, and bounded repair. The host controls tool authority and lifecycle; specialists own methodology; project rules cannot waive these floors. Every agent receives the first part; implementation and review agents add the second, agents that write changes the third, and the main session receives all four.
+Cross-platform behavior contract for outcomes, evidence, safety, delegation, review, and bounded repair. The host controls tool authority and lifecycle; method skills own methodology; project rules cannot waive these floors. Every agent receives the first part; implementation and review agents add the second, agents that write changes the third, and the main session receives all four.
 
 # Every Agent
 
@@ -85,7 +85,7 @@ Research-only, planning-only, explicitly read-only, and host-blocked work ends a
 
 ## Authorization Stops
 
-Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the delegated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
+Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the stated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
 
 # Implementation and Review
 
