@@ -17,48 +17,15 @@ export interface Agent {
 
 export const agents: Agent[] = [
   {
-    artifact: 'Route assignments, commit protocol',
-    constraint: 'Maker/checker split enforced',
+    artifact: 'Outcome delivery, review brief',
+    constraint: 'Dispatches only reviewer',
     description:
-      'The dispatcher selects the smallest safe route for each turn: it executes known low-risk work directly, delegates specialist work with concise briefs, integrates results, enforces the maker/checker split, and manages the commit protocol.',
+      'The main loop investigates, designs, implements, and delivers each outcome itself: it loads the recon, architecture-plan, and diagnose skills when the task needs them, verifies the result, and sends meaningful changes to one independent reviewer before delivery.',
     icon: '🎯',
     id: 'orchestrator',
-    name: 'Orchestrator',
-    role: 'Routes tasks to specialists, manages commit protocol',
-    scope: 'Routes work; executes direct-route tasks itself',
-  },
-  {
-    artifact: 'Reconnaissance report',
-    constraint: 'Read-only - no edits',
-    description:
-      'Maps unknown territory so downstream specialists can work with full context. Explores code paths, traces dependencies, produces structured reconnaissance reports, and loads the diagnose skill for a read-only diagnosis, stopping at the supported root cause and recommended repair.',
-    icon: '🗺️',
-    id: 'adventurer',
-    name: 'Adventurer',
-    role: 'Codebase reconnaissance, read-only diagnosis',
-    scope: 'Unfamiliar code territory',
-  },
-  {
-    artifact: 'Decision record (ADR)',
-    constraint: 'Decisions documented, not coded',
-    description:
-      'Makes architecture decisions systematically and writes the phased plans that implement them. Clarifies the problem, presents options with trade-offs, and documents decisions as Architecture Decision Records.',
-    icon: '🏛️',
-    id: 'architect',
-    name: 'Architect',
-    role: 'Architecture decisions and phased plans',
-    scope: 'Approach selection, trade-offs',
-  },
-  {
-    artifact: 'Implementation + tests',
-    constraint: 'Never reviews its own work',
-    description:
-      'Handles exactly one atomic task per invocation, including documentation. Reads context, edits minimally, verifies with tests, loads the diagnose skill when the cause is not established and docs-update for prose, and reports what changed and why.',
-    icon: '🔧',
-    id: 'builder',
-    name: 'Builder',
-    role: 'Focused implementation and documentation',
-    scope: 'One atomic task',
+    name: 'Main loop',
+    role: 'Investigates, designs, implements, delivers',
+    scope: 'Every task, end to end',
   },
   {
     artifact: 'Review verdict',

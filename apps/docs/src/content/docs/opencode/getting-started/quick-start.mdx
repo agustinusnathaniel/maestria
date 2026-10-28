@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/opencode - delegating to specialists and using the orchestrator.
+description: Your first session with @maestria/opencode - investigating with the main loop and requesting review.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -9,7 +9,7 @@ Once installed, all agents and rules load automatically in every session.
 
 <Aside type="caution" title="Choose the workflow before choosing the orchestrator">
   maestria adds coordination and review sessions. For small changes or expensive, slow models,
-  direct execution or one specialist is often better. Read [When to use
+  direct execution or a single skill load is often better. Read [When to use
   maestria](/core/when-to-use/) first.
 </Aside>
 
@@ -17,12 +17,12 @@ Once installed, all agents and rules load automatically in every session.
 
 Launch OpenCode V2 as usual. The plugin loads with it.
 
-## Delegate to a Specialist
+## Investigate with the main loop
 
-Call any specialist directly:
+Trace unfamiliar code with the `recon` skill in the main session:
 
 ```markdown
-@adventurer Explore the auth module and trace the login flow.
+With the recon skill, explore the auth module and trace the login flow.
 ```
 
 For unfamiliar, multi-file, or high-risk work, hand it to the orchestrator:
@@ -31,11 +31,11 @@ For unfamiliar, multi-file, or high-risk work, hand it to the orchestrator:
 @orchestrator I need to add rate limiting to the API. Plan and implement it.
 ```
 
-The orchestrator decomposes the task, delegates to specialists, and integrates the results. It routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles: `fein` for the full pipeline, `sonar` for research only, `blitz` for fast implementation. Pick a mode by typing its keyword in the prompt (`fein: add rate limiting`) or with `/fein`, `/sonar`, or `/blitz`. See the [Agent Reference](/core/agents/).
+On OpenCode the orchestrator works as one main loop: it explores, plans, and implements the change itself, loading the `recon`, `architecture-plan`, and `diagnose` skills when the task needs them, and sends meaningful changes to `@reviewer` for an independent check before delivery. Modes adjust that loop: the full-method mode for the full method with required review, the research-only mode for research only, the fast mode for fast implementation. Pick a mode with its keyword in the prompt or with `/fein`, `/sonar`, or `/blitz`. See the [Agent Reference](/core/agents/).
 
 For longer autonomous runs, the independent [OpenCode Goal Plugin](/ecosystem/opencode-goal-plugin/) adds Codex-style goal mode; maestria neither requires nor activates it.
 
 ## Next Steps
 
-- [Agent Reference](/core/agents/) - Full docs for all 5 agents
+- [Agent Reference](/core/agents/) - Full docs for the main loop and reviewer
 - [Workflow Patterns](/core/workflow-patterns/) - Orchestration and pipeline patterns

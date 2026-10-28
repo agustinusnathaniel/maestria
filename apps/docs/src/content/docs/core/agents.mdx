@@ -1,47 +1,44 @@
 ---
 title: Specialist Reference
-description: 'The 5 maestria agents: one orchestrator and 4 domain specialists. Roles, responsibilities, and when to call each one.'
+description: 'The maestria main loop and its independent reviewer: roles, responsibilities, and when review is required.'
 ---
 
-maestria defines 5 agents: one **orchestrator** and 4 domain specialists, each with a focused scope and a specific place in the pipeline. Native profiles and tool controls vary by host; role guidance alone is advisory. On Agent Plugins hosts the main session takes the orchestrator role through the global policy, so [`@maestria/agent-plugins`](/agent-plugins/) ships the four specialists as profiles; [OpenCode](/opencode/) registers all 5. Direct-route turns execute on the host; platform invocation syntax lives in the plugin documentation.
+maestria defines a main loop and one reviewer specialist. The main loop investigates, designs, implements, and delivers each outcome itself, loading method skills when a task needs them. Only reviewer remains as a separate agent, for independent blind review of meaningful changes. Native profiles and tool controls vary by host; role guidance alone is advisory. On Agent Plugins hosts the main session takes the main-loop role through the global policy, so [`@maestria/agent-plugins`](/agent-plugins/) ships reviewer as a profile; [OpenCode](/opencode/) registers both. Direct-route turns execute on the host; platform invocation syntax lives in the plugin documentation.
 
-## Orchestration Model
+## Main-Loop Model
 
-The orchestrator routes and manages: it decomposes complex tasks into atomic units, delegates each to a specialist, integrates the results, and verifies completion. It does not implement work it has delegated.
+The main loop owns each outcome end to end: it investigates the code, designs the change, implements it, and drives delivery. It loads method skills instead of handing work to a role: `recon` before changing code it has not read or when the affected surface is unclear, `architecture-plan` for trade-offs or a multi-phase plan, and `diagnose` for a bug with an unknown cause. It dispatches only reviewer, for independent blind review of meaningful changes.
 
-For multi-slice implementation, it plans reviewable PR boundaries early and commits coherent slices after validating them. Each PR receives its own review and evidence; the integrated outcome receives final verification. When the architect guides implementation, the orchestrator first presents a concise design brief so the user can understand the intended changes, sequence, and trade-offs. Tables or diagrams are used when they help explain the design.
+For multi-slice implementation, it plans reviewable PR boundaries early and commits coherent slices after validating them. Each PR receives its own review and evidence; the integrated outcome receives final verification. When an `architecture-plan` design guides implementation, the main loop first presents a concise design brief so the user can understand the intended changes, sequence, and trade-offs. Tables or diagrams are used when they help explain the design.
 
-Full orchestration groups the 4 specialists into three roles:
+The full method groups the work into three concerns:
 
-- **Thinker** - reconnaissance, design, planning, analysis
-- **Worker** - implementation, documentation
-- **Verifier** - validation, quality gates
+- **Understand** - reconnaissance, diagnosis, design, planning
+- **Make** - implementation, documentation
+- **Check** - independent validation, quality gates
 
-The orchestrator routes dynamically; a pipeline that includes a verifier terminates when the verifier accepts the result.
+The main loop handles understand and make itself with skills; the check terminates when reviewer accepts the result.
 
-See [When to Use maestria](/core/when-to-use/) for when orchestration is worth its coordination cost.
+See [When to Use maestria](/core/when-to-use/) for when review is worth its coordination cost.
 
 ## Modes
 
-Three workflow modes control pipeline depth; activation and enforcement depend on the platform:
+Three workflow modes control method depth; activation and enforcement depend on the platform:
 
 | Mode | Full Form | Pipeline | Use Case |
 | --- | --- | --- | --- |
-| **fein** | Full pipeline | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work, mandatory validation |
-| **sonar** | Research only | Read-only `@adventurer`/`@architect` specialists - STOP before implementation | Understanding before committing |
-| **blitz** | Fast implementation | Direct execution when permitted; otherwise the permitted specialist, skipping optional recon/design but keeping required safeguards/review. | Quick fixes, known territory |
+| **fein** | Full method | `recon` and `architecture-plan` skills -> implementation in the main loop -> required blind review | Production-grade work, mandatory validation |
+| **sonar** | Research only | `recon` or `architecture-plan` in the main loop, read-only, change no files and dispatch no subagents - STOP before implementation | Understanding before committing |
+| **blitz** | Fast implementation | Direct execution in the main loop when permitted; otherwise the permitted specialist, skipping optional skill loads but keeping required safeguards and review. | Quick fixes, known territory |
 
-Where keyword detection is supported, mode keywords are recognized anywhere in a message and case-insensitively; matches inside code fences or inline code are ignored, and the most restrictive mode wins when several keywords appear (fein > sonar > blitz).
+The modes are defined by ModeKeyword in `packages/shared/pi/src/state-core.ts` as the full-method, research-only, and fast modes. Where keyword detection is supported, mode keywords are recognized anywhere in a message and case-insensitively; matches inside code fences or inline code are ignored, and the most restrictive mode wins when several appear (full-method over research-only over fast).
 
 ## Specialist Reference
 
 | Specialist | Role | When to Use | Key Constraints |
 | --- | --- | --- | --- |
-| **Orchestrator** | Router and manager - decomposes complex tasks, delegates routed work, integrates results | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination | Cannot implement delegated work; direct-route turns execute on the host. |
-| **Adventurer** | Codebase reconnaissance and read-only diagnosis - maps unfamiliar code, traces dependencies, finds key files, and loads the diagnose skill to stop at a supported root cause | Unfamiliar code, tracing how something works, finding where logic lives, or a bug with an unknown cause | Read/search only - no editing |
-| **Architect** | Architecture decisions and phased plans - trade-off analysis, decision records, and milestones with verification criteria | Technology or design choices, comparing implementation approaches, or complex features needing structured rollout | No state-mutating work; may research external sources |
-| **Builder** | Focused implementation and documentation - one atomic task per invocation, including bug fixes and structured prose | Bug fixes, features, tests, refactors after reconnaissance and design, plus READMEs, API docs, changelogs, and ADRs | Full edit access. One atomic task per invocation. Reports at signature level. Loads the diagnose skill when the cause is not established and docs-update for prose. |
-| **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Pre-merge review, security audit, post-implementation validation | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
+| **Main loop** | Investigator, designer, maker, and owner - investigates, designs, implements, and delivers each outcome itself | Every task; loads `recon`, `architecture-plan`, or `diagnose` when the task needs them | Does recon, design, diagnosis, and implementation itself. Dispatches only reviewer. Presents an `architecture-plan` design before dependent edits. |
+| **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Post-implementation validation, pre-merge review, security audit | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
 
 ## Portable Utilities
 
@@ -55,7 +52,7 @@ The global rules name four maestria-specific skills, so every maestria package s
 
 - **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Agents load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
 - **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/docs-update/SKILL.md)** - Documentation and changeset procedure. Agents load it before finishing a change to behavior, interfaces, configuration, or user-facing workflows, and follow it to classify and update affected docs; ordinary docs work proceeds without it.
-- **[diagnose](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/diagnose/SKILL.md)** - Systematic debugging that traces errors from symptom to root cause. Adventurer loads it for a read-only diagnosis and builder applies the fix, or builder loads it directly for a small local fix.
+- **[diagnose](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/diagnose/SKILL.md)** - Systematic debugging that traces errors from symptom to root cause. The main loop loads it for a bug, regression, failure, or crash with an unknown cause.
 
 For an agent maestria does not package, install them with [skills.sh](https://skills.sh); this offers the plugin's five skills, including `handoff` and `iteration-limits`:
 
@@ -69,13 +66,13 @@ Earlier CLI versions installed these two skills separately for each agent. `maes
 
 Agents load these when the assignment calls for them. Every one is optional: a missing skill never blocks the work, and the core directives still apply.
 
-The architect loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. After installing a maestria platform, add that repository for your agents with [skills.sh](https://skills.sh) (drop `-g` to install into the current project instead):
+The main loop loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. After installing a maestria platform, add that repository for your agents with [skills.sh](https://skills.sh) (drop `-g` to install into the current project instead):
 
 ```bash
 npx skills add agustinusnathaniel/skills -g
 ```
 
-Each specialist also names community skills it loads on a matching trigger, such as `agent-browser` for UI verification or `tdd` for explicit test-driven work. The list lives in the Skills section of each [specialist definition](https://github.com/agustinusnathaniel/maestria/tree/main/packages/core/agent-directives/specialists); install any of them from their own sources if you want that behavior.
+The main loop also loads community skills on a matching trigger, such as `agent-browser` for UI verification or `tdd` for explicit test-driven work. The list lives in the Skills section of the [main-loop and reviewer definitions](https://github.com/agustinusnathaniel/maestria/tree/main/packages/core/agent-directives/specialists); install any of them from their own sources if you want that behavior.
 
 ## See Also
 

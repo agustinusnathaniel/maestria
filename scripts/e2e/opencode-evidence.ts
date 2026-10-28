@@ -304,7 +304,7 @@ try {
   );
   const directoryQuery = `?directory=${encodeURIComponent(path.join(root, 'work'))}`;
   for (const [route, names] of [
-    ['agent', ['orchestrator', 'adventurer', 'architect', 'builder', 'reviewer']],
+    ['agent', ['orchestrator', 'reviewer']],
     ['command', ['fein', 'sonar', 'blitz']],
     ['skill', ['create-pull-request', 'diagnose', 'docs-update']],
   ] as const) {
@@ -318,7 +318,7 @@ try {
       const agents = registry.filter((item) => names.some((name) => item.id === name));
       check(
         'agent systems and permissions present',
-        agents.length === 5 &&
+        agents.length === 2 &&
           agents.every(
             (item) =>
               typeof item.system === 'string' &&
@@ -336,13 +336,12 @@ try {
         rows(agents.find((a) => a.id === id)?.permissions ?? []).some(
           (r) => r.action === action && r.resource === resource && r.effect === effect,
         );
-      check('builder: shell fallback asks', hasRule('builder', 'shell', 'ask'));
-      check('adventurer denies edit', hasRule('adventurer', 'edit', 'deny'));
+      check('reviewer denies edit', hasRule('reviewer', 'edit', 'deny'));
+      check('reviewer asks on shell', hasRule('reviewer', 'shell', 'ask'));
       check(
-        'orchestrator denies shell and edit, allows builder',
-        hasRule('orchestrator', 'shell', 'deny') &&
-          hasRule('orchestrator', 'edit', 'deny') &&
-          hasRule('orchestrator', 'subagent', 'allow', 'builder'),
+        'orchestrator allows edit and delegates only to the reviewer',
+        hasRule('orchestrator', 'edit', 'allow') &&
+          hasRule('orchestrator', 'subagent', 'allow', 'reviewer'),
       );
     }
     if (route === 'skill') {

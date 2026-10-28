@@ -19,9 +19,9 @@ t3code expresses each of its runtime modes as session rules ([source: v2 adapter
 
 | t3code mode | Session rules | Effect on maestria agents |
 | --- | --- | --- |
-| Full access | Allow every action | Overrides agent-level `deny` rules, so read-only specialists such as the reviewer can edit and run shell commands |
-| Approval required | Ask for shell, edit, and external-directory actions | The builder's permitted edits and shell commands need manual approval, and read-only specialists' edit denials become approval prompts |
-| Auto-accept edits | Allow edit; ask for shell and external-directory actions | Read-only specialists can edit |
+| Full access | Allow every action | Overrides agent-level `deny` rules, so the reviewer can edit and run shell commands despite its read-only rules |
+| Approval required | Ask for shell, edit, and external-directory actions | The main loop's permitted edits and shell commands need manual approval, and the reviewer's edit denials become approval prompts |
+| Auto-accept edits | Allow edit; ask for shell and external-directory actions | The reviewer can edit |
 | Plan interaction mode | Adds an edit `deny` | Edits are denied except where the agent's own path rules allow them |
 
 maestria has not run these modes end to end under t3code; the table follows the cited source. When read-only enforcement matters, use OpenCode directly.

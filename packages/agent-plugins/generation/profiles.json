@@ -1,30 +1,4 @@
 {
-  "adventurer": {
-    "name": "adventurer",
-    "description": "Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains and root causes, and reporting verified context without implementing changes.",
-    "readOnly": true,
-    "codex": {
-      "description": "maestria codebase reconnaissance specialist for mapping unfamiliar code, tracing execution paths, and read-only diagnosis.",
-      "sandboxMode": "read-only"
-    }
-  },
-  "architect": {
-    "name": "architect",
-    "description": "Architecture decision and planning agent for comparing implementation approaches, boundaries, threat models, ADR decisions, and phased plans.",
-    "readOnly": true,
-    "codex": {
-      "description": "maestria architecture and planning specialist for comparing approaches, boundaries, trade-offs, and phased plans.",
-      "sandboxMode": "read-only"
-    }
-  },
-  "builder": {
-    "name": "builder",
-    "description": "Focused implementation agent for one atomic, verifiable feature, fix, test, refactor, or documentation change.",
-    "readOnly": false,
-    "codex": {
-      "description": "maestria focused implementation specialist for one atomic, verifiable unit of work, including documentation."
-    }
-  },
   "reviewer": {
     "name": "reviewer",
     "description": "Independent review agent covering correctness, security, performance, maintainability, and quality gates.",

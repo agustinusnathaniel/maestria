@@ -11,7 +11,7 @@ import { lanes, routes } from '@/data/routes.js';
 
 const INSTALL_CMD = 'npx maestria install';
 const DESCRIPTION =
-  'A portable harness for AI coding agents. Route complex work through specialists, structured handoffs, and independent review.';
+  'A portable harness for AI coding agents. Investigate, design, and implement in the main loop, with structured review briefs and independent review.';
 
 const agentName = new Map(agents.map((agent) => [agent.id, agent.name]));
 
@@ -20,17 +20,17 @@ const SCORE_COLUMNS = Math.max(...routes.map((route) => route.steps.length));
 
 const principles = [
   {
-    body: 'Small edits run directly. Specialists join only when they add information or reduce risk.',
+    body: 'Small edits run directly. Method skills and review join only when they add information or reduce risk.',
     mark: 'pipeline',
     title: 'The smallest safe route',
   },
   {
-    body: 'The builder never approves its own work. A reviewer who did not write it checks every meaningful change.',
+    body: 'The implementer never approves its own work. A reviewer who did not write it checks every meaningful change.',
     mark: 'makerChecker',
     title: 'A second pair of eyes',
   },
   {
-    body: "The same roles and rules on every host, built on each tool's own agents, skills, and plugins.",
+    body: "The same method and rules on every host, built on each tool's own agents, skills, and plugins.",
     mark: 'platforms',
     title: 'One method, native tools',
   },
@@ -53,8 +53,8 @@ const principles = [
       <section class="hero" aria-labelledby="home-title">
         <h1 id="home-title" class="hero-title">Give your coding agent a team.</h1>
         <p class="hero-lead">
-          Specialists for recon, design, planning, building, and review, called in only when a
-          task needs them. One method for OpenCode, Pi, Claude Code, Codex, Cursor, and more.
+          Method skills for recon, design, and diagnosis in the main loop, plus independent
+          review, called in only when a task needs them. One method for OpenCode, Pi, Claude Code, Codex, Cursor, and more.
         </p>
         <div class="hero-actions">
           <a class="btn btn-ink" href="/cli/getting-started/">Get started</a>
@@ -71,7 +71,7 @@ const principles = [
           <div>
             <h2 id="stage-title" class="stage-title">Make every step intentional.</h2>
             <p class="stage-lead">
-              Pick a task. The orchestrator sends it only through the specialists that add
+              Pick a task. The main loop adds method skills and review only when they add
               information or reduce risk.
             </p>
           </div>
@@ -178,7 +178,7 @@ const principles = [
       <!-- ============================ SPECIALISTS ============================ -->
       <section class="home-section" id="specialists" aria-labelledby="agents-title">
         <div class="section-head">
-          <h2 id="agents-title">Meet the specialists.</h2>
+          <h2 id="agents-title">Meet the main loop and reviewer.</h2>
           <p>
             Each role has one job, one handoff, and one rule it never breaks.{' '}
             <a href="/core/agents/">Read the full reference</a>

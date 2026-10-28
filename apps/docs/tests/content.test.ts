@@ -193,9 +193,8 @@ describe('trust anchor pages', () => {
     const about = aboutDoc.body;
     expect(about).toContain('MIT');
     expect(about).toContain('https://github.com/agustinusnathaniel/maestria');
-    for (const specialist of ['adventurer', 'architect', 'builder', 'reviewer']) {
-      expect(about).toContain(specialist);
-    }
+    expect(about).toContain('reviewer');
+    expect(about).toContain('main loop');
   });
 });
 

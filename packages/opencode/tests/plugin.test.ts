@@ -82,19 +82,25 @@ describe('agent transform', () => {
       update,
     });
 
-    expect([...drafts.keys()].toSorted()).toEqual([
-      'adventurer',
-      'architect',
-      'builder',
-      'orchestrator',
-      'reviewer',
-    ]);
+    expect([...drafts.keys()].toSorted()).toEqual(['orchestrator', 'reviewer']);
     const orchestrator = drafts.get('orchestrator');
     expect(orchestrator?.mode).toBe('all');
     expect(orchestrator?.permissions).toContainEqual({
       action: 'subagent',
       effect: 'allow',
-      resource: 'builder',
+      resource: 'reviewer',
+    });
+    expect(orchestrator?.permissions).toContainEqual({
+      action: 'edit',
+      effect: 'allow',
+      resource: '*',
+    });
+    const reviewer = drafts.get('reviewer');
+    expect(reviewer?.mode).toBe('subagent');
+    expect(reviewer?.permissions).toContainEqual({
+      action: 'edit',
+      effect: 'deny',
+      resource: '*',
     });
     for (const draft of drafts.values()) {
       expect(draft.system?.startsWith('---')).toBe(false);
@@ -120,7 +126,7 @@ describe('workflow commands', () => {
     const invocation = {
       delivery: 'queue',
       prompt: {
-        agents: [{ mention: { end: 8, start: 0, text: '@builder' }, name: 'builder' }],
+        agents: [{ mention: { end: 9, start: 0, text: '@reviewer' }, name: 'reviewer' }],
         files: [{ mention: { end: 17, start: 9, text: '@plan.md' }, uri: 'file:///plan.md' }],
         skills: [{ id: 'docs-update', mention: { end: 30, start: 18, text: '$docs-update' } }],
         text: 'plan the work',
@@ -131,7 +137,7 @@ describe('workflow commands', () => {
 
     expect(prompted).toHaveLength(1);
     expect(prompted[0]).toMatchObject({
-      agents: [{ name: 'builder' }],
+      agents: [{ name: 'reviewer' }],
       delivery: 'queue',
       files: [{ uri: 'file:///plan.md' }],
       sessionID: 'session-1',
@@ -160,9 +166,11 @@ describe('skill transform', () => {
     });
 
     expect([...skills.keys()].toSorted()).toEqual([
+      'architecture-plan',
       'create-pull-request',
       'diagnose',
       'docs-update',
+      'recon',
     ]);
     for (const [id, skill] of skills) {
       expect(skill.description?.length).toBeGreaterThan(0);
@@ -267,10 +275,10 @@ describe('model context', () => {
       return event.system.map((part) => (part.type === 'text' ? part.text : '')).join('\n');
     };
     const build = await systemFor('build');
-    const builder = await systemFor('builder');
+    const reviewer = await systemFor('reviewer');
     expect(build).toContain('# Continuation and Delivery');
     expect(build).toContain('# Modes');
-    expect(builder).toContain('# Global Agent Rules');
-    expect(builder).not.toContain('# Continuation and Delivery');
+    expect(reviewer).toContain('# Global Agent Rules');
+    expect(reviewer).not.toContain('# Continuation and Delivery');
   });
 });

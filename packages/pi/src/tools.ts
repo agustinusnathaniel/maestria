@@ -9,7 +9,7 @@ export type ToolApi = Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'on'
 /**
  * Registers the only maestria layer in this Pi extension that observes a
  * `tool_call`, so it carries the interceptor half of the enforcement boundary:
- * the read-only and orchestrator blocks here. The other half is review-mode
+ * the review-mode and sonar blocks here. The other half is review-mode
  * narrowing of the host tool list, applied in `commands-core.ts` and restored
  * by `review-core.ts`. Narrowing can only withhold tools the host already
  * exposes, and neither half reaches a call the host does not surface. A host

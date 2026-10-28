@@ -9,14 +9,11 @@ import {
   stripFrontmatter,
 } from '../packages/core/scripts/lib/transforms.js';
 
-const ROLES = ['adventurer', 'architect', 'builder', 'reviewer'];
+const ROLES = ['reviewer'];
 // rules.md is split into `# ` parts; each specialist profile embeds only the parts its role acts on,
 // because subagents on several hosts never see the main session's always-on rules.
 const RULE_PARTS = ['Every Agent', 'Implementation and Review', 'Writing Changes', 'Main Session'];
 const ROLE_RULE_PARTS: Record<string, readonly string[]> = {
-  adventurer: ['Every Agent'],
-  architect: ['Every Agent'],
-  builder: ['Every Agent', 'Implementation and Review', 'Writing Changes'],
   reviewer: ['Every Agent', 'Implementation and Review'],
 };
 const MODES = ['fein', 'sonar', 'blitz'];

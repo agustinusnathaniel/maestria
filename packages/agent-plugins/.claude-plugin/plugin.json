@@ -19,11 +19,6 @@
     "pipeline",
     "specialists"
   ],
-  "agents": [
-    "./agents/adventurer.md",
-    "./agents/architect.md",
-    "./agents/builder.md",
-    "./agents/reviewer.md"
-  ],
+  "agents": ["./agents/reviewer.md"],
   "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
 }

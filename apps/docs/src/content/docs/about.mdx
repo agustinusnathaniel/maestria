@@ -3,15 +3,15 @@ title: About
 description: What maestria is, who maintains it, and how it is licensed.
 ---
 
-maestria is a set of free, open-source plugins that give AI coding agents a shared engineering workflow: choose a route, delegate focused work, and check the result independently.
+maestria is a set of free, open-source plugins that give AI coding agents a shared engineering workflow: investigate, design, implement, and check the result independently.
 
 ## How the Workflow Fits Together
 
-An orchestrator coordinates four specialists: adventurer (reconnaissance and read-only diagnosis with the diagnose skill), architect (approach, trade-offs, and phased plans), builder (atomic implementation and documentation), and reviewer (independent review).
+A main loop investigates, designs, implements, and delivers each outcome itself, loading the recon, architecture-plan, and diagnose skills when needed, and dispatches only reviewer for independent blind review.
 
-Two patterns guide their work: **pipeline composition** (select the thinker, worker, and verifier stages needed and pass context and evidence between them) and the **maker/checker split** (a separate reviewer checks the maker's result; no agent approves its own output).
+Two patterns guide its work: **method skills in the main loop** (load recon, architecture-plan, or diagnose when the task needs them and skip them when a few direct steps establish acceptance) and the **maker/checker split** (a separate reviewer checks the maker's result; no agent approves its own output).
 
-Choose a route with [When to Use maestria](/core/when-to-use/); [How It Works](/core/how-it-works/) covers benefits and limits, [Pipeline & Roles](/core/pipeline/) sequencing, and [Specialist Reference](/core/agents/) each role.
+Choose a route with [When to Use maestria](/core/when-to-use/); [How It Works](/core/how-it-works/) covers benefits and limits, [Pipeline & Roles](/core/pipeline/) the main loop and review, and [Specialist Reference](/core/agents/) the reviewer role.
 
 ## Install for Your Platform
 

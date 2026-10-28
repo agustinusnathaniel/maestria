@@ -17,10 +17,6 @@ export const markAttrs = {
 } as const;
 
 export const marks: Record<string, string> = {
-  adventurer: '<polyline points="4 18 9 18 9 11 15 11 15 6 20 6"/>',
-  architect:
-    '<rect x="4.5" y="4.5" width="15" height="15"/><rect x="9.5" y="9.5" width="5" height="5"/>',
-  builder: '<path d="M10 5.5 4.5 12 10 18.5"/><path d="M14 5.5 19.5 12 14 18.5"/>',
   ecosystem:
     '<circle cx="6.5" cy="6" r="1.9"/><circle cx="17.5" cy="8" r="1.9"/><circle cx="10" cy="18" r="1.9"/><path d="M8.3 6.6 15.7 7.8"/><path d="m6.9 7.9 2.6 8.2"/><path d="m16.9 9.8-5.9 6.6"/>',
   makerChecker:

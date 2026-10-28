@@ -1,50 +1,50 @@
 ---
 title: Pipeline & Roles
-description: The Thinker-Worker-Verifier pipeline model for sequencing specialists through verifiable work.
+description: The main-loop model for investigating, designing, implementing, and verifying work with independent review.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-When a task needs more than direct execution, maestria can separate it into three stages. The orchestrator selects the stages that add information or reduce risk; it does not run every stage for every task.
+When a task needs more than direct execution, the main loop works through it in stages. It selects the method skills that add information or reduce risk; it does not load every skill for every task.
 
-## The Three Stages
+## The Three Concerns
 
-| Stage | Question | Specialists | Output |
+| Stage | Question | How | Output |
 | --- | --- | --- | --- |
-| Thinker | What do we know, and what should we do? | adventurer, architect | Reconnaissance, a decision, a phased plan, or a confirmed cause |
-| Worker | Can we produce the requested result? | builder | The implementation or documentation change |
-| Verifier | Does the result meet the evidence and quality requirements? | reviewer | An independent review with actionable findings |
+| Understand | What do we know, and what should we do? | `recon`, `architecture-plan`, or `diagnose` in the main loop | Reconnaissance, a decision, a phased plan, or a confirmed cause |
+| Make | Can we produce the requested result? | Implementation in the main loop | The implementation or documentation change |
+| Check | Does the result meet the evidence and quality requirements? | reviewer | An independent review with actionable findings |
 
-Thinkers analyze and plan; workers produce the artifact (builder loads the diagnose skill when the cause is not established); verifiers inspect without editing. The separation keeps one agent from approving its own work.
+The main loop handles understand and make itself (loading `diagnose` when the cause is not established); reviewer inspects without editing. The separation keeps one agent from approving its own work.
 
 ## Flow
 
-The common route, with each stage optional:
+The common route, with each skill optional:
 
 ```text
-orchestrator
-    -> thinker (when context, design, planning, or diagnosis is needed)
-    -> worker
-    -> verifier (when independent validation is required)
+main loop with `recon` / `architecture-plan` / `diagnose` when needed
+    -> implementation in the main loop
+    -> reviewer when independent validation is required
 ```
 
-Each handoff carries the outcome, context and constraints, acceptance evidence, and next step; link to existing artifacts instead of copying the conversation.
+Each review brief carries the outcome, context and constraints, acceptance evidence, and next step; link to existing artifacts instead of copying the conversation.
 
 Adapt the route to the task:
 
-- Use adventurer when the code or dependency path is unfamiliar, or when a failure needs a read-only diagnosis (it loads the diagnose skill and hands the cause to builder, or builder loads it directly for a small local fix).
-- Use architect when the approach has meaningful trade-offs, or when delivery needs milestones, verification criteria, or rollback points.
-- Skip the thinker when the task is familiar and already scoped, or stop after it for research-only requests.
+- Load `recon` when the code or dependency path is unfamiliar, or when the affected surface is unclear.
+- Load `architecture-plan` when the approach has meaningful trade-offs, or when delivery needs milestones, verification criteria, or rollback points.
+- Load `diagnose` for a bug, regression, failure, or crash with an unknown cause.
+- Skip a skill when the task is familiar and already scoped, or stop after research for research-only requests.
 
-If a verifier rejects the result, route an implementation defect back to the worker and a design or scope defect back to a thinker. Do not ask the worker to guess at a rejected design.
+If reviewer rejects the result, repair an implementation defect in the main loop and reshape a design or scope defect with `architecture-plan`. Do not guess at a rejected design.
 
 ## Maker/Checker Split
 
-The specialist that produces an artifact must not be the specialist that validates it. This is the pipeline's core quality boundary.
+The main loop that produces an artifact must not be the one that validates it. This is the pipeline's core quality boundary.
 
 <Aside type="caution" title="Reviewer independence">
-  A reviewer may need context from a thinker, but it must inspect the maker's result independently
-  and report findings without editing it.
+  A reviewer may need context from the main loop, but it must inspect the maker's result
+  independently and report findings without editing it.
 </Aside>
 
 Use one independent reviewer for ordinary work; add a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. See [Workflow Patterns](/core/workflow-patterns/) for practical review routes.
@@ -59,4 +59,4 @@ Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.
 
 ## Choose a Route
 
-The pipeline is optional: [When to Use maestria](/core/when-to-use/) compares direct execution, one specialist, and full orchestration, and [Specialist Reference](/core/agents/) details each role.
+The pipeline is optional: [When to Use maestria](/core/when-to-use/) compares direct execution, method skills, and full-method work with review, and [Specialist Reference](/core/agents/) details each role.

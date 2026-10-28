@@ -1,6 +1,6 @@
 ---
 title: '@maestria/opencode'
-description: OpenCode V2 plugin that registers 5 specialized agents, workflow modes, and global rules. Version 0.8.0 is the last release for OpenCode V1.
+description: OpenCode V2 plugin that registers the main loop and reviewer, workflow modes, and global rules. Version 0.8.0 is the last release for OpenCode V1.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -15,8 +15,8 @@ import SiteFooter from '@/components/plugin/site-footer.astro';
 <div class="plugin-root">
   <div class="home-inner">
     <PlatformHero
-      title="An orchestrator and four specialists."
-      lead="Install one plugin to add 5 agents, shared workflow rules, and workflow modes to OpenCode V2. On OpenCode V1, pin @maestria/opencode@0.8.0."
+      title="A main loop and one reviewer."
+      lead="Install one plugin to add the main loop, reviewer, shared workflow rules, and workflow modes to OpenCode V2. On OpenCode V1, pin @maestria/opencode@0.8.0."
       primaryCta={{ href: '/opencode/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/opencode/configuration/', label: 'Configuration' }}
       installCommand="npx maestria install opencode"
@@ -28,10 +28,10 @@ import SiteFooter from '@/components/plugin/site-footer.astro';
     >
       <FeatureGrid
         items={[
-          { title: '5 specialized agents', desc: 'The orchestrator plus adventurer, architect, builder, and reviewer.' },
+          { title: 'Main loop plus reviewer', desc: 'The main loop investigates, designs, implements, and delivers; the reviewer checks meaningful changes.' },
           { title: 'Rules in every request', desc: 'Global workflow directives and your project .maestria/ files reach every agent-loop and compaction request.' },
-          { title: 'Delegate with @ mentions', desc: 'Call any specialist directly: @adventurer for recon, @builder for implementation, @reviewer for a check.' },
-          { title: 'Per-turn workflow modes', desc: 'Type fein, sonar, or blitz, or use the slash commands; the mode stays with that prompt through continuations.' },
+          { title: 'Review with @reviewer', desc: 'Request independent review with @reviewer; the main loop does recon, design, and implementation itself.' },
+          { title: 'Per-turn workflow modes', desc: 'Use the modes defined by ModeKeyword in packages/shared/pi/src/state-core.ts, or the slash commands; the mode stays with that prompt through continuations.' },
           { title: 'Per-agent model control', desc: 'Agents register without model overrides; assign models per agent from your own config.' },
           { title: 'Native tool permissions', desc: 'Each agent ships ordered permission rules that OpenCode enforces, so read-only reviewers stay read-only.' },
         ]}

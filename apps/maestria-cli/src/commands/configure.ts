@@ -48,7 +48,7 @@ const parseSetPairs = (input: string): AgentModels => {
     const eq = pair.indexOf('=');
     if (eq === -1) {
       fail(
-        `Invalid --set entry '${pair}'. Use <agent>=<model>, e.g. --set builder=opencode-go/deepseek-v4-flash. ` +
+        `Invalid --set entry '${pair}'. Use <agent>=<model>, e.g. --set reviewer=opencode-go/deepseek-v4-flash. ` +
           `Use <agent>= (empty) to reset to inherit.`,
       );
     }
@@ -416,7 +416,7 @@ export const configureCommand = defineCommand({
       default: undefined,
       description:
         'Set models non-interactively. Comma-separated <agent>=<model> pairs, e.g. ' +
-        "'builder=opencode-go/deepseek-v4-flash'. Use <agent>= (empty value) to reset to inherit.",
+        "'reviewer=opencode-go/deepseek-v4-flash'. Use <agent>= (empty value) to reset to inherit.",
       type: 'string',
     },
   },

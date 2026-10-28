@@ -157,7 +157,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
     const { text } = firstContent;
     expect(text).toContain('Invalid maestria_subagent call');
     expect(text).toContain('agent');
-    expect(text).toContain('adventurer');
+    expect(text).toContain('reviewer');
   });
 
   it('returns an actionable message when agent is missing', async () => {
@@ -181,7 +181,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
   it('rejects empty task description', async () => {
     const { toolDef } = setup();
     await expect(
-      toolDef.execute('call-1', { agent: 'builder', task: '' }, undefined, undefined, {}),
+      toolDef.execute('call-1', { agent: 'reviewer', task: '' }, undefined, undefined, {}),
     ).rejects.toThrow('Task description is required');
   });
 
@@ -189,7 +189,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
     const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
-      { agent: 'builder', task: 'do something' },
+      { agent: 'reviewer', task: 'do something' },
       undefined,
       undefined,
       {},
@@ -201,7 +201,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
     const { toolDef } = setup();
     const result = await toolDef.execute(
       'call-1',
-      { agent: 'builder', mode: 'single', task: 'do something' },
+      { agent: 'reviewer', mode: 'single', task: 'do something' },
       undefined,
       undefined,
       {},
@@ -218,7 +218,7 @@ describe('installSubagentTool - parallel mode', () => {
         'call-1',
         {
           mode: 'parallel',
-          tasks: [{ agent: 'builder', task: 'build' }],
+          tasks: [{ agent: 'reviewer', task: 'build' }],
         },
         undefined,
         undefined,
@@ -230,7 +230,7 @@ describe('installSubagentTool - parallel mode', () => {
   it('throws for more than 8 tasks', async () => {
     const { toolDef } = setup();
     const tasks = Array.from({ length: 9 }, (_, i) => ({
-      agent: 'builder' as const,
+      agent: 'reviewer' as const,
       task: `task ${i + 1}`,
     }));
     await expect(
@@ -246,7 +246,7 @@ describe('installSubagentTool - parallel mode', () => {
         {
           mode: 'parallel',
           tasks: [
-            { agent: 'builder', task: 'build' },
+            { agent: 'reviewer', task: 'build' },
             { agent: 'unknown', task: 'something' },
           ],
         },
@@ -265,8 +265,8 @@ describe('installSubagentTool - parallel mode', () => {
         {
           mode: 'parallel',
           tasks: [
-            { agent: 'builder', task: 'build' },
-            { agent: 'architect', task: '' },
+            { agent: 'reviewer', task: 'build' },
+            { agent: 'reviewer', task: '' },
           ],
         },
         undefined,
@@ -283,8 +283,8 @@ describe('installSubagentTool - parallel mode', () => {
       {
         mode: 'parallel',
         tasks: [
-          { agent: 'builder', task: 'build' },
-          { agent: 'architect', task: 'design' },
+          { agent: 'reviewer', task: 'build' },
+          { agent: 'reviewer', task: 'design' },
         ],
       },
       undefined,
@@ -303,7 +303,7 @@ describe('installSubagentTool - chain mode', () => {
         'call-1',
         {
           mode: 'chain',
-          tasks: [{ agent: 'builder', task: 'build' }],
+          tasks: [{ agent: 'reviewer', task: 'build' }],
         },
         undefined,
         undefined,
@@ -320,7 +320,7 @@ describe('installSubagentTool - chain mode', () => {
         {
           mode: 'chain',
           tasks: [
-            { agent: 'builder', task: 'build' },
+            { agent: 'reviewer', task: 'build' },
             { agent: 'bogus', task: 'something' },
           ],
         },
@@ -338,7 +338,7 @@ describe('installSubagentTool - chain mode', () => {
       {
         mode: 'chain',
         tasks: [
-          { agent: 'builder', task: 'build' },
+          { agent: 'reviewer', task: 'build' },
           { agent: 'reviewer', task: 'review the result' },
         ],
       },
@@ -355,7 +355,7 @@ describe('installSubagentTool - event subscription persistence', () => {
     const events = createMockEventBus();
     const { pi, state } = setup(events);
 
-    events._emit(SUBAGENT_EVENTS.STARTED, { id: 'agent-1', type: 'builder' });
+    events._emit(SUBAGENT_EVENTS.STARTED, { id: 'agent-1', type: 'reviewer' });
 
     expect(state.subagentStatus['agent-1']).toBeDefined();
     expect(state.subagentStatus['agent-1'].status).toBe('running');
@@ -369,7 +369,7 @@ describe('installSubagentTool - event subscription persistence', () => {
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
-      type: 'builder',
+      type: 'reviewer',
     };
 
     events._emit(SUBAGENT_EVENTS.COMPLETED, { id: 'agent-1' });
@@ -385,7 +385,7 @@ describe('installSubagentTool - event subscription persistence', () => {
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
-      type: 'builder',
+      type: 'reviewer',
     };
 
     events._emit(SUBAGENT_EVENTS.FAILED, { id: 'agent-1', status: 'error' });
@@ -413,7 +413,7 @@ describe('installSubagentTool - event subscription persistence', () => {
     state.subagentStatus['existing-agent'] = {
       startedAt: Date.now(),
       status: 'running',
-      type: 'architect',
+      type: 'reviewer',
     };
 
     events._emit(SUBAGENT_EVENTS.STEERED, { id: 'existing-agent' });
@@ -429,11 +429,11 @@ describe('installSubagentTool - event subscription persistence', () => {
     const events = createMockEventBus();
     setup(events);
 
-    events._emit(SUBAGENT_EVENTS.STARTED, { id: 'agent-1', type: 'builder' });
+    events._emit(SUBAGENT_EVENTS.STARTED, { id: 'agent-1', type: 'reviewer' });
 
     const event = getEmittedEvent(events, MAESTRIA_EVENTS.SUBAGENT_STARTED);
     expect(event.id).toBe('agent-1');
-    expect(event.type).toBe('builder');
+    expect(event.type).toBe('reviewer');
     expect(typeof event.timestamp).toBe('number');
   });
 
@@ -443,14 +443,14 @@ describe('installSubagentTool - event subscription persistence', () => {
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
-      type: 'builder',
+      type: 'reviewer',
     };
 
     events._emit(SUBAGENT_EVENTS.COMPLETED, { id: 'agent-1' });
 
     const event = getEmittedEvent(events, MAESTRIA_EVENTS.SUBAGENT_COMPLETED);
     expect(event.id).toBe('agent-1');
-    expect(event.type).toBe('builder');
+    expect(event.type).toBe('reviewer');
     expect(typeof event.timestamp).toBe('number');
   });
 
@@ -460,14 +460,14 @@ describe('installSubagentTool - event subscription persistence', () => {
     state.subagentStatus['agent-1'] = {
       startedAt: Date.now(),
       status: 'running',
-      type: 'builder',
+      type: 'reviewer',
     };
 
     events._emit(SUBAGENT_EVENTS.FAILED, { id: 'agent-1', status: 'error' });
 
     const event = getEmittedEvent(events, MAESTRIA_EVENTS.SUBAGENT_FAILED);
     expect(event.id).toBe('agent-1');
-    expect(event.type).toBe('builder');
+    expect(event.type).toBe('reviewer');
     expect(typeof event.timestamp).toBe('number');
   });
 });
@@ -499,38 +499,38 @@ describe('installSubagentTool - handoff recording', () => {
     const { pi, state, toolDef } = setup();
     await toolDef.execute(
       'call-1',
-      { agent: 'builder', task: 'build the feature' },
+      { agent: 'reviewer', task: 'build the feature' },
       undefined,
       undefined,
       {},
     );
 
     expect(state.handoffHistory).toHaveLength(1);
-    expect(state.handoffHistory[0].to).toBe('builder');
-    expect(state.specialistsDelegated).toEqual(['builder']);
-    expect(getPersistedState(pi).specialistsDelegated).toEqual(['builder']);
+    expect(state.handoffHistory[0].to).toBe('reviewer');
+    expect(state.specialistsDelegated).toEqual(['reviewer']);
+    expect(getPersistedState(pi).specialistsDelegated).toEqual(['reviewer']);
   });
 
   it('deduplicates specialists across repeated delegation', async () => {
     const { state, toolDef } = setup();
-    await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
+    await toolDef.execute('call-1', { agent: 'reviewer', task: 'build' }, undefined, undefined, {});
     await toolDef.execute(
       'call-2',
-      { agent: 'builder', task: 'build again' },
+      { agent: 'reviewer', task: 'build again' },
       undefined,
       undefined,
       {},
     );
 
-    expect(state.specialistsDelegated).toEqual(['builder']);
+    expect(state.specialistsDelegated).toEqual(['reviewer']);
   });
 });
 
 describe('installSubagentTool - parallel partial failure', () => {
   it('preserves completed results when one subagent is cleaned up (poll throws)', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
-    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
-      agent === 'builder' ? 'id-a' : 'id-b',
+    subagentsServiceMock.spawn.mockImplementation((_agent: string, task: string) =>
+      task.includes('build') ? 'id-a' : 'id-b',
     );
     // id-a completes with a result; id-b's record disappears -> poll throws
     // "cleaned up before completion" -> the failed outcome must not discard
@@ -546,8 +546,8 @@ describe('installSubagentTool - parallel partial failure', () => {
       {
         mode: 'parallel',
         tasks: [
-          { agent: 'builder', task: 'build' },
-          { agent: 'architect', task: 'design' },
+          { agent: 'reviewer', task: 'build' },
+          { agent: 'reviewer', task: 'design' },
         ],
       },
       undefined,
@@ -565,8 +565,8 @@ describe('installSubagentTool - parallel partial failure', () => {
 
   it('aborts still-running sibling subagents when one fails instead of orphaning them', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
-    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
-      agent === 'builder' ? 'id-a' : 'id-b',
+    subagentsServiceMock.spawn.mockImplementation((_agent: string, task: string) =>
+      task.includes('build') ? 'id-a' : 'id-b',
     );
     // id-a keeps running (never terminal) until aborted; id-b cleaned up ->
     // poll throws -> the sibling abort must stop id-a and it must be called.
@@ -589,8 +589,8 @@ describe('installSubagentTool - parallel partial failure', () => {
       {
         mode: 'parallel',
         tasks: [
-          { agent: 'builder', task: 'build' },
-          { agent: 'architect', task: 'design' },
+          { agent: 'reviewer', task: 'build' },
+          { agent: 'reviewer', task: 'design' },
         ],
       },
       undefined,
@@ -602,8 +602,8 @@ describe('installSubagentTool - parallel partial failure', () => {
 
   it('aborts and returns an error marker when a chain step record is cleaned up', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
-    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
-      agent === 'builder' ? 'id-a' : 'id-b',
+    subagentsServiceMock.spawn.mockImplementation((_agent: string, task: string) =>
+      task.includes('build') ? 'id-a' : 'id-b',
     );
     // id-a completes; id-b's record disappears -> poll throws -> the step
     // must be aborted and the chain must surface an error marker.
@@ -618,8 +618,8 @@ describe('installSubagentTool - parallel partial failure', () => {
       {
         mode: 'chain',
         tasks: [
-          { agent: 'builder', task: 'build' },
-          { agent: 'architect', task: 'design' },
+          { agent: 'reviewer', task: 'build' },
+          { agent: 'reviewer', task: 'design' },
         ],
       },
       undefined,
@@ -639,8 +639,8 @@ describe('installSubagentTool - parallel partial failure', () => {
   it('substitutes {previous} literally when the previous result contains $ patterns', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
     subagentsServiceMock.spawn.mockClear();
-    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
-      agent === 'builder' ? 'id-a' : 'id-b',
+    subagentsServiceMock.spawn.mockImplementation((_agent: string, task: string) =>
+      task.includes('build') ? 'id-a' : 'id-b',
     );
     // id-a completes with a result containing $ sequences that a string-replacement
     // would corrupt ($& -> the placeholder itself, $' -> trailing text, $1 -> empty).
@@ -658,8 +658,8 @@ describe('installSubagentTool - parallel partial failure', () => {
       {
         mode: 'chain',
         tasks: [
-          { agent: 'builder', task: 'build the base' },
-          { agent: 'architect', task: 'Review the prior output: {previous}' },
+          { agent: 'reviewer', task: 'build the base' },
+          { agent: 'reviewer', task: 'Review the prior output: {previous}' },
         ],
       },
       undefined,
@@ -683,11 +683,11 @@ describe('installSubagentTool - parallel partial failure', () => {
       aborted.add(id);
       return true;
     });
-    subagentsServiceMock.spawn.mockImplementation((agent: string) => {
-      if (agent === 'builder') {
+    subagentsServiceMock.spawn.mockImplementation((_agent: string, task: string) => {
+      if (task.includes('build')) {
         return 'id-a';
       }
-      throw new Error('spawn failed for architect');
+      throw new Error('spawn failed for reviewer');
     });
 
     const { toolDef } = setup();
@@ -697,8 +697,8 @@ describe('installSubagentTool - parallel partial failure', () => {
       {
         mode: 'parallel',
         tasks: [
-          { agent: 'builder', task: 'build the base' },
-          { agent: 'architect', task: 'design the extension' },
+          { agent: 'reviewer', task: 'build the base' },
+          { agent: 'reviewer', task: 'design the extension' },
         ],
       },
       undefined,

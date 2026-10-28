@@ -2,9 +2,9 @@
 
 ### Specialist → Subagent Routing
 
-The Kimi manifest selects the shared root `agents/` directory, whose four native Markdown profiles embed the complete role and the global policy parts it needs. Dispatch through Kimi's native Agent tool using the selected specialist identity: `adventurer`, `architect`, `builder`, or `reviewer`. Carry the task constraints and complete handoff; neither parent skill loading nor built-in coder/plan/explore mappings supply these identities.
+The Kimi manifest selects the shared root `agents/` directory, whose native `reviewer` Markdown profile embeds the complete role and the global policy parts it needs. Dispatch the independent review through Kimi's native Agent tool with the `reviewer` identity. Carry the task constraints and complete handoff; neither parent skill loading nor built-in coder/plan/explore mappings supply these identities.
 
-Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. Research, architecture, and review profiles deny `Write` and `Edit`, and every profile sets `subagents: []` so specialists do not delegate further. This is a tool filter, not a shell sandbox. Profiles set no model; Kimi ignores keys meant for other hosts, such as `readonly`, and the active host chooses the model.
+Kimi profile fields include `tools`, `disallowedTools`, and `subagents`. The reviewer profile denies `Write` and `Edit` and sets `subagents: []` so it does not delegate further. This is a tool filter, not a shell sandbox. Profiles set no model; Kimi ignores keys meant for other hosts, such as `readonly`, and the active host chooses the model.
 
 ### Session instructions and modes
 

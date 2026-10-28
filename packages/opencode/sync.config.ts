@@ -15,7 +15,7 @@ import type { FileConfig, SyncConfig } from '../core/scripts/lib/config.js';
 
 type BashPermissionEntry = readonly [string, 'allow' | 'ask' | 'deny'];
 
-// Read-only bash projection, split so the builder's mid-sequence `du*`
+// Read-only bash projection, split so the writer set's mid-sequence `du*`
 // insertion names its anchor instead of slicing by magic index.
 const BASE_READ_HEAD: readonly BashPermissionEntry[] = [
   ['ls*', 'allow'],
@@ -73,85 +73,19 @@ const guardedReconGit = (): BashPermissionEntry[] =>
   );
 
 // Authored as OpenCode V1 `permission` maps, which read compactly; translated to V2 rules below.
+// du* follows stat* in the established projection. Used by the orchestrator, which writes changes.
+const WRITER_BASH: readonly BashPermissionEntry[] = [
+  ...BASE_READ_HEAD,
+  ['du*', 'allow'],
+  ...BASE_READ_TAIL,
+  ...allow('test*', 'sort*', 'git*'),
+  ['pnpx*', 'ask'],
+  ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
+  ['*', 'ask'],
+];
+
 const permissionMaps = {
   files: {
-    'adventurer.md': {
-      frontmatter: {
-        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains and root causes, and reporting verified context without implementing changes.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [
-              ...allow(
-                'git status*',
-                'git rev-parse*',
-                'git blame*',
-                'opensrc*',
-                'agent-browser*',
-                'rtk*',
-              ),
-              ...guardedReconGit(),
-            ],
-          ),
-          edit: 'deny',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-        },
-      },
-    },
-    'architect.md': {
-      frontmatter: {
-        description: `Architecture decision and planning agent for comparing implementation approaches, boundaries, threat models, ADR decisions, and phased plans.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [...allow('git status*', 'opensrc*', 'npm view *'), ...guardedReconGit()],
-          ),
-          edit: 'deny',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-        },
-      },
-    },
-    'builder.md': {
-      frontmatter: {
-        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, refactor, or documentation change.`,
-        mode: 'subagent',
-        permission: {
-          // du* follows stat* in the established projection.
-          bash: Object.fromEntries([
-            ...BASE_READ_HEAD,
-            ['du*', 'allow'],
-            ...BASE_READ_TAIL,
-            ...allow('test*', 'sort*', 'git*'),
-            ['pnpx*', 'ask'],
-            ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
-            ['*', 'ask'],
-          ]),
-          edit: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-        },
-      },
-    },
     'commands/blitz.md': {
       output: 'commands/blitz.md',
       stripFrontmatter: true,
@@ -165,30 +99,25 @@ const permissionMaps = {
       stripFrontmatter: true,
     },
     'orchestrator.md': {
+      source: '../core/agent-directives/specialists/orchestrator.md',
       frontmatter: {
-        description: `maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
+        description: `maestria main loop that investigates, designs, implements, and delivers each outcome, with one blind reviewer for meaningful changes.`,
         mode: 'all',
         permission: {
-          bash: {
-            '*': 'deny',
-            '* npx --yes skills@latest *': 'allow',
-          },
-          edit: 'deny',
-          glob: 'deny',
-          grep: 'deny',
-          lsp: 'deny',
+          bash: Object.fromEntries([...WRITER_BASH, ['* npx --yes skills@latest *', 'allow']]),
+          edit: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
           question: 'allow',
-          read: 'deny',
+          read: 'allow',
           skill: 'allow',
           task: {
             '*': 'deny',
-            adventurer: 'allow',
-            architect: 'allow',
-            builder: 'allow',
             reviewer: 'allow',
           },
           todowrite: 'allow',
-          webfetch: 'deny',
+          webfetch: 'allow',
         },
       },
     },

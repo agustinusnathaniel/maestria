@@ -10,18 +10,18 @@ If you're porting maestria to a new platform, this is your implementation guide.
 
 ### What It Is
 
-A sequential flow where work passes through specialized stages, each adding value and producing a structured handoff for the next. No stage does the work of another - the adventurer maps code but doesn't edit it, the builder implements but doesn't review, the reviewer validates but doesn't redesign.
+A main loop that investigates, designs, implements, and delivers each outcome itself, loading method skills when a task needs them, and sending meaningful changes to one independent reviewer. The loop does recon, design, diagnosis, and implementation in the same session; only review runs in another context. The reviewer validates but does not redesign, and the implementer never approves its own work.
 
-The pipeline is the backbone of a full maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Select the full pipeline when those stages add enough information or risk reduction to justify their model and latency cost. Direct execution or one specialist is valid for smaller or better-understood work.
+The main loop is the backbone of a full maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Load `recon`, `architecture-plan`, or `diagnose` when the task needs them. Direct execution without optional skill loads is valid for smaller or better-understood work.
 
-**The maestria pipeline:**
+**The maestria flow:**
 
 ```
-Input → @adventurer (recon) → @architect (plan/design)
-  → @builder (implement) → @reviewer (validate) → Output
+Input → main loop (recon, design, implement; loads recon, architecture-plan, diagnose as needed)
+  → @reviewer (validate) → Output
 ```
 
-Each arrow carries a concise, material handoff, not a loose "figure it out" delegation. Architect owns both design and phased plans; adventurer handles reconnaissance and read-only diagnosis (loading the diagnose skill, with builder applying the fix). The output of one stage is the input briefing for the next.
+Each arrow carries a concise, material brief, not a loose "figure it out" delegation. The main loop loads `recon` for reconnaissance and read-only diagnosis (loading the `diagnose` skill when the cause is unknown), `architecture-plan` for decisions and phased plans, and implements itself. The reviewer output is the independent check before delivery.
 
 ### Sub-Elements
 
@@ -46,7 +46,7 @@ Context and constraints: /src/auth/session.ts (the main file) and ADR-CORE-019
   (issue #42), and session.ts line 89 uses wall-clock rather than server time.
 Acceptance/evidence: Return a complete call graph with file paths, line numbers,
   and the race condition's entry points documented.
-Next step: @architect receives this map to design the fix strategy.
+Next step: the main loop uses this map to implement the fix, then requests independent review.
 ```
 
 #### Iteration Limits
@@ -63,32 +63,32 @@ Every substantial pipeline stage needs three controls:
    Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.
    ```
 
-   Example from the builder: _"Tried three implementation approaches: direct mutation (broke test isolation), event emitter (added 200 lines of glue), and a middleware hook (clean but needs a new dependency). Blocked by decision: is adding `eventemitter3` acceptable, or should we avoid new dependencies? Need architectural guidance from @architect to proceed."_
+   Example from the main loop: _"Tried three implementation approaches: direct mutation (broke test isolation), event emitter (added 200 lines of glue), and a middleware hook (clean but needs a new dependency). Blocked by decision: is adding `eventemitter3` acceptable, or should we avoid new dependencies? Need architectural guidance to proceed."_
 
 #### Pipeline Rules
 
-1. **One atomic task per stage** - never bundle unrelated work into a single delegation. A bug fix and a feature in the same `@builder` call is a scoping violation. The constraint is conceptual (one concern per invocation), not quantitative (one file per invocation).
+1. **One atomic task per review** - never bundle unrelated work into a single change. A bug fix and a feature in the same change is a scoping violation. The constraint is conceptual (one concern per invocation), not quantitative (one file per invocation).
 
-2. **Full pipeline when selected** - a multi-file, cross-module, or new-feature task may follow `adventurer → architect → builder → reviewer` when the task's risk or uncertainty justifies it. Skipping stages is expected for direct and focused routes. The handoff should state why the selected route is appropriate.
+2. **Full method when selected** - a multi-file, cross-module, or new-feature task may load `recon` and `architecture-plan` before implementing in the main loop, then require one blind reviewer pass, when the task's risk or uncertainty justifies it. Skipping skills is expected for familiar low-risk work. The brief should state why the selected depth is appropriate.
 
-3. **Parallel fan-out is allowed for independent tasks** - keep the fan-out bounded by usefulness and host limits. Examples: `@adventurer` mapping auth and tracing billing in parallel; `@reviewer` checking PR #7, `@builder` fixing bug #42, and `@architect` evaluating a dependency decision.
+3. **Parallel fan-out is allowed for independent tasks** - keep the fan-out bounded by usefulness and host limits. Example: the main loop mapping auth and tracing billing in parallel contexts before implementing.
 
-4. **Stages are ordered by dependency** - wait for prerequisite outputs before starting dependent work. For example, finish scoping before implementation and implementation before review. Parallelize only independent tasks.
+4. **Work is ordered by dependency** - wait for prerequisite outputs before starting dependent work. For example, finish scoping before implementation and implementation before review. Parallelize only independent tasks.
 
 ### Platform Adaptation
 
-Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; Pi enforces dispatcher behavior in workflow-mode sessions; Hermes and OMP consume portable methodology skills with host-owned tool authority; and Cursor and Claude Code depend more on host/session permissions. Codex and the portable Agent Plugins package expose advisory role boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
+Runtime authority varies by host: OpenCode runs the main loop with writer tools and reviewer-only dispatch; Pi blocks mutation and subagent dispatch only under the research-only mode; Hermes and OMP consume portable methodology skills with host-owned tool authority; and Cursor and Claude Code depend more on host/session permissions. Codex and the portable Agent Plugins package expose advisory review boundaries only, with the consuming client owning enforcement. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
 
 How each platform implements this pattern:
 
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
-| **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 4-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `read` and `edit` denied, and Bash denied except `npx --yes skills@latest *` for skill installation. Git inspection and runtime queries are delegated to `@adventurer`, which allow-lists read-only shell and git commands. All other shell commands are denied. |
-| **Kimi Code** | Native plugin agents and commands | Four complete selected profiles carry role and policy; systemPromptPath supplies primary routing and modes. Named write-tool filters are not shell sandboxes. |
-| **Cursor** | Native profiles, commands, and policy | Complete selected agents and workflow commands use canonical methodology; an always-applied rule activates policy. Root skills are the two utilities and the four bundled methodology skills, never role or command facades. |
-| **Claude Code** | Full native profiles and commands | Explicit profiles contain complete role and policy; three native commands contain parent routing and modes. Write/Edit exclusions are tool-schema controls; no hooks ship here. |
-| **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
-| **Oh My Pi** | Native task profiles, commands, and global rule | Four task profiles, three modes, one always-applied policy/router rule, and five skills. Generic profile tool permissions remain advisory; no executable adapter or hooks. |
+| **OpenCode** | `task()` subagents | The main loop investigates, designs, implements, and delivers itself with writer tools, and dispatches only `@reviewer`. Each agent is a markdown file with frontmatter permissions. The main loop can read, edit, and run shell commands; the reviewer is read-only. |
+| **Kimi Code** | Native plugin agents and commands | The reviewer profile carries role and policy; systemPromptPath supplies primary routing and modes. Named write-tool filters are not shell sandboxes. |
+| **Cursor** | Native profiles, commands, and policy | The reviewer profile and workflow commands use canonical methodology; an always-applied rule activates policy. Root skills are the two utilities and the four bundled methodology skills, never role or command facades. |
+| **Claude Code** | Full native profiles and commands | The reviewer profile contains complete role and policy; three native commands contain parent routing and modes. Write/Edit exclusions are tool-schema controls; no hooks ship here. |
+| **Pi** | `maestria_subagent` | The main loop does recon, design, and implementation itself; dispatch sends only the reviewer through `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
+| **Oh My Pi** | Native task profiles, commands, and global rule | One reviewer task profile, three modes, one always-applied policy/router rule, and five skills. Generic profile tool permissions remain advisory; no executable adapter or hooks. |
 | **Codex** | Skills plus companion-installed full methodology | Marketplace installs the five skills. The CLI installs complete native TOMLs and a marked global policy/router/mode block; FEIN/SONAR/BLITZ keywords select per-turn modes. |
 | **Hermes** | Portable skills with optional manual context | Installation supplies the five skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
 | **Agent Plugins v1 (portable)** | Utility-only standard surface | Root handoff and iteration-limit skills follow portable discovery. Native profiles, modes, policy, and runtime controls are outside that standard. |
@@ -153,11 +153,11 @@ Self-review fails for three reasons, each documented from real sessions:
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
-| **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`, but the session-wide rules also affect builder work. |
-| **Cursor** | Metadata intent plus prompt guidance | The adventurer/architect/reviewer agents declare `readonly: true`, and prompt instructions state the boundary. A probe on Cursor CLI 2026.10.01 did not observe runtime enforcement for plugin-supplied agents (project `.cursor/agents` agents honored it), so treat the boundary as advisory. |
-| **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer, adventurer, and architect agents deny `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
+| **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`. |
+| **Cursor** | Metadata intent plus prompt guidance | The reviewer agent declares `readonly: true`, and prompt instructions state the boundary. A probe on Cursor CLI 2026.10.01 did not observe runtime enforcement for plugin-supplied agents (project `.cursor/agents` agents honored it), so treat the boundary as advisory. |
+| **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer agent denies `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
 | **Oh My Pi** | Native task dispatch with advisory generic profiles | Commands/rules provide complete methodology, but role prompts do not grant per-role tool restrictions or guarantee model compliance. |
-| **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-*` agents set read-only `sandbox_mode` for adventurer, architect, and reviewer. The utility skills and instruction text are advisory, and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
+| **Codex** | Read-only sandbox settings + advisory prompts | The CLI-installed `maestria-reviewer` agent sets read-only `sandbox_mode`. The utility skills and instruction text are advisory, and the plugin ships no hooks, so Codex's sandbox and approval flow remain the host boundary. |
 | **Hermes** | Portable skills with optional manual context | Installation supplies the five skills. Full policy/router/modes require separate supported project-context setup; delegation, permissions, and lifecycle remain host-owned. |
 | **Agent Plugins v1 (portable)** | Utility-only standard surface | Root handoff and iteration-limit skills follow portable discovery. Native profiles, modes, policy, and runtime controls are outside that standard. |

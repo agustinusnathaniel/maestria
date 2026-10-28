@@ -45,11 +45,11 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
 const pluginRoot = path.join(fixture.home, '.cursor/plugins/local/maestria');
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
 const configuredAgent = (model: string): string =>
-  `---\nname: builder\nmodel: ${model}\n---\nLegacy prompt.\n`;
-const generatedAgent = '---\nname: builder\n---\nPrevious shared prompt.\n';
-const newAgent = '---\nname: builder\n---\nNew canonical prompt.\n';
-const installedPath = path.join(pluginRoot, 'agents/builder.md');
-const legacyPath = path.join(pluginRoot, 'agents/cursor/builder.md');
+  `---\nname: reviewer\nmodel: ${model}\n---\nLegacy prompt.\n`;
+const generatedAgent = '---\nname: reviewer\n---\nPrevious shared prompt.\n';
+const newAgent = '---\nname: reviewer\n---\nNew canonical prompt.\n';
+const installedPath = path.join(pluginRoot, 'agents/reviewer.md');
+const legacyPath = path.join(pluginRoot, 'agents/cursor/reviewer.md');
 
 const update = (): Effect.Effect<void, CommandError> => {
   const cursor = getPlatform('cursor');
@@ -68,7 +68,7 @@ beforeEach(async () => {
   await rm(fixture.home, { force: true, recursive: true });
   const payload = path.join(fixture.home, 'payload/package');
   await mkdir(path.join(payload, 'agents'), { recursive: true });
-  await writeFile(path.join(payload, 'agents/builder.md'), newAgent);
+  await writeFile(path.join(payload, 'agents/reviewer.md'), newAgent);
   await mkdir(path.join(pluginRoot, 'agents'), { recursive: true });
   fixture.archive = path.join(fixture.home, 'replacement.tgz');
   execFileSync('tar', ['-czf', fixture.archive, '-C', path.dirname(payload), 'package']);
@@ -96,12 +96,12 @@ describe('Cursor consolidated package upgrade', () => {
       evidence,
       `${JSON.stringify(
         {
-          from: 'agents/cursor/builder.md',
+          from: 'agents/cursor/reviewer.md',
           installed,
           model: 'legacy-model',
           reproduction: 'pnpm --dir apps/maestria-cli exec vp test tests/cursor-upgrade.test.ts',
           result: 'passed',
-          to: 'agents/builder.md',
+          to: 'agents/reviewer.md',
         },
         null,
         2,
