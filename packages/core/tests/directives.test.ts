@@ -392,6 +392,15 @@ describe('OpenCode main-loop directives', () => {
     }
     expect(loop).toMatch(/routine delivery is autonomous/iu);
     expect(loop).toContain('[escalate]');
+    for (const clause of [
+      'Meaningful work means behavior changes, public interfaces or configuration, multiple production files, or data, auth, or security impact',
+      'Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `blitz`',
+      'boundary-changing or safety findings stop for authorization',
+      'Completion requires every planned slice to have reviewed changes on a pushed branch and an open PR with its acceptance evidence.',
+      'Before final verification, reconcile the original request and accepted follow-ups against the delivered result',
+    ]) {
+      expect(loop).toContain(clause);
+    }
     expect(loop).toMatch(
       /present the proposed design or plan to the user before dependent edits/iu,
     );

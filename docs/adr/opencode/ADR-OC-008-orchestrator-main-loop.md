@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-28). Confidence: medium. Supersedes the orchestrator lockdown in [ADR-OC-001](ADR-OC-001-tool-permission-design.md) section 5 for OpenCode only.
+Accepted (2026-10-28). Confidence: medium.
 
 ## Context
 
@@ -20,7 +20,7 @@ Outcome was saturated on these tasks, the samples are small, and only OpenCode w
 
 ## Decision
 
-On OpenCode only, the orchestrator is a main loop. It has the writer tool set that `@builder` has, may dispatch only `@reviewer`, investigates, designs, and implements itself, and loads the `recon`, `architecture-plan`, and `diagnose` method skills when a task needs them. Meaningful changes still get one blind review, and floors, authorization stops, modes, and delivery rules are unchanged. Its directives come from OpenCode-only canonical sources under `packages/core/agent-directives/opencode/`; every other host keeps the shared orchestrator and modes.
+On OpenCode only, the orchestrator is a main loop. It has the writer tool set that `@builder` has, keeps its existing permission to ask the user questions and install skills, may dispatch only `@reviewer` (enforced by its `task` permissions), investigates, designs, and implements itself, and loads the `recon`, `architecture-plan`, and `diagnose` method skills when a task needs them. Meaningful changes still get one blind review, and floors, authorization stops, modes, and delivery rules are unchanged. Its directives come from OpenCode-only canonical sources under `packages/core/agent-directives/opencode/`; every other host keeps the shared orchestrator and modes.
 
 The `@adventurer`, `@architect`, and `@builder` agents stay installed on every host, including OpenCode, so direct `@` mentions keep working.
 
@@ -30,6 +30,7 @@ The `@adventurer`, `@architect`, and `@builder` agents stay installed on every h
 - The OpenCode orchestrator and mode texts are a second canonical copy of the shared ones; edits to delivery, review, or reporting rules must be made in both until the hosts converge.
 - Pi still blocks main-session edits under a mode and delegates them, so folding Pi needs a runtime change, not only text.
 - Read-only `sonar` on OpenCode relies on the instruction to change no files, not on a permission.
+- The `blitz` and Runtime Authority fallback to "delegate to the permitted specialist" stays for hosts without direct work; on OpenCode direct work is always available, so it does not apply.
 
 ## Alternatives Considered
 
@@ -40,6 +41,10 @@ The `@adventurer`, `@architect`, and `@builder` agents stay installed on every h
 ## Future Considerations
 
 Revisit folding other hosts, or removing the role agents, when real OpenCode use shows no regressions and there is evidence about whether the roles are used elsewhere.
+
+## Supersession
+
+Supersedes in part [ADR-OC-001](ADR-OC-001-tool-permission-design.md): its section 5 orchestrator lockdown no longer applies on OpenCode. ADR-OC-001 keeps the rest of the OpenCode permission design.
 
 ## Date
 
