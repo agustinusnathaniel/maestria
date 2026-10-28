@@ -59,9 +59,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(sonar).toMatch(/do not implement/iu);
     expect(blitz).toMatch(/low-risk|optional.*ceremony/iu);
     expect(blitz).toMatch(/main loop/iu);
-    expect(blitz).toMatch(
-      /otherwise delegate.*permitted specialist|otherwise.*permitted specialist/iu,
-    );
+    expect(blitz).toMatch(/otherwise report the host limit/iu);
+    expect(blitz).not.toMatch(/permitted specialist/iu);
     expect(blitz).toMatch(/recon.*architecture-plan/iu);
     expect(blitz).toMatch(/safety.*authorization|authorization.*safety/iu);
     expect(blitz).toMatch(/review|branch/iu);
@@ -253,7 +252,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/repeated causes.*no new evidence|no new evidence.*repeated causes/iu);
     expect(rules).toMatch(/do not loop silently/iu);
     expect(iteration).toMatch(/verifiable termination condition/iu);
-    expect(iteration).toMatch(/change strategy - route root-cause uncertainty to diagnosis/iu);
+    expect(iteration).toMatch(/change strategy \(load `diagnose` for root-cause uncertainty/iu);
     expect(iteration).toMatch(/Tried X, Y, Z/u);
   });
 
@@ -288,6 +287,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toContain('Runtime Authority');
     expect(orchestrator).toContain('host runtime defines');
     expect(orchestrator).toContain('unavailable or disallowed');
+    expect(orchestrator).toMatch(/report that host limit/iu);
+    expect(orchestrator).not.toMatch(/delegate it to the permitted specialist/iu);
     expect(orchestrator).toContain('direct work is available');
     expect(orchestrator).toMatch(/never bypass runtime role boundaries/iu);
     expect(orchestrator).toContain(
