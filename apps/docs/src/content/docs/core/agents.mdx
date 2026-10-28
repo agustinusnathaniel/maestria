@@ -9,6 +9,8 @@ maestria defines a main loop and one reviewer specialist. The main loop investig
 
 The main loop owns each outcome end to end: it investigates the code, designs the change, implements it, and drives delivery. It loads method skills instead of handing work to a role: `recon` before changing code it has not read or when the affected surface is unclear, `architecture-plan` for trade-offs or a multi-phase plan, and `diagnose` for a bug with an unknown cause. It dispatches only reviewer, for independent blind review of meaningful changes.
 
+For a more independent check, give reviewer a different model from the main session with [`maestria configure`](/cli/commands/#configure), for example `maestria configure opencode --set reviewer=<model-id>`.
+
 For multi-slice implementation, it plans reviewable PR boundaries early and commits coherent slices after validating them. Each PR receives its own review and evidence; the integrated outcome receives final verification. When an `architecture-plan` design guides implementation, the main loop first presents a concise design brief so the user can understand the intended changes, sequence, and trade-offs. Tables or diagrams are used when they help explain the design.
 
 The full method groups the work into three concerns:
@@ -48,13 +50,15 @@ The consolidated [Agent Plugins package](/agent-plugins/) exports two portable u
 
 ### Bundled methodology skills
 
-The global rules name four maestria-specific skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, and `@maestria/pi`. They update with the package; there is nothing extra to install or select.
+The rules and the main loop name five maestria method skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, and `@maestria/pi`. They update with the package; there is nothing extra to install or select.
 
 - **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Agents load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
 - **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/docs-update/SKILL.md)** - Documentation and changeset procedure. Agents load it before finishing a change to behavior, interfaces, configuration, or user-facing workflows, and follow it to classify and update affected docs; ordinary docs work proceeds without it.
 - **[diagnose](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/diagnose/SKILL.md)** - Systematic debugging that traces errors from symptom to root cause. The main loop loads it for a bug, regression, failure, or crash with an unknown cause.
+- **[recon](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/recon/SKILL.md)** - Maps unfamiliar code before a change: entry points, call chains, boundaries, and every consumer the change must reach. The main loop loads it before changing code it has not read.
+- **[architecture-plan](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/architecture-plan/SKILL.md)** - Compares approaches and writes a phased plan, including rollback for migrations and rollouts. The main loop loads it for trade-offs, boundaries, ADR decisions, and multi-phase work, and presents the plan before dependent edits.
 
-For an agent maestria does not package, install them with [skills.sh](https://skills.sh); this offers the plugin's five skills, including `handoff` and `iteration-limits`:
+Supported agents get these skills with their maestria plugin; that is the recommended install. Only for an agent maestria does not package, install them with [skills.sh](https://skills.sh); this offers the plugin's seven skills, including `handoff` and `iteration-limits`:
 
 ```bash
 npx skills add agustinusnathaniel/maestria
@@ -66,7 +70,14 @@ Earlier CLI versions installed these two skills separately for each agent. `maes
 
 Agents load these when the assignment calls for them. Every one is optional: a missing skill never blocks the work, and the core directives still apply.
 
-The main loop loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. After installing a maestria platform, add that repository for your agents with [skills.sh](https://skills.sh) (drop `-g` to install into the current project instead):
+The main loop loads **[architecture-decision-framework](https://github.com/agustinusnathaniel/skills/tree/main/skills/software-engineering/architecture-decision-framework)** when a consequential trade-off benefits from a structured comparison. It lives in the separate [agustinusnathaniel/skills](https://github.com/agustinusnathaniel/skills) repository with other general-purpose engineering skills. That repository is independent of maestria and ships all its skills as one plugin for Claude Code, Codex CLI, Cursor, Kimi Code, ZCode, OMP, and Devin. In Claude Code:
+
+```bash
+/plugin marketplace add agustinusnathaniel/skills
+/plugin install agustinusnathaniel-skills@agustinusnathaniel-skills
+```
+
+Its [README](https://github.com/agustinusnathaniel/skills#installing-skills) covers the other hosts. To pick individual skills instead, use [skills.sh](https://skills.sh) (drop `-g` to install into the current project):
 
 ```bash
 npx skills add agustinusnathaniel/skills -g

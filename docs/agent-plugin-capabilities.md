@@ -19,7 +19,7 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | CLI | Standalone companion in `apps/maestria-cli`, not an executable plugin component |
 | Hooks, automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
 
-The portable v1 manifest exposes the five skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
+The portable v1 manifest exposes the seven skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
 
 ## Native mappings
 

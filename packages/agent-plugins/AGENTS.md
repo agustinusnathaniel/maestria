@@ -193,7 +193,7 @@ Each section below applies only on the host it names; skip the others.
 
 Devin discovers the conventional root `agents/*.md` as plugin subagents. Every profile includes complete canonical role and global policy; Devin loads this file, the package's root `AGENTS.md`, always-on for policy and routing. Custom plugin subagents are available in local CLI and Desktop sessions, not cloud sessions. Use the subagent controls the host exposes and preserve maker/checker separation.
 
-Devin documents an `allowed-tools` allowlist but no denylist or read-only field, so the reviewer relies on its prompt-level read-only instructions; profile keys meant for other hosts are undocumented for Devin. Devin has no plugin commands component: trigger workflow modes with the natural-language mode keywords routed by the always-on policy (for example `fein: <task>`). The overlay selects only the five skills.
+Devin documents an `allowed-tools` allowlist but no denylist or read-only field, so the reviewer relies on its prompt-level read-only instructions; profile keys meant for other hosts are undocumented for Devin. Devin has no plugin commands component: trigger workflow modes with the natural-language mode keywords routed by the always-on policy (for example `fein: <task>`). The overlay selects only the seven skills.
 
 See [Devin plugin file format](https://docs.devin.ai/cli/extensibility/plugins/overview).
 
@@ -209,7 +209,7 @@ The CLI installs the native `maestria-reviewer` TOML profile in `$CODEX_HOME/age
 
 #### Plugin boundary
 
-Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only the five skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, and `diagnose`); orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
+Codex 0.153.4's AgentPlugin loader discovers the conventional root `skills/` and does not use the overlay skills selector to migrate commands. Marketplace installation therefore supplies only the seven skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan`); orchestration and native profiles require the companion CLI installation. There are no extra Codex role or workflow skill facades, hooks, or MCP server. This integration does not override Codex's primary agent.
 
 See [Codex custom agents](https://developers.openai.com/codex/subagents) and [plugin packaging](https://developers.openai.com/plugins/build/plugins).
 
@@ -217,6 +217,6 @@ See [Codex custom agents](https://developers.openai.com/codex/subagents) and [pl
 
 Hermes consumes the portable root Agent Plugins v1 manifest and the four root skills. Enable the package with the host's plugin flow, then discover the qualified skill names using `skills_list` and load them using `skill_view`. Hermes generates an `agent-plugin-<slug>-<hash>` namespace; do not assume `maestria:<skill>`.
 
-Portable installation supplies only the five skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, and `diagnose`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, this file, the package's root `AGENTS.md`, contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
+Portable installation supplies only the seven skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan`). It does not activate routing, modes, or specialist agents. For optional manual host context configuration, this file, the package's root `AGENTS.md`, contains complete policy, routing, and mode instructions. Configure it only through an applicable verified Hermes context setting; installing this package alone does not inject that file. The bundle includes no Python adapter, native hooks, or MCP server. Hermes owns tools, permissions, delegation, and lifecycle.
 
 See [Hermes portable packages](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages).

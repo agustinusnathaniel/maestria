@@ -8,8 +8,8 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 `@maestria/agent-plugins` packages maestria's reviewer profile, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes five [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request`, `docs-update`, and `diagnose` [methodology skills](/core/agents/#skills) the rules tell agents to load.
 
 <Aside type="tip" title="Native hosts get the full methodology">
-  Portable installation supplies the five skills. Native host integrations add one reviewer profile,
-  three workflow modes, and policy through the host's own interfaces. Choose your host in
+  Portable installation supplies the seven skills. Native host integrations add one reviewer
+  profile, three workflow modes, and policy through the host's own interfaces. Choose your host in
   [Installation](/agent-plugins/installation/) before installing.
 </Aside>
 
@@ -18,7 +18,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 - **One reviewer:** the independent review profile, embedding its complete role and the global policy. The main loop investigates, designs, implements, and delivers itself, loading the `recon`, `architecture-plan`, and `diagnose` skills when a task needs them.
 - **Three workflow modes:** the full-method, research-only, and fast modes defined by ModeKeyword in `packages/shared/pi/src/state-core.ts`.
 - **Always-on policy and routing,** on hosts that can load it.
-- **Five skills:** `handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, and `diagnose`, on every host.
+- **Seven skills:** `handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan`, on every host.
 
 Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent-plugins/usage/) for commands and dispatch.
 
@@ -35,7 +35,7 @@ Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent
 | [OMP](/agent-plugins/installation/#omp) | 1 reviewer task profile | 3 commands | Always-apply rule | Prompt-level |
 | [Hermes](/agent-plugins/installation/#hermes) | None | None | Optional manual context | Not applicable |
 
-Every host also gets the five skills. Codex marketplace installation supplies only the skills; the reviewer profile and routing come from `maestria install codex`. Hermes supplies the skills, with optional [manual context](/agent-plugins/installation/#hermes-manual-context) for routing.
+Every host also gets the seven skills. Codex marketplace installation supplies only the skills; the reviewer profile and routing come from `maestria install codex`. Hermes supplies the skills, with optional [manual context](/agent-plugins/installation/#hermes-manual-context) for routing.
 
 [OpenCode](/opencode/) and [Pi](/pi/) keep their separate native runtime packages. The [compatibility matrix](/agent-plugins/compatibility/) distinguishes documented resources, package validation, loader probes, and live runtime verification. See the official [compatible clients](https://agent-plugins.org/compatible-clients) list for portable format support; the table above describes maestria resources, not live verification.
 
