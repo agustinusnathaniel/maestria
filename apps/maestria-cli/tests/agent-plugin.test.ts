@@ -20,11 +20,13 @@ describe('Agent Plugin validation', () => {
     expect(report.valid).toBe(true);
     expect(report.name).toBe('maestria');
     expect(report.skillNames).toEqual([
+      'architecture-plan',
       'create-pull-request',
       'diagnose',
       'docs-update',
       'handoff',
       'iteration-limits',
+      'recon',
     ]);
     expect(report.errors).toEqual([]);
   });

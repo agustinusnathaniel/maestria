@@ -31,7 +31,7 @@ For unfamiliar, multi-file, or high-risk work, hand it to the orchestrator:
 @orchestrator I need to add rate limiting to the API. Plan and implement it.
 ```
 
-The orchestrator decomposes the task, delegates to specialists, and integrates the results. It routes work through [thinker, worker, verifier](/core/agents/#orchestration-model) roles: `fein` for the full pipeline, `sonar` for research only, `blitz` for fast implementation. Pick a mode by typing its keyword in the prompt (`fein: add rate limiting`) or with `/fein`, `/sonar`, or `/blitz`. See the [Agent Reference](/core/agents/).
+On OpenCode the orchestrator works as one main loop: it explores, plans, and implements the change itself, loading the `recon`, `architecture-plan`, and `diagnose` skills when the task needs them, and sends meaningful changes to `@reviewer` for an independent check before delivery. Modes adjust that loop: `fein` for the full method with required review, `sonar` for research only, `blitz` for fast implementation. Pick a mode by typing its keyword in the prompt (`fein: add rate limiting`) or with `/fein`, `/sonar`, or `/blitz`. See the [Agent Reference](/core/agents/).
 
 For longer autonomous runs, the independent [OpenCode Goal Plugin](/ecosystem/opencode-goal-plugin/) adds Codex-style goal mode; maestria neither requires nor activates it.
 

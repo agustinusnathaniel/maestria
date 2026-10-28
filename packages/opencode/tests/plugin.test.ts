@@ -94,7 +94,12 @@ describe('agent transform', () => {
     expect(orchestrator?.permissions).toContainEqual({
       action: 'subagent',
       effect: 'allow',
-      resource: 'builder',
+      resource: 'reviewer',
+    });
+    expect(orchestrator?.permissions).toContainEqual({
+      action: 'edit',
+      effect: 'allow',
+      resource: '*',
     });
     for (const draft of drafts.values()) {
       expect(draft.system?.startsWith('---')).toBe(false);
@@ -160,9 +165,11 @@ describe('skill transform', () => {
     });
 
     expect([...skills.keys()].toSorted()).toEqual([
+      'architecture-plan',
       'create-pull-request',
       'diagnose',
       'docs-update',
+      'recon',
     ]);
     for (const [id, skill] of skills) {
       expect(skill.description?.length).toBeGreaterThan(0);

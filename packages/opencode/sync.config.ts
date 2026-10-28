@@ -73,6 +73,17 @@ const guardedReconGit = (): BashPermissionEntry[] =>
   );
 
 // Authored as OpenCode V1 `permission` maps, which read compactly; translated to V2 rules below.
+// du* follows stat* in the established projection. Shared by every agent that writes changes.
+const WRITER_BASH: readonly BashPermissionEntry[] = [
+  ...BASE_READ_HEAD,
+  ['du*', 'allow'],
+  ...BASE_READ_TAIL,
+  ...allow('test*', 'sort*', 'git*'),
+  ['pnpx*', 'ask'],
+  ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
+  ['*', 'ask'],
+];
+
 const permissionMaps = {
   files: {
     'adventurer.md': {
@@ -131,16 +142,7 @@ const permissionMaps = {
         description: `Focused implementation agent for one atomic, verifiable feature, fix, test, refactor, or documentation change.`,
         mode: 'subagent',
         permission: {
-          // du* follows stat* in the established projection.
-          bash: Object.fromEntries([
-            ...BASE_READ_HEAD,
-            ['du*', 'allow'],
-            ...BASE_READ_TAIL,
-            ...allow('test*', 'sort*', 'git*'),
-            ['pnpx*', 'ask'],
-            ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
-            ['*', 'ask'],
-          ]),
+          bash: Object.fromEntries(WRITER_BASH),
           edit: 'allow',
           glob: 'allow',
           grep: 'allow',
@@ -154,41 +156,39 @@ const permissionMaps = {
     },
     'commands/blitz.md': {
       output: 'commands/blitz.md',
+      source: '../core/agent-directives/opencode/commands/blitz.md',
       stripFrontmatter: true,
     },
     'commands/fein.md': {
       output: 'commands/fein.md',
+      source: '../core/agent-directives/opencode/commands/fein.md',
       stripFrontmatter: true,
     },
     'commands/sonar.md': {
       output: 'commands/sonar.md',
+      source: '../core/agent-directives/opencode/commands/sonar.md',
       stripFrontmatter: true,
     },
     'orchestrator.md': {
+      source: '../core/agent-directives/opencode/orchestrator.md',
       frontmatter: {
-        description: `maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
+        description: `maestria main loop that investigates, designs, implements, and delivers each outcome, with one blind reviewer for meaningful changes.`,
         mode: 'all',
         permission: {
-          bash: {
-            '*': 'deny',
-            '* npx --yes skills@latest *': 'allow',
-          },
-          edit: 'deny',
-          glob: 'deny',
-          grep: 'deny',
-          lsp: 'deny',
+          bash: Object.fromEntries([...WRITER_BASH, ['* npx --yes skills@latest *', 'allow']]),
+          edit: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
           question: 'allow',
-          read: 'deny',
+          read: 'allow',
           skill: 'allow',
           task: {
             '*': 'deny',
-            adventurer: 'allow',
-            architect: 'allow',
-            builder: 'allow',
             reviewer: 'allow',
           },
           todowrite: 'allow',
-          webfetch: 'deny',
+          webfetch: 'allow',
         },
       },
     },
@@ -220,12 +220,12 @@ const permissionMaps = {
     'rules-delivery.md': {
       output: '../rules/delivery.md',
       section: 'Continuation and Delivery',
-      source: '../core/agent-directives/specialists/orchestrator.md',
+      source: '../core/agent-directives/opencode/orchestrator.md',
     },
     'rules-modes.md': {
       output: '../rules/modes.md',
       section: 'Modes',
-      source: '../core/agent-directives/specialists/orchestrator.md',
+      source: '../core/agent-directives/opencode/orchestrator.md',
     },
   },
   output: 'agents',

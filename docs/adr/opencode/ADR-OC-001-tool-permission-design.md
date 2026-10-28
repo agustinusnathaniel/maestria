@@ -105,6 +105,8 @@ Extended by two records, extracted on 2026-09-28, because each decides a subject
 - [ADR-OC-006](ADR-OC-006-pi-omp-read-only-bash-boundary.md) owns the shared Pi read-only Bash boundary introduced by the 2026-09-24 amendment.
 - [ADR-OC-007](ADR-OC-007-normalized-read-only-git-boundary.md) owns the normalized read-only Git boundary introduced by the 2026-09-24 repair amendment.
 
+Superseded in part by [ADR-OC-008](ADR-OC-008-orchestrator-main-loop.md) (2026-10-28), which replaces the section 5 orchestrator lockdown on OpenCode with a main loop that has the writer tool set and may dispatch only the reviewer.
+
 This record keeps its original context, decision, consequences, and date, and continues to own the OpenCode agent permission design: the coarse-gate principle, the individual tool permissions, the audit that produced them, and the lessons learned. The failure inventories live with those two decisions; the host-enforcement boundary here constrains claims about OpenCode permission entries.
 
 ## Date

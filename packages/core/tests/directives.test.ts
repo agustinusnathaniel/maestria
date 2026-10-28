@@ -355,3 +355,45 @@ describe('canonical directive behavioral contracts', () => {
     );
   });
 });
+
+describe('OpenCode main-loop directives', () => {
+  const shared = readDirective('specialists', 'orchestrator.md');
+  const loop = readDirective('opencode', 'orchestrator.md');
+  const modes = ['fein', 'sonar', 'blitz'].map((mode) =>
+    readDirective('opencode', 'commands', `${mode}.md`),
+  );
+
+  it('does the work in the main loop with method skills and one blind reviewer', () => {
+    for (const skill of ['recon', 'architecture-plan', 'diagnose']) {
+      expect(loop).toContain(`\`${skill}\``);
+    }
+    expect(loop).toMatch(/one blind `@reviewer` pass/iu);
+    expect(loop).toMatch(/never dispatch `@adventurer`, `@architect`, or `@builder`/iu);
+    for (const mode of modes) {
+      expect(mode).not.toMatch(
+        /use only read-only `@adventurer`|thinker -> worker|focused or full route/iu,
+      );
+    }
+    expect(modes[1]).toMatch(/change no files and dispatch no subagents/iu);
+  });
+
+  it('keeps every shared contract outside routing and specialist ownership', () => {
+    for (const heading of [
+      'Runtime Authority',
+      'Modes',
+      'Review and Triage',
+      'Continuation and Delivery',
+      'Reporting to the User',
+    ]) {
+      expect(loop).toContain(heading);
+    }
+    for (const section of ['Reporting to the User']) {
+      expect(extractSection(loop, section)).toBe(extractSection(shared, section));
+    }
+    expect(loop).toMatch(/routine delivery is autonomous/iu);
+    expect(loop).toContain('[escalate]');
+    expect(loop).toMatch(
+      /present the proposed design or plan to the user before dependent edits/iu,
+    );
+  });
+});

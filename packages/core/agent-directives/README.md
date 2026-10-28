@@ -22,8 +22,9 @@ agent-directives/
     orchestrator.md  - Routing and delivery ownership
     reviewer.md      - Code review with quality gates
   rules.md           - Shared rules used across all agents
-  skills/            - maestria's own methodology skills (`create-pull-request`, `diagnose`, `docs-update`)
+  skills/            - maestria's own methodology skills (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `recon`)
   commands/          - Workflow-mode sources (`fein`, `sonar`, `blitz`)
+  opencode/          - OpenCode-only main-loop orchestrator and modes (ADR-OC-008); edit shared review, delivery, and reporting rules here too
 ```
 
 The consolidated `@maestria/agent-plugins` package lives at `packages/agent-plugins/` and is directly installable. Core remains the authoring home: roles belong to `specialists/`, modes to `commands/`, and policy to `rules.md` and host integration notes. Host manifests are hand-edited at the package root and validated by the generator; per-role profile metadata lives in the package's `generation/profiles.json`. Host integration notes stay here under `integrations/` and are composed into rules and Codex profiles; the package ships no separate integration guides.
@@ -32,7 +33,7 @@ Root host manifests and semantic agent, command, policy, and utility resources a
 
 The consolidated compiler is the sole writer for this package's composed resources. It reuses core normalization/frontmatter helpers and validates canonical sources, required headings, profile metadata, manifest paths, size limits, and output containment before mutation. `scripts/sync-all` first preflights all other package configs without writes, then regenerates resources; `scripts/check-sync` remains read-only. There is no nested installation root. The standalone CLI remains in `apps/maestria-cli`.
 
-Methodology skills that the directives name (`create-pull-request`, `diagnose`, `docs-update`) are authored once under `skills/` here. `scripts/sync-bundled-skills.ts` (run by `scripts/sync-all`, guarded by `scripts/check-sync`) copies each into `skills/` of `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi`; edit the skill here, never a copy. Runtimes maestria does not package get the agent-plugins copies through `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source. Directives refer to any other skill by capability only (for example "a browser-automation skill, when one is installed"), so they never depend on a skill maestria does not ship, and such skills are never vendored here. [CORE-005](../../../docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records these three ownership tiers.
+Methodology skills that the directives name (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `recon`) are authored once under `skills/` here. `scripts/sync-bundled-skills.ts` (run by `scripts/sync-all`, guarded by `scripts/check-sync`) copies each into `skills/` of `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi`; edit the skill here, never a copy. Runtimes maestria does not package get the agent-plugins copies through `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source. Directives refer to any other skill by capability only (for example "a browser-automation skill, when one is installed"), so they never depend on a skill maestria does not ship, and such skills are never vendored here. [CORE-005](../../../docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records these three ownership tiers.
 
 maestria and agustinusnathaniel/skills are independent. maestria holds how the agent works on every task (floors, routing, delegation, review, delivery) and only the method skills its own workflow calls; task-triggered know-how belongs in the skills repo. Neither depends on the other; overlap is fine if they never contradict.
 

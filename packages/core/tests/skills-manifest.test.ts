@@ -32,7 +32,13 @@ const skillDirs = (root = SKILLS_DIR): string[] =>
 
 describe('canonical methodology skills', () => {
   it('name each skill after its directory', () => {
-    expect(skillDirs()).toEqual(['create-pull-request', 'diagnose', 'docs-update']);
+    expect(skillDirs()).toEqual([
+      'architecture-plan',
+      'create-pull-request',
+      'diagnose',
+      'docs-update',
+      'recon',
+    ]);
     for (const dir of skillDirs()) {
       expect(readSkillName(dir)).toBe(dir);
     }

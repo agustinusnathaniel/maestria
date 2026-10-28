@@ -197,8 +197,7 @@ const sectionPermissionNarrowing = (): void => {
         bash(name)['*'] ?? '',
       ),
     ),
-    check('orchestrator denies shell', bash('orchestrator.md')['*'] === 'deny'),
-    check('orchestrator denies edits', other('orchestrator.md').edit === 'deny'),
+    check('orchestrator asks before unlisted shell', bash('orchestrator.md')['*'] === 'ask'),
     check('adventurer denies edits', other('adventurer.md').edit === 'deny'),
     check('architect denies edits', other('architect.md').edit === 'deny'),
     check('reviewer denies edits', other('reviewer.md').edit === 'deny'),
@@ -210,7 +209,11 @@ const sectionPermissionNarrowing = (): void => {
     check('builder keeps du allow', bash('builder.md')['du*'] === 'allow'),
     check('builder asks on fallback shell', bash('builder.md')['*'] === 'ask'),
     check('builder allows edits', other('builder.md').edit === 'allow'),
-    check('orchestrator delegates to builder', task('orchestrator.md').builder === 'allow'),
+    check(
+      'orchestrator delegates only to the reviewer',
+      task('orchestrator.md').reviewer === 'allow',
+    ),
+    check('orchestrator cannot dispatch builder', task('orchestrator.md').builder === undefined),
     check('orchestrator denies open task routing', task('orchestrator.md')['*'] === 'deny'),
   ];
   sections.push({
