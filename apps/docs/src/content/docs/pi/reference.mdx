@@ -11,9 +11,9 @@ This page describes the `@maestria/pi` runtime extension. The Oh My Pi integrati
 
 | Command | Behavior |
 | --- | --- |
-| `/fein` | Full method with reconnaissance, design, implementation, and review |
-| `/sonar` | Research-only route that stops before implementation |
-| `/blitz` | Fast path that skips optional reconnaissance and design while preserving required safeguards |
+| `/fein` | Full method: `recon` and `architecture-plan` before implementing in the main loop, with required blind review |
+| `/sonar` | Research-only route that stops before implementation; change no files and dispatch no subagents |
+| `/blitz` | Fast path that skips optional `recon` and `architecture-plan` loads while preserving required safeguards and review |
 
 The modes are defined by ModeKeyword in `packages/shared/pi/src/state-core.ts`. A mode keyword anywhere in a message, outside code, sets the mode and applies it to that message; when several appear, the most restrictive wins (full-method over research-only over fast). A slash command sets the mode without a task. Either way the mode stays active for the session until another mode is set or you run `/mode-clear`.
 

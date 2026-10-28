@@ -304,7 +304,7 @@ try {
   );
   const directoryQuery = `?directory=${encodeURIComponent(path.join(root, 'work'))}`;
   for (const [route, names] of [
-    ['agent', ['orchestrator', 'reviewer']],
+    ['agent', ['maestria', 'reviewer']],
     ['command', ['fein', 'sonar', 'blitz']],
     ['skill', ['create-pull-request', 'diagnose', 'docs-update']],
   ] as const) {
@@ -330,7 +330,7 @@ try {
       );
       check(
         'agent modes preserved',
-        agents.every((a) => a.mode === (a.id === 'orchestrator' ? 'all' : 'subagent')),
+        agents.every((a) => a.mode === (a.id === 'maestria' ? 'all' : 'subagent')),
       );
       const hasRule = (id: string, action: string, effect: string, resource = '*'): boolean =>
         rows(agents.find((a) => a.id === id)?.permissions ?? []).some(
@@ -339,9 +339,9 @@ try {
       check('reviewer denies edit', hasRule('reviewer', 'edit', 'deny'));
       check('reviewer asks on shell', hasRule('reviewer', 'shell', 'ask'));
       check(
-        'orchestrator allows edit and delegates only to the reviewer',
-        hasRule('orchestrator', 'edit', 'allow') &&
-          hasRule('orchestrator', 'subagent', 'allow', 'reviewer'),
+        'maestria allows edit and delegates only to the reviewer',
+        hasRule('maestria', 'edit', 'allow') &&
+          hasRule('maestria', 'subagent', 'allow', 'reviewer'),
       );
     }
     if (route === 'skill') {

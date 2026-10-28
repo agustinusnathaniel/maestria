@@ -69,7 +69,7 @@ pnpm exec tsx ../core/scripts/sync.ts --diff
 
 1. Edit the matching file under `packages/core/agent-directives/`.
 2. Keep the directive focused: short sections, one concern per section, and references instead of repeated rules.
-3. Update the orchestrator's delegation table when adding a specialist.
+3. Update the main loop's Routing section in `specialists/main-loop.md` when changing review dispatch.
 4. Run `scripts/sync-all`, then `scripts/check-sync`.
 5. Run the relevant package tests and the repository quality gates.
 

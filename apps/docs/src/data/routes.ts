@@ -30,7 +30,7 @@ export const routes: Route[] = [
     rationale:
       'Unfamiliar code with real trade-offs: method skills earn their place, then an independent check.',
     steps: [
-      { agent: 'orchestrator', artifact: 'Investigate, plan, implement' },
+      { agent: 'maestria', artifact: 'Investigate, plan, implement' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Add rate limiting to the upload API',
@@ -41,7 +41,7 @@ export const routes: Route[] = [
     rationale:
       'Root cause first with diagnose, then the fix, then a review by someone who did not write it.',
     steps: [
-      { agent: 'orchestrator', artifact: 'Root cause + fix' },
+      { agent: 'maestria', artifact: 'Root cause + fix' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Uploads over 10 MB fail without an error',
@@ -52,7 +52,7 @@ export const routes: Route[] = [
     rationale:
       'The main loop works from the source of truth; the reviewer checks it against the code.',
     steps: [
-      { agent: 'orchestrator', artifact: 'Updated guide' },
+      { agent: 'maestria', artifact: 'Updated guide' },
       { agent: 'reviewer', artifact: 'Approved' },
     ],
     task: 'Document the new retry option',
@@ -61,7 +61,7 @@ export const routes: Route[] = [
     id: 'small',
     label: 'Small edit',
     rationale: 'Known, low-risk work: the main loop does it directly. No review needed.',
-    steps: [{ agent: 'orchestrator', artifact: 'Done directly' }],
+    steps: [{ agent: 'maestria', artifact: 'Done directly' }],
     task: 'Fix a typo in the README',
   },
 ];
@@ -71,6 +71,6 @@ export const routes: Route[] = [
  * it.
  */
 export const lanes: { stage: string; agents: string[] }[] = [
-  { agents: ['orchestrator'], stage: 'Main loop' },
+  { agents: ['maestria'], stage: 'Main loop' },
   { agents: ['reviewer'], stage: 'Check' },
 ];

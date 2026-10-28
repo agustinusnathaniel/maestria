@@ -51,7 +51,7 @@ None of these is a shell sandbox, and the host keeps control of permissions. See
 
 ## Skills
 
-Seven skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step; `iteration-limits` bounds repair and review loops with explicit stop conditions; `create-pull-request` drafts PR titles and bodies; and `docs-update` keeps docs and changesets in step with a change. One more methodology skill loads on trigger: `diagnose` traces a failure to its root cause before fixing. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
+Seven skills work on every host: `handoff` transfers outcome, constraints, evidence, blockers, and next step; `iteration-limits` bounds repair and review loops with explicit stop conditions; `create-pull-request` drafts PR titles and bodies; `docs-update` keeps docs and changesets in step with a change; `diagnose` traces a failure to its root cause; `recon` maps unfamiliar code; and `architecture-plan` compares approaches and writes a phased plan. They guide the agent and do not restrict tools. They are not specialists or workflow commands; loading them registers no agents and activates no routing.
 
 ```text
 Use the handoff utility to summarize this task's outcome, constraints,
@@ -76,7 +76,7 @@ A few host details are worth knowing:
 - **Codex.** The modes are instruction entry points from the managed routing block, not installed skills or slash commands. The reviewer profile keeps Codex's read-only sandbox. A marketplace-only install has the utilities but no modes or reviewer.
 - **Cursor.** Profiles and commands embed their full methodology, and the always-apply rule supplies routing. Direct execution or the reviewer alone is often better for small changes and expensive models.
 - **Kimi Code.** Kimi chooses the model because plugin profiles have no per-agent model field.
-- **Devin.** Root `AGENTS.md` carries the router, mode definitions, and policy. Cloud sessions can use the skills and policy but not plugin subagents.
+- **Devin.** Root `AGENTS.md` carries the routing, mode definitions, and policy. Cloud sessions can use the skills and policy but not plugin subagents.
 - **OMP.** Profiles inherit the parent model by default, and the package adds no persistent mode mechanism or session interception.
 - **Hermes.** Hermes derives an `agent-plugin-<slug>-<hash>` namespace for portable plugins, so do not assume `maestria:<skill>`. Native agent registration and delegation remain Hermes capabilities. To add routing and mode guidance, follow the [manual context setup](/agent-plugins/installation/#hermes-manual-context).
 - **Claude Code.** Commands and utilities can load in Claude Chat, but the full workflow needs delegation, which Chat lacks. See [Claude Chat and Cowork](/agent-plugins/installation/#claude-chat-and-cowork).

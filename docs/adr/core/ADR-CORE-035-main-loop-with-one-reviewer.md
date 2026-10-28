@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-28). Confidence: medium.
+Accepted (2026-10-28). Confidence: medium. Amended 2026-10-28: the main agent is named `maestria` (formerly `orchestrator`), and its canonical source is `specialists/main-loop.md`.
 
 ## Context
 

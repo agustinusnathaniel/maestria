@@ -6,14 +6,14 @@ maestria ships one directly installable plugin with native host components and s
 
 | Package folder | Contents | Canonical input |
 | --- | --- | --- |
-| `agents/` | One profile per specialist for every Markdown host, plus a generated Codex TOML beside each | Core `specialists/` and `generation/profiles.json` |
-| `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, dispatcher, and policy |
+| `agents/` | One reviewer profile for every Markdown host, plus a generated Codex TOML beside it | Core `specialists/` and `generation/profiles.json` |
+| `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, routing, and policy |
 | `rules/`, `AGENTS.md`, `kimi.system-prompt.md` | `rules/global.md` (OMP) and `rules/cursor/` (Cursor); the root `AGENTS.md` serves Devin, Codex, and Hermes, and `kimi.system-prompt.md` is Kimi Code's `systemPromptPath` copy with only its own host note | Core `rules.md` and integration notes |
-| `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request` and `docs-update` methodology skills | One core `rules.md` section per utility; core `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
+| `skills/` | `handoff` and `iteration-limits` utilities, plus the bundled `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` methodology skills | One core `rules.md` section per utility; core `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
 | `generation/` | Development-only profile metadata (`profiles.json`); not shipped | Hand-authored mechanical input |
 | `assets/` | Logo shared by the host manifests | Hand-authored package file |
 
-Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, router, policy, and argument contract without loading removed skills.
+Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, routing, policy, and argument contract without loading removed skills.
 
 Each profile's frontmatter carries every Markdown host's keys at once, and each host reads only its own: `readonly` (Cursor), `disallowedTools: [Write, Edit]` (Claude Code, Kimi Code, ZCode), and `subagents: []` (Kimi). Profiles omit `model`, so hosts use the main conversation's model. Primary-session routing comes from each host's always-on rule, context, or companion installation, not from a dispatcher profile.
 

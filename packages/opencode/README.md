@@ -1,6 +1,6 @@
 # @maestria/opencode
 
-An [OpenCode](https://opencode.ai/v2/docs/) plugin that provides maestria's specialist agents, shared engineering rules, workflow modes, and methodology skills.
+An [OpenCode](https://opencode.ai/v2/docs/) plugin that provides maestria's main loop and reviewer, shared engineering rules, workflow modes, and methodology skills.
 
 > This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -19,14 +19,14 @@ From 0.9.0 the package is an OpenCode V2 plugin; OpenCode V1 cannot load it. To 
 opencode plugin add @maestria/opencode
 ```
 
-This installs the package and adds it to the global `plugins` list. Update with `opencode plugin update @maestria/opencode` and remove with `opencode plugin remove @maestria/opencode`, or let the [maestria CLI](https://maestria.sznm.dev/cli/) manage it (`maestria install opencode`, `maestria update opencode`, `maestria uninstall opencode`). For a single project, add it to `plugins` in that project's `opencode.json(c)` instead. Select the `orchestrator` agent for the main loop; the plugin keeps your configured default agent.
+This installs the package and adds it to the global `plugins` list. Update with `opencode plugin update @maestria/opencode` and remove with `opencode plugin remove @maestria/opencode`, or let the [maestria CLI](https://maestria.sznm.dev/cli/) manage it (`maestria install opencode`, `maestria update opencode`, `maestria uninstall opencode`). For a single project, add it to `plugins` in that project's `opencode.json(c)` instead. Select the `maestria` agent for the main loop; the plugin keeps your configured default agent.
 
 Coming from OpenCode V1: V2 ignores the V1 `plugin` array, so add the package with the command above. `maestria update opencode` moves a V1 entry for you.
 
 ## What It Provides
 
-- **Agents**: `orchestrator` (the main loop that investigates, designs, implements, and delivers) plus `reviewer` for independent review, each with its own permission rules.
-- **Global rules**: added to every agent-loop and compaction request. Delivery ownership (workflow modes, autonomous commit, push, and PR, and PR slicing) lives in the `orchestrator` agent; the plugin also adds it for OpenCode's own agents such as `build` and `plan`, so only the reviewer subagent goes without it.
+- **Agents**: `maestria` (the main loop that investigates, designs, implements, and delivers) plus `reviewer` for independent review, each with its own permission rules.
+- **Global rules**: added to every agent-loop and compaction request. Delivery ownership (workflow modes, autonomous commit, push, and PR, and PR slicing) lives in the `maestria` agent; the plugin also adds it for OpenCode's own agents such as `build` and `plan`, so only the reviewer subagent goes without it.
 - **Workflow modes**: the full method, research-only, and fast modes as slash commands or bare keywords (see `ModeKeyword` in `packages/shared/pi/src/state-core.ts`).
 - **Skills**: `create-pull-request`, `docs-update`, and `diagnose`, which the global rules name. A project skill with the same ID takes precedence.
 - **Project customization**: `.maestria/workflow.md` and `.maestria/rules.md` at the project root are read on every model request, so edits apply without a reload. A missing file is skipped; a directory, unreadable file, or link resolving outside the project fails the request instead of running without it.

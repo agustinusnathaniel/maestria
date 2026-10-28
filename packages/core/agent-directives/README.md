@@ -16,7 +16,7 @@ agent-directives/
   COMPOSITION.md     - Human-facing composition guidance
   integrations/      - Host-specific notes that explain native adapter behavior
   specialists/       - The main loop and its one subagent
-    orchestrator.md  - Main loop: recon, design, implementation, review triage, and delivery
+    main-loop.md     - Main loop (the `maestria` agent on OpenCode): recon, design, implementation, review triage, and delivery
     reviewer.md      - Independent blind review with quality gates
   rules.md           - Shared rules used across all agents
   skills/            - maestria's own methodology skills (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `recon`)
@@ -47,6 +47,6 @@ After changing canonical input or projection metadata, run `scripts/sync-all` an
 
 1. Create a new file in `specialists/<name>.md`
 2. Define the role, task-specific judgment, acceptance evidence, and handoff. Use conditional skill triggers; keep shared contracts in `rules.md`.
-3. Add the specialist to the delegation table in the orchestrator prompt
+3. Add the specialist to the Routing section in `specialists/main-loop.md`
 4. Add the projection to each relevant adapter sync config and the consolidated compiler/profile registry, then update native metadata required by that integration
 5. Run the sync tool to generate plugin-specific agent files

@@ -73,7 +73,7 @@ const guardedReconGit = (): BashPermissionEntry[] =>
   );
 
 // Authored as OpenCode V1 `permission` maps, which read compactly; translated to V2 rules below.
-// du* follows stat* in the established projection. Used by the orchestrator, which writes changes.
+// du* follows stat* in the established projection. Used by the maestria main agent, which writes changes.
 const WRITER_BASH: readonly BashPermissionEntry[] = [
   ...BASE_READ_HEAD,
   ['du*', 'allow'],
@@ -98,8 +98,8 @@ const permissionMaps = {
       output: 'commands/sonar.md',
       stripFrontmatter: true,
     },
-    'orchestrator.md': {
-      source: '../core/agent-directives/specialists/orchestrator.md',
+    'main-loop.md': {
+      output: 'maestria.md',
       frontmatter: {
         description: `maestria main loop that investigates, designs, implements, and delivers each outcome, with one blind reviewer for meaningful changes.`,
         mode: 'all',
@@ -149,12 +149,12 @@ const permissionMaps = {
     'rules-delivery.md': {
       output: '../rules/delivery.md',
       section: 'Continuation and Delivery',
-      source: '../core/agent-directives/specialists/orchestrator.md',
+      source: '../core/agent-directives/specialists/main-loop.md',
     },
     'rules-modes.md': {
       output: '../rules/modes.md',
       section: 'Modes',
-      source: '../core/agent-directives/specialists/orchestrator.md',
+      source: '../core/agent-directives/specialists/main-loop.md',
     },
   },
   output: 'agents',

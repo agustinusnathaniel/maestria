@@ -101,11 +101,11 @@ export const agentDirectiveSync = ({
       section: ['Repair Budget', 'Fail-Loud Repair'],
       source: '../core/agent-directives/rules.md',
     },
-    'orchestrator.md': {
-      output: '../skills/orchestrator/SKILL.md',
+    'main-loop.md': {
+      output: '../skills/maestria/SKILL.md',
       prepend:
         '---\n' +
-        'name: orchestrator\n' +
+        'name: maestria\n' +
         'description: >-\n' +
         '  maestria main loop. Investigates, designs, and implements with the recon,\n' +
         '  architecture-plan, and diagnose skills, sends meaningful changes to one blind\n' +
@@ -144,6 +144,5 @@ export const agentDirectiveSync = ({
     },
   },
   output: 'agents',
-  preserve: ['.gitkeep'],
   source: '../core/agent-directives/specialists',
 });

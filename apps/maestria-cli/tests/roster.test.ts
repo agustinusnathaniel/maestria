@@ -10,7 +10,7 @@ const SPECIALISTS_DIR = path.resolve(
 );
 
 const delegableNames = readdirSync(SPECIALISTS_DIR)
-  .filter((file) => file.endsWith('.md') && file !== 'orchestrator.md')
+  .filter((file) => file.endsWith('.md') && file !== 'main-loop.md')
   .map((file) => file.replace(/\.md$/u, ''))
   .toSorted();
 

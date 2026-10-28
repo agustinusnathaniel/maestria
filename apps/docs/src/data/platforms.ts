@@ -41,7 +41,7 @@ export interface Platform {
  */
 export const platforms: Platform[] = [
   {
-    blurb: '5 agents with global rules injected into every session.',
+    blurb: 'Main loop and reviewer with global rules injected into every session.',
     flagship: true,
     href: '/opencode/',
     id: 'opencode',
@@ -50,7 +50,7 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: '4 specialist subagents with native workflow modes and session tracking for Pi.',
+    blurb: 'Reviewer subagent with native workflow modes and session tracking for Pi.',
     href: '/pi/',
     id: 'pi',
     installArgs: 'install pi',
