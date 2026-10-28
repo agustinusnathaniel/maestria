@@ -12,7 +12,7 @@
   "interface": {
     "displayName": "maestria",
     "shortDescription": "maestria handoff, iteration, PR, and docs skills for Codex",
-    "longDescription": "Four maestria skills: handoffs, bounded iteration, pull request drafts, and documentation updates. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
+    "longDescription": "Seven maestria skills: handoffs, bounded iteration, pull request drafts, documentation updates, diagnosis, recon, and architecture plans. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],

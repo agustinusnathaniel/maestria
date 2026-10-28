@@ -1,6 +1,6 @@
 # @maestria/agent-plugins
 
-maestria ships one directly installable plugin with native host components and five skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
+maestria ships one directly installable plugin with native host components and seven skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
 
 ## Component ownership
 
@@ -29,7 +29,7 @@ On a host with a managed flow, run `npx maestria install <host>` (`claude-code`,
 
 Supports Claude Code, Cursor, Codex, Kimi Code, Devin, ZCode, OMP, and Hermes, plus portable skill clients. Follow the public [installation](https://maestria.sznm.dev/agent-plugins/installation/), [usage](https://maestria.sznm.dev/agent-plugins/usage/), and [compatibility](https://maestria.sznm.dev/agent-plugins/compatibility/) pages for per-host setup and support boundaries.
 
-See [installation](INSTALL.md) and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; the methodology skills this package bundles are authored in `packages/core/agent-directives/skills/`, and `npx skills add agustinusnathaniel/maestria` serves this package's five skills to runtimes maestria does not package.
+See [installation](INSTALL.md) and the [public guides](https://maestria.sznm.dev/agent-plugins/). OpenCode and Pi retain their native runtime packages. The standalone CLI lives in `apps/maestria-cli`; the methodology skills this package bundles are authored in `packages/core/agent-directives/skills/`, and `npx skills add agustinusnathaniel/maestria` serves this package's seven skills to runtimes maestria does not package.
 
 ## Development and verification
 
