@@ -1,9 +1,9 @@
 ---
 name: handoff
 description: >-
-  Pass outcome, constraints, evidence, blockers, and next steps between workflow
-  stages. Load when receiving a task from another specialist, or when handing off
-  work to the next stage in the pipeline.
+  Pass outcome, constraints, evidence, blockers, and next steps between sessions
+  or agents. Load when briefing the reviewer, receiving a delegated task, or
+  handing work to another session.
 ---
 
 

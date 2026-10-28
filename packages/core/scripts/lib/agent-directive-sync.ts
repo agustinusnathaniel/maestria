@@ -79,9 +79,9 @@ export const agentDirectiveSync = ({
         '---\n' +
         'name: handoff\n' +
         'description: >-\n' +
-        '  Pass outcome, constraints, evidence, blockers, and next steps between workflow\n' +
-        '  stages. Load when receiving a task from another specialist, or when handing off\n' +
-        '  work to the next stage in the pipeline.\n' +
+        '  Pass outcome, constraints, evidence, blockers, and next steps between sessions\n' +
+        '  or agents. Load when briefing the reviewer, receiving a delegated task, or\n' +
+        '  handing work to another session.\n' +
         '---\n' +
         '\n',
       section: 'Delegation and Context',
