@@ -82,15 +82,15 @@ describe('agent transform', () => {
       update,
     });
 
-    expect([...drafts.keys()].toSorted()).toEqual(['orchestrator', 'reviewer']);
-    const orchestrator = drafts.get('orchestrator');
-    expect(orchestrator?.mode).toBe('all');
-    expect(orchestrator?.permissions).toContainEqual({
+    expect([...drafts.keys()].toSorted()).toEqual(['maestria', 'reviewer']);
+    const mainLoop = drafts.get('maestria');
+    expect(mainLoop?.mode).toBe('all');
+    expect(mainLoop?.permissions).toContainEqual({
       action: 'subagent',
       effect: 'allow',
       resource: 'reviewer',
     });
-    expect(orchestrator?.permissions).toContainEqual({
+    expect(mainLoop?.permissions).toContainEqual({
       action: 'edit',
       effect: 'allow',
       resource: '*',

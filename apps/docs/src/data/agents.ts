@@ -22,7 +22,7 @@ export const agents: Agent[] = [
     description:
       'The main loop investigates, designs, implements, and delivers each outcome itself: it loads the recon, architecture-plan, and diagnose skills when the task needs them, verifies the result, and sends meaningful changes to one independent reviewer before delivery.',
     icon: '🎯',
-    id: 'orchestrator',
+    id: 'maestria',
     name: 'Main loop',
     role: 'Investigates, designs, implements, delivers',
     scope: 'Every task, end to end',

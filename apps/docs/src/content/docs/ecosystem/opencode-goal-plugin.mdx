@@ -1,6 +1,6 @@
 ---
 title: OpenCode Goal Plugin
-description: Codex-style long-running goal mode for OpenCode. Pairs well with maestria's orchestrator continuation policy.
+description: Codex-style long-running goal mode for OpenCode. Pairs well with maestria's continuation policy.
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
@@ -13,7 +13,7 @@ OpenCode Goal Plugin adds Codex-style long-running goal mode to OpenCode: a `/go
 
 ## Why Use It With maestria
 
-maestria's orchestrator follows a continuation policy: the session owns progress toward one explicit outcome until it reaches its terminal artifact. The plugin expresses a similar contract at the runtime level.
+maestria's main loop follows a continuation policy: the session owns progress toward one explicit outcome until it reaches its terminal artifact. The plugin expresses a similar contract at the runtime level.
 
 Goal lifecycle tools belong to the host runtime; maestria's directives stay host-agnostic, and maestria neither requires nor activates this plugin.
 

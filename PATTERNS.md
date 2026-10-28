@@ -127,13 +127,13 @@ The completions promise is what makes the reviewer's job mechanical instead of i
 
 In OpenCode, the checker agent has `edit: deny`. It cannot modify files - only read and report. This is technical enforcement of the behavioral split. Other platforms must be treated according to their own enforcement guarantees.
 
-OpenCode implementation (from `orchestrator.md` frontmatter):
+OpenCode implementation (from `reviewer.md` frontmatter):
 
 ```yaml
 permission:
   edit: deny
   bash:
-    '*': deny
+    '*': ask
 ```
 
 The reviewer can run `git status`, `git diff`, `git log` for context, but cannot stage, commit, create files, or modify anything. The review artifact is text - findings, severity levels, and recommendations - that flows back into the pipeline.

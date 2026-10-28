@@ -115,7 +115,7 @@ const parseAgentPermissions = (text: string): PermissionFile => {
   return perm;
 };
 
-const EXPECTED_AGENTS: readonly string[] = ['orchestrator.md', 'reviewer.md'];
+const EXPECTED_AGENTS: readonly string[] = ['maestria.md', 'reviewer.md'];
 
 const RECON_AGENTS: readonly string[] = ['reviewer.md'];
 
@@ -191,17 +191,14 @@ const sectionPermissionNarrowing = (): void => {
         bash(name)['*'] ?? '',
       ),
     ),
-    check('orchestrator asks before unlisted shell', bash('orchestrator.md')['*'] === 'ask'),
+    check('maestria asks before unlisted shell', bash('maestria.md')['*'] === 'ask'),
     check('reviewer denies edits', other('reviewer.md').edit === 'deny'),
     check('reviewer asks on shell', bash('reviewer.md')['*'] === 'ask'),
   ];
   const allows: EvidenceCheck[] = [
-    check('orchestrator allows edits', other('orchestrator.md').edit === 'allow'),
-    check(
-      'orchestrator delegates only to the reviewer',
-      task('orchestrator.md').reviewer === 'allow',
-    ),
-    check('orchestrator denies open task routing', task('orchestrator.md')['*'] === 'deny'),
+    check('maestria allows edits', other('maestria.md').edit === 'allow'),
+    check('maestria delegates only to the reviewer', task('maestria.md').reviewer === 'allow'),
+    check('maestria denies open task routing', task('maestria.md')['*'] === 'deny'),
   ];
   sections.push({
     checks: [...denies, ...allows, ...restoredReconChecks(bash), ...stillDeniedReconChecks(bash)],

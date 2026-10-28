@@ -4,7 +4,7 @@
 
 Single evidence register for declarative plugin hosts (Claude Code, Codex CLI and desktop, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes). Each host section holds its dated probes and results plus its evidence rows with pinned versions, dates, sources, and test status. The [capability contract](agent-plugin-capabilities.md) defines what ships per host; the [runtime support matrix](runtime-support-matrix.md) keeps non-plugin runtimes.
 
-Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is four shared task profiles (`agents/<role>.md`, no orchestrator), three shared workflows, per-host global policy, and five root skills (two generated utilities and three methodology skills bundled from `packages/core/agent-directives/skills/`; `create-pull-request` and `docs-update` since 2026-10-13). Results dated 2026-10-13 or earlier that cite seven profiles and four skills describe the previous layout.
+Verify discovery, actual installation ownership, and complete prepared context independently of package shape. These offline probes do not require provider credentials or prove model obedience. The current component contract is one shared reviewer task profile (`agents/reviewer.md`, no main-loop profile), three shared workflows, per-host global policy, and seven root skills (two generated utilities and five methodology skills bundled from `packages/core/agent-directives/skills/`; the role agents were removed on 2026-10-28). Results dated 2026-10-13 or earlier that cite seven profiles and four skills describe the previous layout.
 
 ## Claude Code
 

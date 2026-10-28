@@ -88,7 +88,7 @@ const recordAndPersist = (
   taskText: string,
 ): void => {
   const updatedState = recordSpecialistDelegated(
-    recordHandoff(state, 'orchestrator', agentName, taskText),
+    recordHandoff(state, 'maestria', agentName, taskText),
     agentName,
   );
   Object.assign(state, updatedState);
@@ -396,7 +396,7 @@ const handoffResult = (agentName: string, taskDesc: string): ToolResult => ({
       text: [
         '## Subagent Handoff Required',
         '',
-        '**From:** orchestrator',
+        '**From:** maestria',
         `**To:** ${agentName}`,
         `**Task:** ${taskDesc}`,
         '',
@@ -458,7 +458,7 @@ const createSubagentTool = (
       return {
         content: [
           {
-            text: `${mode} Re-dispatch with a valid agent name; the orchestrator may continue read-only exploration while the brief is corrected.`,
+            text: `${mode} Re-dispatch with a valid agent name; the main loop may continue read-only exploration while the brief is corrected.`,
             type: 'text',
           },
         ],

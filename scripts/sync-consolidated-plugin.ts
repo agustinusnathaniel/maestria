@@ -160,14 +160,14 @@ const integrationHeading = (host: string): string => {
 const readCanonicalInputs = (repoRoot: string): Inputs => {
   const coreRoot = path.resolve(repoRoot, 'packages/core/agent-directives');
   const roles = Object.fromEntries(
-    [...ROLES, 'orchestrator'].map((role) => [role, readInput(coreRoot, `specialists/${role}.md`)]),
+    [...ROLES, 'main-loop'].map((role) => [role, readInput(coreRoot, `specialists/${role}.md`)]),
   );
   const contexts = Object.fromEntries(
     HOSTS.map((host) => [host, readInput(coreRoot, `integrations/${host}.md`)]),
   );
   const rules = readInput(coreRoot, 'rules.md');
   requiredHeading(rules, '## Universal Floors', 'rules.md');
-  requiredHeading(roles.orchestrator, '## Routing', 'specialists/orchestrator.md');
+  requiredHeading(roles['main-loop'], '## Routing', 'specialists/main-loop.md');
   for (const host of HOSTS) {
     requiredHeading(contexts[host], integrationHeading(host), `integrations/${host}.md`);
   }
@@ -359,7 +359,7 @@ const addUtilitySkills = (plan: Map<string, string>, input: Inputs): void => {
 };
 
 const addContexts = (plan: Map<string, string>, input: Inputs): void => {
-  const routerPolicy = compose(input.roles.orchestrator, input.rules);
+  const routerPolicy = compose(input.roles['main-loop'], input.rules);
   const complete = compose(routerPolicy, ...MODES.map((mode) => input.modes[mode].body));
   addPolicyRules(plan, input, routerPolicy);
   addSessionContext(plan, input, complete);

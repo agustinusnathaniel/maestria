@@ -8,7 +8,7 @@ import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
 import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
 const SPECIALISTS_DIR = path.join(import.meta.dirname, '..', 'agent-directives', 'specialists');
-const ORCHESTRATOR = 'orchestrator';
+const MAIN_LOOP = 'main-loop';
 
 // Names are validated against the canonical directory instead of derived into
 // configs: ADR-CORE-005 forbids dynamic derivation, while ADR-CORE-020
@@ -17,7 +17,7 @@ const canonicalFiles = readdirSync(SPECIALISTS_DIR)
   .filter((file) => file.endsWith('.md'))
   .toSorted();
 const delegableNames = canonicalFiles
-  .filter((file) => file !== `${ORCHESTRATOR}.md`)
+  .filter((file) => file !== `${MAIN_LOOP}.md`)
   .map((file) => file.replace(/\.md$/u, ''));
 
 interface RosterViolations {

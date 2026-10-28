@@ -3,7 +3,7 @@
 // from canonical core directives in a single pass.
 //
 // - agents/*.md (4 specialists): deployed to ~/.pi/agent/agents/ for pi-subagents
-// - skills/orchestrator/SKILL.md: Pi skill auto-injected into every session
+// - skills/maestria/SKILL.md: Pi skill auto-injected into every session
 // - skills/global-rules/SKILL.md: Pi skill auto-injected into every session
 
 import { agentDirectiveSync } from '../core/scripts/lib/agent-directive-sync.js';

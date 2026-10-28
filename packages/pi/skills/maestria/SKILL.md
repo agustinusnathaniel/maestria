@@ -1,5 +1,5 @@
 ---
-name: orchestrator
+name: maestria
 description: >-
   maestria main loop. Investigates, designs, and implements with the recon,
   architecture-plan, and diagnose skills, sends meaningful changes to one blind

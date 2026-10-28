@@ -17,7 +17,7 @@ request -> route -> focused work -> evidence -> result
 
 ## The Core Model
 
-The orchestrator decides which work is needed and delegates it to one or more of the 4 specialists. A specialist returns a focused artifact: reconnaissance (with read-only diagnosis via the diagnose skill when needed), a decision, a phased plan, an implementation, a review, or documentation.
+The main loop (the `maestria` agent on OpenCode, the main session elsewhere) does the work itself: it investigates, designs, implements, and delivers, loading the `recon`, `architecture-plan`, and `diagnose` skills when a task needs them. One specialist, the reviewer, independently checks meaningful changes before delivery.
 
 | Boundary             | Purpose                                                              |
 | -------------------- | -------------------------------------------------------------------- |
@@ -47,9 +47,9 @@ These are design goals, not guarantees. Quality still depends on the task, model
 
 ## How Much Process to Expect
 
-Specialists choose the investigation and checks that establish the outcome, not a fixed ritual: a diagnosis may use Git history or search similar code, and extra skills load only when relevant. The implementer runs affected checks, the delivery owner runs repository gates on the integrated result, and host permissions still require authorization.
+The main loop chooses the investigation and checks that establish the outcome, not a fixed ritual: a diagnosis may use Git history or search similar code, and extra skills load only when relevant. The implementer runs affected checks, the delivery owner runs repository gates on the integrated result, and host permissions still require authorization.
 
-A specialist's partial result is a handoff, not completion: the orchestrator owns the remaining work through the agreed outcome, while research-only work ends at the requested artifact.
+A review or partial result is not completion: the main loop owns the remaining work through the agreed outcome, while research-only work ends at the requested artifact.
 
 ## What Depends on the Platform
 
