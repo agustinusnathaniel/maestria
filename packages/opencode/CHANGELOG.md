@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.14.0
+
+### Minor Changes
+
+- [#435](https://github.com/agustinusnathaniel/maestria/pull/435) [`9744dfc`](https://github.com/agustinusnathaniel/maestria/commit/9744dfc2ec3d1e99ee463be2154cdf175888c40d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - **Breaking:** the main agent is renamed from `orchestrator` to `maestria`, since it now does the work itself instead of coordinating role agents. On OpenCode, select or mention `maestria` instead of `orchestrator`, and move any `agents.orchestrator` model setting to `agents.maestria`. Pi's auto-injected main-loop skill is now `maestria`. Codex installs are unaffected: the managed block in `AGENTS.md` keeps its existing markers.
+
 ## 0.13.0
 
 ### Minor Changes
