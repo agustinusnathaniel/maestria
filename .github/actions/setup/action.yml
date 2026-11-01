@@ -2,18 +2,40 @@ name: 'maestria Setup'
 description: 'Install dependencies with pnpm (which brings Node too), restore the vp task cache'
 inputs:
   save-cache:
-    description: 'Save the pnpm store after the job. Only one job per push to main should save it.'
+    description: 'Save the pnpm store when this lockfile and Node version have no entry yet. Only one job per push to main should save it.'
     required: false
     default: 'false'
 runs:
   using: 'composite'
   steps:
+    # pnpm/setup empties its dest on start, so the store lives outside it and is cached here
+    # instead of by pnpm/setup. The store also holds the Node runtime, which otherwise downloads
+    # from nodejs.org on every job and can stall for minutes.
+    - name: Locate pnpm store
+      id: store-key
+      shell: bash
+      run: |
+        echo "pnpm_config_store_dir=$RUNNER_TEMP/pnpm-store" >> "$GITHUB_ENV"
+        echo "prefix=pnpm-store-$RUNNER_OS-$RUNNER_ARCH-${{ hashFiles('pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
+    # Only stores saved for this lockfile restore, so a saved store never carries old packages.
+    - name: Restore pnpm store
+      id: store
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ runner.temp }}/pnpm-store
+        key: ${{ steps.store-key.outputs.prefix }}
+        restore-keys: ${{ steps.store-key.outputs.prefix }}-
     # Also provides Node, resolved from devEngines.runtime, which is why no setup-node step.
     - uses: pnpm/setup@v3
+      id: pnpm
       with:
-        cache: true
-        save-cache: ${{ inputs.save-cache }}
         require-lockfile: true
+    - name: Save pnpm store
+      if: inputs.save-cache == 'true' && steps.pnpm.outputs.runtime-version != '' && steps.store.outputs.cache-matched-key != format('{0}-node-{1}', steps.store-key.outputs.prefix, steps.pnpm.outputs.runtime-version)
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ runner.temp }}/pnpm-store
+        key: ${{ steps.store-key.outputs.prefix }}-node-${{ steps.pnpm.outputs.runtime-version }}
     # Each job runs different tasks, so each keeps its own entry. A new commit restores the
     # job's latest entry for the same lockfile; entries from older lockfiles never hit.
     - name: Restore vp task cache
