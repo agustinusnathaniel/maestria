@@ -3,17 +3,17 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 
 import InstallCommand from '@/components/plugin/install-command.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
-import { agents } from '@/data/agents.js';
 import { installTargets } from '@/data/install-targets.js';
+import { kit } from '@/data/kit.js';
 import { markAttrs, marks } from '@/data/marks.js';
 import { platforms } from '@/data/platforms.js';
-import { lanes, routes } from '@/data/routes.js';
+import { laneGroups, routes } from '@/data/routes.js';
 
 const INSTALL_CMD = 'npx maestria install';
 const DESCRIPTION =
-  'A portable harness for AI coding agents. Investigate, design, and implement in the main loop, with structured review briefs and independent review.';
+  'A portable working method for AI coding agents: one main loop that loads method skills only when a task needs them, holds every task to the same floors, and sends meaningful changes to independent review.';
 
-const agentName = new Map(agents.map((agent) => [agent.id, agent.name]));
+const laneName = new Map(laneGroups.flatMap((group) => group.lanes).map((lane) => [lane.id, lane.name]));
 
 /** Columns on the score: the longest route sets the time axis for all. */
 const SCORE_COLUMNS = Math.max(...routes.map((route) => route.steps.length));
@@ -51,10 +51,11 @@ const principles = [
     <!-- ================================ HERO ================================ -->
     <div class="home-inner">
       <section class="hero" aria-labelledby="home-title">
-        <h1 id="home-title" class="hero-title">Give your coding agent a team.</h1>
+        <h1 id="home-title" class="hero-title">Give your coding agent a method.</h1>
         <p class="hero-lead">
-          Method skills for recon, design, and diagnosis in the main loop, plus independent
-          review, called in only when a task needs them. One method for OpenCode, Pi, Claude Code, Codex, Cursor, and more.
+          maestria shapes how your agent works: it reads before it edits, plans when the
+          trade-offs are real, verifies what it claims, and hands every meaningful change to an
+          independent reviewer. One method for OpenCode, Pi, Claude Code, Codex, Cursor, and more.
         </p>
         <div class="hero-actions">
           <a class="btn btn-ink" href="/cli/getting-started/">Get started</a>
@@ -71,8 +72,8 @@ const principles = [
           <div>
             <h2 id="stage-title" class="stage-title">Make every step intentional.</h2>
             <p class="stage-lead">
-              Pick a task. The main loop adds method skills and review only when they add
-              information or reduce risk.
+              Pick a task. The main loop loads a method skill only when it adds information or
+              reduces risk. Dimmed rows are steps that task skips.
             </p>
           </div>
           <div class="route-tabs" role="tablist" aria-label="Example tasks" data-tabs="route">
@@ -93,7 +94,7 @@ const principles = [
         </div>
 
         {routes.map((route, index) => {
-          const stepByAgent = new Map(route.steps.map((step, i) => [step.agent, { ...step, index: i }]));
+          const stepByLane = new Map(route.steps.map((step, i) => [step.lane, { ...step, index: i }]));
           const lastIndex = route.steps.length - 1;
           return (
             <div
@@ -105,21 +106,24 @@ const principles = [
               style={`--columns: ${SCORE_COLUMNS}`}
             >
               <p class="score-task">
-                <span class="score-task-label">Task</span>
-                <span class="score-task-text">{route.task}</span>
+                <span class="score-task-label">Prompt</span>
+                <span class="score-task-text">
+                  {route.mode && <span class="score-mode">{route.mode}</span>}
+                  {route.task}
+                </span>
               </p>
 
               <div class="score-grid" aria-hidden="true">
-                {lanes.map((group) => (
+                {laneGroups.map((group) => (
                   <div class="lane-group">
                     <span class="lane-stage">{group.stage}</span>
-                    {group.agents.map((id) => {
-                      const step = stepByAgent.get(id);
+                    {group.lanes.map((lane) => {
+                      const step = stepByLane.get(lane.id);
                       return (
                         <div class:list={['lane', { 'lane-idle': step === undefined }]}>
-                          <span class="lane-name">
-                            <svg class="lane-mark" {...markAttrs} set:html={marks[id]} />
-                            {agentName.get(id)}
+                          <span class:list={['lane-name', { 'lane-skill': lane.skill !== undefined }]}>
+                            <svg class="lane-mark" {...markAttrs} set:html={marks[lane.mark]} />
+                            <span class="lane-label">{lane.name}</span>
                           </span>
                           {step && (
                             <span
@@ -143,7 +147,7 @@ const principles = [
 
               <ol class="sr-only">
                 {route.steps.map((step) => (
-                  <li>{agentName.get(step.agent)}: {step.artifact}</li>
+                  <li>{laneName.get(step.lane)}: {step.artifact}</li>
                 ))}
               </ol>
 
@@ -160,8 +164,8 @@ const principles = [
         <h2 id="method-title" class="statement">
           An agent that plans, builds, and grades its own work will approve its own mistakes.{' '}
           <span class="statement-quiet">
-            maestria separates the maker from the checker, hands context forward in structured
-            briefs, and keeps each route as short as the task allows.
+            maestria separates the maker from the checker, holds every task to the same floors,
+            and keeps each route as short as the task allows.
           </span>
         </h2>
         <div class="principles">
@@ -175,30 +179,29 @@ const principles = [
         </div>
       </section>
 
-      <!-- ============================ SPECIALISTS ============================ -->
-      <section class="home-section" id="specialists" aria-labelledby="agents-title">
+      <!-- ================================ KIT ================================ -->
+      <section class="home-section" id="kit" aria-labelledby="kit-title">
         <div class="section-head">
-          <h2 id="agents-title">Meet the main loop and reviewer.</h2>
+          <h2 id="kit-title">One main loop, four things that shape it.</h2>
           <p>
-            Each role has one job, one handoff, and one rule it never breaks.{' '}
-            <a href="/core/agents/">Read the full reference</a>
+            Your agent does the work itself. maestria gives it modes to steer it, skills to load
+            when a task needs them, floors it never drops, and a reviewer that checks its work.{' '}
+            <a href="/core/how-it-works/">See how it works</a>
           </p>
         </div>
         <ul class="roster" role="list">
-          {agents.map((agent) => (
+          {kit.map((part) => (
             <li class="roster-cell">
-              <svg class="roster-mark" {...markAttrs} set:html={marks[agent.id]} />
-              <h3>{agent.name}</h3>
-              <p class="roster-role">{agent.role}</p>
+              <svg class="roster-mark" {...markAttrs} set:html={marks[part.mark]} />
+              <h3>{part.title}</h3>
+              <p class="roster-role">{part.lead}</p>
               <dl>
-                <div>
-                  <dt>Hands off</dt>
-                  <dd>{agent.artifact}</dd>
-                </div>
-                <div>
-                  <dt>Rule</dt>
-                  <dd>{agent.constraint}</dd>
-                </div>
+                {part.items.map((item) => (
+                  <div>
+                    <dt class:list={{ 'kit-code': item.code === true }}>{item.term}</dt>
+                    <dd>{item.detail}</dd>
+                  </div>
+                ))}
               </dl>
             </li>
           ))}
@@ -390,7 +393,7 @@ const principles = [
      ============================================ */
 
   .stage {
-    --label: 11rem;
+    --label: 12.5rem;
     background: var(--home-band);
     color: var(--home-band-text);
     padding-block: clamp(3rem, 6vw, 4.5rem);
@@ -493,6 +496,11 @@ const principles = [
     color: var(--home-band-text);
   }
 
+  .score-mode {
+    margin-right: 0.625em;
+    color: var(--home-brass);
+  }
+
   .score-grid {
     position: relative;
   }
@@ -509,7 +517,7 @@ const principles = [
     padding-block: 0.25rem 0.125rem;
   }
 
-  /* One stave per specialist: a label column, then one column per step. The
+  /* One stave per method step: a label column, then one column per step. The
      stave line runs behind the notes; a note's text sits on the band color
      so it interrupts the line like a mark on a score. */
   .lane {
@@ -535,10 +543,24 @@ const principles = [
     display: inline-flex;
     align-items: center;
     gap: 0.625rem;
+    min-width: 0;
+    padding-right: 0.75rem;
     font-size: 0.9375rem;
     font-weight: 540;
     color: var(--home-band-text);
     transition: opacity 240ms ease-out;
+  }
+
+  .lane-label {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  /* Method skills read as the names you would see in the agent. */
+  .lane-skill {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 450;
   }
 
   .lane-mark {
@@ -662,10 +684,14 @@ const principles = [
 
   /* Narrow screens drop the time axis: lane order already matches step
      order on every route, so each note sits right after its label and the
-     dimmed lanes still show which specialists were skipped. */
+     dimmed lanes still show which steps were skipped. */
   @media (max-width: 767px) {
     .stage {
-      --label: 8.5rem;
+      --label: 10.5rem;
+    }
+
+    .lane-mark {
+      display: none;
     }
 
     .lane {
@@ -697,11 +723,7 @@ const principles = [
 
   @media (max-width: 420px) {
     .stage {
-      --label: 7.25rem;
-    }
-
-    .lane-mark {
-      display: none;
+      --label: 8.75rem;
     }
   }
 
@@ -788,7 +810,7 @@ const principles = [
     max-width: 34ch;
   }
 
-  /* Specialists roster: a hairline grid, no floating cards. */
+  /* Kit grid: a hairline grid, no floating cards. */
   .roster {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -824,22 +846,31 @@ const principles = [
   }
 
   .roster-cell dl {
-    margin: auto 0 0;
+    margin: 0;
     display: grid;
-    gap: 0.625rem;
+    gap: 0.75rem;
   }
 
   .roster-cell dt {
-    font-size: 0.75rem;
-    color: var(--home-text-muted);
     margin: 0;
+    font-size: 0.875rem;
+    font-weight: 560;
+    line-height: 1.4;
+    color: var(--home-text);
+  }
+
+  .roster-cell dt.kit-code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 450;
+    color: var(--home-accent);
   }
 
   .roster-cell dd {
     margin: 0.125rem 0 0;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    color: var(--home-text);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--home-text-muted);
   }
 
   /* Install: copy + host picker, then the package row. */
