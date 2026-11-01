@@ -31,7 +31,7 @@ runs:
       with:
         require-lockfile: true
     - name: Save pnpm store
-      if: inputs.save-cache == 'true' && steps.store.outputs.cache-matched-key != format('{0}-node-{1}', steps.store-key.outputs.prefix, steps.pnpm.outputs.runtime-version)
+      if: inputs.save-cache == 'true' && steps.pnpm.outputs.runtime-version != '' && steps.store.outputs.cache-matched-key != format('{0}-node-{1}', steps.store-key.outputs.prefix, steps.pnpm.outputs.runtime-version)
       uses: actions/cache/save@v6
       with:
         path: ${{ runner.temp }}/pnpm-store
