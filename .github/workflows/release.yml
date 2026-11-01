@@ -36,6 +36,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
+        timeout-minutes: 3
       - name: Verify generated plugins are in sync
         run: pnpm exec vp run check-sync
       - name: Build

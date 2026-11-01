@@ -29,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
+        timeout-minutes: 3
       - name: Format, sync, build, and type-aware lint
         run: pnpm check:ci:lint
 
@@ -39,10 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
+        timeout-minutes: 3
         with:
-          # pnpm/setup's store fingerprint changes on every run, so it would upload ~350MB per
-          # main push. Save from main only when the lockfile changes; PR runs restore it.
-          save-cache: ${{ github.event_name == 'push' && contains(toJSON(github.event.commits.*.modified), 'pnpm-lock.yaml') }}
+          # Seeds the pnpm store from main; PR runs only restore it.
+          save-cache: ${{ github.event_name == 'push' }}
       - name: Install Bun
         run: pnpm runtime set bun 1.4.2 -g
       - name: Build and test
@@ -63,5 +64,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
+        timeout-minutes: 3
       - name: Build docs site
         run: pnpm exec vp run --filter @maestria/docs build
