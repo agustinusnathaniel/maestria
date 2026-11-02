@@ -107,10 +107,6 @@ When a later change affects captured appearance or behavior, replace affected ca
 
 Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, the whole diff has had a correctness pass, every CI check and review thread (bot threads included) is read and triaged with evidence (fixed, or answered with why not), no unresolved thread blocks merge, and the title and body are true at the head. Fix correctness findings by default; decline one only with evidence the case cannot occur (call order, locks, stored state) or a one-line known-limit reason in the body, and answer every part of a multi-part finding.
 
-## CI and held PRs
-
-After each push to a PR with CI checks, wait for them to finish. Fix failures the change caused within the repair budget; rerun an unrelated failure once with pushes held, and if it fails again at the same step, report it with its cause instead of changing code. A held PR stays an open draft with review requests withdrawn and its owner quiet (no pushes, replies, or review requests) until resumed; never close it unless asked.
-
 ## Freshness
 
 After every push, re-read the approval and merge state, since a push can drop an approval, and re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.

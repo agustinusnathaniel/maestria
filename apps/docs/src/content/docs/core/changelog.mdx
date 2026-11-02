@@ -7,7 +7,7 @@ This changelog tracks meaningful changes to how maestria-powered agents behave -
 
 ## 2026-11-02
 
-- **Smaller always-on rules.** The global rules and main loop carry about 16% fewer words. Overlapping rules are merged into one principle each, and procedure that only some tasks need now lives in the skill that loads for it: CI waits and held PRs in `create-pull-request`, removing superseded code in `architecture-plan`, and writing docs for their reader in `docs-update`. Safety, authorization, review, and branch rules are unchanged.
+- **Smaller always-on rules.** The global rules and main loop carry about 16% fewer words. Overlapping rules are merged into one principle each, and procedure that only some tasks need now lives in the skill that loads for it: removing superseded code in `architecture-plan` and writing docs for their reader in `docs-update`. maestria no longer prescribes rerunning an unrelated CI failure once or how a held PR behaves; agents still wait for CI after a push and report delivery complete only when required checks pass or the remaining failure is reported. Safety, authorization, review, and branch rules are unchanged.
 - **Secrets stay out of output.** Agents never print a secret or anything derived from it (a prefix, its length, a parsed host) into tool output or logs, read records that can hold secrets with an explicit field list, and never dump headers, cookies, or storage state while debugging a browser or HTTP client.
 - **Review fixes stick.** At each new head the reviewer confirms every earlier accepted review request and its fix still hold, and a later cleanup or trim pass never undoes one.
 
