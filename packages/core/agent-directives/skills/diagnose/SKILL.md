@@ -25,7 +25,7 @@ When the cause is a shared defect or the task is an audit, search for the same p
 
 ## 5. Fix the root cause
 
-Fix the cause, not the symptom, with the smallest correct repair rather than the fewest lines. Explain the rationale before an edit or system change, and use the platform's approval controls.
+Fix the cause, not the symptom, with the smallest correct repair rather than the fewest lines.
 
 **!!! Never present broken code:** re-run the reproduction to confirm the fix, run the existing tests, check for side effects, and note how to roll the change back. Consider a lint rule that would catch the pattern, and record a durable lesson in an existing knowledge artifact when one fits; create one only when the finding has lasting value or the user or project requires a record.
 

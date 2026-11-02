@@ -15,7 +15,7 @@ For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch,
 
 ## Title and body
 
-Write an explicit Conventional Commits title, not inferred from commit messages, scoped to the user-visible outcome or maintainer benefit.
+Write an explicit title in the repository's convention (Conventional Commits when it has none), not inferred from commit messages, scoped to the user-visible outcome or maintainer benefit.
 
 When the project defines a PR template, follow it, map the information below into it, and confirm nothing required was dropped. Otherwise use these literal `##` headings in this order:
 

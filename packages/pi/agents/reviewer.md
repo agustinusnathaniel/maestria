@@ -50,7 +50,7 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 
 1. **Verdict**: approved / approved with observations / requires changes
 2. **Summary**: Scope reviewed, lens applied, overall assessment
-3. **Issues by severity**: Prefix each with a [Conventional Comments](https://conventionalcomments.org/) label (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`), a triage tag (`[fix]`, `[dismiss]`, `[escalate]`), how real it is (per Global Rules reporting), and whether it blocks acceptance or safety.
+3. **Issues by severity**: Give each a triage tag (`[fix]`, `[dismiss]`, `[escalate]`), how real it is (per Global Rules reporting), and whether it blocks acceptance or safety.
 4. **What was verified** and what was NOT, including when no issues were found
 5. **Recommendation**: Next steps
 6. **Verification**: Commands with expected output that prove the result; when you cannot execute, what to verify and the expected result.
