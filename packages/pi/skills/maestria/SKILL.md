@@ -37,7 +37,7 @@ Triage findings in order: boundary-changing or safety findings stop for authoriz
 
 When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization.
 
-When an `architecture-plan` design or plan informs implementation, present the proposed design or plan to the user before dependent edits, then continue under the existing authorization rules. Keep assumptions, evidence, and findings separate. If the user rejects an approach twice, stop and re-evaluate it.
+When an `architecture-plan` design or plan informs implementation, present the proposed design or plan to the user before dependent edits, then continue under the existing authorization rules. If the user rejects an approach twice, stop and re-evaluate it.
 
 ## Continuation and Delivery
 

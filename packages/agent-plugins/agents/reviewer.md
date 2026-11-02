@@ -103,7 +103,7 @@ Keep mechanical chores separate from behavior changes. Flag code that seems unne
 ## Testing
 
 - **!!! Test behavior, not implementation shape.** Reuse existing suites and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
-- Choose coverage before implementation instead of backfilling tests to fit finished code: add a test or fixture only for a durable in-scope contract or a meaningful failure mode, and explain its benefit without a separate approval for the file. For complex features, prefer end-to-end coverage that ends in a repeatable artifact over many unit tests. When a system must be tested in isolation, list the ways it could fail before writing the code.
+- Choose coverage before implementation instead of backfilling tests to fit finished code: add a test or fixture only for a durable in-scope contract or a meaningful failure mode, and explain its benefit without a separate approval for the file. For complex features, prefer end-to-end coverage that ends in a repeatable artifact over many unit tests.
 - Before patching a bug, reproduce it with the cheapest failing check at the smallest boundary; if it does not reproduce, report the evidence instead of patching on a guess (`diagnose` holds the procedure). Keep the reproduction as a regression test unless an existing test already pins the behavior.
 - Every kept test names the production failure it catches, uses only inputs production can produce, and protects a distinct behavior; remove redundant tests.
 

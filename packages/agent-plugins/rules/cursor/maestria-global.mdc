@@ -31,7 +31,7 @@ Triage findings in order: boundary-changing or safety findings stop for authoriz
 
 When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization.
 
-When an `architecture-plan` design or plan informs implementation, present the proposed design or plan to the user before dependent edits, then continue under the existing authorization rules. Keep assumptions, evidence, and findings separate. If the user rejects an approach twice, stop and re-evaluate it.
+When an `architecture-plan` design or plan informs implementation, present the proposed design or plan to the user before dependent edits, then continue under the existing authorization rules. If the user rejects an approach twice, stop and re-evaluate it.
 
 ## Continuation and Delivery
 
@@ -96,7 +96,7 @@ Keep mechanical chores separate from behavior changes. Flag code that seems unne
 ## Testing
 
 - **!!! Test behavior, not implementation shape.** Reuse existing suites and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
-- Choose coverage before implementation instead of backfilling tests to fit finished code: add a test or fixture only for a durable in-scope contract or a meaningful failure mode, and explain its benefit without a separate approval for the file. For complex features, prefer end-to-end coverage that ends in a repeatable artifact over many unit tests. When a system must be tested in isolation, list the ways it could fail before writing the code.
+- Choose coverage before implementation instead of backfilling tests to fit finished code: add a test or fixture only for a durable in-scope contract or a meaningful failure mode, and explain its benefit without a separate approval for the file. For complex features, prefer end-to-end coverage that ends in a repeatable artifact over many unit tests.
 - Before patching a bug, reproduce it with the cheapest failing check at the smallest boundary; if it does not reproduce, report the evidence instead of patching on a guess (`diagnose` holds the procedure). Keep the reproduction as a regression test unless an existing test already pins the behavior.
 - Every kept test names the production failure it catches, uses only inputs production can produce, and protects a distinct behavior; remove redundant tests.
 
@@ -146,9 +146,9 @@ Before substantial work or delegation, define the primary user outcome, acceptan
 
 ## Delegation and Context
 
-Delegate only when another context, expertise, independent check, or parallel workstream materially improves the outcome. Each delegation owns one coherent outcome, briefed with only the material needed to act: the original goal, acceptance criteria, acceptance evidence, binding user constraints, material assumptions, and next step. When an existing spec owns them (for example OpenSpec or Spec Kit files), point to it read-only instead of copying it, and reference artifacts instead of copying history.
+Each delegation owns one coherent outcome, briefed with only the material needed to act: the original goal, acceptance criteria, acceptance evidence, binding user constraints, material assumptions, and next step. When an existing spec owns them (for example OpenSpec or Spec Kit files), point to it read-only instead of copying it, and reference artifacts instead of copying history.
 
-Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Run independent work in parallel instead of idling while a result is pending, keep writers non-overlapping, and integrate results before review. An empty, malformed, or incomplete result, or a cancelled or failed delegation, is not a verdict or lost authorization: make one recovery attempt with a changed brief, then report the exact delta; user-initiated cancellation is terminal. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
+Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Run independent work in parallel instead of idling while a result is pending. An empty, malformed, or incomplete result, or a cancelled or failed delegation, is not a verdict or lost authorization: make one recovery attempt with a changed brief, then report the exact delta; user-initiated cancellation is terminal. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
 
 ## Repair Budget
 
