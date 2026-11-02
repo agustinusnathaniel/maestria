@@ -45,7 +45,7 @@ After changing canonical input or projection metadata, run `scripts/sync-all` an
 
 ## Keeping Directives Small
 
-`rules.md` and `specialists/main-loop.md` load on every main-session turn, and instruction-following degrades as always-on rules grow. Budgets: `rules.md` at most 2,000 words and `main-loop.md` at most 1,200, enforced by `packages/core/tests/directives.test.ts`.
+`rules.md` and `specialists/main-loop.md` load on every main-session turn, and instruction-following degrades as always-on rules grow. Budgets: `rules.md` at most 2,000 words and `main-loop.md` at most 1,200, enforced by `packages/core/tests/directives.test.ts`. Method skills and `reviewer.md` load only on trigger or per review, so they have a soft budget of about 1,000 words each, not enforced: past it, move detail that only one branch needs into a reference file beside the skill.
 
 - **Adding means cutting.** Edit an existing line before adding one. A change that would exceed a budget cuts or moves something else in the same PR; raising a budget is an explicit, reviewed decision.
 - **When a lesson earns a rule.** A safety slip (secrets, authorization, data loss, protected branches) becomes a rule the first time; any other slip on its second occurrence.

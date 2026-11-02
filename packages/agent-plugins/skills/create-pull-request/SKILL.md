@@ -9,7 +9,7 @@ name: create-pull-request
 
 ## Scope
 
-Drafting or revising PR text is in scope even when no capture, upload, or publishing tool is available. A project ban on creating PRs or installing tools stops only that operation: still draft, and report the blocked step.
+Drafting or revising PR text needs no capture, upload, or publishing tool. A project ban on creating PRs or installing tools stops only that operation: still draft, and report the blocked step.
 
 For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft, keep each description to its own diff, and check that no open PR already covers the scope.
 
@@ -51,7 +51,7 @@ In Changes, describe what changed and why rather than the editing action, group 
 
 ## Publishing
 
-A draft-only request is complete when the title and body are usable and every outstanding item (publication, missing evidence, unchecked variants) is reported; it never presents itself as published. When asked to create or update the PR, publish with the host's existing tooling, checking its current help rather than remembered syntax, then read back the published body yourself: it matches the current diff, attachments render, and links resolve. Report delivery only after that readback; an unavailable or forbidden publishing step leaves the outcome incomplete with the exact blocker.
+A draft-only request is complete when the title and body are usable and every outstanding item (publication, missing evidence, unchecked variants) is reported; it never presents itself as published. When asked to create or update the PR, publish with the host's existing tooling, checking its current help rather than remembered syntax, then read back the published body: it matches the current diff, attachments render, and links resolve. Report delivery only after that readback; an unavailable or forbidden publishing step leaves the outcome incomplete with the exact blocker.
 
 ## Visual evidence
 
@@ -59,8 +59,8 @@ A change to a rendered surface requires evidence. Capture, publication in the PR
 
 - **Capture** the affected screen or interaction and its relevant responsive or state variants with an available browser or capture tool; a missing desktop display does not rule out headless capture, and a representative terminal transcript can serve for text-only CLI output. Inspect captures when vision is available, otherwise label them visually unverified. Keep artifacts at any workable path, including `/tmp`, and commit evidence files to a branch only when project policy requires it.
 - **Record** each artifact as path, caption, and coverage gaps: what it shows and which variants remain unchecked. Report evidence as captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves that preserve rendering can reuse existing evidence; a refactor label or passing build does not establish unchanged visuals.
-- **Present** evidence by changed screen or behavior, labeling each artifact's state and relevant viewport or theme. For UI changes default to a before/after table (Area | Before | After | What changed), or a captioned list for a single state. Pair captures with matching viewports and states, name the intended difference, disclose missing baselines instead of fabricating them, and put supplemental captures in a collapsible section when supported.
-- **Publish** in the PR body as an attachment or accessible link with a caption, using authorized tooling whose upload support you checked in its current help; capture and upload are separate capabilities. On GitHub, `gh pr create --attach` or `gh pr edit --attach` (recent `gh`) hosts captures on GitHub's CDN. In a PR stack, every PR carries its own evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the attachment limitation.
+- **Present** evidence by changed screen or behavior, labeling each artifact's state, viewport, or theme. For UI changes default to a before/after table (Area | Before | After | What changed), or a captioned list for a single state. Pair captures with matching viewports and states, name the intended difference, disclose missing baselines instead of fabricating them, and put supplemental captures in a collapsible section when supported.
+- **Publish** in the PR body as an attachment or accessible link with a caption, using authorized tooling whose upload support you checked in its current help. On GitHub, `gh pr create --attach` or `gh pr edit --attach` (recent `gh`) hosts captures on GitHub's CDN. In a PR stack, every PR carries its own evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the attachment limitation.
 
 Required evidence absent from the published body leaves delivery incomplete with the checked limitation; session-log references and comments do not count, and required evidence never silently becomes a follow-up. Optional illustration may be omitted with a reason.
 
