@@ -13,6 +13,8 @@ const readDirective = (...segments: string[]): string =>
 const readUtilitySkill = (...headings: string[]): string =>
   headings.map((heading) => extractSection(readDirective('rules.md'), heading) ?? '').join('\n');
 
+const countWords = (text: string): number => text.split(/\s+/u).filter(Boolean).length;
+
 const assertOrdered = (document: string, headings: string[]): void => {
   let previous = -1;
   for (const heading of headings) {
@@ -24,6 +26,11 @@ const assertOrdered = (document: string, headings: string[]): void => {
 };
 
 describe('canonical directive behavioral contracts', () => {
+  it('keeps always-on directives within their word budgets', () => {
+    expect(countWords(readDirective('rules.md'))).toBeLessThanOrEqual(2000);
+    expect(countWords(readDirective('specialists', 'main-loop.md'))).toBeLessThanOrEqual(1200);
+  });
+
   it('preserves safety, authorization, acceptance, branch, and sync floors', () => {
     const rules = readDirective('rules.md');
 
