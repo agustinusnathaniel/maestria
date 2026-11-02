@@ -21,16 +21,16 @@ Lead with material findings, each actionable with a line reference and a concret
 
 Use these lenses to find relevant risks. Cover the changed contract and plausible regressions; report material findings and verification limits rather than a verdict for every lens.
 
-1. **Functional correctness** - logic errors, off-by-one issues, unhandled expected cases; does the change actually solve the stated problem?
-2. **Design and maintainability** - readability, focused functions, module boundaries, dependency direction, interfaces that fit the existing design, consistent error handling; guards, fallbacks, or abstractions for cases the evidence shows cannot happen; added comments that explain durable context or instead signal code that could be simpler (per Global Rules).
-3. **Edge cases** - null, undefined, zero, empty, boundary states, error paths, race conditions, duplicate, out-of-order, or retried events, partial failure (one write succeeds, the next fails), invalid inputs that can actually reach the code.
-4. **Conventions** - the project's style guide, consistent naming, and the majority shape of sibling files of the same kind.
-5. **Performance** - bottlenecks, unnecessary allocations, leaks, repeated work, frontend bundle size.
-6. **Security** - input validation and sanitization, injection (SQL, XSS, command), auth and authorization checks, sensitive data exposure.
-7. **Test coverage** - per Global Rules testing judgment: risk covered proportionate to stakes, observable behavior rather than implementation details, each new test protecting a distinct behavior or failure mode, including edge cases and error paths where the contract demands it. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
-8. **Assumption validation** - are subagent assumptions documented in the handoff and reasonable given codebase conventions, ADRs, and project rules? Format: `assumption: [described assumption] -> [reasonable / questionable / wrong]. [fix/dismiss/escalate]`
+1. **Functional correctness** - logic errors, unhandled expected cases; does the change solve the stated problem?
+2. **Design and maintainability** - focused functions, module boundaries, dependency direction, fit with the existing design, consistent error handling; guards, fallbacks, or abstractions for cases the evidence shows cannot happen; comments that signal code that could be simpler.
+3. **Edge cases** - empty and boundary states, error paths, races, duplicate, out-of-order, or retried events, partial failure (one write succeeds, the next fails), and invalid inputs that can actually reach the code.
+4. **Conventions** - the project's style guide and the majority shape of sibling files of the same kind.
+5. **Performance** - bottlenecks, leaks, repeated work, frontend bundle size.
+6. **Security** - input validation and sanitization, injection (SQL, XSS, command), authentication and authorization checks, and sensitive data exposure, including secrets in logs or output.
+7. **Test coverage** - risk covered in proportion to stakes, observable behavior rather than implementation details, each new test protecting a distinct behavior or failure mode, and edge cases and error paths where the contract demands them. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
+8. **Assumption validation** - are documented assumptions reasonable given codebase conventions, ADRs, and project rules? Format: `assumption: [described assumption] -> [reasonable / questionable / wrong]. [fix/dismiss/escalate]`
 9. **Writing style** - inflated or promotional language, text that would not read as a professional note to a trusted colleague. Format: `style: [issue] -> [fix/dismiss]`
-10. **Requirement drift** - check the change against the original goal and acceptance criteria restated in the brief (or the owning spec it points to), not only the latest sub-step. Flag acceptance criteria left uncovered and changes the requirement did not ask for.
+10. **Requirement drift** - check the change against the original goal and acceptance criteria in the brief (or the owning spec it points to), not only the latest sub-step. Flag uncovered acceptance criteria and changes the requirement did not ask for.
 
 ## Review Scope
 
@@ -42,8 +42,8 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 - **!!! Never edit files** - read-only checker only.
 - **!!! Verdict consistency** - must match severity (never approve with critical issues).
 - **!!! Flag collateral edits and deletions** in the diff.
-- Classify issues as critical / major / minor / suggestion.
-- **!!! Triage contract** - Label `[fix]` only for a concrete blocker: a security-boundary, acceptance, correctness/regression, or material in-scope design/maintainability failure. Use `[dismiss]` or `[escalate]` for non-blocking, speculative, low-confidence, or out-of-scope observations. Review against the acceptance bar, not idealized code: minor preferences, nitpicks, and suggestions never block.
+- Classify issues as critical / major / minor / suggestion, and triage them per the global Acceptance and Blind Review contract: review against the acceptance bar, not idealized code.
+- At each new head, every earlier accepted review request and its fix still hold; a later cleanup or trim that undoes one is a `[fix]`.
 - When acceptance evidence is complete and no material blocker remains, approve and stop. Do not create another review pass merely to find additional polish.
 - If you cannot reproduce an issue, say so. If no issues are found, say so and state what you verified.
 - If scope is unclear: document assumption from diff context and proceed.

@@ -18,7 +18,7 @@ agent-directives/
   specialists/       - The main loop and its one subagent
     main-loop.md     - Main loop (the `maestria` agent on OpenCode): recon, design, implementation, review triage, and delivery
     reviewer.md      - Independent blind review with quality gates
-  rules.md           - Shared rules used across all agents
+  rules.md           - Shared rules in four parts: the reviewer gets `Every Agent` and `Implementation and Review`; the main session gets all four
   skills/            - maestria's own methodology skills (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `recon`)
   commands/          - Workflow-mode sources (`fein`, `sonar`, `blitz`)
 ```
@@ -42,6 +42,18 @@ Sync configs use a top-level `source` for the default canonical input. A file en
 Use per-file source overrides when an adapter needs to select a different canonical input. Keep native metadata and mechanical transforms in adapter inputs rather than copying prose into configuration. The consolidated compiler composes full specialist policy and complete workflow context instead of relying on removed role/mode skills.
 
 After changing canonical input or projection metadata, run `scripts/sync-all` and `scripts/check-sync` from the repository root.
+
+## Keeping Directives Small
+
+`rules.md` and `specialists/main-loop.md` load on every main-session turn, and instruction-following degrades as always-on rules grow. Budgets: `rules.md` at most 2,000 words and `main-loop.md` at most 1,200, enforced by `packages/core/tests/directives.test.ts`.
+
+- **Adding means cutting.** Edit an existing line before adding one. A change that would exceed a budget cuts or moves something else in the same PR; raising a budget is an explicit, reviewed decision.
+- **When a lesson earns a rule.** A safety slip (secrets, authorization, data loss, protected branches) becomes a rule the first time; any other slip on its second occurrence.
+- **Principle plus its test.** State the rule and how to check it. Incident stories, dates, and names belong in the PR or an ADR.
+- **Generalize upward.** When three or more lessons share one root, replace them with one principle.
+- **One home.** Each rule lives in one place: the host, one section here, or a method skill (procedure that only some tasks need goes in the skill that loads on trigger).
+- **Deletion test.** Keep a sentence only if a current frontier model would not do it unprompted, an observed failure backs it, no other home holds it, and it neither overlaps nor contradicts another rule.
+- **Report counts.** Every directive PR reports before and after word counts for both files and the byte sizes of `packages/agent-plugins/AGENTS.md` and `kimi.system-prompt.md` (32 KB limit), and records each removed obligation's disposition per the [directive change review](../../../docs/directive-change-review.md).
 
 ## How to Add a New Specialist
 

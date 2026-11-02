@@ -13,6 +13,8 @@ const readDirective = (...segments: string[]): string =>
 const readUtilitySkill = (...headings: string[]): string =>
   headings.map((heading) => extractSection(readDirective('rules.md'), heading) ?? '').join('\n');
 
+const countWords = (text: string): number => text.split(/\s+/u).filter(Boolean).length;
+
 const assertOrdered = (document: string, headings: string[]): void => {
   let previous = -1;
   for (const heading of headings) {
@@ -24,6 +26,11 @@ const assertOrdered = (document: string, headings: string[]): void => {
 };
 
 describe('canonical directive behavioral contracts', () => {
+  it('keeps always-on directives within their word budgets', () => {
+    expect(countWords(readDirective('rules.md'))).toBeLessThanOrEqual(2000);
+    expect(countWords(readDirective('specialists', 'main-loop.md'))).toBeLessThanOrEqual(1200);
+  });
+
   it('preserves safety, authorization, acceptance, branch, and sync floors', () => {
     const rules = readDirective('rules.md');
 
@@ -110,7 +117,6 @@ describe('canonical directive behavioral contracts', () => {
     const iteration = readUtilitySkill('Repair Budget', 'Fail-Loud Repair');
 
     expect(mainLoop).toMatch(/routine delivery is autonomous/iu);
-    expect(mainLoop).toMatch(/research-only routes end/iu);
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
@@ -118,7 +124,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/iu);
     expect(rules).toMatch(/do not reset a review or repair budget/iu);
     expect(mainLoop).toMatch(/you own continuation and the delivery path/iu);
-    expect(mainLoop).toMatch(/incomplete todos are not user checkpoints/iu);
+    expect(mainLoop).toMatch(/incomplete todos.*are not user checkpoints/iu);
     expect(iteration).toMatch(/same user outcome/iu);
     expect(iteration).toMatch(/adjacent findings as follow-ups/iu);
   });
@@ -138,7 +144,6 @@ describe('canonical directive behavioral contracts', () => {
     expect(mainLoop).toMatch(
       /for implementation work, you own continuation and the delivery path/iu,
     );
-    expect(mainLoop).toMatch(/push and open the PRs without routine approval asks/iu);
   });
 
   it('supports verified incremental commits and reviewable PR slices', () => {
@@ -213,7 +218,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(mainLoop).toMatch(/blocks completion only when/iu);
     expect(mainLoop).toContain('acceptance, safety');
     expect(mainLoop).toContain('authorization');
-    expect(reviewer).toMatch(/label `\[fix\]` only for a concrete blocker/iu);
+    expect(rules).toMatch(/label `\[fix\]` only for a concrete blocker/iu);
+    expect(reviewer).toMatch(/global Acceptance and Blind Review contract/iu);
     expect(reviewer).toMatch(/after a repair, re-review only the repaired scope/iu);
   });
 
@@ -294,9 +300,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(mainLoop).toContain(
       'When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.',
     );
-    for (const split of ['Review', 'None']) {
-      expect(mainLoop).toContain(`| ${split} |`);
-    }
+    expect(mainLoop).toMatch(/do recon, design, diagnosis, and implementation in this session/iu);
+    expect(mainLoop).toMatch(/only split into another context/iu);
     expect(mainLoop).toMatch(/one blind `@reviewer` pass/iu);
 
     // Durable concepts, not prose inventory: both files, root-only order,
@@ -329,9 +334,6 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(rules).toMatch(/carry them through briefs to final reconciliation/iu);
     expect(rules).toMatch(/part of acceptance/iu);
-    expect(mainLoop).toMatch(
-      /carry required documentation per the global documentation and release-notes contract/iu,
-    );
     expect(mainLoop).toMatch(/documentation[\s\S]*?changesets where the repository uses them/iu);
   });
 
