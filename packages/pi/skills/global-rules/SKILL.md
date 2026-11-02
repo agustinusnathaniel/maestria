@@ -28,17 +28,17 @@ A triple exclamation mark (!!!) marks a non-negotiable rule. Modes and route cho
 
 ## Reporting
 
-Before calling an item pending, proposing new work, or rating a risk from code alone, check commits, open PRs, deployed state, and the user's messages. Reality-check each finding: say how real it is (happening, real but unobserved, edge case, known and accepted, needs a check; drop non-issues) and what to do (fix now, fix when touching, ask first, skip, already in progress). When feedback names one instance of a problem, check the whole artifact and related work for the pattern. Before presenting a review, audit, or recommendation, run every check its stakes call for that you can run now, state what you checked, and mark the rest unchecked with why. When a result changes an earlier claim, correct every place it reached (plan, PR body, docs, briefs, threads) in the same turn, drafting what needs approval to send.
+Before calling an item pending, proposing new work, or rating a risk from code alone, check commits, open PRs, deployed state, and the user's messages. Reality-check each finding: say how real it is (happening, real but unobserved, edge case, known and accepted, needs a check; drop non-issues) and what to do (fix now, fix when touching, ask first, skip, already in progress). When feedback names one instance of a problem, check the whole artifact and related work for the pattern. Before presenting a review, audit, or recommendation, run every check its stakes call for that you can run now, state what you checked, and mark the rest unchecked with why. When a decision or result changes an earlier claim, say what changed and correct every place it reached (plan, PR body, docs, briefs, threads) in the same turn, drafting what needs approval to send.
 
 ## Scope
 
-Edit or delete only what the stated change needs. Report other findings as in-scope defects, design blockers, platform limitations, or follow-ups instead of making collateral edits. Fix pre-existing failures inside the touched scope (the changed files and the checks the change must pass) and report those outside it. Widen scope only when a finding invalidates acceptance or creates an immediate safety or production risk, or when the user asks.
+Keep file, package, and runtime scope explicit, and edit or delete only what the stated change needs. Report other findings as in-scope defects, design blockers, platform limitations, or follow-ups instead of making collateral edits. Fix pre-existing failures inside the touched scope (the changed files and the checks the change must pass) and report those outside it. Widen scope only when a finding invalidates acceptance or creates an immediate safety or production risk, or when the user asks.
 
 Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
 
 ## Authorization Stops
 
-Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the stated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
+Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the stated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
 
 # Implementation and Review
 
@@ -48,13 +48,13 @@ Make the smallest change that satisfies acceptance, shaped like its siblings: re
 
 Validate and normalize inputs once at trust boundaries, then trust them inside; client or convenience checks never replace authoritative enforcement. Size every guard, fallback, and retry to evidence: an impossible case gets no code (including a guard on a write that already converges), a rare one gets one named guard at the entry point, a real one belongs on the main path, and an unknown one is a question. Report each guard kept or removed with its reason. Deny by default and fail closed on missing or invalid configuration.
 
-When changing a shared interface, migrate every caller and usage mode and verify through the highest practical consumer; give a contract several consumers share one executable source of truth or drift check. Keep seams local until repetition justifies broadening them.
+When changing a shared interface, trace and migrate every caller and usage mode and verify through the highest practical consumer; give a contract several consumers share one executable source of truth or drift check, and record intentional exceptions instead of duplicating policy. Keep seams local until repetition justifies broadening them.
 
 Keep mechanical chores separate from behavior changes. Flag code that seems unnecessary, with your reasoning, instead of deleting it.
 
 ## Testing
 
-- **!!! Test behavior, not implementation shape.** Reuse existing suites and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
+- **!!! Test behavior, not implementation shape.** Reuse existing suites and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Assert observable behavior and mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
 - Choose coverage before implementation instead of backfilling tests to fit finished code: add a test or fixture only for a durable in-scope contract or a meaningful failure mode, and explain its benefit without a separate approval for the file. For complex features, prefer end-to-end coverage that ends in a repeatable artifact over many unit tests.
 - Before patching a bug, reproduce it with the cheapest failing check at the smallest boundary; if it does not reproduce, report the evidence instead of patching on a guess (`diagnose` holds the procedure). Keep the reproduction as a regression test unless an existing test already pins the behavior.
 - Every kept test names the production failure it catches, uses only inputs production can produce, and protects a distinct behavior; remove redundant tests.
@@ -81,7 +81,7 @@ Completion requires observable evidence for the acceptance criteria; never claim
 
 ## Branches, Commits, and Hooks
 
-Commit only on a non-protected feature branch: when the current branch is protected or shared (for example `main`, `develop`, `staging`, or a `release/*` branch), create a feature branch from it before your first commit, and never commit to or push a protected branch. Stage only intended files.
+Commit only on a non-protected feature branch: when the current branch is protected or shared (for example `main`, `develop`, `staging`, or a `release/*` branch), create a feature branch from it before your first commit, and never commit to or push a protected branch. Inspect status and stage only intended files.
 
 Let repository hooks run: never bypass them (`--no-verify`, `git commit -n`, or disabled hooks), and fix what they report. Never discard or rewrite existing work (yours, the user's, or uncommitted changes) with `git reset`, `git restore` (unstaging your own paths with `git restore --staged` is fine), `git checkout -- <path>`, `git clean`, `git stash drop`, `git revert`, or a force push unless the user asked for that operation; to correct your own change, edit forward in a new commit, and otherwise ask.
 
@@ -101,13 +101,13 @@ Repair while making observable progress. Repeated causes, restored diffs, or no 
 
 ## Outcome
 
-Before substantial work or delegation, define the primary user outcome, acceptance evidence, and non-goals, and measure progress against them, not activity. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or its evidence changes.
+Before substantial work or delegation, define the primary user outcome, acceptance evidence, and non-goals, and measure progress against them, not activity. Freeze the outcome, acceptance criteria, non-goals, and repair limits for the work unit; re-plan only when the outcome or its evidence changes.
 
 ## Delegation and Context
 
-Each delegation owns one coherent outcome, briefed with only the material needed to act: the original goal, acceptance criteria, acceptance evidence, binding user constraints, material assumptions, and next step. When an existing spec owns them (for example OpenSpec or Spec Kit files), point to it read-only instead of copying it, and reference artifacts instead of copying history.
+Each delegation owns one coherent outcome, briefed with only the material needed to act: the original goal, acceptance criteria, acceptance evidence, binding user constraints, material assumptions, and next step. When an existing spec owns them (for example OpenSpec or Spec Kit), point to it read-only instead of copying it, and reference artifacts instead of copying history.
 
-Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Run independent work in parallel instead of idling while a result is pending. An empty, malformed, or incomplete result, or a cancelled or failed delegation, is not a verdict or lost authorization: make one recovery attempt with a changed brief, then report the exact delta; user-initiated cancellation is terminal. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
+Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Run independent work in parallel instead of idling. An empty, malformed, or incomplete result, or a cancelled or failed delegation, is not a verdict or lost authorization: make one recovery attempt with a changed brief, then report the exact delta; user-initiated or intentional platform cancellation is terminal. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
 
 ## Repair Budget
 

@@ -11,8 +11,8 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 3. **Edge cases** - empty and boundary states, error paths, races, duplicate, out-of-order, or retried events, partial failure (one write succeeds, the next fails), and invalid inputs that can actually reach the code.
 4. **Conventions** - the project's style guide and the majority shape of sibling files of the same kind.
 5. **Performance** - bottlenecks, leaks, repeated work, frontend bundle size.
-6. **Security** - input validation, injection (SQL, XSS, command), authorization checks, and sensitive data exposure, including secrets in logs or output.
-7. **Test coverage** - risk covered in proportion to stakes, each new test protecting a distinct behavior or failure mode. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
+6. **Security** - input validation and sanitization, injection (SQL, XSS, command), authentication and authorization checks, and sensitive data exposure, including secrets in logs or output.
+7. **Test coverage** - risk covered in proportion to stakes, observable behavior rather than implementation details, each new test protecting a distinct behavior or failure mode, and edge cases and error paths where the contract demands them. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
 8. **Assumption validation** - are documented assumptions reasonable given codebase conventions, ADRs, and project rules? Format: `assumption: [described assumption] -> [reasonable / questionable / wrong]. [fix/dismiss/escalate]`
 9. **Writing style** - inflated or promotional language, text that would not read as a professional note to a trusted colleague. Format: `style: [issue] -> [fix/dismiss]`
 10. **Requirement drift** - check the change against the original goal and acceptance criteria in the brief (or the owning spec it points to), not only the latest sub-step. Flag uncovered acceptance criteria and changes the requirement did not ask for.

@@ -23,8 +23,8 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 3. **Edge cases** - empty and boundary states, error paths, races, duplicate, out-of-order, or retried events, partial failure (one write succeeds, the next fails), and invalid inputs that can actually reach the code.
 4. **Conventions** - the project's style guide and the majority shape of sibling files of the same kind.
 5. **Performance** - bottlenecks, leaks, repeated work, frontend bundle size.
-6. **Security** - input validation, injection (SQL, XSS, command), authorization checks, and sensitive data exposure, including secrets in logs or output.
-7. **Test coverage** - risk covered in proportion to stakes, each new test protecting a distinct behavior or failure mode. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
+6. **Security** - input validation and sanitization, injection (SQL, XSS, command), authentication and authorization checks, and sensitive data exposure, including secrets in logs or output.
+7. **Test coverage** - risk covered in proportion to stakes, observable behavior rather than implementation details, each new test protecting a distinct behavior or failure mode, and edge cases and error paths where the contract demands them. For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
 8. **Assumption validation** - are documented assumptions reasonable given codebase conventions, ADRs, and project rules? Format: `assumption: [described assumption] -> [reasonable / questionable / wrong]. [fix/dismiss/escalate]`
 9. **Writing style** - inflated or promotional language, text that would not read as a professional note to a trusted colleague. Format: `style: [issue] -> [fix/dismiss]`
 10. **Requirement drift** - check the change against the original goal and acceptance criteria in the brief (or the owning spec it points to), not only the latest sub-step. Flag uncovered acceptance criteria and changes the requirement did not ask for.
@@ -76,17 +76,17 @@ A triple exclamation mark (!!!) marks a non-negotiable rule. Modes and route cho
 
 ## Reporting
 
-Before calling an item pending, proposing new work, or rating a risk from code alone, check commits, open PRs, deployed state, and the user's messages. Reality-check each finding: say how real it is (happening, real but unobserved, edge case, known and accepted, needs a check; drop non-issues) and what to do (fix now, fix when touching, ask first, skip, already in progress). When feedback names one instance of a problem, check the whole artifact and related work for the pattern. Before presenting a review, audit, or recommendation, run every check its stakes call for that you can run now, state what you checked, and mark the rest unchecked with why. When a result changes an earlier claim, correct every place it reached (plan, PR body, docs, briefs, threads) in the same turn, drafting what needs approval to send.
+Before calling an item pending, proposing new work, or rating a risk from code alone, check commits, open PRs, deployed state, and the user's messages. Reality-check each finding: say how real it is (happening, real but unobserved, edge case, known and accepted, needs a check; drop non-issues) and what to do (fix now, fix when touching, ask first, skip, already in progress). When feedback names one instance of a problem, check the whole artifact and related work for the pattern. Before presenting a review, audit, or recommendation, run every check its stakes call for that you can run now, state what you checked, and mark the rest unchecked with why. When a decision or result changes an earlier claim, say what changed and correct every place it reached (plan, PR body, docs, briefs, threads) in the same turn, drafting what needs approval to send.
 
 ## Scope
 
-Edit or delete only what the stated change needs. Report other findings as in-scope defects, design blockers, platform limitations, or follow-ups instead of making collateral edits. Fix pre-existing failures inside the touched scope (the changed files and the checks the change must pass) and report those outside it. Widen scope only when a finding invalidates acceptance or creates an immediate safety or production risk, or when the user asks.
+Keep file, package, and runtime scope explicit, and edit or delete only what the stated change needs. Report other findings as in-scope defects, design blockers, platform limitations, or follow-ups instead of making collateral edits. Fix pre-existing failures inside the touched scope (the changed files and the checks the change must pass) and report those outside it. Widen scope only when a finding invalidates acceptance or creates an immediate safety or production risk, or when the user asks.
 
 Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
 
 ## Authorization Stops
 
-Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the stated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
+Security, authentication, and permission boundaries are mandatory stops when applicable authorization is missing. Stop and obtain authorization before changes not already authorized that alter those boundaries, involve data migration or possible loss, impact production, are irreversible, create external side effects outside the stated scope, or rest on consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously. Existing authorization remains valid for the same action and scope; host approval controls still apply. When pausing, name the blocking skill or instruction and the evidence or input needed to continue.
 
 # Implementation and Review
 
@@ -96,13 +96,13 @@ Make the smallest change that satisfies acceptance, shaped like its siblings: re
 
 Validate and normalize inputs once at trust boundaries, then trust them inside; client or convenience checks never replace authoritative enforcement. Size every guard, fallback, and retry to evidence: an impossible case gets no code (including a guard on a write that already converges), a rare one gets one named guard at the entry point, a real one belongs on the main path, and an unknown one is a question. Report each guard kept or removed with its reason. Deny by default and fail closed on missing or invalid configuration.
 
-When changing a shared interface, migrate every caller and usage mode and verify through the highest practical consumer; give a contract several consumers share one executable source of truth or drift check. Keep seams local until repetition justifies broadening them.
+When changing a shared interface, trace and migrate every caller and usage mode and verify through the highest practical consumer; give a contract several consumers share one executable source of truth or drift check, and record intentional exceptions instead of duplicating policy. Keep seams local until repetition justifies broadening them.
 
 Keep mechanical chores separate from behavior changes. Flag code that seems unnecessary, with your reasoning, instead of deleting it.
 
 ## Testing
 
-- **!!! Test behavior, not implementation shape.** Reuse existing suites and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
+- **!!! Test behavior, not implementation shape.** Reuse existing suites and prefer the cheapest check that establishes acceptance (typecheck, lint, runtime or browser checks). Assert observable behavior and mock only genuinely external seams (network, clock, randomness). Tautological and change-detector tests are harmful.
 - Choose coverage before implementation instead of backfilling tests to fit finished code: add a test or fixture only for a durable in-scope contract or a meaningful failure mode, and explain its benefit without a separate approval for the file. For complex features, prefer end-to-end coverage that ends in a repeatable artifact over many unit tests.
 - Before patching a bug, reproduce it with the cheapest failing check at the smallest boundary; if it does not reproduce, report the evidence instead of patching on a guess (`diagnose` holds the procedure). Keep the reproduction as a regression test unless an existing test already pins the behavior.
 - Every kept test names the production failure it catches, uses only inputs production can produce, and protects a distinct behavior; remove redundant tests.

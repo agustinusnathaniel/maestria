@@ -300,6 +300,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(mainLoop).toContain(
       'When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.',
     );
+    expect(mainLoop).toMatch(/do recon, design, diagnosis, and implementation in this session/iu);
     expect(mainLoop).toMatch(/only split into another context/iu);
     expect(mainLoop).toMatch(/one blind `@reviewer` pass/iu);
 

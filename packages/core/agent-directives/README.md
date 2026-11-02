@@ -18,7 +18,7 @@ agent-directives/
   specialists/       - The main loop and its one subagent
     main-loop.md     - Main loop (the `maestria` agent on OpenCode): recon, design, implementation, review triage, and delivery
     reviewer.md      - Independent blind review with quality gates
-  rules.md           - Shared rules used across all agents
+  rules.md           - Shared rules in four parts: the reviewer gets `Every Agent` and `Implementation and Review`; the main session gets all four
   skills/            - maestria's own methodology skills (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `recon`)
   commands/          - Workflow-mode sources (`fein`, `sonar`, `blitz`)
 ```
