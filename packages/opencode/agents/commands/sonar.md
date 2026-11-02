@@ -13,6 +13,6 @@ detection: 'case-insensitive keyword, [MODE: sonar] marker injected at front of 
 
 ## MODE: sonar (Research Only)
 
-Activate research-only mode. Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents.
+Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents: do not implement, write code, or create production files.
 
-Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties. Do not implement, write code, or create production files.
+Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties.

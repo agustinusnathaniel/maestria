@@ -239,7 +239,6 @@ describe('canonical directive behavioral contracts', () => {
     expect(prSkill).toMatch(/terminal transcript/iu);
     expect(prSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
     expect(prSkill).toMatch(/unnecessary with a concrete reason/iu);
-    expect(prSkill).toMatch(/explicit user or project.*requirement/iu);
   });
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {

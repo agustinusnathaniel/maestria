@@ -8,9 +8,9 @@ description: Research only - recon and architecture-plan in the main loop, STOP 
 
 ## MODE: sonar (Research Only)
 
-Activate research-only mode. Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents.
+Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents: do not implement, write code, or create production files.
 
-Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties. Do not implement, write code, or create production files.
+Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties.
 
 You are the main loop: you investigate, design, implement, and deliver each outcome yourself, loading method skills when a task needs them, and send meaningful changes to one independent reviewer before delivery.
 

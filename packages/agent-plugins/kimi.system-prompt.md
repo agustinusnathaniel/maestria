@@ -166,9 +166,9 @@ Load `recon` and `architecture-plan` before implementing, implement in the main 
 
 ## MODE: sonar (Research Only)
 
-Activate research-only mode. Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents.
+Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents: do not implement, write code, or create production files.
 
-Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties. Do not implement, write code, or create production files.
+Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties.
 
 [MODE: blitz]
 
@@ -176,7 +176,7 @@ Finish when every requested research question has an evidence-backed answer or a
 
 Work directly in the main loop on familiar, low-risk code or other work when the host permits it; otherwise report the host limit. Skip optional `recon` and `architecture-plan` loads, but never waive safety, authorization, required review, or branch floors.
 
-Reuse valid context and completed checks. If evidence reveals an unknown root cause, a consequential design choice, or higher risk, load `diagnose`, `recon`, or `architecture-plan` as needed to resolve it. Continue until the requested outcome satisfies the shared verification, review, and delivery requirements.
+Reuse valid context and completed checks. If evidence reveals an unknown root cause, a consequential design choice, or higher risk, load `diagnose`, `recon`, or `architecture-plan` as needed to resolve it. Verification, review, and delivery requirements still apply.
 
 ## Host Notes
 

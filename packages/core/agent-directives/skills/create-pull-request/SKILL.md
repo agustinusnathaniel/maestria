@@ -1,47 +1,26 @@
 ---
-description: Draft or revise a pull request title and body and check it is ready for review. Use when preparing a PR, reviewing its text, refreshing it after a push, or before marking it ready.
+description: Draft, publish, or refresh a pull request title and body with its visual evidence, and check it is ready for review. Use when preparing or revising a PR, capturing or publishing evidence for a rendered change, after a push to an open PR, or before marking a PR ready.
 name: create-pull-request
 ---
 
 # Create Pull Request
 
-You are the agent preparing the PR draft. Work in order: gather inputs, check the project template, write the title and body, then complete the draft or publish it when requested.
+## Scope
 
-## When to use
+Drafting or revising PR text is in scope even when no capture, upload, or publishing tool is available. A project ban on creating PRs or installing tools stops only that operation: still draft, and report the blocked step.
 
-Use when preparing, revising, or reviewing a PR title and body draft, updating a PR after a push that changed diff or verification, or checking PR text when publication is requested. Read-only drafting or revision counts as in scope even when no capture, upload, or publication tool is available; a draft-only request completes with a usable title and body while outstanding publication or evidence is reported as the remaining step.
+For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft, keep each description to its own diff, and check that no open PR already covers the scope.
 
-Do not use for code or diff investigation where no PR preparation is requested, merge/release/production decisions, or protected-branch commits. Those stay under the host, user, and project authorization and review rules.
+## Title and body
 
-If the project forbids PR creation, stop only that operation and report it as the blocker for the PR step; continue other requested work. A ban on installing tools forbids neither drafting nor using a tool that is already available; stop only the forbidden operation and report the blocker on the affected step.
+Write an explicit Conventional Commits title, not inferred from commit messages, scoped to the user-visible outcome or maintainer benefit.
 
-## Multiple PRs
-
-For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft. Check that the description covers only its own diff and that no open PR already covers the scope.
-
-## Title
-
-Write an explicit Conventional Commits title. Do not infer it from commit message format. Keep it human-readable and scoped to the user-visible outcome or maintainer benefit.
-
-## Body structure
-
-Use literal `##` headings in this order:
-
-1. `## Summary`
-2. `## Changes`
-3. `## Verification`
-4. `## Visual evidence` (only when the change has a rendered surface)
-5. `## Breaking changes` (only when applicable)
-6. `## Merge steps` (only when merging needs more than the merge itself)
-
-Project template precedence: when the project defines an explicit PR template, follow that template while preserving the required information above. Do not impose these literal headings on a replacement template. Map content across, then confirm nothing required was dropped.
-
-Default body template (use when no project template applies):
+When the project defines a PR template, follow it, map the information below into it, and confirm nothing required was dropped. Otherwise use these literal `##` headings in this order:
 
 ```markdown
 ## Summary
 
-[User-visible outcome or maintainer benefit, one short paragraph or concise bullets. No session IDs or internal execution metadata.]
+[The user-visible outcome or maintainer benefit in a short paragraph or bullets.]
 
 ## Changes
 
@@ -51,11 +30,11 @@ Default body template (use when no project template applies):
 
 ## Verification
 
-[Checks run, results, unresolved gaps. Note review outcome briefly, no pasted identifiers.]
+[Checks run with results, the review outcome, and unresolved acceptance gaps.]
 
 ## Visual evidence
 
-[Only for rendered surfaces: published artifacts, captions, current coverage; or `Not applicable: <concrete reason>`.]
+[Only when the change touches a rendered surface: captioned captures, or `Not applicable: <concrete reason>`.]
 
 ## Breaking changes
 
@@ -63,48 +42,30 @@ Default body template (use when no project template applies):
 
 ## Merge steps
 
-[Only when applicable: pre-merge and post-merge steps in order: feature flags (needed, exists, default off), deploy order (consumers before producers), indexes or migrations, follow-ups.]
+[Only when merging needs more than the merge: pre-merge and post-merge steps in order.]
 ```
 
-Rules for `## Changes`: describe the actual change and practical purpose, not the editing action. Group related files with one rationale. List only symbols that help review. Omit session IDs and internal metadata.
+In Changes, describe what changed and why rather than the editing action, group related files under one rationale, and name only symbols that help review. Keep session IDs and internal execution metadata out of the PR. Give the complete merge steps (feature flags: needed, exists, default off; deploy order, consumers before producers; indexes or migrations; follow-ups) unasked before the PR is ready and whenever you call it ready or mergeable, never after the merge. Changes to existing shared paths go live on deploy, so state that they are safe with any new flag off.
 
-Rules for `## Verification`: list checks and results honestly. Carry unresolved acceptance gaps. Never claim unverified results.
+## Publishing
 
-Rules for `## Merge steps`: give the complete list unasked before the PR is ready and whenever you call it approved, ready, or mergeable; never surface a step after the merge. Changes to existing shared paths are live on deploy, so state that they are safe with any new flag off.
+A draft-only request is complete when the title and body are usable and every outstanding item (publication, missing evidence, unchecked variants) is reported; it never presents itself as published. When asked to create or update the PR, publish with the host's existing tooling, checking its current help rather than remembered syntax, then read back the published body yourself: it matches the current diff, attachments render, and links resolve. Report delivery only after that readback; an unavailable or forbidden publishing step leaves the outcome incomplete with the exact blocker.
 
-## Completion
+## Visual evidence
 
-Complete the request in one of two ways:
+A change to a rendered surface requires evidence. Capture, publication in the PR body, and readback are separate stages; a local path satisfies only the first.
 
-1. Draft-only request: the draft is complete when the title and body are usable and every outstanding item (publication, missing evidence, unchecked variants) is reported with its checked limitation. A draft-only result never presents itself as published.
-2. Actual PR creation or update, when requested and the tooling is available: publish with the existing host tooling, checking the tool current help when needed instead of relying on cached syntax, then read back the published body yourself and confirm it matches the current diff before reporting delivery. When publication or a required publishing step is unavailable or forbidden, report the outcome incomplete with the exact blocker instead of claiming delivery.
+- **Capture** the affected screen or interaction and its relevant responsive or state variants with an available browser or capture tool; a missing desktop display does not rule out headless capture, and a representative terminal transcript can serve for text-only CLI output. Inspect captures when vision is available, otherwise label them visually unverified. Keep artifacts at any workable path, including `/tmp`, and commit evidence files to a branch only when project policy requires it.
+- **Record** each artifact as path, caption, and coverage gaps: what it shows and which variants remain unchecked. Report evidence as captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves that preserve rendering can reuse existing evidence; a refactor label or passing build does not establish unchanged visuals.
+- **Present** evidence by changed screen or behavior, labeling each artifact's state and relevant viewport or theme. For UI changes default to a before/after table (Area | Before | After | What changed), or a captioned list for a single state. Pair captures with matching viewports and states, name the intended difference, disclose missing baselines instead of fabricating them, and put supplemental captures in a collapsible section when supported.
+- **Publish** in the PR body as an attachment or accessible link with a caption, using authorized tooling whose upload support you checked in its current help; capture and upload are separate capabilities. On GitHub, `gh pr create --attach` or `gh pr edit --attach` (recent `gh`) hosts captures on GitHub's CDN. In a PR stack, every PR carries its own evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the attachment limitation.
 
-## Visual evidence where required
+Required evidence absent from the published body leaves delivery incomplete with the checked limitation; session-log references and comments do not count, and required evidence never silently becomes a follow-up. Optional illustration may be omitted with a reason.
 
-When the change has a rendered surface, visual evidence is required; otherwise write `Not applicable: <concrete reason>` in the body and skip this section, including draft-only requests.
+## After a push
 
-For rendered surfaces, capture, handoff, publication in the PR body, and readback are distinct stages. A local path alone does not satisfy PR-body publication.
-
-Capture the affected screen or interaction, including relevant responsive or state variants, with an available browser or capture tool; a missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it. Keep capture effort proportionate to the changed surface.
-
-Record evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. When project review rules require an independent check, a reviewer checks that coverage against the changed surface before delivery.
-
-Present evidence concisely by changed screen or behavior: label each artifact with its state and relevant viewport or theme. For UI changes, default to a before/after table (Area | Before | After | What changed); use a short captioned list for a single state or when tables would shrink images. Pair comparable captures with matching viewports and states, name the intended difference, and disclose missing baselines or unchecked variants without fabricating them. Keep representative captures in the main section with supplemental captures in a collapsible section when supported.
-
-For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals.
-
-Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the tool current help for upload support instead of relying on cached syntax. Capture and upload are separate capabilities. On GitHub, upload captures with `gh pr create --attach` or `gh pr edit --attach` (requires a recent `gh`; confirm flag support in its help) so they are hosted on GitHub's CDN, and do not commit evidence files to any branch unless project policy requires it. In a PR stack, every PR carries its own evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation.
-
-If required visual evidence is missing, the published result is incomplete: state the checked limitation. Do not report delivery as complete until the evidence is published in the PR body and you have read back the published body to verify its inclusion; local paths, session-log references, and comments alone do not satisfy this requirement. Do not waive an explicit user or project evidence requirement because tooling is missing: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
-
-Read back the actual PR body yourself; confirm attachments render or links resolve and evidence matches the current relevant diff.
-
-When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file.
+Re-read the approval and merge state, since a push can drop an approval, and re-read the title, body, and evidence against the new head: update what changed and remove what is no longer true. Replace captures whose appearance or behavior changed and update their captions and comparisons; keep intentional before baselines clearly labeled and never present a historical before as current. Refresh only affected content, not every commit or unrelated file. Then read back a published PR, or present the updated draft with its outstanding items.
 
 ## Ready check
 
-Before marking a PR ready for review or reporting it ready to merge: the branch is current with its base, the affected suites pass at the head, the whole diff has had a correctness pass, every CI check and review thread (bot threads included) is read and triaged with evidence (fixed, or answered with why not), no unresolved thread blocks merge, and the title and body are true at the head. Fix correctness findings by default; decline one only with evidence the case cannot occur (call order, locks, stored state) or a one-line known-limit reason in the body, and answer every part of a multi-part finding.
-
-## Freshness
-
-After every push, re-read the approval and merge state, since a push can drop an approval, and re-read the title and body against the new head: update what changed and remove what is no longer true, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.
+Before marking a PR ready for review or calling it ready to merge: the branch is current with its base, the affected suites pass at the head, the whole diff has had a correctness pass, every CI check and review thread (bot threads included) is read and triaged with evidence (fixed, or answered with why not), no unresolved thread blocks merge, and the title and body are true at the head. Fix correctness findings by default; decline one only with evidence the case cannot occur (call order, locks, stored state) or a one-line known-limit reason in the body, and answer every part of a multi-part finding.
