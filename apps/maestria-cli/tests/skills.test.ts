@@ -46,8 +46,8 @@ describe('legacy skill record', () => {
         platforms: {
           opencode: {
             skillAssets: {
-              [PR]: { path: '/fake/pr', source },
               [DOCS_UPDATE_SKILL]: { path: '/fake/docs', source },
+              [PR]: { path: '/fake/pr', source },
               'future-skill': { path: '/fake/future', source },
             },
             skills: [PR, DOCS_UPDATE_SKILL, 'future-skill'],

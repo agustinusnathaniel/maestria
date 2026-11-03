@@ -8,7 +8,7 @@ catalogMode: prefer
 catalog:
   '@types/node': ^26.5.1
   typescript: ^7.0.2
-  vite: npm:@voidzero-dev/vite-plus-core@1.2.0
+  vite: npm:@voidzero-dev/vite-plus-core@1.4.0
   vite-plus: 1.4.0
   ultracite: 7.11.1
   '@changesets/cli': ^3.0.2
