@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This guide defines how maestria selects tests before implementation and verifies observable behavior without turning tests into implementation-shape checks. The canonical always-loaded contract lives in `packages/core/agent-directives/rules.md`; this guide supplies the definitions, workflow, and examples behind that contract.
+This guide defines how maestria selects tests before implementation and verifies observable behavior without turning tests into implementation-shape checks. The canonical contract lives in the `implement` method skill (`packages/core/agent-directives/skills/implement/SKILL.md`), with reproduce-first in `diagnose`; this guide supplies the definitions, workflow, and examples behind that contract.
 
 ## Audience
 

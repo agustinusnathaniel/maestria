@@ -37,7 +37,10 @@ describe('canonical methodology skills', () => {
       'create-pull-request',
       'diagnose',
       'docs-update',
+      'handoff',
+      'implement',
       'recon',
+      'review-loop',
     ]);
     for (const dir of skillDirs()) {
       expect(readSkillName(dir)).toBe(dir);
