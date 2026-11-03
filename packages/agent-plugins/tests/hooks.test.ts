@@ -130,6 +130,14 @@ describe('PreToolUse adapters', () => {
     expect(JSON.stringify(reviewer)).toContain('reviewer is read-only');
     expect(run('reviewer-guard.mjs', ['codex'], codexPatch()).output).toBeUndefined();
     expect(run('reviewer-guard.mjs', ['codex'], codexPatch('worker')).output).toBeUndefined();
+    // Shell calls stay open: the reviewer runs checks, and shell writes are not covered.
+    expect(
+      run('reviewer-guard.mjs', ['codex'], {
+        agent_type: 'maestria-reviewer',
+        tool_input: { command: 'git status' },
+        tool_name: 'Bash',
+      }).output,
+    ).toBeUndefined();
   });
 
   it('fails open on unreadable input and unknown hosts', () => {

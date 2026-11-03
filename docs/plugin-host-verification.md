@@ -280,6 +280,7 @@ Docs and source reading only; no model run.
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-OMP-PLUGIN-03 | OMP | Agent tools and hooks | Task-agent frontmatter `tools` is an allowlist (no denylist), so it can enforce a read-only reviewer. Hooks are executable TS/JS extensions (`tool_call` can block, rewrite input, or ask through `ctx.ui.confirm`); a declarative package cannot ship a command hook | `main` 83de60a; npm 18.16.0 | https://github.com/can1357/oh-my-pi/blob/main/docs/task-agent-discovery.md; https://github.com/can1357/oh-my-pi/blob/main/docs/hooks.md | 2026-11-03 | not tested |
+| E-OMP-PLUGIN-04 | OMP | Reviewer with Devin's `allowed-tools` key | The real OMP loader probe (`scripts/e2e/omp-plugin-discovery.ts`) on the packed archive passed 19 of 19 checks: the reviewer profile carrying `allowed-tools` loads, with 8 skills, 3 commands, and 1 rule. OMP reads `tools`, not `allowed-tools`, so the reviewer keeps its default tools there | `@oh-my-pi/pi-coding-agent` 18.4.8 (scratch install) | `scripts/e2e/omp-plugin-discovery.ts` | 2026-11-03 | tested: real loader, no task spawn |
 
 ## Hermes
 

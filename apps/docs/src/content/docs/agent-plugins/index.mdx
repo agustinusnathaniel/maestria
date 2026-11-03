@@ -27,7 +27,7 @@ Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent
 | Host | Reviewer | Workflow modes | Always-on policy | Read-only roles |
 | --- | --- | --- | --- | --- |
 | [Claude Code](/agent-plugins/installation/#claude-code) | 1 reviewer | 3 native commands (`/maestria:fein` and others) | In the commands | Write and Edit tools denied |
-| [Codex](/agent-plugins/installation/#codex) | 1 reviewer, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | Prompt-level, plus a hook that blocks the reviewer's file edits once trusted |
+| [Codex](/agent-plugins/installation/#codex) | 1 reviewer, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | Prompt-level, plus a hook that blocks the reviewer's edit-tool calls once trusted (not live-run) |
 | [Cursor](/agent-plugins/installation/#cursor) | 1 reviewer | 3 commands | Always-apply rule | Declared, not enforced for plugin agents |
 | [Kimi Code](/agent-plugins/installation/#kimi-code) | 1 reviewer | 3 commands | `systemPromptPath` to `kimi.system-prompt.md` | Write and Edit tools denied |
 | [Devin](/agent-plugins/installation/#devin) | 1 reviewer profile, local only | 3 mode skills (`/maestria:fein` and others) | Root `AGENTS.md` (Devin reads 16 KiB) | `allowed-tools` read tools only |
