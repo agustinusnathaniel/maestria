@@ -121,6 +121,8 @@ describe('email scan', () => {
     'gh api repos/o/r/issues/1/comments -f body="a.person@example.org"',
     'git commit -m "Co-authored-by: A <a.person@example.org>"',
     'git commit --message=a.person@example.org',
+    'git commit -m"thanks a.person@example.org"',
+    'gh pr create -ba.person@example.org',
   ])('asks before publishing an email address: %s', (command) => {
     const decision = classifyEmailScan(command, on('feature/x'));
     expect(decision.verdict).toBe('ask');

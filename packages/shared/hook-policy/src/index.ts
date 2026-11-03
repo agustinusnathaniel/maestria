@@ -322,8 +322,18 @@ const optionValues = (
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     const equals = arg.indexOf('=');
-    const name = arg.startsWith('--') && equals > 0 ? arg.slice(0, equals) : arg;
-    const attached = name === arg ? args[index + 1] : arg.slice(equals + 1);
+    const short = arg.slice(0, 2);
+    // `--name=value` and attached short values such as `-mTEXT` carry the value in the word.
+    let name = arg;
+    if (arg.startsWith('--') && equals > 0) {
+      name = arg.slice(0, equals);
+    } else if (!arg.startsWith('--') && arg.length > 2 && (inline.has(short) || files.has(short))) {
+      name = short;
+    }
+    let attached = args[index + 1];
+    if (name !== arg) {
+      attached = name === short ? arg.slice(2) : arg.slice(equals + 1);
+    }
     if (inline.has(name) || files.has(name)) {
       if (attached !== undefined) {
         values.push(files.has(name) ? readValue(attached, context) : attached);
