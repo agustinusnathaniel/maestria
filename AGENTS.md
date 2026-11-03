@@ -11,7 +11,7 @@ maestria and agustinusnathaniel/skills are independent. maestria holds how the a
 
 - `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
 - Platform adapters belong in their own `packages/<platform>/`. Shared code belongs in the appropriate neutral package, not in another platform's package.
-- OpenCode uses its standard SDK. Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes are declarative hosts served by `packages/agent-plugins`; their host-specific integration belongs outside core. OpenCode and Pi are the native adapters. The consolidated `@maestria/agent-plugins` root is directly installable. Canonical core separates roles, commands, rules, and utility skills; package exports provide host-compatible skills and explicitly selected native resources. It declares no executable runtime adapter, hooks, or MCP component.
+- OpenCode uses its standard SDK. Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, and Hermes are declarative hosts served by `packages/agent-plugins`; their host-specific integration belongs outside core. OpenCode and Pi are the native adapters. The consolidated `@maestria/agent-plugins` root is directly installable. Canonical core separates roles, commands, rules, and utility skills; package exports provide host-compatible skills and explicitly selected native resources. It declares no executable runtime adapter or MCP component; its hooks are small Node scripts that reinforce rules the directives already state, sharing one policy module in `packages/shared/hook-policy` ([CORE-037](docs/adr/core/ADR-CORE-037-hooks-as-deterministic-reinforcement.md)).
 - Pi is a runtime extension and may use Node.js APIs. Keep host-neutral shared utilities separate from its runtime adapter.
 - Prefer small, reviewable changes. Preserve canonical ownership, package boundaries, and sync correctness when choosing between approaches.
 
@@ -34,6 +34,7 @@ Read relevant ADRs before changing architecture, sync behavior, or agent convent
 | Change | Read |
 | --- | --- |
 | Plugin architecture or canonical sync | [CORE-002](docs/adr/core/ADR-CORE-002-plugin-architecture.md), [CORE-005](docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) |
+| Plugin hooks | [CORE-037](docs/adr/core/ADR-CORE-037-hooks-as-deterministic-reinforcement.md) |
 | Portable Agent Plugins projection | [CORE-022](docs/adr/core/ADR-CORE-022-agent-plugins-portable-projection.md), [CORE-034](docs/adr/core/ADR-CORE-034-consolidated-declarative-plugin.md) |
 | Agent routing, persistence, or instruction policy | [CORE-019](docs/adr/core/ADR-CORE-019-directive-simplification.md), [CORE-036](docs/adr/core/ADR-CORE-036-always-on-core-and-skill-map.md) |
 | OpenCode permissions or workflow modes | [OC-001](docs/adr/opencode/ADR-OC-001-tool-permission-design.md), [OC-003](docs/adr/opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) |
