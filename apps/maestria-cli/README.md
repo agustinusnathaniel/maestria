@@ -43,7 +43,7 @@ The CLI uses each host's installation mechanism and manages native agent/model c
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi package installer, OMP plugin installer, Kimi Code managed install, Cursor plugin directory, Hermes, Claude Code/Codex marketplaces and native Codex agent files). Devin and ZCode have no `install` target; stage the package with `maestria plugin install` and use the host's own installer.
+- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi package installer, OMP plugin installer, Kimi Code managed install, Cursor plugin directory, Hermes, Claude Code/Codex marketplaces and native Codex agent files, DeepSeek Harness bundle installer). Devin and ZCode have no `install` target; stage the package with `maestria plugin install` and use the host's own installer.
 - **Portable artifact workflow** - validates Agent Plugins v1 manifests, skills, and path containment (packages with `mcp.json` are rejected), then stages a package for a compatible client's own installer or directory loader.
 
 ## Support / Platform Notes

@@ -102,6 +102,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | `opencode` | `src/` OpenCode V2 plugin; permission maps in `sync.config.ts` | `agents/`, `rules/`, `skills/` | `pnpm --filter @maestria/opencode test` and `pnpm e2e:opencode` |
 | `agent-plugins` | `generation/` manifest/profile/native metadata; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
+| `deepseek` | `cordis.patch.yml` agent preset, `src/` Cordis plugin, `integrations/deepseek.md` in core | `prompts/`, `skills/` | `pnpm --filter @maestria/deepseek test` and `pnpm e2e:deepseek` (needs `dsh` on `PATH` or `DSH_BIN`) |
 
 When a platform's behavior differs from the core contract, document the boundary in its package README or an ADR. Do not hide a runtime limitation in generated prompt text.
 

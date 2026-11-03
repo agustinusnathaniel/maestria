@@ -192,6 +192,17 @@ export default defineConfig({
           ],
           label: '@maestria/pi',
         },
+        {
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/deepseek/' },
+            {
+              items: [{ autogenerate: { directory: 'deepseek/getting-started' } }],
+              label: 'Getting Started',
+            },
+          ],
+          label: '@maestria/deepseek',
+        },
       ],
       social: [
         {

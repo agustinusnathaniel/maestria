@@ -1,0 +1,59 @@
+---
+title: '@maestria/deepseek'
+description: DeepSeek Harness bundle with a maestria agent preset, git and generated-file guards, a read-only reviewer, and workflow skills.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/DEEPSEEK · PROVISIONAL"
+      title="A maestria preset for DeepSeek Harness."
+      lead="Install the bundle, pick the maestria preset, and let the main loop investigate, implement, and deliver each change, with one read-only reviewer before delivery."
+      mark={marks.deepseek}
+      primaryCta={{ href: '/deepseek/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/deepseek/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install deepseek"
+    />
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="One main loop, one reviewer."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'The maestria preset', desc: 'The standard coding agent, with the maestria main loop as its persona, the global rules as a system-prompt section, and your .maestria/ project files on every turn.' },
+          { title: 'Guards on every call', desc: 'Git hook bypasses are denied; protected-branch commits, force pushes, discarded work, generated-file edits, and emails in PR text go to DeepSeek Harness approval first.' },
+          { title: 'A read-only reviewer', desc: 'maestria_reviewer starts a child on its own preset with only read, search, and skill tools, so it cannot run commands or change files.' },
+          { title: 'Workflow and method skills', desc: 'fein, sonar, and blitz modes plus recon, architecture-plan, diagnose, implement, docs-update, create-pull-request, handoff, and review-loop.' },
+        ]}
+      />
+    </PluginSection>
+
+    <RelatedDocs
+      links={[
+        { label: 'Installation', href: '/deepseek/getting-started/installation/' },
+        { label: 'Quick start', href: '/deepseek/getting-started/quick-start/' },
+        { label: 'The main loop and reviewer', href: '/core/agents/' },
+        { label: 'When to use maestria', href: '/core/when-to-use/' },
+      ]}
+    />
+
+    <SiteFooter />
+
+  </div>
+</div>

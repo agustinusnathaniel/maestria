@@ -1,0 +1,61 @@
+{
+  "name": "@maestria/deepseek",
+  "version": "0.0.0",
+  "description": "maestria agent presets for DeepSeek Harness: the main loop with its always-on rules, a read-only reviewer, git and generated-file guards, and the method and mode skills",
+  "keywords": [
+    "agent-orchestration",
+    "deepseek-harness",
+    "dsh-bundle",
+    "maestria"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/deepseek"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "dist",
+    "locale",
+    "prompts",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./reviewer": "./dist/reviewer.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-system-prompt": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-working-directory": "0.2.1-rc.5",
+    "@maestria/shared-hook-policy": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "yaml": "^2.9.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

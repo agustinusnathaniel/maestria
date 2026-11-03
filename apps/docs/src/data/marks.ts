@@ -19,6 +19,8 @@ export const markAttrs = {
 export const marks: Record<string, string> = {
   architecturePlan:
     '<rect x="3.5" y="3.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7"/><path d="M7 10.5V17h6.5"/><path d="M10.5 7H17v6.5"/>',
+  deepseek:
+    '<path d="M12 5v14"/><path d="M12 5c-1.2 3.4-4 5.8-7.5 6.2 2 .8 3.4 2.2 4.2 4.3"/><path d="M12 5c1.2 3.4 4 5.8 7.5 6.2-2 .8-3.4 2.2-4.2 4.3"/>',
   diagnose: '<polyline points="3 12 7 12 9.5 6.5 14.5 17.5 17 12 21 12"/>',
   docsUpdate:
     '<path d="M6 3.5h8l4 4v13H6Z"/><polyline points="14 3.5 14 7.5 18 7.5"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="13" y2="15.5"/>',

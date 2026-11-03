@@ -284,6 +284,7 @@ describe('platform guide routes', () => {
       ['opencode', '/opencode/'],
       ['pi', '/pi/'],
       ['agent-plugins', '/agent-plugins/'],
+      ['deepseek', '/deepseek/'],
       ['ecosystem', '/ecosystem/'],
     ]);
     const agentPlugins = platforms.find(({ id }) => id === 'agent-plugins');

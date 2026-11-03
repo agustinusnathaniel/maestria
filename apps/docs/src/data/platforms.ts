@@ -68,6 +68,16 @@ export const platforms: Platform[] = [
     name: '@maestria/agent-plugins',
   },
   {
+    badge: 'PROVISIONAL',
+    blurb:
+      'A maestria agent preset with git guards and a host-enforced read-only reviewer for DeepSeek Harness.',
+    href: '/deepseek/',
+    id: 'deepseek',
+    installArgs: 'install deepseek',
+    mark: 'deepseek',
+    name: '@maestria/deepseek',
+  },
+  {
     auxiliary: true,
     blurb: 'Optional companion tooling: CodeGraph, RTK, spec tools, and the OpenCode goal plugin.',
     href: '/ecosystem/',
