@@ -37,6 +37,17 @@ Superseded run: Claude Code 2.1.217 passed ten checks against the former per-hos
 | E-CLAUDE-11 | Claude Code | Shared-profile child context and strict validation | `claude plugin validate --strict` passed. The offline fixture loaded the reviewer from the shared `agents/reviewer.md` (no per-host copy), Write and Edit were unavailable, and the full role and global policy reached the child context. | Claude Code 2.1.295 | This register; `scripts/e2e/claude-skill-preload.ts` | 2026-10-12 | tested: native CLI fixture; no paid inference |
 | E-CLAUDE-12 | Claude Code | Bundled skill discovery | With `create-pull-request` and `docs-update` bundled in `skills/`, `claude plugin validate --strict` passed and the offline fixture's parent request listed `maestria:create-pull-request`, `maestria:docs-update`, `maestria:handoff`, and `maestria:iteration-limits` beside the seven agents and three commands. Skill invocation by a model was not exercised. | Claude Code 2.1.295 | This register; `scripts/e2e/claude-skill-preload.ts` with a local request-capture patch | 2026-10-13 | tested: native CLI fixture; no paid inference |
 
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-CLAUDE-13 | Claude Code | Hook events | The hooks reference lists 33 events, including `SessionStart` (sources `startup`, `resume`, `clear`, `compact`, `fork`), `PreToolUse`, `PostCompact`, and `SessionEnd`; handler types `command`, `http`, `mcp_tool`, `prompt`, `agent`, of which `SessionStart` runs only `command` and `mcp_tool` | docs as of v2.1.314; local CLI 2.1.316 | https://code.claude.com/docs/en/hooks | 2026-11-03 | not tested |
+| E-CLAUDE-14 | Claude Code | `PreToolUse` ask | A plugin `PreToolUse` hook can return `permissionDecision` `allow`, `deny`, `ask`, or `defer`; precedence is deny, defer, ask, allow, and settings deny and ask rules still apply. Supersedes the deny-only claim in E-CLAUDE-04 | docs as of v2.1.314 | https://code.claude.com/docs/en/hooks; https://code.claude.com/docs/en/permissions | 2026-11-03 | not tested |
+| E-CLAUDE-15 | Claude Code | Plugin session context | A plugin cannot ship a loaded `CLAUDE.md` or rules. A `SessionStart` hook's `additionalContext` or stdout is added before the first prompt, summarized away at compaction, and added again when the hook matches the `compact` or `clear` source | docs as of v2.1.314 | https://code.claude.com/docs/en/plugins/components; https://code.claude.com/docs/en/context-window | 2026-11-03 | not tested |
+| E-CLAUDE-16 | Claude Code | Plugin hook trust | No per-hook approval: enabling the plugin is consent; `allowManagedHooksOnly` blocks plugin hooks except managed or force-enabled plugins | docs as of v2.1.314 | https://code.claude.com/docs/en/plugins/security | 2026-11-03 | not tested |
+
 ### Capability vs control
 
 | Evidence ID | Mechanism | Capability | Control | Note |
@@ -103,6 +114,16 @@ The projection baseline is local `codex 0.145.0` (`rust-v0.145.0`, commit `25af1
 | E-CODEX-CLI-17 | Codex CLI | Portable skill discovery | The version-matched loader fixes portable skill discovery to root `skills/`; the overlay does not redirect it. Full native methodology is supplied by the companion installer. Model preservation is tested independently against actual generated TOML prompts (see the multiline settings probe above). | Codex CLI `0.153.4` (`rust-v0.153.4`) | See Sources table (loader source and custom-agents doc) | 2026-10-12 | tested: source inspection + package/unit tests |
 | E-CODEX-CLI-18 | Codex CLI | Companion installer from the packed archive | With an isolated `CODEX_HOME`, `installCodexManagedAgents` wrote seven `maestria-<role>.toml` profiles (all parse as TOML) with `sandbox_mode = "read-only"` on adventurer, architect, planner, and reviewer only, and one marked instruction block in `AGENTS.md` after existing user text. A second run changed nothing; removal deleted only managed files and the marked block, preserving a pre-seeded user agent and user instructions. No Codex session was started. | Codex CLI `0.153.4` | This register | 2026-10-13 | tested: real installer code against the packed archive |
 
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-CODEX-CLI-19 | Codex CLI | Agent role sandbox | Since #39299 (2026-08-18) a role file applies only bounded overrides (instructions, model, reasoning, verbosity, personality, service tier, some feature disables); `sandbox_mode` is not applied, so `sandbox_mode = "read-only"` in `agents/maestria-reviewer.toml` is inert and the reviewer's read-only role is prompt-level. Supersedes the sandbox claim in E-CODEX-CLI-12 and E-CODEX-CLI-18 | `rust-v0.166.0` | https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/core/src/agent/role.rs | 2026-11-03 | not tested |
+| E-CODEX-CLI-20 | Codex CLI | Hooks | 14 events (`PreToolUse`, `PermissionRequest`, `PostToolUse`, `PreCompact`, `PostCompact`, `UserPromptSubmit`, `SubagentStop`, `Stop`, `SessionStart`, `SubagentStart`, `SessionEnd`, `Interrupt`, `PreModelRequest`, `PostModelRequest`); `command` and `mcp_tool` handlers run. `PreToolUse` can deny and add context, but `ask` is unsupported and fails open. `SessionStart` matches `startup`, `resume`, `clear`, `compact`, `fork`. Plugin hooks load from `hooks/hooks.json` with no feature flag, are skipped until reviewed and trusted, and need trust again when any plugin file changes; the build docs scope lifecycle hooks to manually installed desktop plugins | `rust-v0.166.0` | https://learn.chatgpt.com/docs/hooks; https://developers.openai.com/codex/plugins/build | 2026-11-03 | not tested |
+| E-CODEX-CLI-21 | Codex CLI | Instructions | `AGENTS.md` concatenation stops at `project_doc_max_bytes` (default 32 KiB); a plugin cannot supply `AGENTS.md`, so the companion CLI installs `codex.agents.md` | `rust-v0.166.0` | https://learn.chatgpt.com/docs/agent-configuration/agents-md | 2026-11-03 | not tested |
+
 ### Capability vs control
 
 | Evidence ID | Mechanism | Capability | Control | Note |
@@ -151,6 +172,14 @@ The 2026-10-12 live probe asked read-only roles to write a file; the result is i
 | E-CURSOR-PLUGIN-01 | Cursor | Plugin agent `readonly` | Plugin-supplied agents did not enforce `readonly: true` (a write succeeded, with or without other hosts' frontmatter keys present). A project `.cursor/agents/` profile with `readonly: true` was blocked ("cannot run non read-only tools"). Other hosts' keys do not affect Cursor loading. Cursor desktop was not tested. | Cursor CLI 2026.10.01 | This register (live CLI probe) | 2026-10-12 | tested: live Cursor CLI; no desktop |
 | E-CURSOR-PLUGIN-02 | Cursor | Bundled skill discovery | With the packed archive loaded through `--plugin-dir` in a throwaway workspace, the agent listed `create-pull-request`, `docs-update`, `handoff`, and `iteration-limits` from the plugin's `skills/`; a control run without the plugin listed none from it (both runs also listed the user's own `~/.cursor/skills` and `~/.claude/skills`). Model-reported listing; skill invocation was not exercised. Cursor desktop was not tested. | Cursor CLI 2026.10.01 | This register (live CLI probe) | 2026-10-13 | tested: live Cursor CLI; no desktop |
 
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-CURSOR-PLUGIN-03 | Cursor | Hooks | 21 events. `beforeShellExecution` and `beforeMCPExecution` take allow, deny, or ask; `preToolUse` accepts ask but does not enforce it; `sessionStart` returns `additional_context`. Plugins ship command hooks in `hooks/hooks.json`, which the CLI runs since v2026.08.11; crashes and timeouts fail open unless `failClosed` | docs (undated); CLI changelog to v2026.10.22 | https://cursor.com/docs/hooks; https://cursor.com/docs/cli/changelog | 2026-11-03 | not tested |
+
 ## Kimi Code
 
 Profiles now use `disallowedTools: [Write, Edit]`. In the Kimi 2.1.1 source (2026-10-12), plugin agent and command discovery reads only `.md` files (`app/plugin/manifest.ts`) and `$ARGUMENTS` is substituted in `app/plugin/commands.ts`. This is source inspection only. A live run on Kimi CLI 2.1.1 was not possible: the account has no Kimi Code subscription (403), and the configured OpenCode Go route is rejected by the CLI.
@@ -160,6 +189,15 @@ Profiles now use `disallowedTools: [Write, Edit]`. In the Kimi 2.1.1 source (202
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-KIMI-PLUGIN-01 | Kimi Code | Tool names for `disallowedTools` | Kimi registers tools as `Write` and `Edit`; the previously shipped `WriteFile` and `StrReplaceFile` names matched nothing, so read-only was not effective before. Unknown keys (`readonly`, `model`) are ignored and `$ARGUMENTS` is substituted in plugin commands. An empty `subagents: []` list is an empty allowlist, so the profile may spawn no subagent type (`main/packages/agent-core-v2/src/app/agentFileCatalog/agentFile.ts` parses the list, and `agentProfileCatalog/profile-shared.ts` `subagentAllowlistFor` enforces it; `*` or omission sets no allowlist). Not live-run. | Kimi v0.38.0 and v2.1.1 | This register (Kimi source tool registry) | 2026-10-12 | tested: source inspection |
+
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-KIMI-PLUGIN-02 | Kimi Code | Hooks | 20 events; plugins ship hooks through the manifest `hooks` array (`event`, `matcher`, `command`, `timeout`). `PreToolUse`, `Stop`, and `UserPromptSubmit` can block (exit 2 or `deny`); there is no ask; crashes and timeouts fail open. Context injection from `SessionStart` is unverified | v2.1.1 source; 2.4.1 docs | https://github.com/MoonshotAI/kimi-code/blob/%40moonshot-ai/kimi-code%402.4.1/docs/en/customization/hooks.md | 2026-11-03 | not tested |
+| E-KIMI-PLUGIN-03 | Kimi Code | System prompt budget | A `systemPromptPath` file over 32 KiB is ignored whole; all enabled plugins share 64 KB per prompt build; 2.4.1 names plugin skills `/skill:<plugin-id>:<skill>` | v2.1.1 `manifest.ts`; 2.4.1 docs | https://github.com/MoonshotAI/kimi-code/blob/%40moonshot-ai/kimi-code%402.4.1/docs/en/customization/plugins.md | 2026-11-03 | not tested |
 
 ## Devin
 
@@ -171,6 +209,17 @@ The probe ran `devin plugins install --local -y ./packages/agent-plugins`, then 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-DEVIN-PLUGIN-01 | Devin | Plugin discovery | `devin plugins info` lists seven agents, four skills (two utilities on 2026-10-12; four after bundling, rechecked 2026-10-13), `AGENTS.md` always on and `rules/global.md` manual; `.toml` profiles and per-host rules are not loaded. No agent task run. | Devin CLI 3000.11.3 | This register (`devin plugins info`) | 2026-10-12 | tested: live Devin CLI discovery |
 
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-DEVIN-PLUGIN-02 | Devin | Always-on size | Devin includes only the first 16 KiB of each always-on rule file, `AGENTS.md` included, and adds a truncation notice; the root `AGENTS.md` is now Devin's own file (15,556 bytes, `wc -c` at `20a40eb1`; the shared file was 26,568 bytes on `main` at `b86d210e` and 19,566 after the directive re-tier) | docs | https://docs.devin.ai/onboard-devin/agents-md; https://docs.devin.ai/product-guides/plugins | 2026-11-03 | not tested: a live check that the cap applies to a plugin-root file is pending |
+| E-DEVIN-PLUGIN-03 | Devin | Subagent tools | Subagent frontmatter `allowed-tools` (alias `tools`) restricts a subagent's tools; there is no denylist (CLI 3000.11.3 contains no `disallowedTools` string), so `disallowedTools` is inert on Devin | docs; CLI 3000.11.3 binary strings | https://docs.devin.ai/cli/subagents | 2026-11-03 | not tested |
+| E-DEVIN-PLUGIN-04 | Devin | Hooks | 8 events (`PreToolUse`, `PostToolUse`, `PermissionRequest`, `UserPromptSubmit`, `Stop`, `PostCompaction`, `SessionStart`, `SessionEnd`). A plugin-root `hooks.json` runs in cloud, CLI, and Desktop; `PreToolUse` blocks with `decision: "block"` or exit 2, and no ask is documented; `SessionStart` `additionalContext` arrives from the first turn locally and on the next turn in cloud. Plugin hooks are best effort and fail open | docs | https://docs.devin.ai/cli/extensibility/hooks/overview; https://docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks | 2026-11-03 | not tested |
+| E-DEVIN-PLUGIN-05 | Devin | Skills | The manifest `skills` field takes one path or an array; plugin skills run as `/<plugin>:<skill>` in the CLI and `@skills:<name>` in the web app | docs | https://docs.devin.ai/cli/extensibility/plugins/overview; https://docs.devin.ai/product-guides/skills | 2026-11-03 | not tested |
+
 ## ZCode
 
 ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agree. The plugin loader reads `.zcode-plugin/plugin.json`; `commands` and `skills` selectors are directories (file-list entries are ignored) and the default directories load automatically, so the Codex TOMLs are skipped. The subagent parser reads `name`, `description`, `model`, `tools`, `disallowedTools`, `skills`, `permissionMode`, and a few display fields. Bash and MCP tools remain after `disallowedTools` is applied. An omitted `model` inherits the parent model. Command files substitute `$ARGUMENTS`, name commands by filename, and run inline shell expansion. Shipped Markdown must therefore never contain an exclamation mark directly before a backtick, because ZCode and Claude Code commands run that as inline shell; the packed-artifact test enforces it. No live ZCode run was performed: it is desktop-only.
@@ -180,6 +229,14 @@ ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agre
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-ZCODE-PLUGIN-01 | ZCode | Agent loading and `disallowedTools` | Directory selectors for commands and skills, conventional `agents/` discovery (the desktop subagent service always loads `agents/` and adds any manifest `agents` paths, `subagentsService.ts` `collectPluginAgentRoots`; the plugin protocol's compatibility report lists `agents` as diagnostic-only), `.md`-only agents, no rules component; `disallowedTools` is subtracted from the subagent's tool allowlist (exact `Write`/`Edit` names; shell remains); unknown keys dropped. Not live-run. | ZCode source `main`, installed desktop build | This register (ZCode source and shipped bundle) | 2026-10-12 | tested: shipped code inspection |
+
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-ZCODE-PLUGIN-02 | ZCode | Hooks | Seven events (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `Stop`); `command` and `process` handlers. `PreToolUse` returns allow, ask, or deny and `additionalContext`; `SessionStart` context is injected as hook context. Plugin `hooks/hooks.json` loads with the plugin, with no separate hook trust | main synced 2026-10-30 (v3.17.1); desktop 3.14.5 bundle strings | https://github.com/zai-org/ZCode/blob/main/docs/plugin-hooks-compat.md; https://zcode.z.ai/en/docs/plugin | 2026-11-03 | not tested |
 
 ## OMP
 
@@ -214,6 +271,14 @@ No inference or actual task spawn occurs. Generic profiles have no `tools`, `spa
 | E-OMP-PLUGIN-01 | OMP | Current native resource discovery | Source (git root) and archive discovery expose seven task profiles, four skills, three commands, and one always-apply global rule; `.toml` files are not loaded. The previous fourteen-skill/zero-command fixture and the 2026-10-11 eight-profile result describe retired layouts. | Host 18.4.8 | `scripts/e2e/omp-plugin-discovery.ts`; this register | 2026-10-13 | tested: actual capability providers, source/archive payload |
 | E-OMP-PLUGIN-02 | OMP | Real installed lifecycle and prepared context | An isolated local-archive CLI installation, disable, reinstall, enable, upgrade refusal for a local source, and uninstall passed (39 of 39 checks, no network). Default installed discovery (7 agents, 3 commands, 1 always-apply rule, and the 4 skills `create-pull-request`, `docs-update`, `handoff`, `iteration-limits`), global rule and skill-catalog system-prompt injection, and all seven task-template compositions passed on the bundled-skills layout (`ebf9e511`). No inference or actual task spawn was performed. | Host 18.4.8 | `artifacts/omp-actual-host-proof/` (ignored, adapted harness); this register | 2026-10-13 | tested: real bundled CLI and native prompt/discovery APIs |
 
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-OMP-PLUGIN-03 | OMP | Agent tools and hooks | Task-agent frontmatter `tools` is an allowlist (no denylist), so it can enforce a read-only reviewer. Hooks are executable TS/JS extensions (`tool_call` can block, rewrite input, or ask through `ctx.ui.confirm`); a declarative package cannot ship a command hook | `main` 83de60a; npm 18.16.0 | https://github.com/can1357/oh-my-pi/blob/main/docs/task-agent-discovery.md; https://github.com/can1357/oh-my-pi/blob/main/docs/hooks.md | 2026-11-03 | not tested |
+
 ## Hermes
 
 The Hermes loader supplies skills and optional MCP resources. Portable installation is skills-only. Full manual methodology context is separate: the first matching project-context type wins, and delegated children can skip those files, so they require explicit context handoff. Docs-only; see Sources.
@@ -222,12 +287,21 @@ The Hermes loader supplies skills and optional MCP resources. Portable installat
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-HERMES-PLUGIN-01 | Hermes | Portable install and discovery | With an isolated `HERMES_HOME`, the packed archive (served as a local git source, since Hermes does not take plain local paths) installed and enabled; `hermes plugins list` and `doctor` passed. Re-run on the bundled-skills package (`ebf9e511`, Hermes 0.21.7): Hermes discovered exactly four skills as `agent-plugin-maestria-<hash>:create-pull-request`, `:docs-update`, `:handoff`, and `:iteration-limits`; no agents, commands, rules, tools, hooks, or MCP servers loaded. Disable and remove left no plugin files. An earlier 2026-10-13 run on Hermes 0.21.3, before bundling, discovered exactly the two utilities. No inference was run. | Hermes 0.21.7 | This register | 2026-10-13 | tested: live Hermes CLI (isolated home) |
 
+### Capability re-check (2026-11-03)
+
+Docs and source reading only; no model run.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-HERMES-PLUGIN-02 | Hermes | Skill names and context | v0.22.6 docs name portable skills `<plugin-name>:<skill>` (0.21.7 used `agent-plugin-<slug>-<hash>:<skill>`). Project context files past `context_file_max_chars`, or a model-dependent cap with a 20,000-character floor, are truncated. A portable package cannot supply always-on context or hooks | v0.22.6 docs; 0.21.7 checkout | https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files; https://hermes-agent.nousresearch.com/docs/developer-guide/plugins | 2026-11-03 | not tested |
+
 ## Remaining evidence boundaries
 
 - Claude's explicit agent-file form passes strict validation; directory form is rejected. Acceptance of extra frontmatter does not establish runtime enforcement.
 - Kimi native profiles, command/bootstrap resources, and size limits have package/schema evidence; live dispatch and reload remain unverified.
-- Cursor plugin agents do not enforce `readonly` (see above). Devin discovery is verified, but Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist, so their read-only roles are prompt-level. ZCode removes `disallowedTools` from subagent tools per its source, but no live ZCode run was performed.
+- Cursor plugin agents do not enforce `readonly` (see above). Devin discovery is verified, but Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist; their tool allowlists can enforce a read-only reviewer (E-DEVIN-PLUGIN-03, E-OMP-PLUGIN-03). Codex no longer applies a role's `sandbox_mode`, so its reviewer is prompt-level (E-CODEX-CLI-19). ZCode removes `disallowedTools` from subagent tools per its source, but no live ZCode run was performed.
 - Codex marketplace exposes only the eight skills; its complete agent/policy/mode context is supplied by the managed CLI path.
+- Devin's 16 KiB cap on a plugin-root `AGENTS.md` and its truncation notice are documented but not observed live; check with `devin plugins install --local packages/agent-plugins`, then ask Devin to quote the last section of its always-on rules (`### Devin Integration`).
 - A doctor check or install dry-run is not proof of a plugin loading, and earlier fourteen-skill/zero-command and eight-profile probes describe retired layouts.
 
 Run the completion gates as well as these probes. Regenerate affected evidence when native contexts, selectors, or installation behavior changes; unchanged source bodies and metadata-only descriptions do not require repeating provider-independent lifecycle work without a named concern.
