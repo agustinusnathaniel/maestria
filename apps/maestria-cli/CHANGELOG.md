@@ -1,5 +1,13 @@
 # maestria
 
+## 0.18.0
+
+### Minor Changes
+
+- [#443](https://github.com/agustinusnathaniel/maestria/pull/443) [`a08e54f`](https://github.com/agustinusnathaniel/maestria/commit/a08e54f039f1fb35b8b4e6d305431a330d830b47) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Per-host session files: each host that reads a plain session file now gets its own, holding the always-on core and only its own host note, and the build fails if one exceeds that host's cap. The root `AGENTS.md` is Devin's (under Devin's 16 KiB always-on limit, so its tail is no longer cut off), and Devin's three modes ship as skills it selects from `devin/skills/` (`/maestria:fein <task>` in the CLI or Desktop, `@skills:fein <task>` in the web app). `maestria install codex` now installs `codex.agents.md` (core and modes) into the managed block, and Hermes users add `hermes.context.md` as project context. Host notes and docs now record that Codex no longer applies a reviewer role's `sandbox_mode`, that Devin and OMP tool allowlists can enforce read-only, and the hook support of Claude Code, Codex, Cursor, Devin, Kimi Code, ZCode, and OMP.
+
+- [#447](https://github.com/agustinusnathaniel/maestria/pull/447) [`a10604c`](https://github.com/agustinusnathaniel/maestria/commit/a10604c9fb1a2363b9e5a6ed842c1dd6c3e1a770) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - The reviewer's read-only role is enforced on more hosts. On Devin the reviewer profile now sets `allowed-tools: [read, grep, glob]`, so it gets read tools only and no shell. On Codex, which no longer applies a role's `sandbox_mode`, a plugin hook blocks edit-tool calls (`apply_patch`, `Edit`, `Write`) inside the `maestria-reviewer` subagent once you trust the plugin hooks; shell writes are not covered. The Codex reviewer TOML, from the package and from `maestria configure codex`, no longer writes the inert `sandbox_mode = "read-only"` line. Claude Code ignores the Devin key (checked with strict validation and an offline reviewer run), and Kimi Code, ZCode, and Cursor document that they ignore keys they do not know.
+
 ## 0.17.0
 
 ### Minor Changes
