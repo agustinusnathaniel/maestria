@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0
+
+### Minor Changes
+
+- [#439](https://github.com/agustinusnathaniel/maestria/pull/439) [`91cdf10`](https://github.com/agustinusnathaniel/maestria/commit/91cdf1091e6e075a6ed3bd83eb16b15f01d33447) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Leaner always-on directives: the global rules and main loop carry about 16% fewer words with the same safety, authorization, and review floors. Overlapping rules are merged, procedure only some tasks need (migration cleanup, writing docs for their reader) moves into the skill that loads for it, the rerun-once and held-PR conventions are dropped, and two rules are added in place of existing text: never print secrets or anything derived from them into tool output or logs, and a later cleanup never undoes an earlier accepted review fix.
+
+- [#441](https://github.com/agustinusnathaniel/maestria/pull/441) [`b86d210`](https://github.com/agustinusnathaniel/maestria/commit/b86d210e3ea6f14981b389828d1575d806fc88a6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Leaner method skills and reviewer: `create-pull-request`, `diagnose`, `docs-update`, `architecture-plan`, `recon`, and the reviewer carry about 25% fewer words with the same review, evidence, and authorization requirements. Text that restated the global rules now relies on them, overlapping wordings are merged, and each skill description names one trigger per real use. Three conventions are dropped as not general method: PR titles follow the repository's convention (Conventional Commits only when it has none), reviewer findings no longer carry Conventional Comments labels, and `diagnose` no longer separately asks to explain the rationale before each edit. PR merge steps keep the general rule (list everything that must exist or happen before and after the merge, before the PR is ready) without prescribing feature-flag or deploy-order specifics.
+
 ## 0.14.0
 
 ### Minor Changes
