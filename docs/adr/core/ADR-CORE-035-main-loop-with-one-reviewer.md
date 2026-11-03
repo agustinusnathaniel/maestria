@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-28). Confidence: medium. Amended 2026-10-28: the main agent is named `maestria` (formerly `orchestrator`), and its canonical source is `specialists/main-loop.md`.
+Accepted (2026-10-28). Confidence: medium. Amended 2026-10-28: the main agent is named `maestria` (formerly `orchestrator`), and its canonical source is `specialists/main-loop.md`. Amended 2026-11-03 by [CORE-036](ADR-CORE-036-always-on-core-and-skill-map.md): implementation judgment moved to the `implement` skill, with an always-on skill map line and its text embedded in the reviewer profile.
 
 ## Context
 
@@ -43,6 +43,8 @@ Host enforcement follows: OpenCode's orchestrator gets the writer tool set and m
 ## Supersession
 
 Supersedes [ADR-OC-008](../opencode/ADR-OC-008-orchestrator-main-loop.md), which folded OpenCode only.
+
+Amended by [CORE-036](ADR-CORE-036-always-on-core-and-skill-map.md).
 
 ## Date
 

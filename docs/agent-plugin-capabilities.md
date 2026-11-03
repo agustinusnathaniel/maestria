@@ -19,7 +19,7 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | CLI | Standalone companion in `apps/maestria-cli`, not an executable plugin component |
 | Hooks, automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
 
-The portable v1 manifest exposes the seven skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
+The portable v1 manifest exposes the eight skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
 
 ## Native mappings
 
@@ -28,7 +28,7 @@ The portable v1 manifest exposes the seven skills. It does not establish native 
 | Claude Code / Desktop Code | One reviewer profile, listed explicitly | Three shared commands carry complete context | Agent-directory selectors are rejected by the validator; `disallowedTools` Write/Edit exclusion is enforced but is not a shell sandbox; no `model` key |
 | Claude Cowork / Chat | Availability differs; Chat ignores plugin agents | Commands and utilities are supported | Do not promise Code's agents/settings/hooks on every Claude surface |
 | Cursor | One reviewer profile (`agents/`) | Shared commands (`commands/`) and always-applied `rules/cursor/` rule | `readonly` is declared but not enforced for plugin-supplied agents; enforced for project `.cursor/agents/` copies written by `maestria configure cursor` at project level |
-| Codex CLI / local desktop | Companion-installed reviewer TOML from `agents/maestria-reviewer.toml` (plugins cannot ship agents); `sandbox_mode = "read-only"` on reviewer | Companion-managed marked AGENTS block includes routing, policy, and per-turn mode keywords | Portable marketplace installation alone exposes the seven skills |
+| Codex CLI / local desktop | Companion-installed reviewer TOML from `agents/maestria-reviewer.toml` (plugins cannot ship agents); `sandbox_mode = "read-only"` on reviewer | Companion-managed marked AGENTS block includes routing, policy, and per-turn mode keywords | Portable marketplace installation alone exposes the eight skills |
 | ChatGPT / generic portable clients | No portable role component | No portable mode or policy component | Skill-only discovery; no implied companion installation |
 | Kimi Code | One reviewer profile | Shared commands and complete `systemPromptPath` bootstrap (`kimi.system-prompt.md`) | `disallowedTools: [Write, Edit]` (tool names are in the [register](plugin-host-verification.md#kimi-code)); unknown keys ignored; no built-in-profile remapping; no agent model field |
 | Devin local / cloud | Custom profiles load locally; cloud does not load them | Root AGENTS policy; no plugin commands component, so modes use keywords | Manifest selects only `skills`; no denylist, so read-only is prompt-level; no invented commands/agents selector |
