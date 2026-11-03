@@ -4,7 +4,9 @@ import type { Plugin } from '@opencode/plugin/effect';
 import type { AgentEditor } from '@opencode/plugin/effect/agent';
 import type { CommandEditor, CommandInvocation } from '@opencode/plugin/effect/command';
 import type { SessionContext, SessionPrompt } from '@opencode/plugin/effect/session';
+import type { PermissionEvaluation } from '@opencode/plugin/effect/permission';
 import type { SkillEditor } from '@opencode/plugin/effect/skill';
+import type { ToolHooks } from '@opencode/plugin/effect/tool';
 import { describe, expect, it } from 'vite-plus/test';
 import plugin from '../src/index.js';
 
@@ -18,6 +20,8 @@ interface Registrations {
   prompt?: (event: SessionPrompt) => Effect.Effect<void>;
   context?: (event: SessionContext) => Effect.Effect<void>;
   compaction?: (event: SessionContext) => Effect.Effect<void>;
+  'execute.before'?: (event: ToolHooks['execute.before']) => Effect.Effect<void, unknown>;
+  evaluate?: (event: PermissionEvaluation) => Effect.Effect<void>;
 }
 
 /** Loads the plugin against a host double that records each registration. */
@@ -36,6 +40,7 @@ const load = async (options: unknown = {}) => {
     command: { transform: (apply: never) => register('command', apply) },
     location: { directory: process.cwd(), project: { directory: process.cwd() } },
     options,
+    permission: { hook: register },
     session: {
       hook: register,
       prompt: (input: Record<string, unknown>) => {
@@ -44,6 +49,7 @@ const load = async (options: unknown = {}) => {
       },
     },
     skill: { transform: (apply: never) => register('skill', apply) },
+    tool: { hook: register },
   } as unknown as Plugin.Context;
   await Effect.runPromise(Effect.scoped(plugin.effect(ctx)));
 
@@ -283,5 +289,42 @@ describe('model context', () => {
     expect(build).toContain('# Modes');
     expect(reviewer).toContain('# Global Agent Rules');
     expect(reviewer).not.toContain('# Continuation and Delivery');
+  });
+});
+
+const shellCall = (command: string) =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard reads only the tool and input.
+  ({ input: { command }, tool: 'shell' }) as unknown as ToolHooks['execute.before'];
+const evaluation = (command: string, effect: PermissionEvaluation['effect'] = 'allow') =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard reads only the action, resources, and effect.
+  ({ action: 'shell', effect, resources: [command] }) as unknown as PermissionEvaluation;
+
+describe('git safety guard', () => {
+  it('fails a hook bypass before the shell command runs', async () => {
+    const { registrations } = await load();
+    const exit = await Effect.runPromiseExit(
+      registrations['execute.before']?.(shellCall('git commit --no-verify -m x')) ?? Effect.void,
+    );
+    expect(exit._tag).toBe('Failure');
+    expect(JSON.stringify(exit)).toContain('--no-verify skips repository hooks');
+    const askLater = await Effect.runPromiseExit(
+      registrations['execute.before']?.(shellCall('git push --force')) ?? Effect.void,
+    );
+    expect(askLater._tag).toBe('Success');
+  });
+
+  it('turns risky history edits into a native approval prompt and leaves config denies final', async () => {
+    const { registrations } = await load();
+    const ask = evaluation('git reset --hard');
+    await Effect.runPromise(registrations.evaluate?.(ask) ?? Effect.void);
+    expect(ask.effect).toBe('ask');
+    expect(ask.message).toContain('reset --hard');
+    const routine = evaluation('git status');
+    await Effect.runPromise(registrations.evaluate?.(routine) ?? Effect.void);
+    expect(routine).toMatchObject({ effect: 'allow' });
+    const denied = evaluation('git push --force', 'deny');
+    await Effect.runPromise(registrations.evaluate?.(denied) ?? Effect.void);
+    expect(denied).toMatchObject({ effect: 'deny' });
+    expect(denied.message).toBeUndefined();
   });
 });

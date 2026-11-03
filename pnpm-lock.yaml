@@ -416,6 +416,9 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
     devDependencies:
+      '@maestria/shared-hook-policy':
+        specifier: workspace:*
+        version: link:../shared/hook-policy
       '@maestria/shared-mode':
         specifier: workspace:*
         version: link:../shared/mode
@@ -480,6 +483,9 @@ importers:
 
   packages/shared/pi:
     dependencies:
+      '@maestria/shared-hook-policy':
+        specifier: workspace:*
+        version: link:../hook-policy
       '@maestria/shared-mode':
         specifier: workspace:*
         version: link:../mode

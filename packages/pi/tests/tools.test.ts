@@ -1,11 +1,19 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import type { Mock } from 'vite-plus/test';
 
 import { createInitialState } from '@maestria/shared-pi/state-core';
 import type { ModeKeyword } from '@maestria/shared-pi/state-core';
-import { installToolInterceptors } from '@/tools.js';
+import { createUserBashGuard, installToolInterceptors } from '@/tools.js';
 import type { ToolApi } from '@/tools.js';
-import type { ToolCallHandler, ToolCallResult } from '@maestria/shared-pi/tools-core';
+import type {
+  ToolCallContext,
+  ToolCallHandler,
+  ToolCallResult,
+} from '@maestria/shared-pi/tools-core';
 
 interface MockPi {
   appendEntry: ReturnType<typeof vi.fn<ToolApi['appendEntry']>>;
@@ -359,5 +367,51 @@ describe('installToolInterceptors', () => {
       expect(getBlockedResult(result).block).toBe(true);
       expect(state.filesModified).toEqual([]);
     });
+  });
+});
+
+describe('git safety guard', () => {
+  let repo = '';
+  beforeAll(() => {
+    repo = mkdtempSync(path.join(tmpdir(), 'maestria-pi-git-'));
+    execFileSync('git', ['init', '-q', '-b', 'main', repo]);
+  });
+  afterAll(() => {
+    rmSync(repo, { force: true, recursive: true });
+  });
+
+  const run = async (command: string, ctx: ToolCallContext) => {
+    const pi = createMockPi();
+    install(pi, createInitialState());
+    return await getHandler(pi)({ input: { command }, toolName: 'bash' }, { cwd: repo, ...ctx });
+  };
+
+  it('blocks a hook bypass without asking', async () => {
+    const confirm = vi.fn<() => Promise<boolean>>().mockResolvedValue(true);
+    const result = await run('git commit --no-verify -m x', { hasUI: true, ui: { confirm } });
+    expect(getBlockedResult(result).reason).toContain('--no-verify skips repository hooks');
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('asks before a commit on the protected session branch, and honors the answer', async () => {
+    const approve = vi.fn<() => Promise<boolean>>().mockResolvedValue(true);
+    expect(await run('git commit -m x', { hasUI: true, ui: { confirm: approve } })).toBeUndefined();
+    expect(approve).toHaveBeenCalledOnce();
+    const decline = vi.fn<() => Promise<boolean>>().mockResolvedValue(false);
+    const declined = await run('git commit -m x', { hasUI: true, ui: { confirm: decline } });
+    expect(getBlockedResult(declined).reason).toContain('protected branch main');
+  });
+
+  it('blocks with an approval message when the session has no UI', async () => {
+    const result = await run('git push --force', { hasUI: false });
+    expect(getBlockedResult(result).reason).toContain("needs the user's explicit approval");
+  });
+
+  it('guards the user own shell commands, returning the reason instead of running', async () => {
+    const guard = createUserBashGuard();
+    expect(await guard({ command: 'git status', cwd: repo }, {})).toBeUndefined();
+    const blocked = await guard({ command: 'git reset --hard', cwd: repo }, { hasUI: false });
+    expect(blocked).toMatchObject({ result: { exitCode: 1 } });
+    expect(JSON.stringify(blocked)).toContain('git reset --hard discards');
   });
 });
