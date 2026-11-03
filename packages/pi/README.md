@@ -19,11 +19,13 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 
 ## What It Provides
 
+- **Always-on core** - the main loop and global agent rules, injected into every run's system prompt.
 - **Methodology skills** (10 as of 2026-11-03; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - the `maestria` main loop and global agent rules, plus the bundled `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` skills the main loop's skill map names.
 - **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi/) for the current list) - `/fein` (full method), `/sonar` (research only), `/blitz` (fast implementation).
 - **Compaction preservation** - session state survives compaction with structured summaries.
 - **Subagent dispatch** - dispatch of the reviewer for independent blind review via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
+- **Git safety** - blocks `--no-verify` and asks before commits or pushes to protected branches, force pushes, and commands that discard work, for agent and `!` shell commands alike; without a UI it blocks with a message that approval is needed.
 - **Root project customization** - `.maestria/workflow.md` then `.maestria/rules.md` from the session directory, injected every turn as subordinate guidance (never waives safety, authorization, or host permissions).
 
 ## Root Project Customization

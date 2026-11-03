@@ -28,7 +28,8 @@ Coming from OpenCode V1: V2 ignores the V1 `plugin` array, so add the package wi
 - **Agents**: `maestria` (the main loop that investigates, designs, implements, and delivers) plus `reviewer` for independent review, each with its own permission rules.
 - **Global rules**: added to every agent-loop and compaction request. Delivery ownership (workflow modes, autonomous commit, push, and PR, and PR slicing) lives in the `maestria` agent; the plugin also adds it for OpenCode's own agents such as `build` and `plan`, so only the reviewer subagent goes without it.
 - **Workflow modes**: the full method, research-only, and fast modes as slash commands or bare keywords (see `ModeKeyword` in `packages/shared/pi/src/state-core.ts`).
-- **Skills**: `create-pull-request`, `docs-update`, and `diagnose`, which the global rules name. A project skill with the same ID takes precedence.
+- **Skills**: the method skills the main loop's skill map names (`recon`, `architecture-plan`, `diagnose`, `implement`, `docs-update`, `create-pull-request`, `review-loop`) plus `handoff`. A project skill with the same ID takes precedence.
+- **Git safety**: blocks `--no-verify` on the `shell` tool, and asks through OpenCode's permission prompt before commits or pushes to protected branches, force pushes, and commands that discard work. A config `deny` stays final.
 - **Project customization**: `.maestria/workflow.md` and `.maestria/rules.md` at the project root are read on every model request, so edits apply without a reload. A missing file is skipped; a directory, unreadable file, or link resolving outside the project fails the request instead of running without it.
 
 ## Workflow Modes

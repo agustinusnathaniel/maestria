@@ -45,6 +45,7 @@
     "test": "vp test"
   },
   "dependencies": {
+    "@maestria/shared-hook-policy": "workspace:*",
     "@maestria/shared-mode": "workspace:*",
     "@maestria/shared-project-config": "workspace:*",
     "es-toolkit": "^1.52.0"
