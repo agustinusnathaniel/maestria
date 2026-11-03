@@ -250,7 +250,7 @@ describe('doctor reports', () => {
     }
     expect(thrown).toBeInstanceOf(CliError);
     if (!(thrown instanceof CliError)) {
-      throw new Error('Expected handleDoctor to throw CliError');
+      throw new TypeError('Expected handleDoctor to throw CliError');
     }
     expect(thrown.exitCode).toBe(1);
     expect(thrown.message).toContain('--compact');
