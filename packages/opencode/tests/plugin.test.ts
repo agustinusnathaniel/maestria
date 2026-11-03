@@ -170,7 +170,10 @@ describe('skill transform', () => {
       'create-pull-request',
       'diagnose',
       'docs-update',
+      'handoff',
+      'implement',
       'recon',
+      'review-loop',
     ]);
     for (const [id, skill] of skills) {
       expect(skill.description?.length).toBeGreaterThan(0);

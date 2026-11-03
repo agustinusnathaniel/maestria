@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "version": "0.13.0",
-  "description": "maestria handoff, iteration-limit, recon, architecture-plan, pull request, documentation-update, and diagnosis skills for Codex; full methodology is installed by the companion maestria CLI",
+  "description": "maestria handoff, review-loop, implement, recon, architecture-plan, pull request, documentation-update, and diagnosis skills for Codex; full methodology is installed by the companion maestria CLI",
   "author": {
     "name": "agustinusnathaniel"
   },
@@ -11,8 +11,8 @@
   "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
   "interface": {
     "displayName": "maestria",
-    "shortDescription": "maestria handoff, iteration, PR, and docs skills for Codex",
-    "longDescription": "Seven maestria skills: handoffs, bounded iteration, pull request drafts, documentation updates, diagnosis, recon, and architecture plans. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
+    "shortDescription": "maestria handoff, review, PR, and docs skills for Codex",
+    "longDescription": "Eight maestria skills: handoffs, the review loop, implementation judgment, pull request drafts, documentation updates, diagnosis, recon, and architecture plans. Full maestria routing, workflow modes, and native specialist profiles require maestria install codex through the companion CLI. Marketplace installation alone does not activate them.",
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],

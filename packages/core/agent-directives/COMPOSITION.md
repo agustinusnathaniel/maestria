@@ -4,7 +4,7 @@ How the canonical directives combine into what each host loads. The generators a
 
 ## One Main Loop and One Reviewer
 
-The main session is the main loop (`specialists/main-loop.md`): it does recon, design, diagnosis, implementation, and delivery itself, loading the `recon`, `architecture-plan`, `diagnose`, `docs-update`, and `create-pull-request` method skills when a task needs them. Its only split into another context is one blind `@reviewer` pass (`specialists/reviewer.md`) for meaningful changes. The modes (`commands/fein.md`, `sonar.md`, `blitz.md`) adjust that loop per turn. [ADR-CORE-035](../../../docs/adr/core/ADR-CORE-035-main-loop-with-one-reviewer.md) records the decision.
+The main session is the main loop (`specialists/main-loop.md`): it does recon, design, diagnosis, implementation, and delivery itself, loading the method skills its Routing skill map names (`recon`, `architecture-plan`, `diagnose`, `implement`, `docs-update`, `create-pull-request`, `handoff`, and `review-loop`) when a task needs them. [ADR-CORE-036](../../../docs/adr/core/ADR-CORE-036-always-on-core-and-skill-map.md) records which rules stay always-on and which move to skills. Its only split into another context is one blind `@reviewer` pass (`specialists/reviewer.md`) for meaningful changes. The modes (`commands/fein.md`, `sonar.md`, `blitz.md`) adjust that loop per turn. [ADR-CORE-035](../../../docs/adr/core/ADR-CORE-035-main-loop-with-one-reviewer.md) records the decision.
 
 The reviewer is the checker of the maker/checker split: it receives the requirements, acceptance criteria, and diff, never the main loop's assessment of them. Hosts enforce its read-only role to different degrees (a tool filter, not a sandbox, on most), and the directives say only what each host actually enforces.
 
@@ -17,10 +17,8 @@ The reviewer is the checker of the maker/checker split: it receives the requirem
 | Main-session policy (`rules/global.md`, `rules/cursor/maestria-global.mdc`) | `main-loop.md` and all four parts, plus that host's note |
 | Complete session context (`AGENTS.md`, `kimi.system-prompt.md`) | Main-session policy plus the three mode bodies and host notes |
 | Mode commands (`commands/<mode>.md`) | The mode body, main-session policy, and `integrations/command-arguments.md` |
-| Reviewer profile (`agents/reviewer.md`, `agents/maestria-reviewer.toml`) | `reviewer.md` with `Every Agent` and `Implementation and Review`; the TOML adds the Codex note |
-| `handoff` skill | The `Delegation and Context` section |
-| `iteration-limits` skill | The `Repair Budget` and `Fail-Loud Repair` sections |
-| Method skills | Copied unchanged from `skills/` into `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi` |
+| Reviewer profile (`agents/reviewer.md`, `agents/maestria-reviewer.toml`) | `reviewer.md` with `Every Agent`, `Implementation and Review`, and the `implement` skill body; the TOML adds the Codex note |
+| Method skills, `handoff` and `review-loop` included | Copied unchanged from `skills/` into `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi` |
 
 ## Session Context per Host
 
@@ -31,8 +29,8 @@ The reviewer is the checker of the maker/checker split: it receives the requirem
 - **Cursor** applies `rules/cursor/maestria-global.mdc` (`alwaysApply`).
 - **OMP** applies `rules/global.md` as its always-apply root rule.
 - **Claude Code and ZCode** have no plugin session-context component; the main-session policy arrives through the mode commands, and the reviewer profile and skills load natively.
-- **OpenCode** registers the `maestria` agent from `main-loop.md` and injects all of `rules.md` into every agent's system context on each turn and at compaction, the reviewer included. Agents that maestria does not define also get the main loop's `Modes` and `Continuation and Delivery` sections.
-- **Pi** ships the main loop and all of `rules.md` as the `maestria` and `global-rules` skills, which Pi injects into every session, and adds the active mode's prompt, when one is set, on each turn. The reviewer agent runs with `inherit_context: true`.
+- **OpenCode** registers the `maestria` agent from `main-loop.md` and injects all of `rules.md` into every agent's system context on each turn and at compaction, the reviewer included; the reviewer agent file also appends the `implement` skill body. Agents that maestria does not define also get the main loop's `Modes` and `Continuation and Delivery` sections.
+- **Pi** ships the main loop and all of `rules.md` as the `maestria` and `global-rules` skills, which Pi injects into every session, and adds the active mode's prompt, when one is set, on each turn. The reviewer agent runs with `inherit_context: true` and appends the `implement` skill body.
 
 ## Canonical Sync
 

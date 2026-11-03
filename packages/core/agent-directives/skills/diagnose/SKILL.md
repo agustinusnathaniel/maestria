@@ -9,7 +9,7 @@ Start from the observed failure and run the next check that distinguishes the pl
 
 ## 1. Reproduce at the source
 
-Map the error to its source file, line, and function, not dist or minified output; search unique strings when a stack trace is minified. Reproduce it at the smallest boundary and record the exact command, input, and output. When it does not reproduce, report what would reproduce it; a defensive fix the user still wants is labeled unverified.
+Map the error to its source file, line, and function, not dist or minified output; search unique strings when a stack trace is minified. Before patching, reproduce it with the cheapest failing check at the smallest boundary and record the exact command, input, and output. When it does not reproduce, report the evidence and what would reproduce it instead of patching on a guess; a defensive fix the user still wants is labeled unverified.
 
 ## 2. Rule out the environment
 
@@ -21,13 +21,13 @@ To locate a regression, `git blame` the line and read the commit and its diff, c
 
 ## 4. Measure the blast radius
 
-When the cause is a shared defect or the task is an audit, search for the same pattern and report each site as safe or unsafe with its evidence, how real the risk is, and what to do, on the scales in the global Reporting rules. Use a table when comparison helps.
+When the cause is a shared defect or the task is an audit, search for the same pattern and report each site as safe or unsafe with its evidence, how real the risk is (happening, real but unobserved, edge case, known and accepted, needs a check; drop non-issues), and what to do (fix now, fix when touching, ask first, skip, already in progress). Use a table when comparison helps.
 
 ## 5. Fix the root cause
 
 Fix the cause, not the symptom, with the smallest correct repair rather than the fewest lines.
 
-**!!! Never present broken code:** re-run the reproduction to confirm the fix, run the existing tests, check for side effects, and note how to roll the change back. Consider a lint rule that would catch the pattern, and record a durable lesson in an existing knowledge artifact when one fits; create one only when the finding has lasting value or the user or project requires a record.
+**!!! Never present broken code:** re-run the reproduction to confirm the fix and keep it as a regression test unless an existing test already pins the behavior, run the existing tests, check for side effects, and note how to roll the change back. Consider a lint rule that would catch the pattern, and record a durable lesson in an existing knowledge artifact when one fits; create one only when the finding has lasting value or the user or project requires a record.
 
 ## Report
 
