@@ -151,7 +151,7 @@ The companion maestria CLI installs this file, the package's `codex.agents.md`, 
 
 #### Native custom agents
 
-The CLI installs the native `maestria-reviewer` TOML profile in `$CODEX_HOME/agents/`. Use it as the `agent_type` when spawning the independent reviewer. It embeds its complete role and the global policy parts it needs. Codex has not applied `sandbox_mode` from an agent role file since 2026-08, so the reviewer's read-only role is prompt-level: it must not edit files. `maestria configure codex` can update models while retaining instructions.
+The CLI installs the native `maestria-reviewer` TOML profile in `$CODEX_HOME/agents/`. Use it as the `agent_type` when spawning the independent reviewer. It embeds its complete role and the global policy parts it needs. Codex has not applied `sandbox_mode` from an agent role file since 2026-08, so the reviewer's read-only role rests on its instructions: it must not edit files. Once you trust the plugin hooks, a maestria hook also blocks file edits inside `maestria-reviewer`. `maestria configure codex` can update models while retaining instructions.
 
 #### Plugin boundary
 

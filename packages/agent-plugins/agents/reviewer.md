@@ -5,6 +5,10 @@ readonly: true
 disallowedTools:
   - Write
   - Edit
+allowed-tools:
+  - read
+  - grep
+  - glob
 subagents: []
 ---
 

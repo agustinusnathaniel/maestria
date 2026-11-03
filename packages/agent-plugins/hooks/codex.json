@@ -35,6 +35,11 @@
             "type": "command",
             "command": "node \"${PLUGIN_ROOT}/hooks/generated-guard.mjs\" codex",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/hooks/reviewer-guard.mjs\" codex",
+            "timeout": 10
           }
         ]
       }

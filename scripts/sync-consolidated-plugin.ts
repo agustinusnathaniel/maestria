@@ -236,13 +236,15 @@ const profileMetadata = (packageRoot: string): Record<string, Profile> => {
 };
 
 // One profile serves every Markdown host: each loader reads its own keys and ignores the rest
-// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents).
+// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents, Devin: allowed-tools).
 // Entries keep the emitted YAML in reading order: identity first, then host controls.
 const nativeMetadata = (profile: Profile): Record<string, unknown> => {
   const readOnly: [string, unknown][] = profile.readOnly
     ? [
         ['readonly', true],
         ['disallowedTools', ['Write', 'Edit']],
+        // Devin has no denylist; its allowlist keeps the reviewer to its read tools.
+        ['allowed-tools', ['read', 'grep', 'glob']],
       ]
     : [];
   return Object.fromEntries<unknown>([
