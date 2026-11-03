@@ -56,7 +56,7 @@ These skills live at `skills/<name>/SKILL.md` and are copied from maestria's cor
 
 ## Runtime boundaries
 
-Markdown hosts share the reviewer profile in `agents/reviewer.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. OMP and Cursor keep their own rule files because their formats differ; Devin, Codex, and Hermes share the root `AGENTS.md`; Kimi Code reads `kimi.system-prompt.md`, the same context with only its own note. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
+Markdown hosts share the reviewer profile in `agents/reviewer.md` and one command set in `commands/`. Profiles and commands contain their complete methodology, so they do not depend on role or global-rules skill preloads. OMP and Cursor keep their own rule files because their formats differ; each host that reads a plain session file gets its own, holding the always-on core and only its own host note within that host's cap: root `AGENTS.md` for Devin, `codex.agents.md` installed by the CLI for Codex, `hermes.context.md` added manually for Hermes, and `kimi.system-prompt.md` through `systemPromptPath` for Kimi Code. Host permissions, sandboxing, delegation, trust, and session lifecycle remain host controls. The package includes no executable runtime adapter, lifecycle hooks, recurring automations, or MCP server. Those components are intentionally absent; their absence does not mean the host lacks them.
 
 ## Resources
 
