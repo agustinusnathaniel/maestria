@@ -1,6 +1,6 @@
 ---
 title: '@maestria/deepseek'
-description: DeepSeek Harness bundle with a maestria agent preset, specialist delegation tools, and workflow skills.
+description: DeepSeek Harness bundle with a maestria agent preset, git and generated-file guards, a read-only reviewer, and workflow skills.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -21,7 +21,7 @@ import { marks } from '@/data/marks.js';
     <PlatformHero
       eyebrow="@MAESTRIA/DEEPSEEK · PROVISIONAL"
       title="A maestria preset for DeepSeek Harness."
-      lead="Install the bundle, pick the maestria preset, and let the orchestrator route work through seven specialist subagents with independent review."
+      lead="Install the bundle, pick the maestria preset, and let the main loop investigate, implement, and deliver each change, with one read-only reviewer before delivery."
       mark={marks.deepseek}
       primaryCta={{ href: '/deepseek/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/deepseek/getting-started/quick-start/', label: 'Quick start' }}
@@ -31,15 +31,15 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="01"
       kicker="WHAT YOU GET"
-      title="One preset, seven specialists."
+      title="One main loop, one reviewer."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
       <FeatureGrid
         items={[
-          { title: 'The maestria preset', desc: 'The standard coding agent, with the maestria orchestrator as its persona and the global rules in every agent and delegated child.' },
-          { title: 'Specialist delegation', desc: 'One tool per specialist, from maestria_adventurer to maestria_writer, each starting a child with that complete role.' },
-          { title: 'Host-enforced boundaries', desc: 'Adventurer, planner, and reviewer can only read, search, and load skills; architect and diagnose can do everything except edit or write files.' },
-          { title: 'Workflow skills', desc: 'fein, sonar, and blitz modes plus the handoff, iteration-limits, create-pull-request, and docs-update skills.' },
+          { title: 'The maestria preset', desc: 'The standard coding agent, with the maestria main loop as its persona, the global rules as a system-prompt section, and your .maestria/ project files on every turn.' },
+          { title: 'Guards on every call', desc: 'Git hook bypasses are denied; protected-branch commits, force pushes, discarded work, generated-file edits, and emails in PR text go to DeepSeek Harness approval first.' },
+          { title: 'A read-only reviewer', desc: 'maestria_reviewer starts a child on its own preset with only read, search, and skill tools, so it cannot run commands or change files.' },
+          { title: 'Workflow and method skills', desc: 'fein, sonar, and blitz modes plus recon, architecture-plan, diagnose, implement, docs-update, create-pull-request, handoff, and review-loop.' },
         ]}
       />
     </PluginSection>
@@ -48,7 +48,7 @@ import { marks } from '@/data/marks.js';
       links={[
         { label: 'Installation', href: '/deepseek/getting-started/installation/' },
         { label: 'Quick start', href: '/deepseek/getting-started/quick-start/' },
-        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'The main loop and reviewer', href: '/core/agents/' },
         { label: 'When to use maestria', href: '/core/when-to-use/' },
       ]}
     />

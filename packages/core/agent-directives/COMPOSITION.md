@@ -1,6 +1,6 @@
 # Directive Composition
 
-How the canonical directives combine into what each host loads. The generators are the source of truth: `scripts/sync-consolidated-plugin.ts` for `@maestria/agent-plugins`, `packages/opencode/sync.config.ts` and `packages/pi/sync.config.ts` for the native adapters, and `scripts/sync-bundled-skills.ts` for the method skills. Check this file against them when either changes.
+How the canonical directives combine into what each host loads. The generators are the source of truth: `scripts/sync-consolidated-plugin.ts` for `@maestria/agent-plugins`, `packages/opencode/sync.config.ts`, `packages/pi/sync.config.ts`, and `packages/deepseek/sync.config.ts` for the native adapters, and `scripts/sync-bundled-skills.ts` for the method skills. Check this file against them when either changes.
 
 ## One Main Loop and One Reviewer
 
@@ -21,7 +21,7 @@ The reviewer is the checker of the maker/checker split: it receives the requirem
 | Body-only mode commands (`modes/<mode>.md`, Claude Code and ZCode) | The mode body and `integrations/command-arguments.md` |
 | Hook context (`hooks/context/core-loop.md`, `core-rules.md`) | `main-loop.md` with the Claude Code and ZCode note, and `rules.md`, each under 10,000 characters |
 | Reviewer profile (`agents/reviewer.md`, `agents/maestria-reviewer.toml`) | `reviewer.md` with `Every Agent`, `Implementation and Review`, and the `implement` skill body; the TOML adds the Codex note |
-| Method skills, `handoff` and `review-loop` included | Copied unchanged from `skills/` into `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi` |
+| Method skills, `handoff` and `review-loop` included | Copied unchanged from `skills/` into `@maestria/agent-plugins`, `@maestria/deepseek`, `@maestria/opencode`, and `@maestria/pi` |
 
 ## Session Context per Host
 
@@ -34,6 +34,8 @@ The reviewer is the checker of the maker/checker split: it receives the requirem
 - **Claude Code and ZCode** have no plugin session-context component, so a SessionStart hook (matcher `startup|resume|clear|compact`) prints the two hook-context parts and the project customization; their mode commands carry only the mode body, and the reviewer profile and skills load natively.
 - **OpenCode** registers the `maestria` agent from `main-loop.md` and injects all of `rules.md` into every agent's system context on each turn and at compaction, the reviewer included; the reviewer agent file also appends the `implement` skill body. Agents that maestria does not define also get the main loop's `Modes` and `Continuation and Delivery` sections. Its `tool.execute.before` and `permission.evaluate` hooks apply the shared git-safety classifier to the `shell` tool.
 - **Pi** ships the main loop and all of `rules.md` as the `maestria` and `global-rules` skills, and its `before_agent_start` handler injects both skill bodies as the always-on core on every run, followed by the active mode's prompt when one is set and the project customization. Its `tool_call` and `user_bash` handlers apply the shared git-safety classifier. The reviewer agent runs with `inherit_context: true` and appends the `implement` skill body.
+
+- **DeepSeek Harness** registers `main-loop.md` with its host note as the `maestria` preset's persona and all of `rules.md` as a section, and re-reads the project customization into the context on every assembly. Its `tools/pre-execute` listener applies the shared git, generated-file, and email classifiers to `bash`, `edit`, and `write`. The reviewer runs on its own `maestria-reviewer` preset, whose persona is `reviewer.md` with the `implement` skill body and whose section is the `Every Agent` and `Implementation and Review` rules; that preset mounts no shell, edit, write, or delegation tool.
 
 ## Canonical Sync
 
