@@ -37,7 +37,6 @@ describe('Codex native agent files', () => {
       'name = "maestria-reviewer"',
       'description = "new description"',
       'developer_instructions = "new instructions"',
-      'sandbox_mode = "read-only"',
       '',
     ].join('\n');
     const existing = [

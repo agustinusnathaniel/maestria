@@ -37,7 +37,6 @@ describe('Codex managed native agents', () => {
               `name = "maestria-${agent}"`,
               `description = "new ${agent}"`,
               `developer_instructions = "new instructions for ${agent}"`,
-              ...(agent === 'reviewer' ? ['sandbox_mode = "read-only"'] : []),
               '',
             ].join('\n'),
           );

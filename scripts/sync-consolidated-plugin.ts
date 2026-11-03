@@ -195,7 +195,7 @@ const addOutput = (plan: Map<string, string>, relative: string, content: string)
 };
 
 interface Profile {
-  codex: { description: string; sandboxMode?: string };
+  codex: { description: string };
   description: string;
   name: string;
   readOnly: boolean;
@@ -215,18 +215,12 @@ const profileMetadata = (packageRoot: string): Record<string, Profile> => {
       typeof profile.description !== 'string' ||
       typeof profile.readOnly !== 'boolean' ||
       !isRecord(profile.codex) ||
-      typeof profile.codex.description !== 'string' ||
-      !['string', 'undefined'].includes(typeof profile.codex.sandboxMode)
+      typeof profile.codex.description !== 'string'
     ) {
       throw new Error(`Invalid profile metadata: ${role}`);
     }
     profiles[role] = {
-      codex: {
-        description: profile.codex.description,
-        ...(typeof profile.codex.sandboxMode === 'string'
-          ? { sandboxMode: profile.codex.sandboxMode }
-          : {}),
-      },
+      codex: { description: profile.codex.description },
       description: profile.description,
       name: role,
       readOnly: profile.readOnly,
@@ -236,13 +230,15 @@ const profileMetadata = (packageRoot: string): Record<string, Profile> => {
 };
 
 // One profile serves every Markdown host: each loader reads its own keys and ignores the rest
-// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents).
+// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents, Devin: allowed-tools).
 // Entries keep the emitted YAML in reading order: identity first, then host controls.
 const nativeMetadata = (profile: Profile): Record<string, unknown> => {
   const readOnly: [string, unknown][] = profile.readOnly
     ? [
         ['readonly', true],
         ['disallowedTools', ['Write', 'Edit']],
+        // Devin has no denylist; its allowlist keeps the reviewer to its read tools.
+        ['allowed-tools', ['read', 'grep', 'glob']],
       ]
     : [];
   return Object.fromEntries<unknown>([
@@ -260,9 +256,6 @@ const codexProfile = (profile: Profile, instructions: string): string => {
   const header = [
     `name = ${JSON.stringify(`maestria-${profile.name}`)}`,
     `description = ${JSON.stringify(profile.codex.description)}`,
-    ...(profile.codex.sandboxMode === undefined
-      ? []
-      : [`sandbox_mode = ${JSON.stringify(profile.codex.sandboxMode)}`]),
   ];
   return `${header.join('\n')}\n\n${TOML_NOTICE}\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`;
 };

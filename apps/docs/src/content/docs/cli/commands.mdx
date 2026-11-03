@@ -381,7 +381,7 @@ maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]]
 
 `platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`. Omit it for an interactive platform picker. The reviewer can use a different model from the session. OMP discovers the native reviewer task profile whose default model is inherited from the parent. This CLI does not manage OMP per-agent model settings.
 
-For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/agents/` (global, default `~/.codex/agents/`) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, and `model` fields. The reviewer TOML still carries `sandbox_mode = "read-only"`, but Codex has not applied that field from a role file since 2026-08, so the reviewer is read-only by instruction only. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
+For Codex, the command writes native custom-agent TOML files under `$CODEX_HOME/agents/` (global, default `~/.codex/agents/`) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, and `model` fields. Codex has not applied `sandbox_mode` from a role file since 2026-08, so the reviewer TOML does not set it: the reviewer is read-only by instruction, plus a plugin hook that blocks its edit-tool calls once you trust the plugin hooks (writes through the shell are not covered). For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
 ### Interactive (TTY)
 

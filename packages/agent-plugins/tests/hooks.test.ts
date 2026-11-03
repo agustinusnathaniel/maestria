@@ -40,6 +40,13 @@ const edit = (file: string): object => ({
   tool_name: 'Edit',
 });
 
+const codexPatch = (agentType?: string): object => ({
+  ...(agentType === undefined ? {} : { agent_id: 'a1', agent_type: agentType }),
+  cwd: repo,
+  tool_input: { command: '*** Begin Patch\n*** Update File: source.ts\n' },
+  tool_name: 'apply_patch',
+});
+
 const cursorShell = (command: string): unknown =>
   run('git-safety.mjs', ['cursor'], { command, cwd: repo }).output;
 
@@ -115,6 +122,22 @@ describe('PreToolUse adapters', () => {
     expect(run('generated-guard.mjs', ['cursor'], edit('generated.ts')).output).toMatchObject({
       permission: 'deny',
     });
+  });
+
+  it('blocks edits inside the Codex reviewer subagent only', () => {
+    const reviewer = run('reviewer-guard.mjs', ['codex'], codexPatch('maestria-reviewer')).output;
+    expect(reviewer).toMatchObject({ hookSpecificOutput: { permissionDecision: 'deny' } });
+    expect(JSON.stringify(reviewer)).toContain('reviewer is read-only');
+    expect(run('reviewer-guard.mjs', ['codex'], codexPatch()).output).toBeUndefined();
+    expect(run('reviewer-guard.mjs', ['codex'], codexPatch('worker')).output).toBeUndefined();
+    // Shell calls stay open: the reviewer runs checks, and shell writes are not covered.
+    expect(
+      run('reviewer-guard.mjs', ['codex'], {
+        agent_type: 'maestria-reviewer',
+        tool_input: { command: 'git status' },
+        tool_name: 'Bash',
+      }).output,
+    ).toBeUndefined();
   });
 
   it('fails open on unreadable input and unknown hosts', () => {
