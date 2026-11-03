@@ -45,7 +45,7 @@ When the project defines a PR template, follow it, map the information below int
 [Only when merging needs more than the merge: pre-merge and post-merge steps in order.]
 ```
 
-In Changes, describe what changed and why rather than the editing action, group related files under one rationale, and name only symbols that help review. Keep session IDs and internal execution metadata out of the PR. Give the complete merge steps (feature flags: needed, exists, default off; deploy order, consumers before producers; indexes or migrations; follow-ups) unasked before the PR is ready and whenever you call it ready or mergeable, never after the merge. Changes to existing shared paths go live on deploy, so state that they are safe with any new flag off.
+In Changes, describe what changed and why rather than the editing action, group related files under one rationale, and name only symbols that help review. Keep session IDs and internal execution metadata out of the PR. Give the complete merge steps (everything that must exist or happen before and after the merge, in order) unasked before the PR is ready and whenever you call it ready or mergeable, never after the merge.
 
 ## Publishing
 
