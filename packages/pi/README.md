@@ -1,6 +1,6 @@
 # @maestria/pi
 
-A [Pi coding agent](https://pi.software/) extension that brings maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
+A [Pi coding agent](https://pi.software/) extension that brings maestria's main loop, workflow modes, and reviewer checks to Pi.
 
 > This package is part of the maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -19,11 +19,13 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 
 ## What It Provides
 
-- **Methodology skills** (6 as of 2026-10-13; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session, plus the bundled `create-pull-request` and `docs-update` skills the rules name.
-- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Always-on core** - the main loop and global agent rules, injected into every run's system prompt.
+- **Methodology skills** (10 as of 2026-11-03; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - the `maestria` main loop and global agent rules, plus the bundled `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` skills the main loop's skill map names.
+- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi/) for the current list) - `/fein` (full method), `/sonar` (research only), `/blitz` (fast implementation).
 - **Compaction preservation** - session state survives compaction with structured summaries.
-- **Subagent dispatch** - delegation to specialist subagents via the `@gotgenes/pi-subagents` peer package.
+- **Subagent dispatch** - dispatch of the reviewer for independent blind review via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
+- **Git safety** - blocks `--no-verify` and asks before commits or pushes to protected branches, force pushes, and commands that discard work, for agent and `!` shell commands alike; without a UI it blocks with a message that approval is needed.
 - **Root project customization** - `.maestria/workflow.md` then `.maestria/rules.md` from the session directory, injected every turn as subordinate guidance (never waives safety, authorization, or host permissions).
 
 ## Root Project Customization

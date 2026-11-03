@@ -21,6 +21,13 @@ export default defineConfig({
         'packages/*/prompts/**',
         'packages/*/rules/**',
         'packages/agent-plugins/AGENTS.md',
+        'packages/agent-plugins/codex.agents.md',
+        'packages/agent-plugins/devin/**',
+        'packages/agent-plugins/hermes.context.md',
+        'packages/agent-plugins/hooks/context/**',
+        'packages/agent-plugins/hooks/lib/policy.mjs',
+        'packages/agent-plugins/modes/**',
+        'packages/agent-plugins/kimi.system-prompt.md',
         // Generated skill copies; the canonical core skills stay formatted.
         'packages/*/skills/**',
         'packages/*/SYSTEM.md',
@@ -59,7 +66,13 @@ export default defineConfig({
     // Ultracite oxlint/core preset as base - composed in the authoritative Vite+ config.
     // Spread first so repo rules win. No standalone oxlint.config.ts.
     ...oxlintPreset,
-    ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
+    ignorePatterns: [
+      ...new Set([
+        ...(oxlintPreset.ignorePatterns ?? []),
+        'dist/**',
+        'packages/agent-plugins/hooks/lib/policy.mjs',
+      ]),
+    ],
     jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
     options: { typeAware: true, typeCheck: true },
     overrides: [...(oxlintPreset.overrides ?? []), testOverrides],
@@ -87,113 +100,28 @@ export default defineConfig({
   run: {
     cache: { scripts: true, tasks: true },
     tasks: {
-      '@maestria/docs#build': {
-        cache: true,
-        command: 'astro build',
-        // Astro writes and reads .astro during build (cooperative thrashing) -> always miss.
-        // Exclude .astro from fingerprint and archive only dist to enable cache hit.
-        // See https://viteplus.dev/guide/automatic-data-tracking#override-inputs-and-outputs
-        input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
-        output: ['dist/**'],
-      },
-      'check-ci': {
-        cache: false,
-        command: [
-          'vp run check-lint',
-          'vp run test-sync-plugin-versions',
-          'vp run test',
-          'vp run check-manifest-versions',
-        ],
-        dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
-      },
-      'check-fmt': {
-        cache: true,
-        command: 'vp fmt --check',
-        // fmt is input-heavy but doesn't need build outputs; exclude dist to stabilize cache
-        input: [{ auto: true }, '!dist/**', '!**/.astro/**', '!.astro/**'],
-        output: [],
-      },
       'check-full': {
         cache: false,
         command: [
-          'vp run check-lint',
+          'vp run lint',
           'vp run test-sync-plugin-versions',
           'vp run test',
           'vp run check-manifest-versions',
         ],
-        dependsOn: ['build', 'check-fmt', 'check-sync'],
+        dependsOn: ['build', 'fmt:check', 'check-sync'],
       },
-      'check-lint': {
-        cache: true,
-        command: 'vp lint',
-        // type-aware lint needs build outputs, so this task must run after build
-        // Cache on source + lint config; dist is excluded but lint still fingerprint sources
-        input: [
-          { auto: true },
-          '!dist/**',
-          '!**/.astro/**',
-          '!.astro/**',
-          'vite.config.ts',
-          'tooling/lint/**',
-          'tsconfig.json',
-          'packages/*/tsconfig.json',
-          'apps/*/tsconfig.json',
-        ],
-        output: [],
+      // CI splits check-full into two jobs that run in parallel on separate runners:
+      // ci-check (format, sync, type-aware lint) and ci-test (tests and manifest checks).
+      'ci-check': {
+        cache: false,
+        command: 'vp run lint',
+        // Lint is type-aware: it needs build outputs and the docs app's Astro-generated types.
+        dependsOn: ['build:ci', 'fmt:check', 'check-sync', '@maestria/docs#sync'],
       },
-      'check-manifest-versions': {
-        cache: true,
-        command: 'pnpm exec tsx scripts/sync-plugin-versions.ts --check',
-        input: [
-          'scripts/sync-plugin-versions.ts',
-          'packages/*/package.json',
-          'packages/*/plugin.json',
-          'packages/*/.claude-plugin/plugin.json',
-          'packages/*/.codex-plugin/plugin.json',
-          'packages/*/.cursor-plugin/plugin.json',
-          'packages/*/.devin-plugin/plugin.json',
-          'packages/*/.zcode-plugin/plugin.json',
-          'packages/*/kimi.plugin.json',
-        ],
-        output: [],
-      },
-      'check-sync': {
-        cache: true,
-        command: 'bash scripts/check-sync',
-        input: [
-          { auto: false },
-          'scripts/check-sync',
-          'scripts/sync-packages',
-          'scripts/sync-consolidated-plugin.ts',
-          'scripts/sync-bundled-skills.ts',
-          'packages/core/scripts/**/*.ts',
-          'packages/core/agent-directives/**/*.md',
-          'packages/*/sync.config.ts',
-          'packages/agent-plugins/generation/**/*.ts',
-          'packages/agent-plugins/generation/**/*.json',
-          'packages/agent-plugins/generation/**/*.toml',
-          'packages/agent-plugins/plugin.json',
-          'packages/agent-plugins/.*-plugin/plugin.json',
-          'packages/agent-plugins/kimi.plugin.json',
-          'packages/agent-plugins/agents/**',
-          'packages/*/skills/**',
-          'packages/agent-plugins/commands/**',
-          'packages/agent-plugins/rules/**',
-        ],
-        output: [
-          'packages/*/agents/**',
-          'packages/*/commands/**',
-          'packages/*/prompts/**',
-          'packages/*/rules/**',
-          'packages/*/skills/**',
-          'packages/*/SYSTEM.md',
-        ],
-      },
-      'test-sync-plugin-versions': {
-        cache: true,
-        command: 'pnpm exec vitest run scripts/sync-plugin-versions.test.ts',
-        input: ['scripts/sync-plugin-versions.ts', 'scripts/sync-plugin-versions.test.ts'],
-        output: [],
+      'ci-test': {
+        cache: false,
+        command: 'vp run test',
+        dependsOn: ['build:ci', 'test-sync-plugin-versions', 'check-manifest-versions'],
       },
     },
   },

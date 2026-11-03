@@ -1,5 +1,7 @@
 /** Shared tool interceptor utilities for Pi-family packages. */
 
+import { classifyGitSafety } from '@maestria/shared-hook-policy';
+
 import { recordFileModified, recordFileRead } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
 import { isReadOnlyBashCommand } from './bash-policy.js';
@@ -40,6 +42,7 @@ export interface ToolCallEventLike {
 }
 
 export interface ToolCallContext {
+  cwd?: string;
   hasUI?: boolean;
   ui?: { confirm: (title: string, msg: string) => Promise<boolean> };
 }
@@ -62,6 +65,8 @@ export interface ToolCallHandlerOptions {
   isReadTool: (event: ToolCallEventLike) => boolean;
   isWriteTool: (event: ToolCallEventLike) => boolean;
   isBashTool: (event: ToolCallEventLike) => boolean;
+  /** Current branch of the repository at `directory` (relative to `cwd`), for the git guard. */
+  currentBranch?: (cwd: string | undefined, directory?: string) => string | undefined;
   persist?: () => void;
 }
 
@@ -79,18 +84,19 @@ const isMutationToolEvent = (
   return ['bash', 'edit', 'patch', 'write'].includes(name);
 };
 
-const DELEGATION_HINT = "Use 'maestria_subagent' to delegate mutations to specialists.";
+const SONAR_HINT =
+  'sonar is research-only: investigate and report without changing files or dispatching subagents.';
 
-const checkOrchestratorBlock = (
+const checkSonarBlock = (
   state: MaestriaState,
   event: ToolCallEventLike,
   options: ToolCallHandlerOptions,
   delegationTool: string,
 ): { block: boolean; reason: string } | undefined => {
-  if (state.mode === null || !options.getActiveTools().some((tool) => tool === delegationTool)) {
+  if (state.mode !== 'sonar') {
     return undefined;
   }
-  if (!isMutationToolEvent(event, options) || event.toolName === delegationTool) {
+  if (event.toolName !== delegationTool && !isMutationToolEvent(event, options)) {
     return undefined;
   }
   if (options.isBashTool(event)) {
@@ -100,10 +106,7 @@ const checkOrchestratorBlock = (
       return undefined;
     }
   }
-  return {
-    block: true,
-    reason: `Tool '${event.toolName}' is blocked for the orchestrator. ${DELEGATION_HINT}`,
-  };
+  return { block: true, reason: `Tool '${event.toolName}' is blocked. ${SONAR_HINT}` };
 };
 
 const checkDangerousPattern = async (
@@ -136,6 +139,49 @@ const checkDangerousPattern = async (
     }
   }
   return { block: true, reason: `Command matches dangerous pattern: ${matched}` };
+};
+
+/**
+ * Git safety from the shared hook policy: hook bypasses are blocked, and risky history edits
+ * need the user's confirmation, which a session without a UI cannot give.
+ */
+export const checkGitSafety = async (
+  command: string,
+  ctx: ToolCallContext,
+  currentBranch: ToolCallHandlerOptions['currentBranch'],
+): Promise<ToolCallResult | undefined> => {
+  const decision = classifyGitSafety(command, {
+    currentBranch: (directory) => currentBranch?.(ctx.cwd, directory),
+  });
+  if (decision.verdict === 'allow') {
+    return undefined;
+  }
+  const reason = `maestria: ${decision.reason}.`;
+  if (decision.verdict === 'ask' && ctx.hasUI === true && ctx.ui !== undefined) {
+    if (await ctx.ui.confirm('Confirm git command', `${reason}\n\n${command}\n\nProceed?`)) {
+      return undefined;
+    }
+    return { block: true, reason: `${reason} The user declined.` };
+  }
+  return {
+    block: true,
+    reason:
+      decision.verdict === 'ask'
+        ? `${reason} It needs the user's explicit approval and this session cannot ask for it: stop, ask the user, and continue only if they approve.`
+        : reason,
+  };
+};
+
+const checkGitCommand = async (
+  event: ToolCallEventLike,
+  options: ToolCallHandlerOptions,
+  ctx: ToolCallContext,
+): Promise<ToolCallResult | undefined> => {
+  const command = isRecord(event.input) ? event.input.command : undefined;
+  if (!options.isBashTool(event) || typeof command !== 'string' || command === '') {
+    return undefined;
+  }
+  return await checkGitSafety(command, ctx, options.currentBranch);
 };
 
 const trackFileAccess = (
@@ -172,9 +218,9 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
       return undefined;
     }
     const state = options.getState();
-    const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool);
-    if (orchestrator !== undefined) {
-      return orchestrator;
+    const sonar = checkSonarBlock(state, event, options, delegationTool);
+    if (sonar !== undefined) {
+      return sonar;
     }
     const reviewBlocked =
       state.reviewMode &&
@@ -190,6 +236,10 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
     const dangerous = await checkDangerousPattern(event, options, ctx);
     if (dangerous !== undefined) {
       return dangerous;
+    }
+    const git = await checkGitCommand(event, options, ctx);
+    if (git !== undefined) {
+      return git;
     }
     if (trackFileAccess(state, event, options)) {
       doPersist();

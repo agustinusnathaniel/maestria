@@ -1,6 +1,6 @@
 {
   "name": "@maestria/agent-plugins",
-  "version": "0.8.0",
+  "version": "0.13.0",
   "private": false,
   "description": "maestria consolidated methodology plugin with portable skills and native host overlays",
   "keywords": [
@@ -38,7 +38,14 @@
     "LICENSE",
     "commands",
     "rules",
-    "AGENTS.md"
+    "AGENTS.md",
+    "codex.agents.md",
+    "devin",
+    "hermes.context.md",
+    "hooks",
+    "hooks.json",
+    "modes",
+    "kimi.system-prompt.md"
   ],
   "type": "module",
   "publishConfig": {
@@ -51,8 +58,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   },
   "omp": {}
 }

@@ -4,7 +4,8 @@
     "tests/**/*.ts",
     "generation/**/*.ts",
     "vite.config.ts",
-    "../../scripts/sync-consolidated-plugin.ts"
+    "../../scripts/sync-consolidated-plugin.ts",
+    "../../scripts/host-session-files.ts"
   ],
   "compilerOptions": {
     "noEmit": true,

@@ -11,35 +11,27 @@ import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
 import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
 
 <div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
-
   <div class="home-inner">
     <PlatformHero
-      eyebrow="@MAESTRIA/PI"
       title="Structured workflows for Pi."
-      lead="Install the Pi extension for seven specialist subagents, workflow modes, and session-aware orchestration."
-      mark={marks.piOmp}
+      lead="Install the Pi extension for the main loop, reviewer, workflow modes, and session tracking."
       primaryCta={{ href: '/pi/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/pi/reference/', label: 'Reference' }}
       installCommand="npx maestria install pi"
     />
 
     <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
       title="A native Pi extension."
       class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
     >
       <FeatureGrid
         items={[
-          { title: '7 specialist subagents', desc: 'Pi registers the adventurer, architect, builder, diagnose, planner, reviewer, and writer roles.' },
-          { title: 'Workflow modes', desc: '/fein runs the full pipeline, /sonar stays research-only, and /blitz takes the fast path.' },
-          { title: 'Session tracking', desc: 'The extension records parent task IDs and keeps handoff state available across compaction.' },
-          { title: 'Host-owned controls', desc: 'Pi supplies the runtime and subagent tools. Read-only and lifecycle behavior follows the installed extension and host configuration.' },
+          { title: 'Main loop plus reviewer', desc: 'Pi runs the main loop with the recon, architecture-plan, and diagnose skills and dispatches the reviewer subagent for independent blind review.' },
+          { title: 'Workflow modes', desc: '/fein runs the full method, /sonar stays research-only, and /blitz takes the fast path.' },
+          { title: 'Session tracking', desc: 'The extension records subagent runs and handoff history in the session; `/maestria-status` summarizes the mode, reviewer runs, and recent handoffs.' },
+          { title: 'Host-owned controls', desc: 'Pi supplies the runtime; subagent dispatch needs the `@gotgenes/pi-subagents` extension, which the CLI installs. Read-only and lifecycle behavior follows the installed extension and host configuration.' },
         ]}
       />
     </PluginSection>

@@ -25,18 +25,16 @@ const config = `{
   // keep this comment
   "plugin": ["other-plugin", ["@maestria/opencode@0.8.0", { "x": 1 }], "@maestria/opencode"],
   "plugins": [
-    "@maestria/opencode-v2",
     { "package": "@maestria/opencode@0.9.0", "options": { "modes": { "disabledKeywords": ["blitz"] } } },
     "@maestria/opencode-extras"
   ]
 }`;
 
 describe('OpenCode plugin entries', () => {
-  it('finds maestria and preview entries in V2 objects and V1 tuples, not other packages', () => {
+  it('finds maestria entries in V2 objects and V1 tuples, not other packages', () => {
     expect(maestriaEntries(config, 'plugins')).toEqual([
-      { index: 0, options: undefined, spec: '@maestria/opencode-v2' },
       {
-        index: 1,
+        index: 0,
         options: { modes: { disabledKeywords: ['blitz'] } },
         spec: '@maestria/opencode@0.9.0',
       },
@@ -71,7 +69,7 @@ const specOf = (entry: unknown): unknown =>
 // appends a new spec and ignores a configured one, and `plugin remove` needs the exact spec.
 describe('OpenCode CLI flows', () => {
   let configFile: string;
-  let host: { version: string; failAdd: boolean; calls: string[] };
+  let host: { version: string; failAdd: boolean; calls: string[]; loadingUpdates: number };
 
   const writeConfig = (value: unknown): void => {
     writeFileSync(configFile, typeof value === 'string' ? value : JSON.stringify(value));
@@ -92,6 +90,16 @@ describe('OpenCode CLI flows', () => {
       return Effect.succeed(host.version);
     }
     const plugins = pluginsOf();
+    // A directory's first queries race OpenCode's background plugin load.
+    if (action === 'update' && host.loadingUpdates > 0) {
+      host.loadingUpdates -= 1;
+      return Effect.fail(
+        new shell.CommandError({
+          command: 'opencode',
+          message: `Command failed with exit code 1: Error: Plugin is not configured: ${spec}`,
+        }),
+      );
+    }
     if (action === 'add' && host.failAdd) {
       return Effect.fail(new shell.CommandError({ command: 'opencode', message: 'fetch failed' }));
     }
@@ -116,8 +124,10 @@ describe('OpenCode CLI flows', () => {
     vi.stubEnv('XDG_CACHE_HOME', path.join(root, 'cache'));
     mkdirSync(path.join(root, 'config', 'opencode'), { recursive: true });
     configFile = path.join(root, 'config', 'opencode', 'opencode.jsonc');
-    host = { calls: [], failAdd: false, version: 'opencode v2.0.28' };
-    vi.mocked(shell.run).mockImplementation((_command, args) => fakeOpenCode(args));
+    host = { calls: [], failAdd: false, loadingUpdates: 0, version: 'opencode v2.0.28' };
+    vi.mocked(shell.run).mockImplementation((_command, args) =>
+      Effect.suspend(() => fakeOpenCode(args)),
+    );
   });
 
   afterEach(() => {
@@ -130,13 +140,6 @@ describe('OpenCode CLI flows', () => {
     expect(readConfig()).toEqual({ plugin: ['other'], plugins: ['x', '@maestria/opencode'] });
   });
 
-  it('install replaces the preview package and keeps its options', async () => {
-    const options = { modes: { disabledKeywords: ['blitz'] } };
-    writeConfig({ plugins: [{ options, package: '@maestria/opencode-v2' }] });
-    await Effect.runPromise(installOpenCode);
-    expect(pluginsOf()).toEqual([{ options, package: '@maestria/opencode' }]);
-  });
-
   it('updates a lone unpinned entry in place', async () => {
     const options = { modes: {} };
     writeConfig({ plugins: [{ options, package: '@maestria/opencode' }] });
@@ -145,11 +148,37 @@ describe('OpenCode CLI flows', () => {
     expect(pluginsOf()).toEqual([{ options, package: '@maestria/opencode' }]);
   });
 
-  it('drops a leftover preview entry instead of updating in place', async () => {
-    writeConfig({ plugins: ['@maestria/opencode', '@maestria/opencode-v2'] });
-    await Effect.runPromise(updateOpenCode());
-    expect(host.calls).toEqual(['--version', 'plugin remove @maestria/opencode-v2']);
-    expect(pluginsOf()).toEqual(['@maestria/opencode']);
+  it('retries an in-place update until OpenCode has loaded the directory plugins', async () => {
+    writeConfig({ plugins: ['@maestria/opencode'] });
+    host.loadingUpdates = 2;
+    await Effect.runPromise(updateOpenCode(undefined, 0));
+    expect(host.calls.filter((call) => call === 'plugin update @maestria/opencode')).toHaveLength(
+      3,
+    );
+  });
+
+  it('stops retrying an in-place update after the load window or on another error', async () => {
+    writeConfig({ plugins: ['@maestria/opencode'] });
+    host.loadingUpdates = Number.POSITIVE_INFINITY;
+    await expect(Effect.runPromise(updateOpenCode(undefined, 0))).rejects.toThrow(
+      'Plugin is not configured',
+    );
+    host = { ...host, calls: [], loadingUpdates: 0 };
+    vi.mocked(shell.run).mockImplementation((_command, args) =>
+      Effect.suspend(() =>
+        args[1] === 'update'
+          ? Effect.sync(() => host.calls.push(args.join(' '))).pipe(
+              Effect.andThen(
+                Effect.fail(
+                  new shell.CommandError({ command: 'opencode', message: 'fetch failed' }),
+                ),
+              ),
+            )
+          : fakeOpenCode(args),
+      ),
+    );
+    await expect(Effect.runPromise(updateOpenCode(undefined, 0))).rejects.toThrow('fetch failed');
+    expect(host.calls.filter((call) => call.startsWith('plugin update'))).toHaveLength(1);
   });
 
   it('pins by adding first, carrying options, and removing each old spec once', async () => {
@@ -193,14 +222,14 @@ describe('OpenCode CLI flows', () => {
   it('uninstall removes every maestria spec once and the V1 entry', async () => {
     writeConfig({
       plugin: ['@maestria/opencode'],
-      plugins: ['@maestria/opencode', '@maestria/opencode', '@maestria/opencode-v2', 'other'],
+      plugins: ['@maestria/opencode', '@maestria/opencode@0.9.0', '@maestria/opencode', 'other'],
     });
     await Effect.runPromise(uninstallOpenCode);
     expect(readConfig()).toEqual({ plugin: [], plugins: ['other'] });
   });
 
   it('reads the installed version from the newest cached install of the configured spec', async () => {
-    writeConfig({ plugins: ['@maestria/opencode-v2', '@maestria/opencode'] });
+    writeConfig({ plugins: ['@maestria/opencode'] });
     const cache = path.join(process.env.XDG_CACHE_HOME ?? '', 'opencode', 'npm');
     for (const [install, version] of [
       ['1791476216847', '0.9.0'],

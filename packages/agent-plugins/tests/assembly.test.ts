@@ -134,9 +134,9 @@ describe('consolidated plugin assembly', () => {
     const target = path.join(packageRoot, 'rules/global.md');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, 'drift\n');
-    fs.rmSync(path.join(root, 'packages/core/agent-directives/specialists/writer.md'));
+    fs.rmSync(path.join(root, 'packages/core/agent-directives/specialists/reviewer.md'));
 
-    expect(() => syncConsolidatedPlugin(root)).toThrow(/writer\.md/u);
+    expect(() => syncConsolidatedPlugin(root)).toThrow(/reviewer\.md/u);
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
   });
 

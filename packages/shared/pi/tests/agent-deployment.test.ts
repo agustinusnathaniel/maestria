@@ -38,12 +38,12 @@ describe('deploySpecialistAgents', () => {
 
   it('never overwrites existing agent files', () => {
     mkdirSync(dest, { recursive: true });
-    writeFileSync(path.join(dest, 'builder.md'), 'custom content', 'utf-8');
+    writeFileSync(path.join(dest, 'reviewer.md'), 'custom content', 'utf-8');
 
     const deployed = deploySpecialistAgents(src, dest);
 
     expect(deployed).toBe(ALLOWED_AGENTS.length - 1);
-    expect(readFileSync(path.join(dest, 'builder.md'), 'utf-8')).toBe('custom content');
+    expect(readFileSync(path.join(dest, 'reviewer.md'), 'utf-8')).toBe('custom content');
   });
 
   it('returns 0 and warns when the source directory is missing', () => {
@@ -61,13 +61,12 @@ describe('deploySpecialistAgents', () => {
 
   it('skips missing agent files and deploys the rest', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    rmSync(path.join(src, 'builder.md'));
+    rmSync(path.join(src, 'reviewer.md'));
 
     const deployed = deploySpecialistAgents(src, dest);
 
-    expect(deployed).toBe(ALLOWED_AGENTS.length - 1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('builder.md'));
-    expect(existsSync(path.join(dest, 'builder.md'))).toBe(false);
-    expect(existsSync(path.join(dest, 'architect.md'))).toBe(true);
+    expect(deployed).toBe(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('reviewer.md'));
+    expect(existsSync(path.join(dest, 'reviewer.md'))).toBe(false);
   });
 });

@@ -11,13 +11,13 @@ import {
 
 describe('Codex native agent files', () => {
   it('uses a collision-resistant native role name', () => {
-    expect(codexManagedAgentName('builder')).toBe('maestria-builder');
-    expect(codexManagedAgentFileName('builder')).toBe('maestria-builder.toml');
+    expect(codexManagedAgentName('reviewer')).toBe('maestria-reviewer');
+    expect(codexManagedAgentFileName('reviewer')).toBe('maestria-reviewer.toml');
   });
 
   it('reads and edits only top-level TOML settings', () => {
     const content = [
-      'name = "maestria-builder"',
+      'name = "maestria-reviewer"',
       'model = "old/model" # user choice',
       '',
       '[mcp_servers.docs]',
@@ -37,7 +37,6 @@ describe('Codex native agent files', () => {
       'name = "maestria-reviewer"',
       'description = "new description"',
       'developer_instructions = "new instructions"',
-      'sandbox_mode = "read-only"',
       '',
     ].join('\n');
     const existing = [
@@ -61,18 +60,13 @@ describe('Codex native agent files', () => {
 
   it('preserves runtime settings outside the instructions in all generated profiles', async () => {
     const profiles = await Promise.all(
-      ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'].map(
-        async (agent) => ({
-          agent,
-          bundled: await readFile(
-            new URL(
-              `../../../packages/agent-plugins/agents/maestria-${agent}.toml`,
-              import.meta.url,
-            ),
-            'utf-8',
-          ),
-        }),
-      ),
+      ['reviewer'].map(async (agent) => ({
+        agent,
+        bundled: await readFile(
+          new URL(`../../../packages/agent-plugins/agents/maestria-${agent}.toml`, import.meta.url),
+          'utf-8',
+        ),
+      })),
     );
     for (const { agent, bundled } of profiles) {
       const settings =

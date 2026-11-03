@@ -41,7 +41,7 @@ export interface Platform {
  */
 export const platforms: Platform[] = [
   {
-    blurb: '8 specialized agents with global rules injected into every session.',
+    blurb: 'Main loop and reviewer with global rules injected into every session.',
     flagship: true,
     href: '/opencode/',
     id: 'opencode',
@@ -50,7 +50,7 @@ export const platforms: Platform[] = [
     name: '@maestria/opencode',
   },
   {
-    blurb: '7 specialist subagents with native workflow modes and session tracking for Pi.',
+    blurb: 'Reviewer subagent with native workflow modes and session tracking for Pi.',
     href: '/pi/',
     id: 'pi',
     installArgs: 'install pi',
@@ -59,7 +59,7 @@ export const platforms: Platform[] = [
   },
   {
     blurb:
-      "One declarative package: seven specialists, three workflow modes, always-on policy, and four skills, loaded through each host's own plugin system.",
+      "One declarative package: one reviewer specialist, three workflow modes, always-on policy, and eight skills, loaded through each host's own plugin system.",
     hosts: ['Claude Code', 'Codex', 'Cursor', 'Kimi Code', 'Devin', 'ZCode', 'OMP', 'Hermes'],
     href: '/agent-plugins/',
     id: 'agent-plugins',
@@ -78,7 +78,7 @@ export const platforms: Platform[] = [
   },
   {
     auxiliary: true,
-    blurb: 'Optional companion tooling: CodeGraph indexing and RTK.',
+    blurb: 'Optional companion tooling: CodeGraph, RTK, spec tools, and the OpenCode goal plugin.',
     href: '/ecosystem/',
     id: 'ecosystem',
     installArgs: '',

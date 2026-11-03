@@ -18,7 +18,7 @@ npx maestria status
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
 | `maestria doctor` | Report skill copies left over from earlier CLI versions, without changing anything (read-only) |
-| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, codex, cursor, pi); `--set` configures non-interactively. Cursor global configuration edits the installed plugin's `agents/<role>.md`, and `maestria update cursor` carries configured models over |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model the maestria reviewer uses (opencode, codex, cursor, pi); the main loop uses the host session model; `--set` configures non-interactively. Cursor global configuration edits the installed plugin's `agents/<role>.md`, and `maestria update cursor` carries configured models over |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the maestria cache or an explicit destination |
 

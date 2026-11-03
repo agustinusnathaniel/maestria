@@ -3,6 +3,6 @@
 
 [MODE: fein]
 
-## MODE: fein (Full Pipeline)
+## MODE: fein (Full Method)
 
-Activate the `full` route. Use the dynamic thinker -> worker -> verifier pipeline and required review floors.
+Load `recon` and `architecture-plan` before implementing, implement in the main loop, and require one blind `/reviewer` pass with the review floors.

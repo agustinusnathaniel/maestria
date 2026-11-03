@@ -3,6 +3,7 @@ import { Effect, Option, Schema } from 'effect';
 import { Plugin } from '@opencode/plugin/effect';
 import { MODE_KEYWORDS } from '@maestria/shared-mode';
 import { loadBundle } from '@/bundle.js';
+import { registerGitGuard } from '@/git-guard.js';
 import { registerSessionHooks, withMode } from '@/session.js';
 
 const Options = Schema.Struct({
@@ -68,6 +69,13 @@ export default Plugin.define({
       });
 
       yield* registerSessionHooks(ctx, bundle, disabledKeywords);
+      // The global project reports `/`; the session directory is then the repository.
+      yield* registerGitGuard(
+        ctx,
+        ctx.location.project.directory === '/'
+          ? ctx.location.directory
+          : ctx.location.project.directory,
+      );
     }),
   id: 'maestria',
 });

@@ -6,7 +6,11 @@
 // global-rules description, and the host tool names their projection filters
 // against. Relative paths resolve against the importing sync.config.ts.
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { specialistReferenceReplacements } from './specialist-replacements.js';
+import { normalizeLineEndings, stripFrontmatter } from './transforms.js';
 import type { SyncConfig } from './config.js';
 
 export interface AgentDirectiveSyncOptions {
@@ -30,16 +34,10 @@ export interface AgentDirectiveSyncOptions {
  * name is inert, not an alias for a different capability.
  */
 const DECLARED_TOOLS = {
-  'adventurer.md': ['read', 'grep', 'find', 'ls', 'glob'],
-  'architect.md': ['read', 'bash', 'grep', 'find', 'ls'],
-  'builder.md': ['read', 'bash', 'grep', 'find', 'ls', 'write', 'edit'],
-  'diagnose.md': ['read', 'bash', 'grep', 'find', 'ls'],
-  'planner.md': ['read', 'grep', 'find', 'ls'],
   'reviewer.md': ['read', 'grep', 'find', 'ls', 'glob'],
-  'writer.md': ['read', 'bash', 'grep', 'find', 'ls', 'write', 'edit'],
 } as const satisfies Record<string, readonly string[]>;
 
-/** Read-only sonar roles omit bash; architect/diagnose retain bash for evidence. */
+/** The reviewer is read-only and omits bash. */
 const hostToolLine = (
   agentFile: keyof typeof DECLARED_TOOLS,
   hostTools: readonly string[] | undefined,
@@ -52,7 +50,18 @@ const hostToolLine = (
 
 const agentFrontmatter = (fields: string): string => `---\n${fields}---\n\n`;
 
-// oxlint-disable-next-line max-lines-per-function -- one declarative mapping: the shared 14-file directive table inlined as data. Splitting it would fragment a single reviewable mapping and hide the platform differences as parameters.
+/** A canonical method skill's body without frontmatter, for profiles that embed it. */
+export const methodSkillBody = (name: string): string =>
+  stripFrontmatter(
+    normalizeLineEndings(
+      readFileSync(
+        path.join(import.meta.dirname, '..', '..', 'agent-directives', 'skills', name, 'SKILL.md'),
+        'utf-8',
+      ),
+    ),
+  ).trim();
+
+// oxlint-disable-next-line max-lines-per-function -- one declarative mapping: the shared 11-file directive table inlined as data. Splitting it would fragment a single reviewable mapping and hide the platform differences as parameters.
 export const agentDirectiveSync = ({
   agentFamily,
   commandPrefix,
@@ -63,45 +72,7 @@ export const agentDirectiveSync = ({
     stripFrontmatter: true,
   },
   files: {
-    // --- Canonical specialist agent types (7) ---
-
-    'adventurer.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Codebase reconnaissance specialist. Maps unknown territory, traces\n` +
-          `  call chains and dependencies, discovers module relationships, and\n` +
-          `  produces structured recon reports for downstream specialists.\n${hostToolLine(
-            'adventurer.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
-
-    'architect.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Architecture decision specialist. Evaluates implementation approaches\n` +
-          `  with trade-off analysis, produces Architecture Decision Records (ADRs),\n` +
-          `  and documents technical decisions with business context.\n${hostToolLine(
-            'architect.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
-
-    'builder.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Focused implementation specialist. Executes one atomic, verifiable\n` +
-          `  unit of work per invocation with minimal context and clean diffs.\n${hostToolLine(
-            'builder.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
+    // --- Canonical specialist agent type (1) ---
 
     'commands/blitz.md': {
       output: 'commands/blitz.md',
@@ -116,73 +87,23 @@ export const agentDirectiveSync = ({
       stripFrontmatter: true,
     },
 
-    'diagnose.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Bug tracing specialist. Follows relevant evidence\n` +
-          `  from symptoms to root cause and prevention; expands to similar sites\n` +
-          `  when the cause indicates a shared defect.\n${hostToolLine(
-            'diagnose.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
-
-    // Both utilities project one rules.md section, so the skills cannot drift from policy.
-    handoff: {
-      output: '../skills/handoff/SKILL.md',
+    'main-loop.md': {
+      output: '../skills/maestria/SKILL.md',
       prepend:
         '---\n' +
-        'name: handoff\n' +
+        'name: maestria\n' +
         'description: >-\n' +
-        '  Pass outcome, constraints, evidence, blockers, and next steps between workflow\n' +
-        '  stages. Load when receiving a task from another specialist, or when handing off\n' +
-        '  work to the next stage in the pipeline.\n' +
+        '  maestria main loop. Investigates, designs, and implements with the recon,\n' +
+        '  architecture-plan, and diagnose skills, sends meaningful changes to one blind\n' +
+        '  reviewer subagent, and owns delivery. Enforces the maker/checker split and\n' +
+        '  commit protocol.\n' +
         '---\n' +
         '\n',
-      section: 'Delegation and Context',
-      source: '../core/agent-directives/rules.md',
-    },
-    'iteration-limits': {
-      output: '../skills/iteration-limits/SKILL.md',
-      prepend:
-        '---\n' +
-        'name: iteration-limits\n' +
-        'description: >-\n' +
-        '  The iteration-limit pattern with verifiable termination and escalation format.\n' +
-        '  Load when defining termination conditions for a loop, or when a loop is at risk of\n' +
-        '  running too long.\n' +
-        '---\n' +
-        '\n',
-      section: 'Bounded Repair and Fail-Loud Behavior',
-      source: '../core/agent-directives/rules.md',
-    },
-    'orchestrator.md': {
-      output: '../skills/orchestrator/SKILL.md',
-      prepend:
-        '---\n' +
-        'name: orchestrator\n' +
-        'description: >-\n' +
-        '  maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
-        '  subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)\n' +
-        '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
-        '  and role-based pipeline sequencing.\n' +
-        '---\n' +
-        '\n',
-    },
-
-    'planner.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Implementation planning specialist. Breaks complex features into\n` +
-          `  phased milestones with dependencies, timelines, verification criteria,\n` +
-          `  and rollback points.\n${hostToolLine('planner.md', hostTools)}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
     },
 
     'reviewer.md': {
+      // The reviewer embeds `implement`, so it reviews against the same judgment.
+      append: `\n\n${methodSkillBody('implement')}`,
       prepend: agentFrontmatter(
         `description: >-\n` +
           `  Code review specialist. Reviews for correctness, edge cases, security,\n` +
@@ -209,20 +130,7 @@ export const agentDirectiveSync = ({
         '---\n' +
         '\n',
     },
-    'writer.md': {
-      prepend: agentFrontmatter(
-        `description: >-\n` +
-          `  Documentation specialist. Creates clear, structured documentation\n` +
-          `  following progressive disclosure patterns for READMEs, API docs,\n` +
-          `  changelogs, and Architecture Decision Records.\n${hostToolLine(
-            'writer.md',
-            hostTools,
-          )}prompt_mode: append\n` +
-          `inherit_context: true\n`,
-      ),
-    },
   },
   output: 'agents',
-  preserve: ['.gitkeep'],
   source: '../core/agent-directives/specialists',
 });

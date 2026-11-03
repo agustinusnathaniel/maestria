@@ -1,6 +1,6 @@
 {
   "name": "@maestria/opencode",
-  "version": "0.9.0",
+  "version": "0.15.0",
   "description": "OpenCode V2 plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
   "keywords": [
     "agents",
@@ -48,13 +48,13 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
+    "@maestria/shared-hook-policy": "workspace:*",
     "@maestria/shared-mode": "workspace:*",
     "@maestria/shared-project-config": "workspace:*",
     "@opencode/plugin": "^2.0.28",
     "@types/node": "catalog:",
     "effect": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@opencode/plugin": "^2.0.28",

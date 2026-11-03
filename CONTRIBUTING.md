@@ -69,7 +69,7 @@ pnpm exec tsx ../core/scripts/sync.ts --diff
 
 1. Edit the matching file under `packages/core/agent-directives/`.
 2. Keep the directive focused: short sections, one concern per section, and references instead of repeated rules.
-3. Update the orchestrator's delegation table when adding a specialist.
+3. Update the main loop's Routing section in `specialists/main-loop.md` when changing review dispatch.
 4. Run `scripts/sync-all`, then `scripts/check-sync`.
 5. Run the relevant package tests and the repository quality gates.
 
@@ -108,7 +108,7 @@ When a platform's behavior differs from the core contract, document the boundary
 
 ## Tests and Quality Gates
 
-Use the testing discipline in `packages/core/agent-directives/rules.md` and the definitions and workflow in `docs/testing.md`. Pre-code selection is required; post-code unit tests and duplicate regression tests are out. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
+Use the testing discipline in the `implement` method skill (`packages/core/agent-directives/skills/implement/SKILL.md`) and the definitions and workflow in `docs/testing.md`. Choose coverage before implementation rather than backfilling tests to fit the code, and leave out duplicate regression tests. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
 
 Validate each coherent implementation slice before committing it. Before delivery, the delivery owner runs the integrated gates:
 
@@ -146,6 +146,8 @@ For a pull request:
 2. Keep generated files synchronized and update the relevant docs or ADR.
 3. Explain the motivation, user-visible effect, and migration steps, if any.
 4. List the validation commands that passed.
+
+The `main` ruleset requires the `Lint and Sync`, `Test`, and `Docs Build` CI checks on every PR. The `chore: version packages` PR is opened with `GITHUB_TOKEN`, so its CI run waits until a maintainer approves it; approving is the release checkpoint.
 
 ## Documentation Locations
 

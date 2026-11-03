@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vite-plus/test';
 import { parse } from 'yaml';
 
 const root = path.resolve(import.meta.dirname, '..');
-const roles = ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'];
-const readOnlyRoles = new Set(['adventurer', 'architect', 'planner', 'reviewer']);
+const roles = ['reviewer'];
+const readOnlyRoles = new Set(['reviewer']);
 const modes = ['fein', 'sonar', 'blitz'];
 
 type Manifest = Record<string, unknown>;
@@ -58,16 +58,17 @@ describe('Kimi native methodology loading', () => {
 
   it('injects complete policy and router within the host system instruction limit', async () => {
     const config = await manifest();
-    // Kimi, Devin, Hermes, and the Codex installer share the one root AGENTS.md.
-    expect(config.systemPromptPath).toBe('./AGENTS.md');
+    // Kimi gets its own session file, so other hosts' notes never count against its 32 KB limit.
+    expect(config.systemPromptPath).toBe('./kimi.system-prompt.md');
     const systemPromptPath = String(config.systemPromptPath);
     const context = await readFile(path.join(root, systemPromptPath), 'utf-8');
     expect(Buffer.byteLength(context)).toBeLessThanOrEqual(32 * 1024);
     expect(context).toContain('## Universal Floors');
     expect(context).toContain('## Routing');
     expect(context).toContain('## MODE: fein');
-    for (const host of ['Devin', 'Kimi Code', 'Codex CLI', 'Hermes']) {
-      expect(context).toContain(`### ${host} Integration`);
+    expect(context).toContain('### Kimi Code Integration');
+    for (const host of ['Devin', 'Codex CLI', 'Hermes']) {
+      expect(context).not.toContain(`### ${host} Integration`);
     }
     const bootstrap = await stat(path.join(root, systemPromptPath));
     expect(bootstrap.isFile()).toBe(true);

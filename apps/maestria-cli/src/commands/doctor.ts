@@ -8,7 +8,7 @@ import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { collectDoctorReports, redactHome } from '@/lib/doctor.js';
 import type { DoctorOutput, DoctorPlatformReport } from '@/lib/doctor.js';
-import { createSpinner } from '@/lib/output.js';
+import { createSpinner, resolveQuiet } from '@/lib/output.js';
 import { defaultSkillRunner } from '@/lib/skill-reconcile.js';
 import { MANAGED_SKILLS } from '@/lib/skill-companion.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
@@ -150,7 +150,7 @@ export const handleDoctor = async (
       1,
     );
   }
-  const spinner = createSpinner(args.quiet === true);
+  const spinner = createSpinner(resolveQuiet(args));
   spinner.start('Checking skill setup...');
 
   // Corrupt records fail loud before any observation.

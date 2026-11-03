@@ -6,7 +6,7 @@ description: How to install @maestria/opencode for OpenCode V2, which version to
 import { Aside } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/opencode` adds an orchestrator, seven specialists, shared workflow rules, workflow modes, and methodology skills to [OpenCode](https://opencode.ai/v2/docs/). Install it with the maestria CLI or with OpenCode's own plugin commands.
+`@maestria/opencode` adds the `maestria` main agent, one reviewer specialist, shared workflow rules, workflow modes, and methodology skills to [OpenCode](https://opencode.ai/v2/docs/). Install it with the maestria CLI or with OpenCode's own plugin commands.
 
 ## Compatibility
 
@@ -52,23 +52,23 @@ For a single project, add it to `plugins` in that project's `opencode.json(c)` o
 }
 ```
 
-OpenCode installs missing packages when its server starts and reloads watched config changes automatically.
+OpenCode installs missing packages in the background when its server starts and reloads watched config changes automatically ([OpenCode plugins](https://opencode.ai/v2/docs/plugins/)).
 
 </details>
 
 ## Moving from OpenCode V1
 
-OpenCode V2 reads the same config files as V1 but ignores the V1 `plugin` array, so an existing `"plugin": ["@maestria/opencode@latest"]` entry does nothing in V2. Run `maestria update opencode` (or `maestria install opencode`): it removes the maestria entry from the V1 `plugin` array and adds the package to `plugins`. Other plugins are kept, and so are comments outside the V1 `plugin` array. It also replaces a `@maestria/opencode-v2` preview entry, keeping its options.
+OpenCode V2 reads the same config files as V1 but ignores the V1 `plugin` array, so an existing `"plugin": ["@maestria/opencode@latest"]` entry does nothing in V2. Run `maestria update opencode` (or `maestria install opencode`): it removes the maestria entry from the V1 `plugin` array and adds the package to `plugins`. Other plugins are kept, and so are comments outside the V1 `plugin` array.
 
 ## Verify Installation
 
-Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention, the `/fein`, `/sonar`, and `/blitz` commands are listed, and the global workflow rules are active. Read [When to use maestria](/core/when-to-use/) before choosing `orchestrator`.
+Start a new OpenCode session. The `maestria` and `reviewer` agents are available, the `/fein`, `/sonar`, and `/blitz` commands are listed, and the global workflow rules are active. Read [When to use maestria](/core/when-to-use/) before choosing `maestria`.
 
 ## Updating
 
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode" />
 
-Without the CLI, run `opencode plugin update @maestria/opencode`. OpenCode also checks unpinned plugins for updates when its server starts.
+Without the CLI, run `opencode plugin update @maestria/opencode`. OpenCode also checks unpinned plugins for updates when its server starts, without changing the installed package ([OpenCode plugins](https://opencode.ai/v2/docs/plugins/)).
 
 <Aside type="tip">
   To pin a version, run `maestria update opencode --version <version>`. It replaces the configured

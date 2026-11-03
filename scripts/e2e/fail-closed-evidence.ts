@@ -115,24 +115,9 @@ const parseAgentPermissions = (text: string): PermissionFile => {
   return perm;
 };
 
-const EXPECTED_AGENTS: readonly string[] = [
-  'adventurer.md',
-  'architect.md',
-  'builder.md',
-  'diagnose.md',
-  'orchestrator.md',
-  'planner.md',
-  'reviewer.md',
-  'writer.md',
-];
+const EXPECTED_AGENTS: readonly string[] = ['maestria.md', 'reviewer.md'];
 
-const RECON_AGENTS: readonly string[] = [
-  'adventurer.md',
-  'architect.md',
-  'planner.md',
-  'reviewer.md',
-  'writer.md',
-];
+const RECON_AGENTS: readonly string[] = ['reviewer.md'];
 
 const E2E_GUARDED_GIT =
   'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
@@ -206,24 +191,14 @@ const sectionPermissionNarrowing = (): void => {
         bash(name)['*'] ?? '',
       ),
     ),
-    check('orchestrator denies shell', bash('orchestrator.md')['*'] === 'deny'),
-    check('orchestrator denies edits', other('orchestrator.md').edit === 'deny'),
-    check('adventurer denies edits', other('adventurer.md').edit === 'deny'),
-    check('architect denies edits', other('architect.md').edit === 'deny'),
+    check('maestria asks before unlisted shell', bash('maestria.md')['*'] === 'ask'),
     check('reviewer denies edits', other('reviewer.md').edit === 'deny'),
-    check('adventurer asks on shell', bash('adventurer.md')['*'] === 'ask'),
-    check('architect asks on shell', bash('architect.md')['*'] === 'ask'),
     check('reviewer asks on shell', bash('reviewer.md')['*'] === 'ask'),
   ];
   const allows: EvidenceCheck[] = [
-    check('builder keeps du allow', bash('builder.md')['du*'] === 'allow'),
-    check('builder asks on fallback shell', bash('builder.md')['*'] === 'ask'),
-    check('builder allows edits', other('builder.md').edit === 'allow'),
-    check('orchestrator delegates to builder', task('orchestrator.md').builder === 'allow'),
-    check('orchestrator denies open task routing', task('orchestrator.md')['*'] === 'deny'),
-    check('planner asks on edits', other('planner.md').edit === 'ask'),
-    check('writer allows edits', other('writer.md').edit === 'allow'),
-    check('diagnose allows edits', other('diagnose.md').edit === 'allow'),
+    check('maestria allows edits', other('maestria.md').edit === 'allow'),
+    check('maestria delegates only to the reviewer', task('maestria.md').reviewer === 'allow'),
+    check('maestria denies open task routing', task('maestria.md')['*'] === 'deny'),
   ];
   sections.push({
     checks: [...denies, ...allows, ...restoredReconChecks(bash), ...stillDeniedReconChecks(bash)],

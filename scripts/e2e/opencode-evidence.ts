@@ -304,21 +304,9 @@ try {
   );
   const directoryQuery = `?directory=${encodeURIComponent(path.join(root, 'work'))}`;
   for (const [route, names] of [
-    [
-      'agent',
-      [
-        'orchestrator',
-        'adventurer',
-        'architect',
-        'builder',
-        'diagnose',
-        'planner',
-        'reviewer',
-        'writer',
-      ],
-    ],
+    ['agent', ['maestria', 'reviewer']],
     ['command', ['fein', 'sonar', 'blitz']],
-    ['skill', ['create-pull-request', 'docs-update']],
+    ['skill', ['create-pull-request', 'diagnose', 'docs-update']],
   ] as const) {
     const registry = rows(record(await api(`/api/${route}${directoryQuery}`)).data);
     registries.push({ entries: registry, name: route });
@@ -330,7 +318,7 @@ try {
       const agents = registry.filter((item) => names.some((name) => item.id === name));
       check(
         'agent systems and permissions present',
-        agents.length === 8 &&
+        agents.length === 2 &&
           agents.every(
             (item) =>
               typeof item.system === 'string' &&
@@ -342,21 +330,18 @@ try {
       );
       check(
         'agent modes preserved',
-        agents.every((a) => a.mode === (a.id === 'orchestrator' ? 'all' : 'subagent')),
+        agents.every((a) => a.mode === (a.id === 'maestria' ? 'all' : 'subagent')),
       );
       const hasRule = (id: string, action: string, effect: string, resource = '*'): boolean =>
         rows(agents.find((a) => a.id === id)?.permissions ?? []).some(
           (r) => r.action === action && r.resource === resource && r.effect === effect,
         );
-      for (const id of ['builder', 'diagnose']) {
-        check(`${id}: shell fallback asks`, hasRule(id, 'shell', 'ask'));
-      }
-      check('planner asks on edit', hasRule('planner', 'edit', 'ask'));
+      check('reviewer denies edit', hasRule('reviewer', 'edit', 'deny'));
+      check('reviewer asks on shell', hasRule('reviewer', 'shell', 'ask'));
       check(
-        'orchestrator denies shell and edit, allows builder',
-        hasRule('orchestrator', 'shell', 'deny') &&
-          hasRule('orchestrator', 'edit', 'deny') &&
-          hasRule('orchestrator', 'subagent', 'allow', 'builder'),
+        'maestria allows edit and delegates only to the reviewer',
+        hasRule('maestria', 'edit', 'allow') &&
+          hasRule('maestria', 'subagent', 'allow', 'reviewer'),
       );
     }
     if (route === 'skill') {

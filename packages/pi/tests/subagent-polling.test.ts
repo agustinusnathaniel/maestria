@@ -14,7 +14,7 @@ describe('pollSubagent', () => {
     await expect(
       pollSubagent({
         id: 'subagent-1',
-        label: 'builder',
+        label: 'reviewer',
         sendUpdates: false,
         service: service(() => record),
       }),
@@ -25,7 +25,7 @@ describe('pollSubagent', () => {
     await expect(
       pollSubagent({
         id: 'subagent-missing',
-        label: 'builder',
+        label: 'reviewer',
         sendUpdates: false,
         service: service(() => {}),
       }),
@@ -41,7 +41,7 @@ describe('pollSubagent', () => {
     const pending = pollSubagent({
       id: 'subagent-aborted',
       intervalMs: 5,
-      label: 'builder',
+      label: 'reviewer',
       sendUpdates: false,
       service: service(() => ({ status: 'running' })),
       signal: controller.signal,
@@ -61,7 +61,7 @@ describe('pollSubagent', () => {
       pollSubagent({
         id: 'subagent-timeout',
         intervalMs: 1,
-        label: 'builder',
+        label: 'reviewer',
         sendUpdates: false,
         service: service(() => ({ status: 'running' })),
         timeoutMs: 2,

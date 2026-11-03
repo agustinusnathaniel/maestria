@@ -1,5 +1,83 @@
 # @maestria/agent-plugins
 
+## 0.13.0
+
+### Minor Changes
+
+- [#439](https://github.com/agustinusnathaniel/maestria/pull/439) [`91cdf10`](https://github.com/agustinusnathaniel/maestria/commit/91cdf1091e6e075a6ed3bd83eb16b15f01d33447) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Leaner always-on directives: the global rules and main loop carry about 16% fewer words with the same safety, authorization, and review floors. Overlapping rules are merged, procedure only some tasks need (migration cleanup, writing docs for their reader) moves into the skill that loads for it, the rerun-once and held-PR conventions are dropped, and two rules are added in place of existing text: never print secrets or anything derived from them into tool output or logs, and a later cleanup never undoes an earlier accepted review fix.
+
+- [#441](https://github.com/agustinusnathaniel/maestria/pull/441) [`b86d210`](https://github.com/agustinusnathaniel/maestria/commit/b86d210e3ea6f14981b389828d1575d806fc88a6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Leaner method skills and reviewer: `create-pull-request`, `diagnose`, `docs-update`, `architecture-plan`, `recon`, and the reviewer carry about 25% fewer words with the same review, evidence, and authorization requirements. Text that restated the global rules now relies on them, overlapping wordings are merged, and each skill description names one trigger per real use. Three conventions are dropped as not general method: PR titles follow the repository's convention (Conventional Commits only when it has none), reviewer findings no longer carry Conventional Comments labels, and `diagnose` no longer separately asks to explain the rationale before each edit. PR merge steps keep the general rule (list everything that must exist or happen before and after the merge, before the PR is ready) without prescribing feature-flag or deploy-order specifics.
+
+## 0.12.0
+
+### Minor Changes
+
+- [#432](https://github.com/agustinusnathaniel/maestria/pull/432) [`830b22d`](https://github.com/agustinusnathaniel/maestria/commit/830b22db5b9e6381837f89f38f5b161d06e56f7e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - **Breaking:** `@adventurer`, `@architect`, and `@builder` are removed on every host. The main session now works as one main loop: it does recon, design, and implementation itself, loads the new `recon` and `architecture-plan` method skills when a task needs them, and dispatches only `@reviewer` for an independent check of meaningful changes. The builder's implementation judgment now lives in the always-on rules. On OpenCode the orchestrator can read, search, edit, and run the same shell commands the builder could. On Pi, modes no longer block main-session edits, and `sonar` blocks edits and subagent dispatch. `maestria configure` lists only `reviewer`, and stored model settings for the removed roles are ignored.
+
+### Patch Changes
+
+- [#430](https://github.com/agustinusnathaniel/maestria/pull/430) [`e445db3`](https://github.com/agustinusnathaniel/maestria/commit/e445db374e8b4f4ea80a7226ebac1eca425ca125) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - List the `diagnose` skill in the Codex and portable manifest descriptions.
+
+- [#434](https://github.com/agustinusnathaniel/maestria/pull/434) [`09e9090`](https://github.com/agustinusnathaniel/maestria/commit/09e90905cb3027ce60aca9e38ad7495b9a72e1c9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Manifest descriptions and host notes now count the seven bundled skills, including `recon` and `architecture-plan`, and describe one reviewer profile instead of several specialists.
+
+- [#433](https://github.com/agustinusnathaniel/maestria/pull/433) [`111b7d9`](https://github.com/agustinusnathaniel/maestria/commit/111b7d9680911fcedb84c305806c1a2cad454bb0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - The shared rules and main loop no longer mention the removed role agents: fail-loud repair now points at the `diagnose` and `architecture-plan` skills, and when a host does not allow direct work the main loop (and `blitz`) report that limit instead of delegating to a specialist that no longer exists.
+
+## 0.11.0
+
+### Minor Changes
+
+- [#421](https://github.com/agustinusnathaniel/maestria/pull/421) [`b2c63ca`](https://github.com/agustinusnathaniel/maestria/commit/b2c63ca3d4a6441a0ff1e40ed83f669b751b0cec) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Directives are generalized for any project and pick up new agent-behaviour habits. The global em-dash ban is gone, and specialists name only the skills maestria ships (`diagnose`, `plan`, `docs-update`, `create-pull-request`), referring to any other skill by capability when one is installed. Commits follow the repository's own convention (conventional commits when it has none), changesets are treated as one kind of release notes where a repository uses them, and the PR skill no longer contradicts itself about committing evidence files.
+  
+  Testing guidance keeps its intent with softer absolutes: choose coverage before implementation instead of backfilling tests, and for complex features prefer end-to-end coverage with a reproducible artifact over many unit tests. A bug's reproduction is kept as a regression test unless an existing test already pins the behavior, and a bug that does not reproduce gets a defensive fix only when the user asks for one, labeled unverified.
+  
+  The global rules keep what every agent's report needs: check whether something is already done, say how real each finding is, run the checks its stakes call for and state what was checked, check related work when feedback names one instance of a problem, and correct every place an earlier claim reached. Agents also act on an unprovable precondition only when a wrong guess is cheap and the first step tests it, never call a version latest from memory, start independent work instead of idling, and keep unanswered user questions across compaction. User-facing reporting moves to the orchestrator, so each specialist profile carries about 330 fewer words: answer first with Yes, No, or Not yet, end a message that leaves work running with what is watched, how, and until when, show a draft in full when it changed or the final version is asked for, ask one decision at a time, say what happens if a requested hold is skipped, and treat exploratory questions as discussion.
+  
+  The orchestrator keeps autonomous commit, push, and PR but stops at the last allowed step when a user or project says "local only", "don't push", or "no PR", and pushes only to the existing remote. It verifies each premise before it goes into a brief and cites the repository and commit, gives delegates a size budget, points briefs at standing rules the delegate can load and inlines the rest, reads a running delegate's latest messages and head before briefing it, records each PR's single owner where every session sees it, hands ownership over only with green work and a handover of head, CI, and open threads, verifies each brief item with a file and line in a scratch worktree, reshapes the design after two rounds of point fixes, reruns an unrelated CI failure once before reporting it, and keeps a held PR as a quiet open draft. The `create-pull-request` ready check requires a correctness pass over the whole diff and no unresolved review thread, fixes correctness findings by default, gives merge steps unasked, and re-reads the approval state after every push. Reviewers check duplicate, out-of-order, or retried events and partial failure.
+
+- [#426](https://github.com/agustinusnathaniel/maestria/pull/426) [`19b306b`](https://github.com/agustinusnathaniel/maestria/commit/19b306b2a8205b8242654bf7aaa79108436aaa14) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Specialist profiles now embed only the parts of the global rules their role acts on, instead of the whole file. `rules.md` is split into four parts: Every Agent (floors, reporting, scope, authorization stops), Implementation and Review (testing, comments, visual evidence, docs, acceptance), Writing Changes (branches, commits, hooks, background processes, generated sources), and Main Session (outcome, delegation, bounded repair, precedence and shipping). Adventurer and architect carry the first part, reviewer the first two, builder the first three, and the main session (global rules, Cursor rule, `AGENTS.md`, and commands) all four. Each specialist profile shrinks by about 440 to 1,260 words; rules still embed because subagents on Claude Code and Kimi do not receive the main session's always-on rules.
+
+- [#425](https://github.com/agustinusnathaniel/maestria/pull/425) [`aab1cfc`](https://github.com/agustinusnathaniel/maestria/commit/aab1cfc24b127232d55bc19b1ad216b33c1c8677) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - The bundled `plan` skill is removed; current models and host plan modes plan well, and the architect still writes phased plans directly. Its durable rules move into the directives: for work that spans sessions, the orchestrator keeps a tracker that closes each task with its evidence and a decision log that records settled decisions as they are made and marks superseded entries instead of rewriting them, and the architect gives every compatibility shim in a migration a removal condition or a reason to keep it. Packages now ship five skills (`handoff`, `iteration-limits`, `create-pull-request`, `docs-update`, `diagnose`), and `npx skills add agustinusnathaniel/maestria` no longer lists `plan`.
+
+### Patch Changes
+
+- [#429](https://github.com/agustinusnathaniel/maestria/pull/429) [`0a91f09`](https://github.com/agustinusnathaniel/maestria/commit/0a91f099728cdad45c16a08bc612aa6bd183b68c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Kimi Code now reads its own session context, `kimi.system-prompt.md`, through `systemPromptPath`. It has the same policy, routing, and mode guidance as the shared `AGENTS.md` but only the Kimi host note, so the other hosts' notes no longer count against Kimi's 32 KB limit. The shared `AGENTS.md` keeps the Devin, Codex, and Hermes notes.
+
+## 0.10.1
+
+### Patch Changes
+
+- [#419](https://github.com/agustinusnathaniel/maestria/pull/419) [`b77d6b7`](https://github.com/agustinusnathaniel/maestria/commit/b77d6b7d31f2c3d72e4de1be0a015fb68deb4868) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - On GitHub, agents now upload PR visual evidence with `gh pr create --attach` or `gh pr edit --attach` instead of committing screenshots to the branch, and every PR in a stack carries its own evidence. UI changes default to a before/after table (Area | Before | After | What changed).
+
+## 0.10.0
+
+### Minor Changes
+
+- [#413](https://github.com/agustinusnathaniel/maestria/pull/413) [`14f6662`](https://github.com/agustinusnathaniel/maestria/commit/14f666247deb5ce8379d3c881915837732d9537c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agents now reproduce a bug with the cheapest failing check before patching it, and report the evidence instead of patching when it does not reproduce. They keep that reproduction as a regression test only when it guards a real production failure existing tests miss, and every kept test names that failure and uses inputs production can produce.
+  
+  Plans list their PRs before any code (fixes first, refactors last, shared-behavior changes never riding along with a feature) with each PR's pre-merge and post-merge steps, and record settled decisions in the plan's decision log. PR bodies gain an optional `## Merge steps` section, a ready check runs before a PR is marked ready, and the title and body are re-read against the new head after every push.
+  
+  Agents treat handoffs and delegate reports as leads to verify, check whether an item is already done before calling it pending, rate each finding by how real it is and what to do about it, ask one decision at a time with a concrete scenario and a recommendation, and put a requested draft last. Builders copy the shape of sibling files and challenge every guard against evidence, reviewers flag guards for impossible cases, and the orchestrator numbers brief items, gives each PR or branch one pushing owner, and verifies pushed work before reporting it.
+
+- [#406](https://github.com/agustinusnathaniel/maestria/pull/406) [`1f82d9b`](https://github.com/agustinusnathaniel/maestria/commit/1f82d9bfac8acc5272b8c039f3dc8837e202d58a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Delivery ownership moves from the global rules into the orchestrator: workflow modes, autonomous commit, push, and PR creation, PR slicing, and the PR skill pointer. Commands and always-on routing context still carry the complete policy, while each specialist profile and specialist request drops about 250 words of rules it could not act on. A specialist invoked directly, without a workflow command or the orchestrator, still follows commit and protected-branch rules but no longer pushes or opens PRs without asking. On OpenCode, the plugin keeps sending the delivery rules to OpenCode's own agents such as `build` and `plan`, so only maestria's specialist subagents drop them.
+
+- [#408](https://github.com/agustinusnathaniel/maestria/pull/408) [`952116f`](https://github.com/agustinusnathaniel/maestria/commit/952116f391d0385877ae61c4703060b2e3b2ec87) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Specialists go from seven to four: `adventurer`, `architect`, `builder`, and `reviewer`. The retired `diagnose`, `planner`, and `writer` agents become methods: the new bundled `diagnose` skill (adventurer runs a read-only diagnosis, builder applies the fix) and `plan` skill (loaded by architect), while builder takes over documentation work with the docs skills. Every package now ships the `diagnose` and `plan` skills. `maestria update` removes retired Codex profiles; on Pi, delete `diagnose.md`, `planner.md`, and `writer.md` from `~/.pi/agent/agents` if you no longer want them listed.
+
+- [#412](https://github.com/agustinusnathaniel/maestria/pull/412) [`dad26aa`](https://github.com/agustinusnathaniel/maestria/commit/dad26aa93daf62a75bcdb9b4b4730a1affcf1685) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agents now keep your work safe and follow a few habits you kept asking for: they never `git reset`, restore, clean, revert, or force-push existing work unless you asked for that operation; they let repository hooks run instead of bypassing them; and the delivery owner waits for CI after each push and fixes or reports failures before calling delivery complete. They answer your direct questions before continuing, never shrink requested work by human time estimates, re-check their claims when you say "cmiiw", and fix pre-existing failures in the files and checks a change touches instead of stopping at them.
+
+### Patch Changes
+
+- [#405](https://github.com/agustinusnathaniel/maestria/pull/405) [`f04e56d`](https://github.com/agustinusnathaniel/maestria/commit/f04e56dd0fae8120f1dcfa6dd26b16efe5978d49) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agent rules and specialist prompts are shorter: duplicated rules, step lists that only restated the obvious, generic review checklists, and stale lines are gone, while every behavioral obligation is kept, moved to the skill that already owned it, or retired with a stated reason. Specialist profiles and workflow commands each carry about 160 to 435 fewer words.
+
+## 0.9.0
+
+### Minor Changes
+
+- [#396](https://github.com/agustinusnathaniel/maestria/pull/396) [`e62199d`](https://github.com/agustinusnathaniel/maestria/commit/e62199d505f7caff9267217fc3d47c191bb76645) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Plans that span sessions keep a tracker with evidence per task, and the orchestrator treats done marks as claims: it audits every done item in scope before resuming when the user reports missing work, another session wrote the tracker, or a done task fails.
+
+### Patch Changes
+
+- [#398](https://github.com/agustinusnathaniel/maestria/pull/398) [`fd6defa`](https://github.com/agustinusnathaniel/maestria/commit/fd6defa1cbf17205ca799b9af3d4c43aa193ae99) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Replace the plugin logo shown by Cursor and Codex with the new maestria mark: the maker's solid diamond meeting the checker's ring, in the docs site's green and brass.
+
 ## 0.8.0
 
 ### Minor Changes

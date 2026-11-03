@@ -4,10 +4,11 @@ import { validateSkillsAndLog } from '@maestria/core/skill-validator';
 const root = new URL('../', import.meta.url).pathname;
 
 const skills = [
-  'orchestrator',
+  'maestria',
   'global-rules',
   'handoff',
-  'iteration-limits',
+  'review-loop',
+  'implement',
   'create-pull-request',
   'docs-update',
 ];

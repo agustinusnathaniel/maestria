@@ -6,15 +6,22 @@ import { parse } from 'yaml';
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const pluginRoot = packageRoot;
 const manifestPath = path.join(pluginRoot, '.claude-plugin/plugin.json');
-const roles = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+const roles = ['reviewer'] as const;
+const ruleParts = ['Every Agent', 'Implementation and Review', 'Writing Changes', 'Main Session'];
+// Subagents on several hosts never see the main session's always-on rules, so each profile
+// embeds the rules.md parts its role acts on, and only those.
+const partsByRole: Record<(typeof roles)[number], readonly string[]> = {
+  reviewer: ['Every Agent', 'Implementation and Review'],
+};
+
+const readRuleParts = (rules: string): Map<string, string> => {
+  const sections = rules.split(/^(?=# )/mu);
+  return new Map(
+    sections
+      .filter((section) => ruleParts.some((part) => section.startsWith(`# ${part}\n`)))
+      .map((section) => [section.slice(2, section.indexOf('\n')), section.trim()]),
+  );
+};
 const modes = ['fein', 'sonar', 'blitz'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -45,7 +52,7 @@ const readManifest = (): Record<string, unknown> => {
 };
 
 describe('Claude Code native plugin loading', () => {
-  it('embeds complete role and policy context while retaining native metadata', () => {
+  it('embeds the complete role and its own rules parts while retaining native metadata', () => {
     const manifest = readManifest();
     const agentPaths = manifest.agents;
 
@@ -54,11 +61,7 @@ describe('Claude Code native plugin loading', () => {
     for (const role of roles) {
       const agentPath = path.join(pluginRoot, `agents/${role}.md`);
       const { body, metadata } = parseFrontmatter(fs.readFileSync(agentPath, 'utf-8'), agentPath);
-      const expectedDisallowedTools = ['adventurer', 'architect', 'planner', 'reviewer'].includes(
-        role,
-      )
-        ? ['Write', 'Edit']
-        : undefined;
+      const expectedDisallowedTools = ['Write', 'Edit'];
 
       expect(metadata.name).toBe(role);
       expect(metadata.model).toBeUndefined();
@@ -68,7 +71,16 @@ describe('Claude Code native plugin loading', () => {
       expect(body).toContain(
         fs.readFileSync(path.join(core, `specialists/${role}.md`), 'utf-8').trim(),
       );
-      expect(body).toContain(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8').trim());
+      const parts = readRuleParts(fs.readFileSync(path.join(core, 'rules.md'), 'utf-8'));
+      expect([...parts.keys()]).toEqual(ruleParts);
+      expect(body).toContain('## Universal Floors');
+      for (const [part, text] of parts) {
+        if (partsByRole[role].includes(part)) {
+          expect(body, `${role} misses ${part}`).toContain(text);
+        } else {
+          expect(body, `${role} carries ${part}`).not.toContain(`# ${part}\n`);
+        }
+      }
       expect(body).not.toMatch(/(?:global-rules|reviewer)\/SKILL\.md/u);
     }
   });
@@ -78,13 +90,13 @@ describe('Claude Code native plugin loading', () => {
 
     const pluginName = typeof manifest.name === 'string' ? manifest.name : '';
     expect(pluginName).toBe('maestria');
-    expect(manifest.commands).toEqual(modes.map((mode) => `./commands/${mode}.md`));
+    // The SessionStart hook supplies the core, so Claude Code's commands carry only the mode.
+    expect(manifest.commands).toEqual(modes.map((mode) => `./modes/${mode}.md`));
     for (const mode of modes) {
-      const command = fs.readFileSync(path.join(pluginRoot, `commands/${mode}.md`), 'utf-8');
+      const command = fs.readFileSync(path.join(pluginRoot, `modes/${mode}.md`), 'utf-8');
       expect(command).toContain(`[MODE: ${mode}]`);
       expect(command).toContain('$ARGUMENTS');
-      expect(command).toContain('## Routing');
-      expect(command).toContain('## Universal Floors');
+      expect(command).not.toContain('## Universal Floors');
       expect(fs.existsSync(path.join(pluginRoot, `skills/${mode}/SKILL.md`))).toBe(false);
     }
   });

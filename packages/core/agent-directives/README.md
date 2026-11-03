@@ -4,7 +4,7 @@ Canonical source of truth for agent directives across all plugins and the portab
 
 ## Purpose
 
-This directory holds the shared methodology, rules, workflow modes, and skill prescriptions that define how pipeline agents operate. Every plugin-specific agent or skill file (`@adventurer`, `@architect`, etc.) is derived from these canonical sources.
+This directory holds the shared methodology, rules, workflow modes, and skill prescriptions that define how pipeline agents operate. Every plugin-specific agent or skill file (`@reviewer`, the mode commands, the method skills) is derived from these canonical sources.
 
 **Do not edit plugin-specific agent files directly.** Edit here, then run the sync tool to propagate changes to all plugins.
 
@@ -15,42 +15,50 @@ agent-directives/
   README.md          - This file
   COMPOSITION.md     - Human-facing composition guidance
   integrations/      - Host-specific notes that explain native adapter behavior
-  specialists/       - Role definitions for the 8 pipeline agents (orchestrator + 7 specialists)
-    adventurer.md    - Codebase reconnaissance
-    architect.md     - Architecture decisions and ADRs
-    builder.md       - Focused implementation
-    diagnose.md      - Systematic bug tracing
-    orchestrator.md  - Routing and delivery ownership
-    planner.md       - Implementation plans
-    reviewer.md      - Code review with quality gates
-    writer.md        - Documentation writing
-  rules.md           - Shared rules used across all agents
-  skills/            - maestria's own methodology skills (`create-pull-request`, `docs-update`)
+  specialists/       - The main loop and its one subagent
+    main-loop.md     - Main loop (the `maestria` agent on OpenCode): recon, design, implementation, review triage, and delivery
+    reviewer.md      - Independent blind review with quality gates
+  rules.md           - Always-on shared rules in four parts: the reviewer gets `Every Agent` and `Implementation and Review`; the main session gets all four
+  skills/            - maestria's own method skills (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `handoff`, `implement`, `recon`, `review-loop`); the reviewer profile also embeds `implement`
   commands/          - Workflow-mode sources (`fein`, `sonar`, `blitz`)
 ```
 
 The consolidated `@maestria/agent-plugins` package lives at `packages/agent-plugins/` and is directly installable. Core remains the authoring home: roles belong to `specialists/`, modes to `commands/`, and policy to `rules.md` and host integration notes. Host manifests are hand-edited at the package root and validated by the generator; per-role profile metadata lives in the package's `generation/profiles.json`. Host integration notes stay here under `integrations/` and are composed into rules and Codex profiles; the package ships no separate integration guides.
 
-Root host manifests and semantic agent, command, policy, and utility resources are tracked for Git consumers and ship at the same paths in npm archives. Root skills contain the `handoff` and `iteration-limits` utilities, each generated from one `rules.md` section (`Delegation and Context`, `Bounded Repair and Fail-Loud Behavior`) so they cannot drift from policy (edit the section, not the skill), plus the bundled methodology skills described below. Complete native profiles derive from canonical roles and global policy; modes derive from canonical commands, router, and policy. Each role ships once as `agents/<role>.md`, whose frontmatter carries every Markdown host's keys, plus a generated `agents/maestria-<role>.toml` for Codex. Portable discovery remains skills-only.
+Root host manifests and semantic agent, command, policy, and utility resources are tracked for Git consumers and ship at the same paths in npm archives. Root skills contain the bundled method skills described below. Complete native profiles derive from canonical roles and global policy; modes derive from canonical commands, router, and policy. Each role ships once as `agents/<role>.md`, whose frontmatter carries every Markdown host's keys, plus a generated `agents/maestria-<role>.toml` for Codex. Portable discovery remains skills-only.
 
 The consolidated compiler is the sole writer for this package's composed resources. It reuses core normalization/frontmatter helpers and validates canonical sources, required headings, profile metadata, manifest paths, size limits, and output containment before mutation. `scripts/sync-all` first preflights all other package configs without writes, then regenerates resources; `scripts/check-sync` remains read-only. There is no nested installation root. The standalone CLI remains in `apps/maestria-cli`.
 
-Methodology skills that the rules name (`create-pull-request`, `docs-update`) are authored once under `skills/` here. `scripts/sync-bundled-skills.ts` (run by `scripts/sync-all`, guarded by `scripts/check-sync`) copies each into `skills/` of `@maestria/agent-plugins`, `@maestria/deepseek`, `@maestria/opencode`, and `@maestria/pi`; edit the skill here, never a copy. Runtimes maestria does not package get the agent-plugins copies through `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source. Generic engineering skills that directives name by trigger (for example `architecture-decision-framework`) stay in their own repositories and are never vendored here. [CORE-005](../../../docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records these three ownership tiers.
+Method skills that the directives name (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `handoff`, `implement`, `recon`, `review-loop`) are authored once under `skills/` here. `scripts/sync-bundled-skills.ts` (run by `scripts/sync-all`, guarded by `scripts/check-sync`) copies each into `skills/` of `@maestria/agent-plugins`, `@maestria/deepseek`, `@maestria/opencode`, and `@maestria/pi`; edit the skill here, never a copy. Runtimes maestria does not package get the agent-plugins copies through `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source. Directives refer to any other skill by capability only (for example "a browser-automation skill, when one is installed"), so they never depend on a skill maestria does not ship, and such skills are never vendored here. [CORE-005](../../../docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records these three ownership tiers.
+
+maestria and agustinusnathaniel/skills are independent. maestria holds how the agent works on every task (floors, routing, delegation, review, delivery) and only the method skills its own workflow calls; task-triggered know-how belongs in the skills repo. Neither depends on the other; overlap is fine if they never contradict.
 
 Host notes live under `integrations/`; they define native invocation and activation without becoming independent role or mode sources. Native profile metadata belongs in generation inputs, while complete child instructions are composed from canonical specialists and policy. Canonical mode files define workflow behavior; generated entry points supply their required parent context and preserve user arguments.
 
 ## Reuse a Canonical Input in a Projection
 
-Sync configs use a top-level `source` for the default canonical input. A file entry can set its own `source` path, relative to that sync config, when one generated output should reuse a different canonical input. The `source` override changes which input is rendered; it does not create another methodology source. A file entry can also set `section` to render only that `## heading` of its input, titled by the heading; this is how the `handoff` and `iteration-limits` skills project `rules.md`, and a missing heading fails the sync before any write.
+Sync configs use a top-level `source` for the default canonical input. A file entry can set its own `source` path, relative to that sync config, when one generated output should reuse a different canonical input. The `source` override changes which input is rendered; it does not create another methodology source. A file entry can also set `section` to one `## heading`, or a list of them, to render only those sections of its input in order, each titled by its heading; this is how OpenCode projects the main loop's `Modes` and `Continuation and Delivery` sections, and a missing heading fails the sync before any write.
 
 Use per-file source overrides when an adapter needs to select a different canonical input. Keep native metadata and mechanical transforms in adapter inputs rather than copying prose into configuration. The consolidated compiler composes full specialist policy and complete workflow context instead of relying on removed role/mode skills.
 
 After changing canonical input or projection metadata, run `scripts/sync-all` and `scripts/check-sync` from the repository root.
 
+## Keeping Directives Small
+
+`rules.md` and `specialists/main-loop.md` load on every main-session turn, and instruction-following degrades as always-on rules grow. Keep there only rules that must apply on every turn; task-shaped method goes in a method skill named by the main loop's skill map ([ADR-CORE-036](../../../docs/adr/core/ADR-CORE-036-always-on-core-and-skill-map.md)). Budgets: `rules.md` at most 1,250 words and `main-loop.md` at most 925, enforced by `packages/core/tests/directives.test.ts`. A budget is a prompt to ask whether a rule must be always-on, not a reason to drop one that must; raise it openly when a rule truly belongs there. Method skills and `reviewer.md` load only on trigger or per review, so they have a soft budget of about 1,000 words each, not enforced: past it, move detail that only one branch needs into a reference file beside the skill.
+
+- **Adding means cutting.** Edit an existing line before adding one. A change that would exceed a budget cuts or moves something else in the same PR; raising a budget is an explicit, reviewed decision.
+- **When a lesson earns a rule.** A safety slip (secrets, authorization, data loss, protected branches) becomes a rule the first time; any other slip on its second occurrence.
+- **Principle plus its test.** State the rule and how to check it. Incident stories, dates, and names belong in the PR or an ADR.
+- **Generalize upward.** When three or more lessons share one root, replace them with one principle.
+- **One home.** Each rule lives in one place: the host, one section here, or a method skill (procedure that only some tasks need goes in the skill that loads on trigger).
+- **Deletion test.** Keep a sentence only if a current frontier model would not do it unprompted, an observed failure backs it, no other home holds it, and it neither overlaps nor contradicts another rule.
+- **Report counts.** Every directive PR reports before and after word counts for both files and the byte sizes of `packages/agent-plugins/AGENTS.md` and `kimi.system-prompt.md` (32 KB limit), and records each removed obligation's disposition per the [directive change review](../../../docs/directive-change-review.md).
+
 ## How to Add a New Specialist
 
 1. Create a new file in `specialists/<name>.md`
 2. Define the role, task-specific judgment, acceptance evidence, and handoff. Use conditional skill triggers; keep shared contracts in `rules.md`.
-3. Add the specialist to the delegation table in the orchestrator prompt
+3. Add the specialist to the Routing section in `specialists/main-loop.md` (add a new method skill to its skill map the same way, one line per skill)
 4. Add the projection to each relevant adapter sync config and the consolidated compiler/profile registry, then update native metadata required by that integration
 5. Run the sync tool to generate plugin-specific agent files

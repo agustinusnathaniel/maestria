@@ -77,6 +77,35 @@ try {
     null,
   );
 
+  // An outdated unpinned install updates in place through a freshly started OpenCode service,
+  // which loads the directory's plugins in the background.
+  const cacheBase = path.join(env.XDG_CACHE_HOME, 'opencode/npm/@maestria/opencode@latest');
+  const installs = await fs.readdir(cacheBase);
+  const [cached] = installs.toSorted((a, b) => Number(b) - Number(a));
+  const manifest = path.join(
+    cacheBase,
+    cached ?? '',
+    'node_modules/@maestria/opencode/package.json',
+  );
+  const manifestValue: unknown = JSON.parse(await fs.readFile(manifest, 'utf-8'));
+  await fs.writeFile(
+    manifest,
+    JSON.stringify({
+      ...(typeof manifestValue === 'object' ? manifestValue : {}),
+      version: '0.9.0',
+    }),
+  );
+  exec('opencode', ['service', 'stop']);
+  const inPlace = maestria('update', 'opencode', '--json');
+  current = await config();
+  check(
+    'unpinned update runs in place on a cold OpenCode service',
+    inPlace.trimStart().startsWith('[') &&
+      inPlace.includes('"ok": true') &&
+      JSON.stringify(current.plugins) === '["opencode-wakatime","@maestria/opencode"]',
+    { output: inPlace, plugins: current.plugins },
+  );
+
   await fs.writeFile(
     configFile,
     JSON.stringify({ plugins: [{ options, package: '@maestria/opencode' }, 'opencode-wakatime'] }),

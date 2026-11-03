@@ -58,3 +58,4 @@ __pycache__/
 
 # Fail-closed E2E evidence (regen via pnpm e2e:fail-closed; do not track)
 /artifacts/
+.vitest/

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { createInitialState } from '@/state-core.js';
+import type { ModeKeyword } from '@/state-core.js';
 import { createToolCallHandler, DANGEROUS_PATTERNS, isReadOnlyBashCommand } from '@/tools-core.js';
 import type { ToolCallHandlerOptions } from '@/tools-core.js';
 
@@ -119,28 +120,53 @@ describe('createToolCallHandler', () => {
     await expect(handler({ toolName: '' }, {})).resolves.toBeUndefined();
   });
 
-  it('blocks orchestrator mutations while a mode is active and the delegation tool is present', async () => {
-    const state = { ...createInitialState(), mode: 'fein' as const };
-    const handler = createToolCallHandler(
-      createOptions({ getActiveTools: () => ['subagent', 'read'], getState: () => state }),
+  it('allows edits, writes, and mutating bash under the full-method and fast modes', async () => {
+    await Promise.all(
+      (['fein', 'blitz'] as ModeKeyword[]).map(async (mode) => {
+        const state = { ...createInitialState(), mode };
+        const handler = createToolCallHandler(
+          createOptions({
+            delegationTool: 'maestria_subagent',
+            getActiveTools: () => ['maestria_subagent', 'read'],
+            getState: () => state,
+          }),
+        );
+
+        await expect(
+          handler({ input: { path: 'src/a.ts' }, toolName: 'edit' }, {}),
+        ).resolves.toBeUndefined();
+        await expect(
+          handler({ input: { path: 'src/a.ts' }, toolName: 'write' }, {}),
+        ).resolves.toBeUndefined();
+        await expect(
+          handler({ input: { command: 'rm -rf dist' }, toolName: 'bash' }, {}),
+        ).resolves.toBeUndefined();
+        await expect(handler({ toolName: 'maestria_subagent' }, {})).resolves.toBeUndefined();
+      }),
     );
-
-    const result = await handler({ input: { path: 'src/a.ts' }, toolName: 'edit' }, {});
-
-    expect(result?.block).toBe(true);
-    expect(result?.reason).toContain("'edit' is blocked");
   });
 
-  it('allows the delegation tool, reads, and guarded read-only bash while a mode is active', async () => {
-    const state = { ...createInitialState(), mode: 'fein' as const };
+  it('blocks edits, writes, mutating bash, and subagent dispatch under the research-only mode', async () => {
+    const mode = 'sonar' as ModeKeyword;
+    const state = { ...createInitialState(), mode };
     const handler = createToolCallHandler(
-      createOptions({ getActiveTools: () => ['subagent', 'read'], getState: () => state }),
+      createOptions({
+        delegationTool: 'maestria_subagent',
+        getActiveTools: () => ['maestria_subagent', 'read'],
+        getState: () => state,
+      }),
     );
 
-    await expect(handler({ toolName: 'subagent' }, {})).resolves.toBeUndefined();
-    await expect(
-      handler({ input: { path: 'a.ts' }, toolName: 'read' }, {}),
-    ).resolves.toBeUndefined();
+    const editResult = await handler({ input: { path: 'src/a.ts' }, toolName: 'edit' }, {});
+    expect(editResult?.block).toBe(true);
+    expect(editResult?.reason).toContain("'edit' is blocked");
+    const writeResult = await handler({ input: { path: 'src/a.ts' }, toolName: 'write' }, {});
+    expect(writeResult?.block).toBe(true);
+    expect(writeResult?.reason).toContain("'write' is blocked");
+    const bashResult = await handler({ input: { command: 'rm -rf dist' }, toolName: 'bash' }, {});
+    expect(bashResult?.block).toBe(true);
+    const subagentResult = await handler({ toolName: 'maestria_subagent' }, {});
+    expect(subagentResult?.block).toBe(true);
     await expect(
       handler(
         {
@@ -152,6 +178,28 @@ describe('createToolCallHandler', () => {
         {},
       ),
     ).resolves.toBeUndefined();
+  });
+
+  it('blocks nothing by this check when no mode is set', async () => {
+    const state = { ...createInitialState(), mode: null };
+    const handler = createToolCallHandler(
+      createOptions({
+        delegationTool: 'maestria_subagent',
+        getActiveTools: () => ['maestria_subagent', 'read'],
+        getState: () => state,
+      }),
+    );
+
+    await expect(
+      handler({ input: { path: 'src/a.ts' }, toolName: 'edit' }, {}),
+    ).resolves.toBeUndefined();
+    await expect(
+      handler({ input: { path: 'src/a.ts' }, toolName: 'write' }, {}),
+    ).resolves.toBeUndefined();
+    await expect(
+      handler({ input: { command: 'rm -rf dist' }, toolName: 'bash' }, {}),
+    ).resolves.toBeUndefined();
+    await expect(handler({ toolName: 'maestria_subagent' }, {})).resolves.toBeUndefined();
   });
 
   it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.8.0",
+  "version": "0.13.0",
   "description": "maestria native specialist profiles, workflow commands, and reusable utilities for ZCode",
   "author": {
     "name": "agustinusnathaniel",
@@ -18,5 +18,5 @@
     "specialists"
   ],
   "skills": "./skills/",
-  "commands": "./commands/"
+  "commands": "./modes/"
 }

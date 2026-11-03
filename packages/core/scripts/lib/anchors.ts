@@ -11,7 +11,7 @@ import type { ResolvedFileConfig, ResolvedReplaceOp, ResolvedSyncConfig } from '
 import type { SyncPlanEntry } from './plan.js';
 import {
   applyReplaceOps,
-  extractSection,
+  extractSections,
   normalizeLineEndings,
   stripFrontmatter,
 } from './transforms.js';
@@ -51,11 +51,11 @@ const prepareContent = (raw: string, fileCfg: ResolvedFileConfig, label: string)
   if (fileCfg.section === undefined) {
     return content;
   }
-  const section = extractSection(content, fileCfg.section);
-  if (section === null) {
-    throw new ConfigError(`Missing section "## ${fileCfg.section}" in ${label}`);
+  const result = extractSections(content, fileCfg.section);
+  if ('missing' in result) {
+    throw new ConfigError(`Missing section "## ${result.missing}" in ${label}`);
   }
-  return section;
+  return result.section;
 };
 
 const collectTargets = async (plan: SyncPlanEntry[]): Promise<AnchorTarget[]> => {

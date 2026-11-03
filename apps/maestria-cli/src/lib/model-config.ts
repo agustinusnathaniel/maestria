@@ -25,15 +25,7 @@ import { CommandError, fileExists, readTextFile, run } from '@/lib/shell.js';
 
 export type ModelConfigLevel = 'global' | 'project';
 
-export const MAESTRIA_AGENTS = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+export const MAESTRIA_AGENTS = ['reviewer'] as const;
 export type AgentName = (typeof MAESTRIA_AGENTS)[number];
 
 /** Empty string means "inherit" (session model). */
@@ -191,7 +183,6 @@ export const createCodexAgentConfig = (
   model: string,
   nativeName = codexManagedAgentName(agent),
 ): string => {
-  const readOnly = new Set<AgentName>(['adventurer', 'architect', 'planner', 'reviewer']);
   const description = `maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
   const instructions = [
     `Load the $maestria:${agent} skill before acting.`,
@@ -203,9 +194,6 @@ export const createCodexAgentConfig = (
     `developer_instructions = ${JSON.stringify(instructions)}`,
     `model = ${JSON.stringify(model)}`,
   ];
-  if (readOnly.has(agent)) {
-    lines.push('sandbox_mode = "read-only"');
-  }
   return `${lines.join('\n')}\n`;
 };
 
@@ -358,7 +346,9 @@ interface AgentFilePlatform {
   readonly id: string;
   readonly label: string;
   readonly cli: string;
-  readonly globalDir: string;
+  readonly globalDir: () => string;
+  /** Agents bundled in the installed package, for hosts that deploy them on first load. */
+  readonly bundledDir?: () => string;
   readonly projectDir: string;
   readonly listModels: Effect.Effect<string[], CommandError>;
   readonly restartHint: string;
@@ -372,31 +362,21 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
     level: ModelConfigLevel,
     agent: string,
   ): Effect.Effect<{ path: string; content: string }, CommandError> => {
-    const target = `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
-    const global = `${cfg.globalDir}/${agent}.md`;
-    return readTextFile(target)
-      .pipe(
-        Effect.catchTag('CommandError', () =>
-          level === 'global'
-            ? Effect.fail(
-                new CommandError({
-                  command: `read ${target}`,
-                  message: `Agent file not found at ${target}. Run 'maestria install ${cfg.id}' first.`,
-                }),
-              )
-            : readTextFile(global).pipe(
-                Effect.catchTag('CommandError', () =>
-                  Effect.fail(
-                    new CommandError({
-                      command: `read ${global}`,
-                      message: `Neither ${target} nor ${global} exists. Run 'maestria install ${cfg.id}' first.`,
-                    }),
-                  ),
-                ),
-              ),
-        ),
-      )
-      .pipe(Effect.map((content) => ({ content, path: target })));
+    const target = `${level === 'global' ? cfg.globalDir() : cfg.projectDir}/${agent}.md`;
+    const sources = new Set([target, `${cfg.globalDir()}/${agent}.md`]);
+    if (cfg.bundledDir !== undefined) {
+      sources.add(`${cfg.bundledDir()}/${agent}.md`);
+    }
+    return Effect.firstSuccessOf([...sources].map((source) => readTextFile(source))).pipe(
+      Effect.mapError(
+        () =>
+          new CommandError({
+            command: `read ${target}`,
+            message: `No ${agent} agent file at ${[...sources].join(' or ')}. Run 'maestria install ${cfg.id}' first.`,
+          }),
+      ),
+      Effect.map((content) => ({ content, path: target })),
+    );
   };
 
   return {
@@ -429,8 +409,9 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
 };
 
 const pi = createAgentFileHandler({
+  bundledDir: () => `${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/agents`,
   cli: 'pi',
-  globalDir: `${homedir()}/.pi/agent/agents`,
+  globalDir: () => `${homedir()}/.pi/agent/agents`,
   id: 'pi',
   label: 'Pi',
   listModels: run('pi', ['--list-models'], 30_000).pipe(Effect.map(parsePiModels)),
@@ -441,7 +422,7 @@ const pi = createAgentFileHandler({
 const cursor = createAgentFileHandler({
   cli: 'agent',
   // Project-level configuration uses Cursor's native `.cursor/agents` overlay.
-  globalDir: `${homedir()}/.cursor/plugins/local/maestria/agents`,
+  globalDir: () => `${homedir()}/.cursor/plugins/local/maestria/agents`,
   id: 'cursor',
   isAvailable: cursorCliName().pipe(Effect.map((cli) => cli !== undefined && cli !== '')),
   label: 'Cursor',

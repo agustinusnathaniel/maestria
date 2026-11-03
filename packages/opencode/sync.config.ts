@@ -11,11 +11,12 @@
 // `shell` and `subagent` actions, and a scalar effect applies to resource `*`. Commands keep their
 // canonical frontmatter, whose description the plugin registers with each slash command.
 
+import { methodSkillBody } from '../core/scripts/lib/agent-directive-sync.js';
 import type { FileConfig, SyncConfig } from '../core/scripts/lib/config.js';
 
 type BashPermissionEntry = readonly [string, 'allow' | 'ask' | 'deny'];
 
-// Read-only bash projection, split so the builder's mid-sequence `du*`
+// Read-only bash projection, split so the writer set's mid-sequence `du*`
 // insertion names its anchor instead of slicing by magic index.
 const BASE_READ_HEAD: readonly BashPermissionEntry[] = [
   ['ls*', 'allow'],
@@ -73,78 +74,19 @@ const guardedReconGit = (): BashPermissionEntry[] =>
   );
 
 // Authored as OpenCode V1 `permission` maps, which read compactly; translated to V2 rules below.
+// du* follows stat* in the established projection. Used by the maestria main agent, which writes changes.
+const WRITER_BASH: readonly BashPermissionEntry[] = [
+  ...BASE_READ_HEAD,
+  ['du*', 'allow'],
+  ...BASE_READ_TAIL,
+  ...allow('test*', 'sort*', 'git*'),
+  ['pnpx*', 'ask'],
+  ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
+  ['*', 'ask'],
+];
+
 const permissionMaps = {
   files: {
-    'adventurer.md': {
-      frontmatter: {
-        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [
-              ...allow('git status*', 'git rev-parse*', 'opensrc*', 'agent-browser*', 'rtk*'),
-              ...guardedReconGit(),
-            ],
-          ),
-          edit: 'deny',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-        },
-      },
-    },
-    'architect.md': {
-      frontmatter: {
-        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [...allow('git status*', 'opensrc*', 'npm view *'), ...guardedReconGit()],
-          ),
-          edit: 'deny',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-        },
-      },
-    },
-    'builder.md': {
-      frontmatter: {
-        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
-        mode: 'subagent',
-        permission: {
-          // du* follows stat* in the established projection.
-          bash: Object.fromEntries([
-            ...BASE_READ_HEAD,
-            ['du*', 'allow'],
-            ...BASE_READ_TAIL,
-            ...allow('test*', 'sort*', 'git*'),
-            ['pnpx*', 'ask'],
-            ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
-            ['*', 'ask'],
-          ]),
-          edit: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-        },
-      },
-    },
     'commands/blitz.md': {
       output: 'commands/blitz.md',
       stripFrontmatter: true,
@@ -157,84 +99,32 @@ const permissionMaps = {
       output: 'commands/sonar.md',
       stripFrontmatter: true,
     },
-    'diagnose.md': {
+    'main-loop.md': {
+      output: 'maestria.md',
       frontmatter: {
-        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
-        mode: 'subagent',
+        description: `maestria main loop that investigates, designs, implements, and delivers each outcome, with one blind reviewer for meaningful changes.`,
+        mode: 'all',
         permission: {
-          bash: bashPermissions(
-            [],
-            [
-              ...allow('git status*', 'git blame*'),
-              ['env', 'allow'],
-              ['pwd', 'allow'],
-              ['*', 'ask'],
-            ],
-          ),
+          bash: Object.fromEntries([...WRITER_BASH, ['* npx --yes skills@latest *', 'allow']]),
           edit: 'allow',
           glob: 'allow',
           grep: 'allow',
           lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-        },
-      },
-    },
-    'orchestrator.md': {
-      frontmatter: {
-        description: `maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
-        mode: 'all',
-        permission: {
-          bash: {
-            '*': 'deny',
-            '* npx --yes skills@latest *': 'allow',
-          },
-          edit: 'deny',
-          glob: 'deny',
-          grep: 'deny',
-          lsp: 'deny',
           question: 'allow',
-          read: 'deny',
+          read: 'allow',
           skill: 'allow',
           task: {
             '*': 'deny',
-            adventurer: 'allow',
-            architect: 'allow',
-            builder: 'allow',
-            diagnose: 'allow',
-            planner: 'allow',
             reviewer: 'allow',
-            writer: 'allow',
           },
-          todowrite: 'allow',
-          webfetch: 'deny',
-        },
-      },
-    },
-    'planner.md': {
-      frontmatter: {
-        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [...allow('git status*', 'git rev-parse*', 'mkdir*'), ...guardedReconGit()],
-          ),
-          edit: 'ask',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
           todowrite: 'allow',
           webfetch: 'allow',
         },
       },
     },
     'reviewer.md': {
+      // The reviewer embeds `implement`, so it reviews against the same judgment.
+      append: `\n\n${methodSkillBody('implement')}`,
       frontmatter: {
         description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
         mode: 'subagent',
@@ -259,28 +149,15 @@ const permissionMaps = {
     'rules.md': {
       output: '../rules/AGENTS.md',
     },
-    'writer.md': {
-      frontmatter: {
-        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
-        mode: 'subagent',
-        permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            [
-              ...allow('git status*', 'git rev-parse*', 'npm view *', 'vp*', 'mkdir*'),
-              ...guardedReconGit(),
-            ],
-          ),
-          edit: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          read: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
-          webfetch: 'allow',
-        },
-      },
+    'rules-delivery.md': {
+      output: '../rules/delivery.md',
+      section: 'Continuation and Delivery',
+      source: '../core/agent-directives/specialists/main-loop.md',
+    },
+    'rules-modes.md': {
+      output: '../rules/modes.md',
+      section: 'Modes',
+      source: '../core/agent-directives/specialists/main-loop.md',
     },
   },
   output: 'agents',

@@ -29,6 +29,7 @@ export interface Bundle {
   readonly agents: ReadonlyMap<string, BundledAgent>;
   readonly modes: Readonly<Record<ModeKeyword, BundledMode>>;
   readonly rules: string;
+  readonly delivery: string;
   readonly skills: readonly Skill.Info[];
 }
 
@@ -67,6 +68,9 @@ export const loadBundle = (root: string): Bundle => {
           return [path.basename(file, '.md'), agent];
         }),
     ),
+    delivery: ['modes.md', 'delivery.md']
+      .map((file) => readMarkdown(path.join(root, 'rules', file)).body)
+      .join('\n'),
     modes: { blitz: mode('blitz'), fein: mode('fein'), sonar: mode('sonar') },
     rules: readMarkdown(path.join(root, 'rules', 'AGENTS.md')).body,
     skills: readdirSync(skillsDir, { withFileTypes: true })

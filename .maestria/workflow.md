@@ -1,6 +1,6 @@
 # maestria Project Workflow
 
-Project-specific routing for the maestria monorepo. Use the smallest safe route: direct execution for familiar, low-risk work; reconnaissance or design when the code or approach is uncertain; full orchestration when independent stages materially reduce risk.
+Project-specific routing for the maestria monorepo. Use the smallest safe route: work directly in the main loop for familiar, low-risk work; load `recon` or `architecture-plan` when the code or approach is uncertain; require independent review for meaningful changes.
 
 ## Before Changing Files
 
@@ -10,7 +10,7 @@ Project-specific routing for the maestria monorepo. Use the smallest safe route:
 4. Inspect the affected package and its README or ADRs when needed to resolve missing context.
 5. Inspect recent history when the change depends on prior behavior.
 
-Use @adventurer for unfamiliar code, cross-package changes, or reconnaissance that another stage will consume. Do not delegate context gathering for a familiar, atomic edit.
+Load `recon` for unfamiliar code, cross-package changes, or reconnaissance before implementing. Do not add ceremony for a familiar, atomic edit.
 
 ## ADRs and Design
 
@@ -29,7 +29,7 @@ Create an ADR for a consequential architectural choice whose alternatives will m
 
 ## Reuse Before Adding
 
-Before @builder changes code:
+Before changing code:
 
 - Search for an existing utility, directive, sync transform, or package pattern.
 - Check packages/core/agent-directives/ before adding methodology.

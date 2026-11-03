@@ -5,7 +5,7 @@ description: A CLI proxy that filters command output to save 60-90% tokens. Pair
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-RTK is an independent project under the Apache 2.0 license, created and maintained by Patrick Szymkowiak and contributors. It is not part of maestria.
+RTK is an independent project founded by Patrick Szymkowiak and maintained by the rtk-ai team. The default `rtk` build combines Apache 2.0 code with an engine under the Business Source License (BUSL-1.1); an Apache 2.0-only `rtk-oss` edition is also available. It is not part of maestria.
 
 ## What It Is
 
@@ -25,11 +25,11 @@ maestria-powered agents run builds, tests, git, and deployment commands through 
 brew install rtk
 ```
 
-**Other platforms:** Download the standalone installer from the GitHub releases page.
+**Windows:** `winget install rtk-ai.rtk`. **Other platforms:** use the install script in the GitHub README.
 
 ## Quick Start
 
-Run `rtk init -g` to set up global shell hooks. RTK works with OpenCode, Claude Code, Cursor, Copilot, and other AI coding agents; no per-agent configuration needed.
+Run `rtk init -g` to set up the global integration for Claude Code. Other agents take a flag, for example `rtk init -g --opencode` for the OpenCode plugin or `rtk init -g --codex` for Codex; the RTK README lists every supported agent.
 
 ## Resources
 

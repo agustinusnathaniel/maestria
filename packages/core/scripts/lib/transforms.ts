@@ -70,3 +70,19 @@ export const extractSection = (content: string, heading: string): string | null 
   const body = lines.slice(start + 1, next === -1 ? undefined : next).join('\n');
   return `# ${heading}\n\n${body.trim()}\n`;
 };
+
+/** Joins `## heading` sections in order, or names the first heading that is missing. */
+export const extractSections = (
+  content: string,
+  headings: string | readonly string[],
+): { missing: string } | { section: string } => {
+  const sections: string[] = [];
+  for (const heading of typeof headings === 'string' ? [headings] : headings) {
+    const section = extractSection(content, heading);
+    if (section === null) {
+      return { missing: heading };
+    }
+    sections.push(section.trim());
+  }
+  return { section: `${sections.join('\n\n')}\n` };
+};

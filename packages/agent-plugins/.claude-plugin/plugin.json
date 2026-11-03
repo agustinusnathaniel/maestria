@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "maestria",
   "displayName": "maestria",
-  "version": "0.8.0",
+  "version": "0.13.0",
   "description": "maestria native specialists, workflow commands, and skills for Claude Code",
   "author": {
     "name": "agustinusnathaniel"
@@ -19,14 +19,6 @@
     "pipeline",
     "specialists"
   ],
-  "agents": [
-    "./agents/adventurer.md",
-    "./agents/architect.md",
-    "./agents/builder.md",
-    "./agents/diagnose.md",
-    "./agents/planner.md",
-    "./agents/reviewer.md",
-    "./agents/writer.md"
-  ],
-  "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
+  "agents": ["./agents/reviewer.md"],
+  "commands": ["./modes/fein.md", "./modes/sonar.md", "./modes/blitz.md"]
 }

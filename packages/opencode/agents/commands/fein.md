@@ -3,14 +3,14 @@
 
 ---
 name: fein
-description: Full pipeline - recon, design, implement, review
-pipeline: thinker (recon/design/plan) -> worker (implementation) -> verifier (review)
+description: Full method - recon, design, implement, review
+pipeline: recon and architecture-plan skills -> implementation in the main loop -> required blind review
 precedence: mode marker overrides trigger phrases
 detection: 'case-insensitive keyword, [MODE: fein] marker injected at front of message'
 ---
 
 [MODE: fein]
 
-## MODE: fein (Full Pipeline)
+## MODE: fein (Full Method)
 
-Activate the `full` route. Use the dynamic thinker -> worker -> verifier pipeline and required review floors.
+Load `recon` and `architecture-plan` before implementing, implement in the main loop, and require one blind `@reviewer` pass with the review floors.

@@ -4,17 +4,17 @@ I told the short version of this story on the [About page](https://maestria.sznm
 
 ## Motivation
 
-AI coding agents provide tools, sandboxes, permissions, and model access. Teams still need to decide how agents plan work, delegate tasks, and review results.
+AI coding agents provide tools, sandboxes, permissions, and model access. Teams still need to decide how agents investigate, design, implement, and review results.
 
 maestria is a **behavior layer** for these agents. It packages design patterns, agent prompts, and workflow rules as reusable, versioned plugins adapted to each platform. The guiding principle is **Agent = Model + Harness**: the model provides capability; the harness shapes how reliably it is used.
 
-The patterns come from months of daily AI-assisted engineering. Independent review, delegation chains, handoff contracts, and iteration limits address recurring failures from that work. They are published under MIT so other teams can reuse them.
+The patterns come from months of daily AI-assisted engineering. Independent review, method skills in the main loop, handoff contracts, and iteration limits address recurring failures from that work. They are published under MIT so other teams can reuse them.
 
 maestria packages do not use automatic postinstall scripts. Direct plugin installers read the package's agents, skills, and rules, while the `maestria` CLI may stage packages or update host-owned files when you explicitly ask it to. The consolidated plugin shares portable skills and selects native resources through host manifests. Check each platform guide for the host-specific installation and update behavior.
 
 ## Goals
 
-- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets native specialist profiles that embed the complete role and global policy, with workflow modes as native commands. Codex gets skills plus CLI-managed native agents and instructions.
+- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode registers the `maestria` main agent with a reviewer subagent, and Pi adds the same through its runtime extension. Claude Code, Cursor, Kimi Code, Devin, ZCode, and OMP load the reviewer profile, and workflow commands where the host supports them, through their own plugin systems. Codex gets skills plus CLI-managed reviewer and routing instructions.
 
 - **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 
@@ -32,7 +32,7 @@ maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 - **Not auto-extracting.** All patterns are manually curated. No automated session mining, no implicit learning, no telemetry.
 
-- **Not replacing built-in agents.** maestria's agents are specialists for structured workflows. Each platform's general-purpose agents remain available for unstructured work.
+- **Not replacing built-in agents.** maestria's main loop does structured work and its reviewer checks it. Each platform's general-purpose agents remain available for unstructured work.
 
 - **Not enforcing.** Rules are guidance, not gates. The `!!!` convention signals non-negotiable rules, but enforcement happens through permissions and review, not runtime checks.
 

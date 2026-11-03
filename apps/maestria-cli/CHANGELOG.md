@@ -1,5 +1,25 @@
 # maestria
 
+## 0.17.0
+
+### Minor Changes
+
+- [#432](https://github.com/agustinusnathaniel/maestria/pull/432) [`830b22d`](https://github.com/agustinusnathaniel/maestria/commit/830b22db5b9e6381837f89f38f5b161d06e56f7e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - **Breaking:** `@adventurer`, `@architect`, and `@builder` are removed on every host. The main session now works as one main loop: it does recon, design, and implementation itself, loads the new `recon` and `architecture-plan` method skills when a task needs them, and dispatches only `@reviewer` for an independent check of meaningful changes. The builder's implementation judgment now lives in the always-on rules. On OpenCode the orchestrator can read, search, edit, and run the same shell commands the builder could. On Pi, modes no longer block main-session edits, and `sonar` blocks edits and subagent dispatch. `maestria configure` lists only `reviewer`, and stored model settings for the removed roles are ignored.
+
+## 0.16.2
+
+### Patch Changes
+
+- [#414](https://github.com/agustinusnathaniel/maestria/pull/414) [`bffec3c`](https://github.com/agustinusnathaniel/maestria/commit/bffec3cf423ed63b8baf432f91613d61ba3c87b2) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix CLI commands found broken in a full real-host sweep. `maestria update opencode` no longer fails with "Plugin is not configured" when OpenCode has not yet loaded the plugins for the current directory. `--json` and piped output no longer contain spinner frames. `uninstall` succeeds with "Not installed" when a platform has nothing to remove. `configure pi` works right after `install pi`. Text update output reports already-current platforms as up to date, host failures omit internal stack frames, `configure` failures no longer end in a bare "Canceled", and `-v` prints the version.
+
+- [#416](https://github.com/agustinusnathaniel/maestria/pull/416) [`6a3d319`](https://github.com/agustinusnathaniel/maestria/commit/6a3d31914fd3e8c7497096a26daa49e49dba5822) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - `maestria install` and `update opencode` no longer migrate a `@maestria/opencode-v2` preview entry; that internal preview package is deprecated in favor of `@maestria/opencode`. Remove a leftover entry with `opencode plugin remove @maestria/opencode-v2`.
+
+## 0.16.1
+
+### Patch Changes
+
+- [#410](https://github.com/agustinusnathaniel/maestria/pull/410) [`b64d5fc`](https://github.com/agustinusnathaniel/maestria/commit/b64d5fc4cfd61f01d126d23a41371c178298b2ed) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - `maestria check <platform>` now names the package the platform actually installs. Kimi Code, Cursor, OMP, Claude Code, Codex, and Hermes report `@maestria/agent-plugins` instead of a nonexistent `@maestria/<platform>` package such as `@maestria/kimi-code`; OpenCode and Pi messages are unchanged.
+
 ## 0.16.0
 
 ### Minor Changes

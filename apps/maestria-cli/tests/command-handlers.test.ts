@@ -102,7 +102,7 @@ vi.mock('@clack/prompts', () => ({
 
 const noopEffect = Effect.sync(() => {});
 
-const makePlatform = (id: PlatformId, label: string): PlatformHandler => ({
+const makePlatform = (id: PlatformId, label: string, npmPackage: string): PlatformHandler => ({
   detect: Effect.succeed(true),
   getInstalledVersion: Effect.succeed('1.0.0'),
   getLatestVersion: Effect.succeed('1.0.0'),
@@ -110,13 +110,14 @@ const makePlatform = (id: PlatformId, label: string): PlatformHandler => ({
   install: noopEffect,
   isInstalled: Effect.succeed(true),
   label,
+  npmPackage,
   uninstall: noopEffect,
   update: () => noopEffect,
 });
 
 const handlers = new Map<string, PlatformHandler>([
-  ['opencode', makePlatform('opencode', 'OpenCode')],
-  ['pi', makePlatform('pi', 'Pi')],
+  ['opencode', makePlatform('opencode', 'OpenCode', '@maestria/opencode')],
+  ['pi', makePlatform('pi', 'Pi', '@maestria/pi')],
 ]);
 
 const status = (overrides: Partial<PlatformStatus>): PlatformStatus => ({
@@ -204,6 +205,18 @@ describe('command handlers', () => {
         output: 'opencode: available installed=1.0.0 latest=1.0.0\n',
       });
     });
+
+    it('renders spinners only for human output on a terminal', async () => {
+      setTty(true);
+      await handleStatus({ json: true });
+      setTty(false);
+      await handleStatus({});
+      expect(promptMocks.spinner).not.toHaveBeenCalled();
+
+      setTty(true);
+      await handleStatus({});
+      expect(promptMocks.spinner).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('check', () => {
@@ -261,6 +274,18 @@ describe('command handlers', () => {
         exitCode: 1,
         output: '@maestria/opencode is not installed for OpenCode',
       });
+    });
+
+    it('names the package the platform installs, not one derived from its id', async () => {
+      const kimi = makePlatform('kimi-code', 'Kimi Code', '@maestria/agent-plugins');
+      platformMocks.getPlatform.mockImplementation((id: string) =>
+        id === 'kimi-code' ? kimi : handlers.get(id),
+      );
+      detectMocks.detectSingle.mockReturnValue(
+        Effect.succeed(status({ id: 'kimi-code', installed: false, label: 'Kimi Code' })),
+      );
+      const missing = await handleCheck({ platform: 'kimi-code' });
+      expect(missing.output).toBe('@maestria/agent-plugins is not installed for Kimi Code');
     });
 
     it('rejects unknown platforms and --all with a platform', async () => {
@@ -453,6 +478,38 @@ describe('command handlers', () => {
       const { readSkillsRecord } = await import('@/lib/skills.js');
       const savedRecord = await readSkillsRecord();
       expect(savedRecord?.platforms.opencode).toBeUndefined();
+    });
+
+    it('reports an already-current platform as up to date in text output', async () => {
+      transactionMocks.updateOne.mockImplementation((platform: PlatformHandler) =>
+        Effect.succeed({
+          id: platform.id,
+          label: platform.label,
+          message: 'Already up to date',
+          nextVersion: '0.11.0',
+          ok: true,
+          prevVersion: '0.11.0',
+        }),
+      );
+
+      const result = await handleUpdate({ platform: 'opencode', quiet: true });
+
+      expect(result.output).toContain('OpenCode: Already up to date (0.11.0)');
+
+      const skipped =
+        'Installed v0.12.0 is newer than latest v0.11.0; skipping (use --version to pin)';
+      transactionMocks.updateOne.mockImplementation((platform: PlatformHandler) =>
+        Effect.succeed({
+          id: platform.id,
+          label: platform.label,
+          message: skipped,
+          nextVersion: '0.12.0',
+          ok: true,
+          prevVersion: '0.12.0',
+        }),
+      );
+      const newer = await handleUpdate({ platform: 'opencode', quiet: true });
+      expect(newer.output).toContain(`OpenCode: ${skipped}`);
     });
 
     it('rejects removed skill flags before any effect', async () => {

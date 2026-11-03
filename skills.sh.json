@@ -3,13 +3,20 @@
   "groupings": [
     {
       "title": "Methodology",
-      "description": "Workflow skills for documentation updates and pull request drafts.",
-      "skills": ["create-pull-request", "docs-update"]
+      "description": "Workflow skills for codebase recon, architecture plans, implementation and testing judgment, diagnosing failures, documentation updates, and pull request drafts.",
+      "skills": [
+        "architecture-plan",
+        "create-pull-request",
+        "diagnose",
+        "docs-update",
+        "implement",
+        "recon"
+      ]
     },
     {
       "title": "Utilities",
-      "description": "Hand off work between stages and bound repair loops, generated from the maestria global rules.",
-      "skills": ["handoff", "iteration-limits"]
+      "description": "Brief delegates and track work across sessions, and run the bounded review loop.",
+      "skills": ["handoff", "review-loop"]
     }
   ]
 }

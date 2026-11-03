@@ -19,9 +19,6 @@ export interface BatchSelection {
   label?: string;
 }
 
-export const resolveBatchQuiet = (args: BatchCommandArgs): boolean =>
-  args.quiet === true || args.compact === true;
-
 export const renderBatchOutput = (
   results: PlatformResult[],
   args: { compact?: boolean; json?: boolean },

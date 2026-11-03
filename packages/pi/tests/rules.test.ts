@@ -18,6 +18,10 @@ const getSystemPrompt = (result: BeforeAgentStartEventResult): string => {
   return result.systemPrompt;
 };
 
+const brokenCore = (): string => {
+  throw new Error('missing skill');
+};
+
 const makeTempRoot = (): string => mkdtempSync(path.join(tmpdir(), 'maestria-pi-rules-'));
 
 const writeProjectFile = (root: string, rel: string, content: string): void => {
@@ -44,12 +48,40 @@ const baseEvent: BeforeAgentStartEvent = {
 };
 
 describe('createModePromptHandler', () => {
-  it('when mode is null, returns an empty result (no modification)', () => {
-    const state = createInitialState();
-    const handler = createModePromptHandler(state);
+  it('always injects the always-on core after the host prompt, even with no mode', () => {
+    const prompt = getSystemPrompt(createModePromptHandler(createInitialState())(baseEvent, {}));
+    expect(prompt.startsWith('You are an AI assistant.')).toBe(true);
+    expect(prompt).toContain('## Routing');
+    expect(prompt).toContain('## Universal Floors');
+    expect(prompt.indexOf('## Routing')).toBeLessThan(prompt.indexOf('## Universal Floors'));
+    expect(prompt).not.toMatch(/^---$|Auto-generated from/mu);
+  });
 
-    const result = handler(baseEvent, {});
-    expect(result).toEqual({});
+  it('surfaces an unreadable core as a STOP banner plus notify instead of throwing', () => {
+    const notify = vi.fn<(message: string) => void>();
+    let prompt = '';
+    expect(() => {
+      prompt = getSystemPrompt(
+        createModePromptHandler(
+          createInitialState(),
+          undefined,
+          brokenCore,
+        )(baseEvent, {
+          ui: { notify },
+        }),
+      );
+    }).not.toThrow();
+    expect(prompt.startsWith('You are an AI assistant.')).toBe(true);
+    expect(prompt).toContain('STOP: the maestria always-on rules could not be loaded');
+    expect(notify).toHaveBeenCalledOnce();
+  });
+
+  it('injects the core on custom runs that carry no user prompt (Pi 1.2 messageType)', () => {
+    const custom = { messageType: 'custom', systemPrompt: 'You are an AI assistant.' };
+    const prompt = getSystemPrompt(
+      createModePromptHandler(createInitialState(), undefined, () => 'CORE')(custom, {}),
+    );
+    expect(prompt).toBe('You are an AI assistant.\n\nCORE\n');
   });
 
   it('injects the mode marker per keyword', () => {
@@ -86,8 +118,14 @@ describe('createModePromptHandler project customization (thin: order plus STOP n
     const root = makeTempRoot();
     try {
       const state = createInitialState();
-      const result = createModePromptHandler(state)(baseEvent, { cwd: root });
-      expect(result).toEqual({});
+      const result = createModePromptHandler(
+        state,
+        undefined,
+        () => 'CORE',
+      )(baseEvent, {
+        cwd: root,
+      });
+      expect(result).toEqual({ systemPrompt: 'You are an AI assistant.\n\nCORE\n' });
     } finally {
       rmSync(root, { force: true, recursive: true });
     }
@@ -100,8 +138,10 @@ describe('createModePromptHandler project customization (thin: order plus STOP n
       writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
       const state = createInitialState();
       state.mode = 'fein';
-      const prompt = getSystemPrompt(createModePromptHandler(state)(baseEvent, { cwd: root }));
-      expect(prompt.startsWith('You are an AI assistant.')).toBe(true);
+      const prompt = getSystemPrompt(
+        createModePromptHandler(state, undefined, () => 'CORE')(baseEvent, { cwd: root }),
+      );
+      expect(prompt.startsWith('You are an AI assistant.\n\nCORE')).toBe(true);
       expect(prompt.indexOf('[MODE: fein]')).toBeLessThan(prompt.indexOf('.maestria/workflow.md'));
       const workflowAt = prompt.indexOf('.maestria/workflow.md');
       const rulesAt = prompt.indexOf('.maestria/rules.md');

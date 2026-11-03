@@ -88,7 +88,7 @@ const recordAndPersist = (
   taskText: string,
 ): void => {
   const updatedState = recordSpecialistDelegated(
-    recordHandoff(state, 'orchestrator', agentName, taskText),
+    recordHandoff(state, 'maestria', agentName, taskText),
     agentName,
   );
   Object.assign(state, updatedState);
@@ -353,8 +353,7 @@ const dispatchByMode = async (
 
 export const SUBAGENT_PARAMETERS = Type.Object({
   agent: Type.String({
-    description:
-      'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+    description: 'Specialist agent name (required): reviewer',
   }),
   mode: Type.Optional(
     Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
@@ -397,7 +396,7 @@ const handoffResult = (agentName: string, taskDesc: string): ToolResult => ({
       text: [
         '## Subagent Handoff Required',
         '',
-        '**From:** orchestrator',
+        '**From:** maestria',
         `**To:** ${agentName}`,
         `**Task:** ${taskDesc}`,
         '',
@@ -459,7 +458,7 @@ const createSubagentTool = (
       return {
         content: [
           {
-            text: `${mode} Re-dispatch with a valid agent name; the orchestrator may continue read-only exploration while the brief is corrected.`,
+            text: `${mode} Re-dispatch with a valid agent name; the main loop may continue read-only exploration while the brief is corrected.`,
             type: 'text',
           },
         ],
@@ -480,10 +479,9 @@ const createSubagentTool = (
   name: 'maestria_subagent',
   parameters: SUBAGENT_PARAMETERS,
   promptGuidelines: [
-    'Use maestria_subagent when a task MUST be delegated to a specialist subagent rather than handled directly. Each specialist has focused capabilities: adventurer (recon), architect (design), builder (impl), planner (planning), diagnose (bugs), reviewer (QA), writer (docs).',
+    'Use maestria_subagent to send a meaningful change to the reviewer for an independent, read-only review. Do recon, design, and implementation in this session.',
   ],
-  promptSnippet:
-    'Delegate tasks to @maestria specialist subagents (adventurer, architect, builder, planner, diagnose, reviewer, writer)',
+  promptSnippet: 'Send a change to the @maestria reviewer subagent for independent review',
 });
 
 export const installSubagentTool = (

@@ -51,6 +51,9 @@ export const registerSessionHooks = (
       yield* ctx.session.hook(name, (event) =>
         Effect.sync(() => {
           event.system.push({ text: bundle.rules, type: 'text' });
+          if (!bundle.agents.has(event.agent)) {
+            event.system.push({ text: bundle.delivery, type: 'text' });
+          }
           // Read per request so edits apply without a reload; unusable files throw and block dispatch.
           const project = loadProjectSections(projectRoot).map(formatProjectSection);
           if (project.length > 0) {

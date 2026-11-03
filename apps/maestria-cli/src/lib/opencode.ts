@@ -1,4 +1,5 @@
-import { Effect } from 'effect';
+import { Effect, Schedule } from 'effect';
+import type { Duration } from 'effect';
 import { applyEdits, modify, parse } from 'jsonc-parser/lib/esm/main.js';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -7,9 +8,6 @@ import { isRecord } from '@/lib/primitives.js';
 import { CommandError, fileExists, getCacheDir, readTextFile, run } from '@/lib/shell.js';
 
 export const OPENCODE_PACKAGE = '@maestria/opencode';
-
-/** The OpenCode V2 preview package (0.1.x), replaced by `@maestria/opencode` 0.9.0. */
-const PREVIEW_PACKAGE = '@maestria/opencode-v2';
 
 /** The oldest OpenCode release whose plugin API `@maestria/opencode` targets. */
 const MIN_OPENCODE_VERSION = [2, 0, 28] as const;
@@ -70,13 +68,11 @@ const packageName = (spec: string): string => {
   return versionAt === -1 ? spec : spec.slice(0, versionAt);
 };
 
-const isCurrent = (entry: PluginEntry): boolean => packageName(entry.spec) === OPENCODE_PACKAGE;
-
 const uniqueSpecs = (entries: readonly PluginEntry[]): string[] => [
   ...new Set(entries.map((entry) => entry.spec)),
 ];
 
-/** maestria entries, including the preview package, in V2 `plugins` or the V1 `plugin` array V2 ignores. */
+/** maestria entries in V2 `plugins` or the V1 `plugin` array V2 ignores. */
 export const maestriaEntries = (text: string, key: 'plugin' | 'plugins'): PluginEntry[] => {
   const config: unknown = parse(text);
   const list: unknown = isRecord(config) ? config[key] : undefined;
@@ -85,7 +81,7 @@ export const maestriaEntries = (text: string, key: 'plugin' | 'plugins'): Plugin
   }
   return list.flatMap((entry: unknown, index) => {
     const spec = entrySpec(entry);
-    if (spec === undefined || ![OPENCODE_PACKAGE, PREVIEW_PACKAGE].includes(packageName(spec))) {
+    if (spec === undefined || packageName(spec) !== OPENCODE_PACKAGE) {
       return [];
     }
     return [{ index, options: isRecord(entry) ? entry.options : undefined, spec }];
@@ -137,6 +133,22 @@ const plugin = (args: string[]): Effect.Effect<void, CommandError> =>
   // Package fetches keep the 120s host deadline.
   run('opencode', ['plugin', ...args], 120_000).pipe(Effect.asVoid);
 
+/**
+ * OpenCode loads package plugins per working directory in the background, so `plugin update`
+ * from a directory it has not loaded yet reports the configured package as not configured.
+ */
+const updateInPlace = (
+  target: string,
+  retryDelay: Duration.Input,
+): Effect.Effect<void, CommandError> =>
+  plugin(['update', target]).pipe(
+    Effect.retry({
+      schedule: Schedule.spaced(retryDelay),
+      times: 29,
+      while: (failure) => failure.message.includes('Plugin is not configured'),
+    }),
+  );
+
 export const requireOpenCodeV2: Effect.Effect<void, CommandError> = Effect.suspend(() =>
   run('opencode', ['--version']),
 ).pipe(
@@ -163,10 +175,10 @@ export const isOpenCodeInstalled: Effect.Effect<boolean> = Effect.suspend(readCo
   ),
 );
 
-/** Reads the newest cached package for the configured spec; V1-only and preview entries report `unknown`. */
+/** Reads the newest cached package for the configured spec; V1-only entries report `unknown`. */
 export const openCodeInstalledVersion: Effect.Effect<string> = Effect.suspend(readConfig).pipe(
   Effect.flatMap(({ text }) => {
-    const entry = maestriaEntries(text, 'plugins').find(isCurrent);
+    const [entry] = maestriaEntries(text, 'plugins');
     if (entry === undefined) {
       return Effect.succeed('unknown');
     }
@@ -220,20 +232,23 @@ const currentEntries = (): Effect.Effect<PluginEntry[], CommandError> =>
 export const installOpenCode: Effect.Effect<void, CommandError> = Effect.gen(
   function* installOpenCodeEffect() {
     const entries = yield* currentEntries();
-    if (!entries.some(isCurrent)) {
+    if (entries.length === 0) {
       yield* replaceEntries(entries, OPENCODE_PACKAGE);
     }
   },
 );
 
 /** `plugin update` refreshes a lone unpinned entry in place; any other change replaces entries. */
-export const updateOpenCode = (version?: string): Effect.Effect<void, CommandError> =>
+export const updateOpenCode = (
+  version?: string,
+  retryDelay: Duration.Input = '2 seconds',
+): Effect.Effect<void, CommandError> =>
   Effect.gen(function* updateOpenCodeEffect() {
     const entries = yield* currentEntries();
     const target = version === undefined ? OPENCODE_PACKAGE : `${OPENCODE_PACKAGE}@${version}`;
     const specs = uniqueSpecs(entries);
     if (version === undefined && specs.length === 1 && specs[0] === target) {
-      yield* plugin(['update', target]);
+      yield* updateInPlace(target, retryDelay);
       return;
     }
     yield* replaceEntries(entries, target);

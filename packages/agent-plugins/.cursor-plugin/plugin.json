@@ -1,7 +1,7 @@
 {
   "name": "maestria",
   "displayName": "maestria",
-  "version": "0.8.0",
+  "version": "0.13.0",
   "description": "maestria native specialists, workflow commands, always-applied policy, and skills for Cursor",
   "author": {
     "name": "agustinusnathaniel"
@@ -16,5 +16,6 @@
   "agents": "./agents/",
   "commands": "./commands/",
   "rules": "./rules/cursor/",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": "./hooks/cursor.json"
 }

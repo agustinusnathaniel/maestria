@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node ./hooks/project-context.mjs cursor",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "node ./hooks/git-safety.mjs cursor",
+        "timeout": 10
+      },
+      {
+        "command": "node ./hooks/email-scan.mjs cursor",
+        "timeout": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "node ./hooks/generated-guard.mjs cursor",
+        "matcher": "Write",
+        "timeout": 10
+      }
+    ]
+  }
+}

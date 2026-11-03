@@ -26,24 +26,29 @@
   --font-heading: 'Alan Sans Variable', sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --color-home-bg: #0b0d0b;
-  --color-home-surface: #111411;
-  --color-home-surface-raised: #171b17;
-  --color-home-border: rgba(240, 245, 239, 0.16);
-  --color-home-border-strong: rgba(240, 245, 239, 0.34);
-  --color-home-text: #f1f4ef;
-  --color-home-text-soft: #c4cbc2;
-  --color-home-text-muted: #899289;
-  --color-home-accent: #b7ef5f;
-  --color-home-accent-strong: #cdf58a;
-  --color-home-accent-ink: #0b0d0b;
-  --color-home-focus: #b7ef5f;
-
   --breakpoint-sm: 480px;
   --breakpoint-md: 640px;
   --breakpoint-lg: 768px;
   --breakpoint-xl: 900px;
   --breakpoint-2xl: 1100px;
+}
+
+/* Landing color utilities (bg-home-*, text-home-*, border-home-*) resolve
+   through the runtime --home-* tokens below, so one token set drives both
+   themes without duplicate light-mode overrides. */
+@theme inline {
+  --color-home-bg: var(--home-bg);
+  --color-home-surface: var(--home-surface);
+  --color-home-surface-raised: var(--home-surface-raised);
+  --color-home-border: var(--home-border);
+  --color-home-border-strong: var(--home-border-strong);
+  --color-home-text: var(--home-text);
+  --color-home-text-soft: var(--home-text-soft);
+  --color-home-text-muted: var(--home-text-muted);
+  --color-home-accent: var(--home-accent);
+  --color-home-accent-strong: var(--home-accent-strong);
+  --color-home-accent-ink: var(--home-accent-ink);
+  --color-home-focus: var(--home-focus);
 }
 
 /* ============================================
@@ -61,9 +66,9 @@ pre {
    ============================================ */
 
 :root {
-  --sl-color-accent-low: #072d00;
-  --sl-color-accent: #247f00;
-  --sl-color-accent-high: #aad7a0;
+  --sl-color-accent-low: #10301f;
+  --sl-color-accent: #2f8a55;
+  --sl-color-accent-high: #a6dcb8;
   --sl-color-white: #ffffff;
   --sl-color-gray-1: #eaf0e8;
   --sl-color-gray-2: #c5cdc3;
@@ -76,9 +81,9 @@ pre {
 }
 
 :root[data-theme='light'] {
-  --sl-color-accent-low: #c0e2b8;
-  --sl-color-accent: #165800;
-  --sl-color-accent-high: #0d3e00;
+  --sl-color-accent-low: #d3eadb;
+  --sl-color-accent: #1d6a40;
+  --sl-color-accent-high: #0f3a23;
   --sl-color-white: #151a13;
   --sl-color-gray-1: #1f2a1c;
   --sl-color-gray-2: #303c2d;
@@ -88,20 +93,6 @@ pre {
   --sl-color-gray-6: #eaf0e8;
   --sl-color-gray-7: #f4f7f3;
   --sl-color-black: #ffffff;
-
-  /* Tailwind theme tokens for light mode */
-  --color-home-bg: #f3f5ef;
-  --color-home-surface: #ffffff;
-  --color-home-surface-raised: #e9ede4;
-  --color-home-border: rgba(15, 20, 13, 0.14);
-  --color-home-border-strong: rgba(15, 20, 13, 0.32);
-  --color-home-text: #141713;
-  --color-home-text-soft: #434a3e;
-  --color-home-text-muted: #5f6858;
-  --color-home-accent: #1c5b1e;
-  --color-home-accent-strong: #144816;
-  --color-home-accent-ink: #f3f5ef;
-  --color-home-focus: #1c5b1e;
 }
 
 /* ============================================
@@ -324,76 +315,89 @@ h6 {
    ============================================ */
 
 /* Theme tokens shared by the homepage canvas (.home) and plugin overview
-   pages (.plugin-root). Shell properties stay on their own selectors below. */
-.home,
-.plugin-root {
-  --home-bg: #0b0d0b;
-  --home-surface: #111411;
-  --home-surface-raised: #171b17;
-  --home-border: rgba(240, 245, 239, 0.16);
-  --home-border-strong: rgba(240, 245, 239, 0.34);
-  --home-text: #f1f4ef;
-  --home-text-soft: #c4cbc2;
-  --home-text-muted: #899289;
-  --home-accent: #b7ef5f;
-  --home-accent-strong: #cdf58a;
-  --home-accent-ink: #0b0d0b;
-  --home-focus: #b7ef5f;
-  --home-glow: rgba(183, 239, 95, 0.07);
-  --home-grid-line: rgba(240, 245, 239, 0.045);
+   pages (.plugin-root). Declared on :root so the Starlight header can sit on
+   the same canvas color. The palette is a light paper canvas with ink text;
+   the brand green is concentrated in one deep "stage" band (--home-band-*),
+   where brass marks the live step. Dark mode keeps the same roles. */
+:root {
+  --home-bg: #0d110e;
+  --home-surface: #141a16;
+  --home-surface-raised: #1b231e;
+  --home-border: rgba(232, 240, 234, 0.12);
+  --home-border-strong: rgba(232, 240, 234, 0.28);
+  --home-text: #eef3ef;
+  --home-text-soft: #bcc7bf;
+  --home-text-muted: #8a978e;
+  --home-accent: #8fd3a6;
+  --home-accent-strong: #b2e5c3;
+  --home-accent-ink: #0d110e;
+  --home-focus: #8fd3a6;
+  --home-ink-button: #eef3ef;
+  --home-ink-button-text: #0d110e;
+
+  --home-band: #12301f;
+  --home-band-raised: #183b27;
+  --home-band-line: rgba(226, 240, 230, 0.13);
+  --home-band-text: #ecf4ee;
+  --home-band-muted: #9cb5a5;
+  --home-brass: #e8b04f;
+}
+
+:root[data-theme='light'] {
+  --home-bg: #f7f8f5;
+  --home-surface: #ffffff;
+  --home-surface-raised: #eef1ec;
+  --home-border: rgba(15, 23, 18, 0.12);
+  --home-border-strong: rgba(15, 23, 18, 0.26);
+  --home-text: #0f1712;
+  --home-text-soft: #3b473f;
+  /* 5.4:1 on --home-bg, >= 4.5:1 for normal labels. */
+  --home-text-muted: #5c6960;
+  --home-accent: #1d6a40;
+  --home-accent-strong: #145031;
+  --home-accent-ink: #f7f8f5;
+  --home-focus: #1d6a40;
+  --home-ink-button: #0f1712;
+  --home-ink-button-text: #f7f8f5;
+
+  --home-band: #14432b;
+  --home-band-raised: #1a5034;
+  --home-band-line: rgba(226, 240, 230, 0.16);
+  --home-band-text: #f1f7f2;
+  --home-band-muted: #a9c4b2;
+  --home-brass: #f0b955;
 }
 
 .home {
   /* Shared vertical rhythm between major homepage sections. Applied as
      `margin-bottom` on the preceding section - never margin-top, which the
-     markdown reset below zeroes between block siblings. */
-  --home-section-gap: clamp(4.5rem, 9vw, 7rem);
+     markdown reset zeroes between block siblings. */
+  --home-section-gap: clamp(5rem, 10vw, 8.5rem);
   background: var(--home-bg);
   color: var(--home-text);
   max-width: 100%;
   position: relative;
-  /* Contain the absolutely-positioned atmosphere layers (.home-glow is wider
-     than small viewports). `clip` is used instead of `hidden` so .home never
-     becomes a scroll container: sticky positioning and in-page anchors keep
-     their normal viewport-relative behavior. */
+  /* `clip` instead of `hidden` so .home never becomes a scroll container:
+     sticky positioning and in-page anchors keep viewport-relative behavior. */
   overflow: clip;
-  /* Carry the final section gap as canvas padding. Without it, the last
-     section's bottom margin collapses through .home and renders as a
-     body-colored band above the footer. */
-  padding-bottom: clamp(4rem, 9vw, 6rem);
+  padding-bottom: 2.5rem;
 }
 
-:root[data-theme='light'] .home,
-:root[data-theme='light'] .plugin-root {
-  --home-bg: #f3f5ef;
-  --home-surface: #ffffff;
-  --home-surface-raised: #e9ede4;
-  --home-border: rgba(15, 20, 13, 0.14);
-  --home-border-strong: rgba(15, 20, 13, 0.32);
-  --home-text: #141713;
-  --home-text-soft: #363d31;
-  /* 5.30:1 on --home-bg (#f3f5ef), >= 4.5:1 for normal labels. */
-  --home-text-muted: #5f6858;
-  --home-accent: #1c5b1e;
-  --home-accent-strong: #144816;
-  --home-accent-ink: #f3f5ef;
-  --home-focus: #1c5b1e;
-  --home-glow: rgba(28, 91, 30, 0.06);
-  --home-grid-line: rgba(15, 20, 13, 0.055);
+/* Homepage header: a translucent layer over the canvas instead of an opaque
+   strip, so the hero reads as one surface up to the top of the viewport. */
+.page:has(.home) > .header {
+  background: color-mix(in srgb, var(--home-bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border-bottom-color: var(--home-border);
+}
 
-  /* Override Tailwind theme tokens for light mode */
-  --color-home-bg: #f3f5ef;
-  --color-home-surface: #ffffff;
-  --color-home-surface-raised: #e9ede4;
-  --color-home-border: rgba(15, 20, 13, 0.14);
-  --color-home-border-strong: rgba(15, 20, 13, 0.32);
-  --color-home-text: #141713;
-  --color-home-text-soft: #363d31;
-  --color-home-text-muted: #5f6858;
-  --color-home-accent: #1c5b1e;
-  --color-home-accent-strong: #144816;
-  --color-home-accent-ink: #f3f5ef;
-  --color-home-focus: #1c5b1e;
+@media (prefers-reduced-transparency: reduce) {
+  .page:has(.home) > .header {
+    background: var(--home-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .home-inner {
@@ -427,64 +431,6 @@ h6 {
 
 .home-section {
   width: 100%;
-}
-
-.section-eyebrow {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--home-text-muted);
-  margin-bottom: 0.75rem;
-}
-
-.home-section h2 {
-  font-size: clamp(2rem, 4vw, 2.75rem);
-  font-weight: 540;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
-  color: var(--home-text);
-  margin-bottom: clamp(2.25rem, 4vw, 3rem);
-  text-wrap: balance;
-}
-
-/* Section-to-section rhythm. One shared token (--home-section-gap) keeps
-   every inter-section gap in the same fluid scale; the adapters section
-   uses a slightly smaller pre-band variant (never below 4rem). Each gap is
-   a `margin-bottom` on the preceding section because the homepage reset
-   zeroes `margin-top` between block siblings. The docs-map is the last
-   section; its bottom gap is carried by .home's padding-bottom so it stays
-   on the canvas background. */
-
-/* ============================================
-   HERO ATMOSPHERE
-   Fixed-position decoration layers inside .home.
-   Purely decorative; content wrappers must sit above them.
-   ============================================ */
-
-.home-glow {
-  position: absolute;
-  top: -18%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(75rem, 130vw);
-  aspect-ratio: 2 / 1;
-  border-radius: 50%;
-  background: radial-gradient(ellipse closest-side, var(--home-glow), transparent 70%);
-  pointer-events: none;
-}
-
-.home-grid {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: clamp(30rem, 90vh, 48rem);
-  background-image:
-    linear-gradient(var(--home-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--home-grid-line) 1px, transparent 1px);
-  background-size: 4.5rem 4.5rem;
-  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
-  mask-image: linear-gradient(to bottom, black 55%, transparent);
-  pointer-events: none;
 }
 
 /* ============================================
@@ -548,19 +494,14 @@ html {
 }
 
 @media (prefers-contrast: more) {
-  .home,
-  .plugin-root {
-    --home-border: rgba(240, 245, 239, 0.4);
-    --home-border-strong: rgba(240, 245, 239, 0.66);
-    --color-home-border: rgba(240, 245, 239, 0.4);
-    --color-home-border-strong: rgba(240, 245, 239, 0.66);
+  :root {
+    --home-border: rgba(232, 240, 234, 0.4);
+    --home-border-strong: rgba(232, 240, 234, 0.66);
+    --home-band-line: rgba(226, 240, 230, 0.4);
   }
 
-  :root[data-theme='light'] .home,
-  :root[data-theme='light'] .plugin-root {
-    --home-border: rgba(15, 20, 13, 0.4);
-    --home-border-strong: rgba(15, 20, 13, 0.66);
-    --color-home-border: rgba(15, 20, 13, 0.4);
-    --color-home-border-strong: rgba(15, 20, 13, 0.66);
+  :root[data-theme='light'] {
+    --home-border: rgba(15, 23, 18, 0.4);
+    --home-border-strong: rgba(15, 23, 18, 0.66);
   }
 }

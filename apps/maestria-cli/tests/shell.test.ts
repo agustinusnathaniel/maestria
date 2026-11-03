@@ -78,6 +78,15 @@ describe('run', () => {
     expect(error.message).toContain('boom-detail');
   });
 
+  it('drops host stack frames from the failure detail', async () => {
+    const script =
+      "console.error('Error: Plugin is not configured: x\\n    at inspect (/$bunfs/root/a.js:2:1)'); process.exit(1)";
+    const error = await Effect.runPromise(Effect.flip(shell.run('node', ['-e', script])));
+    expect(error.message).toBe(
+      'Command failed with exit code 1: Error: Plugin is not configured: x',
+    );
+  });
+
   it('reports a timeout instead of a bare failure when the deadline kills the command', async () => {
     const error = await Effect.runPromise(
       Effect.flip(shell.run('node', ['-e', 'setTimeout(() => {}, 5000)'], 200)),

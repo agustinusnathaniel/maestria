@@ -4,7 +4,9 @@ import type { Plugin } from '@opencode/plugin/effect';
 import type { AgentEditor } from '@opencode/plugin/effect/agent';
 import type { CommandEditor, CommandInvocation } from '@opencode/plugin/effect/command';
 import type { SessionContext, SessionPrompt } from '@opencode/plugin/effect/session';
+import type { PermissionEvaluation } from '@opencode/plugin/effect/permission';
 import type { SkillEditor } from '@opencode/plugin/effect/skill';
+import type { ToolHooks } from '@opencode/plugin/effect/tool';
 import { describe, expect, it } from 'vite-plus/test';
 import plugin from '../src/index.js';
 
@@ -18,6 +20,8 @@ interface Registrations {
   prompt?: (event: SessionPrompt) => Effect.Effect<void>;
   context?: (event: SessionContext) => Effect.Effect<void>;
   compaction?: (event: SessionContext) => Effect.Effect<void>;
+  'execute.before'?: (event: ToolHooks['execute.before']) => Effect.Effect<void, unknown>;
+  evaluate?: (event: PermissionEvaluation) => Effect.Effect<void>;
 }
 
 /** Loads the plugin against a host double that records each registration. */
@@ -36,6 +40,7 @@ const load = async (options: unknown = {}) => {
     command: { transform: (apply: never) => register('command', apply) },
     location: { directory: process.cwd(), project: { directory: process.cwd() } },
     options,
+    permission: { hook: register },
     session: {
       hook: register,
       prompt: (input: Record<string, unknown>) => {
@@ -44,6 +49,7 @@ const load = async (options: unknown = {}) => {
       },
     },
     skill: { transform: (apply: never) => register('skill', apply) },
+    tool: { hook: register },
   } as unknown as Plugin.Context;
   await Effect.runPromise(Effect.scoped(plugin.effect(ctx)));
 
@@ -82,22 +88,25 @@ describe('agent transform', () => {
       update,
     });
 
-    expect([...drafts.keys()].toSorted()).toEqual([
-      'adventurer',
-      'architect',
-      'builder',
-      'diagnose',
-      'orchestrator',
-      'planner',
-      'reviewer',
-      'writer',
-    ]);
-    const orchestrator = drafts.get('orchestrator');
-    expect(orchestrator?.mode).toBe('all');
-    expect(orchestrator?.permissions).toContainEqual({
+    expect([...drafts.keys()].toSorted()).toEqual(['maestria', 'reviewer']);
+    const mainLoop = drafts.get('maestria');
+    expect(mainLoop?.mode).toBe('all');
+    expect(mainLoop?.permissions).toContainEqual({
       action: 'subagent',
       effect: 'allow',
-      resource: 'builder',
+      resource: 'reviewer',
+    });
+    expect(mainLoop?.permissions).toContainEqual({
+      action: 'edit',
+      effect: 'allow',
+      resource: '*',
+    });
+    const reviewer = drafts.get('reviewer');
+    expect(reviewer?.mode).toBe('subagent');
+    expect(reviewer?.permissions).toContainEqual({
+      action: 'edit',
+      effect: 'deny',
+      resource: '*',
     });
     for (const draft of drafts.values()) {
       expect(draft.system?.startsWith('---')).toBe(false);
@@ -123,7 +132,7 @@ describe('workflow commands', () => {
     const invocation = {
       delivery: 'queue',
       prompt: {
-        agents: [{ mention: { end: 8, start: 0, text: '@builder' }, name: 'builder' }],
+        agents: [{ mention: { end: 9, start: 0, text: '@reviewer' }, name: 'reviewer' }],
         files: [{ mention: { end: 17, start: 9, text: '@plan.md' }, uri: 'file:///plan.md' }],
         skills: [{ id: 'docs-update', mention: { end: 30, start: 18, text: '$docs-update' } }],
         text: 'plan the work',
@@ -134,7 +143,7 @@ describe('workflow commands', () => {
 
     expect(prompted).toHaveLength(1);
     expect(prompted[0]).toMatchObject({
-      agents: [{ name: 'builder' }],
+      agents: [{ name: 'reviewer' }],
       delivery: 'queue',
       files: [{ uri: 'file:///plan.md' }],
       sessionID: 'session-1',
@@ -162,7 +171,16 @@ describe('skill transform', () => {
       update: () => {},
     });
 
-    expect([...skills.keys()].toSorted()).toEqual(['create-pull-request', 'docs-update']);
+    expect([...skills.keys()].toSorted()).toEqual([
+      'architecture-plan',
+      'create-pull-request',
+      'diagnose',
+      'docs-update',
+      'handoff',
+      'implement',
+      'recon',
+      'review-loop',
+    ]);
     for (const [id, skill] of skills) {
       expect(skill.description?.length).toBeGreaterThan(0);
       expect(skill.path.endsWith(`skills/${id}/SKILL.md`)).toBe(true);
@@ -250,5 +268,63 @@ describe('model context', () => {
       );
       expect(messages[0].content[0].text).toBe('plain hello');
     }
+  });
+
+  it('adds delivery policy only for agents maestria does not bundle', async () => {
+    const { registrations } = await load();
+    const systemFor = async (agent: string): Promise<string> => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the hook reads only agent, system, and messages.
+      const event = {
+        agent,
+        messages: [],
+        sessionID: 'session-test',
+        system: [],
+      } as unknown as SessionContext;
+      await Effect.runPromise(registrations.context?.(event) ?? Effect.void);
+      return event.system.map((part) => (part.type === 'text' ? part.text : '')).join('\n');
+    };
+    const build = await systemFor('build');
+    const reviewer = await systemFor('reviewer');
+    expect(build).toContain('# Continuation and Delivery');
+    expect(build).toContain('# Modes');
+    expect(reviewer).toContain('# Global Agent Rules');
+    expect(reviewer).not.toContain('# Continuation and Delivery');
+  });
+});
+
+const shellCall = (command: string) =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard reads only the tool and input.
+  ({ input: { command }, tool: 'shell' }) as unknown as ToolHooks['execute.before'];
+const evaluation = (command: string, effect: PermissionEvaluation['effect'] = 'allow') =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard reads only the action, resources, and effect.
+  ({ action: 'shell', effect, resources: [command] }) as unknown as PermissionEvaluation;
+
+describe('git safety guard', () => {
+  it('fails a hook bypass before the shell command runs', async () => {
+    const { registrations } = await load();
+    const exit = await Effect.runPromiseExit(
+      registrations['execute.before']?.(shellCall('git commit --no-verify -m x')) ?? Effect.void,
+    );
+    expect(exit._tag).toBe('Failure');
+    expect(JSON.stringify(exit)).toContain('--no-verify skips repository hooks');
+    const askLater = await Effect.runPromiseExit(
+      registrations['execute.before']?.(shellCall('git push --force')) ?? Effect.void,
+    );
+    expect(askLater._tag).toBe('Success');
+  });
+
+  it('turns risky history edits into a native approval prompt and leaves config denies final', async () => {
+    const { registrations } = await load();
+    const ask = evaluation('git reset --hard');
+    await Effect.runPromise(registrations.evaluate?.(ask) ?? Effect.void);
+    expect(ask.effect).toBe('ask');
+    expect(ask.message).toContain('reset --hard');
+    const routine = evaluation('git status');
+    await Effect.runPromise(registrations.evaluate?.(routine) ?? Effect.void);
+    expect(routine).toMatchObject({ effect: 'allow' });
+    const denied = evaluation('git push --force', 'deny');
+    await Effect.runPromise(registrations.evaluate?.(denied) ?? Effect.void);
+    expect(denied).toMatchObject({ effect: 'deny' });
+    expect(denied.message).toBeUndefined();
   });
 });

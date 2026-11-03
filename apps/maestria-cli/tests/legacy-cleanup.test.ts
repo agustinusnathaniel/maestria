@@ -21,22 +21,25 @@ type SkillCommandRunner = skillCompanion.SkillCommandRunner;
 const COMPANION_SKILL = 'create-pull-request';
 const DOCS_UPDATE_SKILL = 'docs-update';
 
-const skillTransport = vi.hoisted(() => ({
-  calls: [] as string[][],
-  current: null as SkillCommandRunner | null,
-}));
-
-vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof skillCompanion>();
+const skillTransport = vi.hoisted(() => {
+  const transport = {
+    calls: [] as string[][],
+    current: null as SkillCommandRunner | null,
+  };
   const runSkillsCli: SkillCommandRunner = async (args, options) => {
-    skillTransport.calls.push([...args]);
-    const runner = skillTransport.current;
+    transport.calls.push([...args]);
+    const runner = transport.current;
     if (runner === null) {
       throw new Error('legacy cleanup test forgot to seed the skill transport');
     }
     return await runner(args, options);
   };
-  return { ...actual, runSkillsCli };
+  return Object.assign(transport, { runSkillsCli });
+});
+
+vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof skillCompanion>();
+  return { ...actual, runSkillsCli: skillTransport.runSkillsCli };
 });
 
 vi.mock('@/lib/platform-transaction.js', () => ({

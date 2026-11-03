@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.8.0",
+  "version": "0.13.0",
   "description": "Native Kimi specialist profiles, workflow commands, and complete session instructions",
   "keywords": [
     "maestria",
@@ -18,13 +18,33 @@
   "license": "MIT",
   "skills": "./skills/",
   "commands": "./commands/",
-  "systemPromptPath": "./AGENTS.md",
+  "systemPromptPath": "./kimi.system-prompt.md",
   "interface": {
     "displayName": "maestria Agent Pack",
     "shortDescription": "Native specialists and workflow commands for Kimi Code",
-    "longDescription": "Seven native specialist profiles, complete primary-session policy and routing, three workflow commands, and four maestria skills. Models, tool authority, and session lifecycle remain Kimi-owned.",
+    "longDescription": "A native reviewer profile, complete primary-session policy and routing, three workflow commands, and eight maestria skills. Models, tool authority, and session lifecycle remain Kimi-owned.",
     "developerName": "Agustinus Nathaniel",
     "websiteURL": "https://github.com/agustinusnathaniel/maestria"
   },
-  "agents": "./agents/"
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/git-safety.mjs kimi",
+      "timeout": 10
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/email-scan.mjs kimi",
+      "timeout": 10
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "Write|Edit",
+      "command": "node ./hooks/generated-guard.mjs kimi",
+      "timeout": 10
+    }
+  ]
 }

@@ -12,11 +12,15 @@
     "build": "vp run -r build",
     "build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build",
     "test": "vp run -r test",
+    "test-sync-plugin-versions": "vp test run scripts/sync-plugin-versions.test.ts",
     "changeset": "changeset",
-    "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
+    "version-packages": "changeset version && tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
     "check": "vp run check-full",
-    "check:ci": "vp run check-ci",
+    "check:ci:lint": "vp run ci-check",
+    "check:ci:test": "vp run ci-test",
+    "check-manifest-versions": "tsx scripts/sync-plugin-versions.ts --check",
+    "check-sync": "bash scripts/check-sync",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
@@ -26,6 +30,7 @@
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
     "contributors:check": "all-contributors check",
+    "e2e:claude-hooks": "node --experimental-strip-types scripts/e2e/claude-hooks.ts --out artifacts/claude-hooks-evidence.json",
     "e2e:fail-closed": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json",
     "e2e:deepseek": "tsx scripts/e2e/deepseek-evidence.ts --out artifacts/deepseek-evidence.json",
     "e2e:opencode": "tsx scripts/e2e/opencode-evidence.ts --out artifacts/opencode-evidence.json",
@@ -41,18 +46,17 @@
     "tsx": "4.23.13",
     "ultracite": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "catalog:",
     "yaml": "^2.9.0"
   },
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "^24.16.0",
+      "version": "^24.22.1",
       "onFail": "download"
     }
   },
   "engines": {
-    "node": ">=24.16.x"
+    "node": ">=24.22.x"
   },
   "packageManager": "pnpm@12.4.1"
 }

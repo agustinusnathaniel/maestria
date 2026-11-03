@@ -8,7 +8,7 @@ import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
 import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
 const SPECIALISTS_DIR = path.join(import.meta.dirname, '..', 'agent-directives', 'specialists');
-const ORCHESTRATOR = 'orchestrator';
+const MAIN_LOOP = 'main-loop';
 
 // Names are validated against the canonical directory instead of derived into
 // configs: ADR-CORE-005 forbids dynamic derivation, while ADR-CORE-020
@@ -17,7 +17,7 @@ const canonicalFiles = readdirSync(SPECIALISTS_DIR)
   .filter((file) => file.endsWith('.md'))
   .toSorted();
 const delegableNames = canonicalFiles
-  .filter((file) => file !== `${ORCHESTRATOR}.md`)
+  .filter((file) => file !== `${MAIN_LOOP}.md`)
   .map((file) => file.replace(/\.md$/u, ''));
 
 interface RosterViolations {
@@ -58,9 +58,9 @@ const syncConfigs: Record<string, SyncConfig> = {
 };
 
 describe('canonical specialist roster', () => {
-  it('derives eight specialist files and seven delegable roles', () => {
-    expect(canonicalFiles).toHaveLength(8);
-    expect(delegableNames).toHaveLength(7);
+  it('derives two specialist files and one delegable role', () => {
+    expect(canonicalFiles).toHaveLength(2);
+    expect(delegableNames).toHaveLength(1);
   });
 
   it('keeps the consolidated profile registry aligned with the delegable roles', () => {

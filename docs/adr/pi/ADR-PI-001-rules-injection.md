@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Amended 2026-11-03: skill listing alone did not keep the rules always-on (Pi lists skills by name and loads a body only on demand), so the `before_agent_start` handler now also injects the always-on core (the `maestria` and `global-rules` skill bodies) on every run, user and custom alike; see [CORE-036](../core/ADR-CORE-036-always-on-core-and-skill-map.md) and [CORE-037](../core/ADR-CORE-037-hooks-as-deterministic-reinforcement.md).
 
 ## Context
 

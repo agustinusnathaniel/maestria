@@ -1,4 +1,7 @@
 import { Effect } from 'effect';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { parse } from 'jsonc-parser/lib/esm/main.js';
 
@@ -103,12 +106,33 @@ describe('Cursor model configuration availability', () => {
   });
 });
 
+describe('Pi model configuration', () => {
+  it('seeds a global agent from the installed package before Pi first deploys it', async () => {
+    const home = mkdtempSync(path.join(tmpdir(), 'maestria-pi-configure-'));
+    vi.stubEnv('HOME', home);
+    const bundled = path.join(home, '.pi/agent/npm/node_modules/@maestria/pi/agents');
+    mkdirSync(bundled, { recursive: true });
+    writeFileSync(path.join(bundled, 'reviewer.md'), '---\nname: reviewer\n---\nReview.\n');
+    const pi = getModelConfigHandler('pi');
+
+    try {
+      await Effect.runPromise(pi?.write({ reviewer: 'zai/glm-5' }, 'global') ?? Effect.void);
+
+      expect(readFileSync(path.join(home, '.pi/agent/agents/reviewer.md'), 'utf-8')).toBe(
+        '---\nname: reviewer\nmodel: zai/glm-5\n---\nReview.\n',
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe('Codex custom-agent TOML', () => {
   it('reads and surgically updates a top-level model', () => {
     const content = [
-      'name = "builder"',
+      'name = "reviewer"',
       'model = "old/model" # keep this comment',
-      'developer_instructions = "Use the builder skill"',
+      'developer_instructions = "Use the reviewer skill"',
       '',
       '[mcp_servers.example]',
       'url = "https://example.test/mcp"',
@@ -122,12 +146,12 @@ describe('Codex custom-agent TOML', () => {
     expect(setCodexAgentModel(next, '')).not.toContain('model =');
   });
 
-  it('creates a native read-only agent config for restricted roles', () => {
+  it('creates a native agent config without an inert sandbox_mode', () => {
     const config = createCodexAgentConfig('reviewer', 'gpt-5.4');
     expect(config).toContain('name = "maestria-reviewer"');
     expect(config).toContain('developer_instructions');
     expect(config).toContain('model = "gpt-5.4"');
-    expect(config).toContain('sandbox_mode = "read-only"');
+    expect(config).not.toContain('sandbox_mode');
     expect(config).toContain('$maestria:reviewer');
   });
 });
@@ -233,48 +257,53 @@ describe('jsonc config edits', () => {
   // maestria plugin
   "plugin": ["@maestria/opencode@latest"],
   "agent": {
-    "adventurer": { "model": "old/model" },
+    "reviewer": { "model": "old/model" },
   },
   "theme": "catppuccin-macchiato"
 }`;
 
   it('updates an existing agent model and preserves comments', () => {
-    const next = setConfigModelJsonc(config, 'adventurer', 'opencode-go/deepseek-v4-flash');
-    expect(parseConfigModels(next).adventurer).toBe('opencode-go/deepseek-v4-flash');
+    const next = setConfigModelJsonc(config, 'reviewer', 'opencode-go/deepseek-v4-flash');
+    expect(parseConfigModels(next).reviewer).toBe('opencode-go/deepseek-v4-flash');
     expect(next).toContain('// maestria plugin');
     expect(next).toContain('"plugin": ["@maestria/opencode@latest"]');
     expect(next).toContain('catppuccin-macchiato');
   });
 
-  it('creates a new agent entry', () => {
-    const next = setConfigModelJsonc(config, 'builder', 'opencode-go/deepseek-v4-pro');
-    expect(parseConfigModels(next).builder).toBe('opencode-go/deepseek-v4-pro');
-    expect(parseConfigModels(next).adventurer).toBe('old/model');
+  it('ignores models for removed roles when parsing', () => {
+    const legacy = `{
+  "agent": {
+    "builder": { "model": "old/model" },
+    "adventurer": { "model": "old/model" }
+  }
+}`;
+    expect(parseConfigModels(legacy)).toEqual({});
+    const next = setConfigModelJsonc(legacy, 'builder', 'opencode-go/deepseek-v4-pro');
+    expect(parseConfigModels(next).reviewer).toBeUndefined();
   });
 
   it('removes the model when given an empty string', () => {
-    const next = setConfigModelJsonc(config, 'adventurer', '');
-    expect(parseConfigModels(next).adventurer).toBeUndefined();
+    const next = setConfigModelJsonc(config, 'reviewer', '');
+    expect(parseConfigModels(next).reviewer).toBeUndefined();
   });
 
   it('is a no-op when removing a model that does not exist', () => {
     // jsonc-parser >= 3.3 throws "Can not delete in empty document" here
-    const next = setConfigModelJsonc(config, 'reviewer', '');
-    expect(next).toBe(config);
+    const next = setConfigModelJsonc('{\n  "theme": "x"\n}', 'reviewer', '');
     expect(parseConfigModels(next).reviewer).toBeUndefined();
   });
 
   it('moves a V1 agent model to the V2 agents map', () => {
-    const next = setConfigModelJsonc(config, 'adventurer', 'opencode-go/deepseek-v4-flash');
+    const next = setConfigModelJsonc(config, 'reviewer', 'opencode-go/deepseek-v4-flash');
     expect(parse(next)).toMatchObject({
-      agent: { adventurer: {} },
-      agents: { adventurer: { model: 'opencode-go/deepseek-v4-flash' } },
+      agent: { reviewer: {} },
+      agents: { reviewer: { model: 'opencode-go/deepseek-v4-flash' } },
     });
   });
 
   it('creates the agent object in an empty file', () => {
-    const next = setConfigModelJsonc('{}', 'adventurer', 'opencode-go/deepseek-v4-flash');
-    expect(parseConfigModels(next).adventurer).toBe('opencode-go/deepseek-v4-flash');
+    const next = setConfigModelJsonc('{}', 'reviewer', 'opencode-go/deepseek-v4-flash');
+    expect(parseConfigModels(next).reviewer).toBe('opencode-go/deepseek-v4-flash');
   });
 
   it('parses a model-less config as empty', () => {

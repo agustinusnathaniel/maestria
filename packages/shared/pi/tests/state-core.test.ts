@@ -209,15 +209,15 @@ describe('history caps', () => {
 
 describe('recordHandoff', () => {
   it('adds an entry with the handoff fields and a timestamp', () => {
-    const next = recordHandoff(createInitialState(), 'adventurer', 'builder', 'implement feature');
+    const next = recordHandoff(createInitialState(), 'main-loop', 'reviewer', 'implement feature');
 
     expect(next.handoffHistory).toHaveLength(1);
     const [entry] = next.handoffHistory;
     if (entry === undefined) {
       throw new Error('Handoff entry was not recorded');
     }
-    expect(entry.from).toBe('adventurer');
-    expect(entry.to).toBe('builder');
+    expect(entry.from).toBe('main-loop');
+    expect(entry.to).toBe('reviewer');
     expect(entry.task).toBe('implement feature');
     expect(typeof entry.timestamp).toBe('number');
   });
@@ -253,18 +253,18 @@ describe('recordHandoff', () => {
 describe('recordSpecialistDelegated', () => {
   it('appends specialists in delegation order and deduplicates repeats', () => {
     let state = createInitialState();
-    state = recordSpecialistDelegated(state, 'builder');
-    state = recordSpecialistDelegated(state, 'architect');
-    state = recordSpecialistDelegated(state, 'builder');
+    state = recordSpecialistDelegated(state, 'reviewer');
+    state = recordSpecialistDelegated(state, 'main-loop');
+    state = recordSpecialistDelegated(state, 'reviewer');
 
-    expect(state.specialistsDelegated).toEqual(['builder', 'architect']);
+    expect(state.specialistsDelegated).toEqual(['reviewer', 'main-loop']);
   });
 
   it('adds to an empty list without mutating the original state', () => {
     const state = createInitialState();
-    const next = recordSpecialistDelegated(state, 'builder');
+    const next = recordSpecialistDelegated(state, 'reviewer');
 
-    expect(next.specialistsDelegated).toEqual(['builder']);
+    expect(next.specialistsDelegated).toEqual(['reviewer']);
     expect(state.specialistsDelegated).toEqual([]);
   });
 });
@@ -386,17 +386,17 @@ describe('renderMaestriaSummary', () => {
     let state = createInitialState();
     state = { ...state, activeTask: 'build the feature' };
     state = { ...state, completionPromise: 'tests pass' };
-    state = { ...state, specialistsDelegated: ['/builder', '/reviewer'] };
+    state = { ...state, specialistsDelegated: ['/main-loop', '/reviewer'] };
     state = { ...state, blockers: ['missing API key', 'unclear spec'] };
     state = recordFileModified(state, 'src/foo.ts');
     state = recordFileRead(state, 'src/bar.ts');
-    state = recordHandoff(state, 'adventurer', 'builder', 'implement');
+    state = recordHandoff(state, 'main-loop', 'reviewer', 'implement');
 
     const summary = renderMaestriaSummary(state);
 
     expect(summary).toContain('**Goal:** build the feature');
     expect(summary).toContain('**Completion Promise:** tests pass');
-    expect(summary).toContain('**Specialists Delegated:** /builder, /reviewer');
+    expect(summary).toContain('**Specialists Delegated:** /main-loop, /reviewer');
     expect(summary).toContain('**Blockers:**');
     expect(summary).toContain('- missing API key');
     expect(summary).toContain('- unclear spec');
@@ -404,7 +404,7 @@ describe('renderMaestriaSummary', () => {
     expect(summary).toContain('**Modified:** src/foo.ts');
     expect(summary).toContain('**Read:** src/bar.ts');
     expect(summary).toContain('**Recent Handoffs:**');
-    expect(summary).toContain('- adventurer → builder: implement');
+    expect(summary).toContain('- main-loop → reviewer: implement');
   });
 
   it('omits empty sections and returns an empty string', () => {

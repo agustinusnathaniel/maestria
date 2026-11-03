@@ -17,7 +17,7 @@ Before this ADR, intent could only be expressed through ambiguous natural-langua
 | Mode | Keyword | Origin | Meaning | Pipeline Behavior |
 | --- | --- | --- | --- | --- |
 | Full pipeline | `fein` | German | Fine, precise, careful | Mandatory recon → design → build → review. Reviewer gate non-negotiable. |
-| Research only | `sonar` | Space/tech | Scan depths, map terrain | Read-only `@adventurer` or `@planner` research → STOP. No builder calls or production-file writes. |
+| Research only | `sonar` | Space/tech | Scan depths, map terrain | Read-only `@adventurer` or `@architect` research → STOP (`@planner` until the 2026-10-15 four-role roster, ADR-CORE-034). No builder calls or production-file writes. |
 | Fast implementation | `blitz` | German | Lightning, fast | Builder direct. Skip optional recon/design ceremony; required review remains. |
 
 ### Detection Syntax

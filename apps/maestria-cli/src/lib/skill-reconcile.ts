@@ -24,6 +24,8 @@ import type { PlatformResult } from '@/types.js';
  * path. Unrecorded copies are never removed.
  */
 
+const withNote = (message: string, note: string): string => `${message}. ${note}`;
+
 const unknownSkills = (skills: readonly string[]): string[] =>
   skills.filter((skill) => !MANAGED_SKILLS.includes(skill));
 
@@ -171,20 +173,24 @@ const removeOwnedLegacySkills = async (
       remaining: null,
       result: {
         ...result,
-        message:
-          `${result.message} Legacy skill removal failed ` +
-          `(${error instanceof Error ? error.message : String(error)}). ` +
-          `Retry manually: ${retry}.`,
+        message: withNote(
+          result.message,
+          `Legacy skill removal failed (${error instanceof Error ? error.message : String(error)}). ` +
+            `Retry manually: ${retry}.`,
+        ),
         ok: false,
         skills: [],
       },
     };
   }
   const unrecognized = unknownSkills(recordedSkills(record, result.id) ?? []);
-  const suffix = notes.length === 0 ? '' : ` ${notes.join(' ')}`;
   return {
     remaining: [...unrecognized],
-    result: { ...result, message: `${result.message}${suffix}`, skills: [] },
+    result: {
+      ...result,
+      message: notes.length === 0 ? result.message : withNote(result.message, notes.join(' ')),
+      skills: [],
+    },
   };
 };
 
@@ -211,10 +217,12 @@ const reconcileOneLegacy = async (
       remaining: null,
       result: {
         ...result,
-        message:
-          `${result.message} No maestria skill record for '${result.id}'; ` +
-          `any copy is left in place. Remove one manually only if maestria installed it: ` +
-          `${MANAGED_SKILLS.map((skill) => manualRemoveCommand(agent, skill)).join('; ')}.`,
+        message: withNote(
+          result.message,
+          `No maestria skill record for '${result.id}'; any copy is left in place. ` +
+            `Remove one manually only if maestria installed it: ` +
+            `${MANAGED_SKILLS.map((skill) => manualRemoveCommand(agent, skill)).join('; ')}.`,
+        ),
         skills: [],
       },
     };
