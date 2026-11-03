@@ -39,10 +39,14 @@ type AgentStartEvent = Pick<BeforeAgentStartEvent, 'systemPrompt'> & {
   readonly messageType?: string;
 };
 
+const CORE_UNAVAILABLE =
+  'STOP: the maestria always-on rules could not be loaded from the installed package. Tell the user to reinstall @maestria/pi, and wait.';
+
 /**
- * before_agent_start handler: the always-on core, the mode prompt, and root project
- * customization, read fresh each turn. Never throws: broken project files surface via notify
- * plus a STOP banner. See ADR-CORE-006 and ADR-CORE-037.
+ * before_agent_start handler: the always-on core (read once), then the mode prompt and root
+ * project customization (read fresh each turn). Never throws: the host swallows handler errors,
+ * which would drop this run's whole addition, so an unreadable core or project file surfaces via
+ * notify plus a STOP banner instead. See ADR-CORE-006 and ADR-CORE-037.
  */
 export const createModePromptHandler = (
   state: MaestriaState,
@@ -50,12 +54,21 @@ export const createModePromptHandler = (
   core: () => string = loadCore,
 ) => {
   let cached: string | undefined;
-  const coreText = (): string => {
-    cached ??= core();
+  const coreText = (ctx?: ProjectPromptContext): string => {
+    if (cached === undefined) {
+      try {
+        cached = core();
+      } catch {
+        ctx?.ui?.notify?.(
+          '[maestria] The always-on rules could not be loaded; reinstall @maestria/pi.',
+        );
+        return CORE_UNAVAILABLE;
+      }
+    }
     return cached;
   };
   return (event: AgentStartEvent, ctx?: ProjectPromptContext): BeforeAgentStartEventResult => {
-    const parts: string[] = [event.systemPrompt, '', coreText(), ''];
+    const parts: string[] = [event.systemPrompt, '', coreText(ctx), ''];
     const loaded = tryLoadProjectSections(ctx, fs);
     if (loaded.errorMessage !== undefined) {
       return { systemPrompt: [...parts, formatProjectErrorBanner(loaded.errorMessage)].join('\n') };

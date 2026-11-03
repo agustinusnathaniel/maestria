@@ -18,6 +18,10 @@ const getSystemPrompt = (result: BeforeAgentStartEventResult): string => {
   return result.systemPrompt;
 };
 
+const brokenCore = (): string => {
+  throw new Error('missing skill');
+};
+
 const makeTempRoot = (): string => mkdtempSync(path.join(tmpdir(), 'maestria-pi-rules-'));
 
 const writeProjectFile = (root: string, rel: string, content: string): void => {
@@ -51,6 +55,25 @@ describe('createModePromptHandler', () => {
     expect(prompt).toContain('## Universal Floors');
     expect(prompt.indexOf('## Routing')).toBeLessThan(prompt.indexOf('## Universal Floors'));
     expect(prompt).not.toMatch(/^---$|Auto-generated from/mu);
+  });
+
+  it('surfaces an unreadable core as a STOP banner plus notify instead of throwing', () => {
+    const notify = vi.fn<(message: string) => void>();
+    let prompt = '';
+    expect(() => {
+      prompt = getSystemPrompt(
+        createModePromptHandler(
+          createInitialState(),
+          undefined,
+          brokenCore,
+        )(baseEvent, {
+          ui: { notify },
+        }),
+      );
+    }).not.toThrow();
+    expect(prompt.startsWith('You are an AI assistant.')).toBe(true);
+    expect(prompt).toContain('STOP: the maestria always-on rules could not be loaded');
+    expect(notify).toHaveBeenCalledOnce();
   });
 
   it('injects the core on custom runs that carry no user prompt (Pi 1.2 messageType)', () => {
