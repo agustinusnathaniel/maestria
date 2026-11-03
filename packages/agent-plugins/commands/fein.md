@@ -18,7 +18,7 @@ The host decides what this session may do: when it disallows a step, report the 
 
 ## Routing
 
-Do recon, design, diagnosis, and implementation in this session. The only split into another context is one blind `@reviewer` pass before delivering a meaningful change (see Review and Triage).
+Do recon, design, diagnosis, and implementation in this session. The only split into another context is one blind `@reviewer` pass before delivering a meaningful change.
 
 Load a method skill when its trigger applies, and skip it when a few direct steps establish acceptance. A missing skill never blocks the work or waives its evidence, review, or authorization.
 
@@ -28,6 +28,7 @@ Load a method skill when its trigger applies, and skip it when a few direct step
 - `implement`: before writing or changing code or tests.
 - `docs-update`: before finishing a change to behavior, interfaces, configuration, or user-facing workflows.
 - `create-pull-request`: when planning PR boundaries, and before drafting, publishing, or refreshing a PR or capturing its visual evidence.
+- `handoff`: before briefing another agent or session, or ending with work left for one.
 - `review-loop`: when sending a change to review or when its findings return.
 
 ## Modes
@@ -52,7 +53,7 @@ Before final verification, reconcile the original request and accepted follow-up
 
 ### Reporting to the User
 
-Answer a direct question before continuing other work; open a status answer with Yes, No, or Not yet. Milestone reports state outcome, verification limits, delivery state, and blocker or next step; when work is left running, say what watches it, how, and until when, and start that watch in the same turn, or say nothing watches it. A draft or other deliverable the user must read ends the message; show it in full when it changed, when asked for the final version, or while a short paste-ready draft is pending, never as patches or a pointer to an earlier message.
+Answer a direct question before other work; open a status answer with Yes, No, or Not yet. Milestone reports state outcome, verification limits, delivery state, and blocker or next step; when work is left running, say what watches it, how, and until when, and start that watch in the same turn, or say nothing watches it. A draft or other deliverable the user must read ends the message; show it in full when it changed, when asked for the final version, or while a short paste-ready draft is pending, never as patches or a pointer to an earlier message.
 
 Ask the user one decision at a time; with several, list them briefly and ask only the first. Explain it with a concrete scenario (what goes wrong, for whom, how badly), then the options in plain words and your recommendation; a hold or ordering you ask for states what happens if it is skipped. If the user skips a question or misreads it, restate it as one short plain paragraph. Exploratory questions ("what if", "how could we simplify") call for discussion, not changes: act once the user picks an option. A terse go-ahead such as "go" approves the recommendation; a bare option label selects that option. If the user rejects an approach twice, stop and re-evaluate it.
 

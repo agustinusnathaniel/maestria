@@ -186,6 +186,7 @@ describe('canonical directive behavioral contracts', () => {
       ['docs-update', /before finishing a change to behavior/iu],
       ['create-pull-request', /drafting, publishing, or refreshing a PR/iu],
       ['review-loop', /sending a change to review/iu],
+      ['handoff', /before briefing another agent or session/iu],
     ] as const) {
       const line = routing.split('\n').find((entry) => entry.startsWith(`- \`${skill}\`:`));
       expect(line, `missing skill map line: ${skill}`).toBeDefined();
@@ -201,7 +202,7 @@ describe('canonical directive behavioral contracts', () => {
     for (const concept of [
       /outcome/iu,
       /constraints/iu,
-      /acceptance evidence/iu,
+      /acceptance criteria and evidence/iu,
       /assumptions/iu,
       /next step/iu,
     ]) {
