@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.16.0
+
+### Minor Changes
+
+- [#442](https://github.com/agustinusnathaniel/maestria/pull/442) [`de55ea5`](https://github.com/agustinusnathaniel/maestria/commit/de55ea5d35910d8b91d38e4eed1e6cfb4682c727) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Re-tiered directives: the always-on rules and main loop carry about 30% fewer words, keeping only rules that must apply on every turn, and the main loop's Routing section is now one skill map with a trigger line per method skill. Task-shaped method moves into skills: the new `implement` skill holds implementation judgment, reuse, testing, and comment rules (the reviewer profile embeds it); `iteration-limits` is renamed `review-loop` and holds the reviewer briefing, triage order, and pass rules; `handoff` holds the delegation brief, failed-delegation recovery, and the cross-session tracker; `create-pull-request`, `docs-update`, `architecture-plan`, and `diagnose` take the text only their task needs. Two floors are added: a negative result counts only from a source that could have shown the positive, and people are referred to by id, count, or hash, never email or name, in PR text, evidence, logs, and messages. `handoff`, `review-loop`, and `implement` now ship in every maestria package. Load `review-loop` where you loaded `iteration-limits`.
+
+- [#446](https://github.com/agustinusnathaniel/maestria/pull/446) [`9da81ec`](https://github.com/agustinusnathaniel/maestria/commit/9da81ec3a1d8adde4c64c37de67e32dc06869180) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Native adapters apply the shared git-safety classifier. OpenCode blocks `git commit --no-verify` and `git push --no-verify` before the `shell` tool runs and asks through its permission prompt before commits or pushes to `main`, `develop`, `staging`, or `release/*`, force pushes, `git reset --hard`, `git clean -f`, `git checkout -- <path>`, `git restore <path>`, and `git stash drop`; an explicit config `deny` stays final. Pi does the same in `tool_call` and for your own `!` shell commands, asking through its confirm dialog and blocking with an approval message when there is no UI. Pi now also injects the always-on core (main loop and global rules) into every run's system prompt, where before it reached the session only when the model loaded those skills.
+
 ## 0.15.0
 
 ### Minor Changes
