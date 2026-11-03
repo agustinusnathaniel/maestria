@@ -115,16 +115,21 @@ const GIT_VALUED_OPTIONS = new Set([
 	"--super-prefix",
 	"--work-tree"
 ]);
+const HOOKS_PATH_OVERRIDE = /^core\.hookspath=/iu;
 const parseGit = (words) => {
 	if (words.length === 0 || basename(words[0]) !== "git") {
 		return undefined;
 	}
 	let directory;
+	let hooksPathOverride = false;
 	let index = 1;
 	while (index < words.length && words[index].startsWith("-")) {
 		if (GIT_VALUED_OPTIONS.has(words[index])) {
 			if (words[index] === "-C") {
 				directory = directory === undefined ? words[index + 1] : `${directory}/${words[index + 1]}`;
+			}
+			if (words[index] === "-c" && HOOKS_PATH_OVERRIDE.test(words[index + 1] ?? "")) {
+				hooksPathOverride = true;
 			}
 			index += 2;
 		} else {
@@ -137,6 +142,7 @@ const parseGit = (words) => {
 	return {
 		args: words.slice(index + 1),
 		directory,
+		hooksPathOverride,
 		subcommand: words[index]
 	};
 };
@@ -201,16 +207,23 @@ const PUSH_VALUED = new Set([
 	"--exec"
 ]);
 const branchName = (ref) => ref.replace(/^refs\/heads\//u, "");
+const skipsHooks = (bypass) => block(`${bypass} skips repository hooks; let the hooks run and fix what they report`);
 const classifyCommit = (git, context) => {
 	if (hasLong(git.args, "--no-verify") || shortFlags(git.args, COMMIT_VALUED_SHORT).has("n")) {
-		return block("git commit --no-verify skips repository hooks; let the hooks run and fix what they report");
+		return skipsHooks("git commit --no-verify");
+	}
+	if (git.hooksPathOverride) {
+		return skipsHooks("git -c core.hooksPath=... commit");
 	}
 	const branch = context.currentBranch(git.directory);
 	return isProtected(branch) ? ask(`git commit on the protected branch ${branch}; create a feature branch first`) : ALLOW;
 };
 const classifyPush = (git, context) => {
 	if (hasLong(git.args, "--no-verify")) {
-		return block("git push --no-verify skips repository hooks; let the hooks run and fix what they report");
+		return skipsHooks("git push --no-verify");
+	}
+	if (git.hooksPathOverride) {
+		return skipsHooks("git -c core.hooksPath=... push");
 	}
 	const [, ...refspecs] = positionals(git.args, PUSH_VALUED);
 	const decisions = [];

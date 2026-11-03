@@ -25,8 +25,16 @@ describe('git safety classifier', () => {
     'git commit -anm x',
     'git push --no-verify',
     'cd repo && git -C . commit --no-verify',
+    'git -c core.hooksPath=/dev/null commit -m x',
+    'git -c core.hooksPath= push origin feature/x',
   ])('blocks hook bypass: %s', (command) => {
     expect(verdict(command)).toBe('block');
+  });
+
+  it('names a one-off core.hooksPath as the bypass', () => {
+    expect(classifyGitSafety('git -c core.hooksPath=x commit -m x', on('feature/x')).reason).toBe(
+      'git -c core.hooksPath=... commit skips repository hooks; let the hooks run and fix what they report',
+    );
   });
 
   it.each([
@@ -73,6 +81,7 @@ describe('git safety classifier', () => {
     'echo "git push --force"',
     'grep -r "git reset --hard" docs',
     'git log --oneline',
+    'git config core.hooksPath .husky',
   ])('allows routine or quoted commands: %s', (command) => {
     expect(verdict(command)).toBe('allow');
   });
