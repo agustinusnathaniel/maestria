@@ -95,7 +95,7 @@ const assertNativeMetadata = (packedRoot: string): void => {
   for (const role of readOnlyRoles) {
     expect(
       fs.readFileSync(path.join(packedRoot, `agents/maestria-${role}.toml`), 'utf-8'),
-    ).toContain('sandbox_mode = "read-only"');
+    ).not.toMatch(/^sandbox_mode/mu);
   }
 };
 

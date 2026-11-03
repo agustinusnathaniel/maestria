@@ -195,7 +195,7 @@ const addOutput = (plan: Map<string, string>, relative: string, content: string)
 };
 
 interface Profile {
-  codex: { description: string; sandboxMode?: string };
+  codex: { description: string };
   description: string;
   name: string;
   readOnly: boolean;
@@ -215,18 +215,12 @@ const profileMetadata = (packageRoot: string): Record<string, Profile> => {
       typeof profile.description !== 'string' ||
       typeof profile.readOnly !== 'boolean' ||
       !isRecord(profile.codex) ||
-      typeof profile.codex.description !== 'string' ||
-      !['string', 'undefined'].includes(typeof profile.codex.sandboxMode)
+      typeof profile.codex.description !== 'string'
     ) {
       throw new Error(`Invalid profile metadata: ${role}`);
     }
     profiles[role] = {
-      codex: {
-        description: profile.codex.description,
-        ...(typeof profile.codex.sandboxMode === 'string'
-          ? { sandboxMode: profile.codex.sandboxMode }
-          : {}),
-      },
+      codex: { description: profile.codex.description },
       description: profile.description,
       name: role,
       readOnly: profile.readOnly,
@@ -262,9 +256,6 @@ const codexProfile = (profile: Profile, instructions: string): string => {
   const header = [
     `name = ${JSON.stringify(`maestria-${profile.name}`)}`,
     `description = ${JSON.stringify(profile.codex.description)}`,
-    ...(profile.codex.sandboxMode === undefined
-      ? []
-      : [`sandbox_mode = ${JSON.stringify(profile.codex.sandboxMode)}`]),
   ];
   return `${header.join('\n')}\n\n${TOML_NOTICE}\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`;
 };
