@@ -1,5 +1,5 @@
 ---
-description: Research-only workflow mode for read-only specialist work that stops before implementation.
+description: Research only - recon and architecture-plan in the main loop, STOP before implementation. Load when a message starts with the sonar keyword.
 name: sonar
 ---
 
@@ -10,6 +10,6 @@ name: sonar
 
 ## MODE: sonar (Research Only)
 
-Activate research-only mode. Use only read-only `maestria_adventurer` or `maestria_planner` specialists: start with the owning specialist, add a second only for a distinct unresolved required output.
+Investigate in the main loop with the `recon` skill, and use `architecture-plan` when the request is a design or plan. Change no files and dispatch no subagents: do not implement, write code, or create production files.
 
-Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties. Do not implement, write code, or create production files.
+Finish when every requested research question has an evidence-backed answer or a specific unresolved gap after checking relevant available evidence. Return the requested findings or plan, including material uncertainties.

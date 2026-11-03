@@ -1,49 +1,55 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-
 import type { Context } from '@deepseek-ai/cordis';
 import type { SystemPrompt } from '@deepseek-ai/dsh-system-prompt';
+import type { PreToolDecision, ToolExecution } from '@deepseek-ai/dsh-tools';
+import type { WorkingDirectoryService } from '@deepseek-ai/dsh-working-directory';
+
+import { classifyCall, toPreToolDecision } from './guard.js';
+import { projectContext } from './project.js';
+import { readPrompt, RULES_ORDER } from './prompts.js';
 
 /**
- * maestria methodology plugin for DeepSeek Harness, mounted by the bundle's
- * `maestria` agent preset. It registers one `maestria_<role>` prompt variable
- * per persona, which the preset's persona and delegation rows reference, and
- * the global rules as a system-prompt section.
+ * maestria plugin for the `maestria` agent preset: the main loop as the `maestria_main_loop`
+ * prompt variable the persona row references, the global rules as a system-prompt section,
+ * project customization as runtime context, and the shared hook policy on `tools/pre-execute`.
  */
 export const name = 'maestria';
 
-export const inject = ['systemPrompt'];
+export const inject = ['systemPrompt', 'workingDirectory'];
 
-export const PERSONAS = [
-  'orchestrator',
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+/** After the host's working-directory, sandbox, approval, and delegation contexts. */
+export const PROJECT_CONTEXT_ORDER = 130;
 
-const PROMPTS_DIR = path.resolve(import.meta.dirname, '../prompts');
+type Host = Context & {
+  readonly systemPrompt: SystemPrompt;
+  readonly workingDirectory: WorkingDirectoryService;
+};
 
-/** Generated prompt text without its provenance banner. Reads at mount, so a missing file fails the preset. */
-const readPrompt = (file: string): string =>
-  readFileSync(path.join(PROMPTS_DIR, `${file}.md`), 'utf-8')
-    .replace(/^\s*<!--[\s\S]*?-->/u, '')
-    .trim();
-
-/** The host provides `systemPrompt` (`inject`); the package imports host types only. */
-export const apply = (ctx: Context & { readonly systemPrompt: SystemPrompt }): void => {
-  for (const persona of PERSONAS) {
-    const text = readPrompt(persona);
-    ctx.systemPrompt.variable(`maestria_${persona}`, () => text);
-  }
+/** The host provides both services (`inject`); the package imports host types only. */
+export const apply = (ctx: Host): void => {
+  const mainLoop = readPrompt('main-loop');
+  ctx.systemPrompt.variable('maestria_main_loop', () => mainLoop);
   ctx.systemPrompt.section({
-    // Literal text: the rules are prose, not a `{{variable}}` template.
     interpolate: false,
-    name: 'maestria:global-rules',
-    order: 150,
-    text: readPrompt('global-rules'),
+    name: 'maestria:rules',
+    order: RULES_ORDER,
+    text: readPrompt('rules'),
   });
+  ctx.systemPrompt.context({
+    interpolate: false,
+    name: 'maestria:project',
+    order: PROJECT_CONTEXT_ORDER,
+    required: true,
+    text: ({ agent }) =>
+      agent === undefined ? '' : projectContext(ctx.workingDirectory.get(agent.session)),
+  });
+  ctx.on(
+    'tools/pre-execute',
+    async (exec: ToolExecution, next: () => Promise<PreToolDecision>): Promise<PreToolDecision> => {
+      if (exec.agent === undefined) {
+        return await next();
+      }
+      const cwd = ctx.workingDirectory.get(exec.agent.session);
+      return await (toPreToolDecision(classifyCall(exec.name, exec.arguments, cwd)) ?? next());
+    },
+  );
 };

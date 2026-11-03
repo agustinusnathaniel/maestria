@@ -1,8 +1,9 @@
 /* oxlint-disable no-await-in-loop -- Install, boot, and the scripted delegation turns run sequentially. */
 // Real-host evidence for @maestria/deepseek: installs the packed bundle into an
 // isolated DeepSeek Harness web profile with `dsh plugin add`, boots `dsh web`
-// against a local fake Messages endpoint, and drives one maestria session that
-// delegates to a read-only and an edit-denied specialist. No paid inference.
+// against a local fake Messages endpoint, and drives one maestria session in a git
+// repository that runs a guarded git command, then delegates to the reviewer. No
+// paid inference.
 import { spawn, spawnSync } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
@@ -66,15 +67,15 @@ const prompt = async (file: string): Promise<string> => {
   return raw.replace(/^\s*<!--[\s\S]*?-->/u, '').trim();
 };
 /** Each persona's opening line identifies which agent sent a request. */
-const ROLES = ['orchestrator', 'reviewer', 'architect'] as const;
+const ROLES = ['main-loop', 'reviewer'] as const;
 const openings = new Map<string, string>();
 for (const role of ROLES) {
   const persona = await prompt(role);
   const [opening = role] = persona.split('\n');
   openings.set(role, opening);
 }
-const globalRules = await prompt('global-rules');
-const rulesHeading = globalRules.split('\n').find((line) => line.startsWith('## '));
+const PROJECT_RULE = 'PROJECT_RULE_EVIDENCE: run the project checks before pushing.';
+const MARKER = 'guard-marker';
 
 const wire = (raw: string): Wire => {
   const body = record(JSON.parse(raw));
@@ -123,25 +124,28 @@ const sse = (start: Block, delta: Block, stopReason: string): string =>
     .join('');
 const say = (value: string): string =>
   sse({ text: '', type: 'text' }, { text: value, type: 'text_delta' }, 'end_turn');
-const delegate = (tool: string): string =>
+const callTool = (tool: string, input: Record<string, string>): string =>
   sse(
     { id: `toolu_${tool}`, input: {}, name: tool, type: 'tool_use' },
-    {
-      partial_json: JSON.stringify({ description: 'evidence', prompt: 'DELEGATION_EVIDENCE' }),
-      type: 'input_json_delta',
-    },
+    { partial_json: JSON.stringify(input), type: 'input_json_delta' },
     'tool_use',
   );
 
-// The orchestrator delegates to the reviewer, then the architect, then finishes.
-const DELEGATIONS = ['maestria_reviewer', 'maestria_architect'];
+// The main loop runs a hook-bypassing commit, delegates to the reviewer, then finishes.
+const STEPS = [
+  callTool('bash', {
+    command: `touch ${MARKER} && git commit --no-verify -m evidence`,
+    description: 'Commit without hooks',
+  }),
+  callTool('maestria_reviewer', { description: 'evidence', prompt: 'REVIEW_EVIDENCE' }),
+];
 const requests: Wire[] = [];
 const respond = (body: Wire): string => {
-  if (body.role === 'reviewer' || body.role === 'architect') {
-    return say(`${body.role.toUpperCase()}_CHILD_EVIDENCE`);
+  if (body.role === 'reviewer') {
+    return say('REVIEWER_CHILD_EVIDENCE');
   }
-  const next = body.role === 'orchestrator' ? DELEGATIONS[toolResults(body).length] : undefined;
-  return next === undefined ? say('Deterministic evidence response') : delegate(next);
+  const next = body.role === 'main-loop' ? STEPS[toolResults(body).length] : undefined;
+  return next ?? say('Deterministic evidence response');
 };
 const serveFake = async (
   request: http.IncomingMessage,
@@ -219,6 +223,10 @@ let child: ChildProcess | undefined;
 let logs = '';
 const report: Record<string, unknown> = {};
 try {
+  const work = path.join(root, 'work');
+  run(['init', '-q', '-b', 'main'], 'git', work);
+  await fs.mkdir(path.join(work, '.maestria'));
+  await fs.writeFile(path.join(work, '.maestria/rules.md'), `${PROJECT_RULE}\n`);
   run(['pack', '--pack-destination', path.join(root, 'pack')], 'npm', packageDir);
   const [tarball = ''] = await fs.readdir(path.join(root, 'pack'));
   run(['plugin', '--profile', 'web', 'add', path.join(root, 'pack', tarball)]);
@@ -270,8 +278,8 @@ try {
   const roster = await call('agentPresets/list', {});
   const presets = list(roster.presets).map(record);
   check(
-    'the maestria preset activates beside the shipped presets',
-    presets.some((preset) => preset.id === 'maestria'),
+    'the maestria and maestria-reviewer presets activate beside the shipped presets',
+    ['maestria', 'maestria-reviewer'].every((id) => presets.some((preset) => preset.id === id)),
   );
   const created = await call('session/create', { request: { agentPreset: 'maestria' } });
   const sessionId = String(created.sessionId);
@@ -281,17 +289,10 @@ try {
     .filter((skill) => String(skill.path).includes('@maestria/deepseek'))
     .map((skill) => String(skill.name));
   report.skills = bundled.toSorted();
+  const shipped = await fs.readdir(path.join(packageDir, 'skills'));
   check(
-    'the bundle skills directory resolves through the installed package',
-    [
-      'blitz',
-      'create-pull-request',
-      'docs-update',
-      'fein',
-      'handoff',
-      'iteration-limits',
-      'sonar',
-    ].every((name) => bundled.includes(name)),
+    'every bundled skill resolves through the installed package',
+    shipped.every((name) => bundled.includes(name)),
   );
   await call('session/prompt', {
     request: {
@@ -301,68 +302,58 @@ try {
       sessionId,
     },
   });
+  // The reviewer runs in the background; its result reaches the main loop as a settlement notice.
+  const delivered = (body: Wire): boolean =>
+    body.messages.flat().some((block) => text([block]).includes('REVIEWER_CHILD_EVIDENCE'));
   const settled = (): boolean =>
-    requests.some(
-      (body) => body.role === 'orchestrator' && toolResults(body).length === DELEGATIONS.length,
-    );
+    requests.some((body) => body.role === 'main-loop' && delivered(body));
   const turnDeadline = Date.now() + 90_000;
   while (!settled() && Date.now() < turnDeadline) {
     await delay(200);
   }
 
-  const [orchestrator, reviewer, architect] = ROLES.map((role) =>
-    requests.find((body) => body.role === role),
-  );
-  const final = requests.findLast((body) => body.role === 'orchestrator');
+  const [main, reviewer] = ROLES.map((role) => requests.find((body) => body.role === role));
+  const final = requests.findLast((body) => body.role === 'main-loop');
+  const results = final === undefined ? [] : toolResults(final);
+  report.toolResults = results.map((block) => text(block.content));
   check(
-    'the orchestrator persona renders with the DSH integration note',
-    orchestrator?.system.includes('## DeepSeek Harness Integration') === true,
+    'the main-loop persona renders with the DSH integration note and the main-session rules',
+    ['## DeepSeek Harness Integration', '# Main Session'].every(
+      (heading) => main?.system.includes(heading) === true,
+    ),
   );
   check(
     'no prompt variable is left unresolved',
     requests.every((body) => !/\{\{\w+\}\}/u.test(body.system)),
   );
   check(
-    'the orchestrator receives every specialist delegation tool',
-    ['adventurer', 'architect', 'builder', 'diagnose', 'planner', 'reviewer', 'writer'].every(
-      (role) => orchestrator?.tools.includes(`maestria_${role}`) === true,
-    ),
+    'project-root .maestria/rules.md reaches the main loop',
+    main?.messages.flat().some((block) => text([block]).includes(PROJECT_RULE)) === true,
   );
   check(
-    'global rules reach the orchestrator and both children',
-    rulesHeading !== undefined &&
-      [orchestrator, reviewer, architect].every(
-        (body) => body?.system.includes(rulesHeading) === true,
-      ),
+    'the guard denies a hook-bypassing commit before any of the command runs',
+    text(results[0]?.content).includes('maestria:') && !(await exists(path.join(work, MARKER))),
   );
   check(
-    'children replace the orchestrator persona with their own',
-    [reviewer, architect].every(
-      (body) => body !== undefined && !body.system.includes(openings.get('orchestrator') ?? '\0'),
-    ),
+    'the main loop receives the maestria_reviewer tool',
+    main?.tools.includes('maestria_reviewer') === true,
   );
-  // The host adds its own `subagent` tool to every spawned child after the filter.
   check(
-    'the read-only reviewer keeps only read, glob, grep, and skill',
+    'the reviewer runs on its own persona and rules, without the main loop',
     reviewer !== undefined &&
-      reviewer.tools
-        .filter((tool) => tool !== 'subagent')
-        .toSorted()
-        .join(',') === 'glob,grep,read,skill',
+      reviewer.system.includes('# Acceptance and Blind Review') &&
+      !reviewer.system.includes(openings.get('main-loop') ?? '\0') &&
+      !reviewer.system.includes('# Main Session'),
   );
   check(
-    'the architect cannot edit or write but keeps its shell',
-    architect !== undefined &&
-      !architect.tools.some((tool) => tool === 'edit' || tool === 'write') &&
-      architect.tools.includes(process.platform === 'win32' ? 'pwsh' : 'bash'),
-  );
-  check(
-    'both child results return to the orchestrator',
-    final !== undefined &&
-      ['REVIEWER_CHILD_EVIDENCE', 'ARCHITECT_CHILD_EVIDENCE'].every((marker) =>
-        toolResults(final).some((block) => text(block.content).includes(marker)),
+    'the reviewer has no shell, edit, write, or delegation tool',
+    reviewer !== undefined &&
+      ['read', 'glob', 'grep', 'skill'].every((tool) => reviewer.tools.includes(tool)) &&
+      reviewer.tools.every((tool) =>
+        ['glob', 'grep', 'read', 'read_image', 'skill', 'working_directory'].includes(tool),
       ),
   );
+  check('the reviewer result returns to the main loop', final !== undefined && delivered(final));
 
   child.kill();
   // The CLI's uninstall verb; pnpm treats it as `remove`.
@@ -372,7 +363,11 @@ try {
   check('the scripted run completes', false);
   report.error = error instanceof Error ? error.message : String(error);
 } finally {
-  report.requests = requests.map((body) => ({ role: body.role, tools: body.tools }));
+  report.requests = requests.map((body) => ({
+    role: body.role,
+    system: body.system.slice(0, 120),
+    tools: body.tools,
+  }));
   child?.kill();
   fake.close();
 }

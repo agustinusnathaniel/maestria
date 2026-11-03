@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "maestria",
-    "description": "Adds the maestria agent preset: an orchestrator that routes work through seven specialist subagents with independent review."
+    "description": "Adds the maestria agent preset: a main loop that investigates, implements, and delivers, with git and generated-file guards and one read-only reviewer."
   }
 }

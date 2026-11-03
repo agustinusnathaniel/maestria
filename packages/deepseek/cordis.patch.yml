@@ -1,35 +1,35 @@
-# The `maestria` agent preset: the standard coding agent with maestria's
-# orchestrator persona, global rules, skills, and one delegation tool per
-# specialist.
+# The `maestria` agent preset (the main loop) and the `maestria-reviewer` preset that its
+# `maestria_reviewer` tool starts.
 #
-# A bundle patch cannot insert rows into another preset's plugin list, so every
-# other row restates the `standard` preset of @deepseek-ai/dsh-web-app
-# 0.2.0-rc.2, Copyright (c) 2026 DeepSeek, MIT License. Re-diff those rows
-# against that file when raising the supported DeepSeek Harness release.
+# A bundle patch cannot insert rows into another preset's plugin list, so every `maestria`
+# row other than `maestria`, the persona prefix, the skill root, and `maestria-reviewer`
+# restates the `standard` preset of @deepseek-ai/dsh-web-app 0.2.1-rc.5, Copyright (c) 2026
+# DeepSeek, MIT License. Re-diff those rows against that file when raising the supported
+# DeepSeek Harness release.
 - insert:
     - id: preset-maestria
       name: '@deepseek-ai/dsh-agent-preset'
       config:
         id: maestria
         name: maestria
-        description: Coding agent that routes work through maestria's specialists with independent review.
+        description: Coding agent that investigates, implements, and delivers, with git and generated-file guards and one read-only reviewer.
         order: 5
         plugins:
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
               prefix: |-
                 You are a coding agent powered by the {{model}} model.
 
-                {{maestria_orchestrator}}
-          # Registers the `maestria_<role>` prompt variables and the global rules section.
+                {{maestria_main_loop}}
           - id: maestria
             name: '@maestria/deepseek'
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
               maxBytes: 65536
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
           - id: tool-bash
             name: '@deepseek-ai/dsh-tool-bash'
             disabled: !!js process.platform === 'win32'
@@ -44,6 +44,8 @@
               sampleOverCapGlobResults: false
           - id: tool-jobs
             name: '@deepseek-ai/dsh-tool-jobs'
+          - id: tool-schedule
+            name: '@deepseek-ai/dsh-tool-schedule'
           - id: skill-filesystem
             name: '@deepseek-ai/dsh-skill-filesystem'
             config:
@@ -65,7 +67,7 @@
                 name: '@deepseek-ai/dsh-plan-mode'
                 config:
                   section: |
-                    You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+                    You are in plan mode. Stay in plan mode until the user approves your plan through exit_plan_mode or switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
 
                     Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
 
@@ -109,102 +111,23 @@
                   provider: spawn
                   toolName: subagent
                   modelSelectionSettings: true
-                  backgroundMode: continuable
               - id: tool-subagent-fork
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:
                   provider: fork
                   toolName: subagent_fork
-                  backgroundMode: continuable
-              # One-shot specialist delegation. maxDepth 1 keeps specialists from delegating
-              # further; the tool filters are host-enforced role boundaries.
-              - id: maestria-adventurer
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: maestria_adventurer
-                  persona: '{{maestria_adventurer}}'
-                  maxDepth: 1
-                  toolFilter:
-                    allow: [read, glob, grep, skill]
-              - id: maestria-architect
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: maestria_architect
-                  persona: '{{maestria_architect}}'
-                  maxDepth: 1
-                  toolFilter:
-                    deny: [edit, write]
-              - id: maestria-builder
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: maestria_builder
-                  persona: '{{maestria_builder}}'
-                  maxDepth: 1
-              - id: maestria-diagnose
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: maestria_diagnose
-                  persona: '{{maestria_diagnose}}'
-                  maxDepth: 1
-                  toolFilter:
-                    deny: [edit, write]
-              - id: maestria-planner
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: maestria_planner
-                  persona: '{{maestria_planner}}'
-                  maxDepth: 1
-                  toolFilter:
-                    allow: [read, glob, grep, skill]
               - id: maestria-reviewer
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:
                   provider: spawn
                   toolName: maestria_reviewer
-                  persona: '{{maestria_reviewer}}'
-                  maxDepth: 1
-                  toolFilter:
-                    allow: [read, glob, grep, skill]
-              - id: maestria-writer
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: maestria_writer
-                  persona: '{{maestria_writer}}'
-                  maxDepth: 1
-              - id: tool-subagent-codex
-                name: '@deepseek-ai/dsh-tool-subagent'
-                disabled: true
-                config:
-                  provider: codex
-                  toolName: subagent_codex
-                  backgroundMode: one-shot
-                  maxDepth: provider-managed
-              - id: tool-subagent-claude-code
-                name: '@deepseek-ai/dsh-tool-subagent'
-                disabled: true
-                config:
-                  provider: claude-code
-                  toolName: subagent_claude_code
-                  backgroundMode: one-shot
-                  maxDepth: provider-managed
+                  agentPreset: maestria-reviewer
               - id: workflow-ptc
                 name: '@deepseek-ai/dsh-workflow-ptc'
                 config:
                   provider: spawn
               - id: tool-workflow
                 name: '@deepseek-ai/dsh-tool-workflow'
-              - id: tool-ralph
-                name: '@deepseek-ai/dsh-tool-ralph'
-                disabled: true
-                config:
-                  subagentProvider: spawn
-                  maxRounds: 64
           - id: tool-ask-user
             name: '@deepseek-ai/dsh-tool-ask-user'
           - id: tool-todo
@@ -221,3 +144,45 @@
           - id: tool-plugin-manager
             name: '@deepseek-ai/dsh-plugin-manager/tools'
             disabled: true
+          - id: tool-plugin-market
+            name: '@deepseek-ai/dsh-plugin-market/tools'
+            disabled: true
+    - id: preset-maestria-reviewer
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: maestria-reviewer
+        name: maestria reviewer
+        description: Read-only blind reviewer that the maestria preset's maestria_reviewer tool starts.
+        order: 6
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |-
+                You are a code reviewer powered by the {{model}} model.
+
+                {{maestria_reviewer}}
+          - id: maestria-reviewer
+            name: '@maestria/deepseek/reviewer'
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          # The reviewer's tools: read, read_image, glob, grep, and skill. No shell, edit, write, or
+          # delegation tool is mounted, so the host cannot run one.
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+            config:
+              write: false
+              edit: false
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            config:
+              customSkillDirs:
+                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@maestria/deepseek/package.json')), 'skills')
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'

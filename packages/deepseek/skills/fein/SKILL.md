@@ -1,5 +1,5 @@
 ---
-description: Full workflow mode for reconnaissance or design, implementation, and independent review.
+description: Full method - recon, design, implement, review. Load when a message starts with the fein keyword.
 name: fein
 ---
 
@@ -8,6 +8,6 @@ name: fein
 
 [MODE: fein]
 
-## MODE: fein (Full Pipeline)
+## MODE: fein (Full Method)
 
-Activate the `full` route. Use the dynamic thinker -> worker -> verifier pipeline and required review floors.
+Load `recon` and `architecture-plan` before implementing, implement in the main loop, and require one blind `maestria_reviewer` pass with the review floors.
