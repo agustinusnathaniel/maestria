@@ -5,7 +5,7 @@ description: One package that installs maestria's reviewer profile, workflow com
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-`@maestria/agent-plugins` packages maestria's reviewer profile, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes seven [Agent Skills](https://agentskills.io/specification): the `handoff` and `iteration-limits` utilities, generated from the global rules, and the `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` [methodology skills](/core/agents/#skills) the rules tell agents to load.
+`@maestria/agent-plugins` packages maestria's reviewer profile, workflow commands, policy, and skills in one directly installable directory. Each host loads the resources it supports. Through the portable [Agent Plugins v1 format](https://agent-plugins.org/specification), the package also exposes eight [Agent Skills](https://agentskills.io/specification): the `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` [method skills](/core/agents/#skills) the main loop's skill map tells agents to load, copied from maestria's core methodology.
 
 <Aside type="tip" title="Native hosts get the full methodology">
   Portable installation supplies the eight skills. Native host integrations add one reviewer
@@ -15,7 +15,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 ## What you get
 
-- **One reviewer:** the independent review profile, embedding its complete role and the global policy. The main loop investigates, designs, implements, and delivers itself, loading the `recon`, `architecture-plan`, and `diagnose` skills when a task needs them.
+- **One reviewer:** the independent review profile, embedding its complete role and the global policy. The main loop investigates, designs, implements, and delivers itself, loading the method skills its skill map names (`recon`, `architecture-plan`, `diagnose`, `implement`, `docs-update`, `create-pull-request`, `review-loop`) when their trigger applies.
 - **Three workflow modes:** the full-method, research-only, and fast modes defined by ModeKeyword in `packages/shared/pi/src/state-core.ts`.
 - **Always-on policy and routing,** on hosts that can load it.
 - **Eight skills:** `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan`, on every host.
