@@ -7,6 +7,7 @@ import {
   serializeFrontmatter,
   stripFrontmatter,
 } from '../packages/core/scripts/lib/transforms.js';
+import { compose, hostSessionOutputs } from './host-session-files.js';
 import { bundledSkills } from './sync-bundled-skills.js';
 
 const ROLES = ['reviewer'];
@@ -20,9 +21,9 @@ const ROLE_RULE_PARTS: Record<string, readonly string[]> = {
 const ROLE_SKILLS: Record<string, readonly string[]> = {
   reviewer: ['implement'],
 };
-const MODES = ['fein', 'sonar', 'blitz'];
+const MODES = ['fein', 'sonar', 'blitz'] as const;
 // Hosts whose canonical integration note is composed into a shipped rule, context, or profile.
-const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
+const HOSTS = ['claude-code', 'codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
 export const GENERATED_NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
 export const TOML_NOTICE = '# Generated from canonical core directives.';
@@ -69,7 +70,6 @@ const readInput = (root: string, relative: string): string => {
 
 const document = (body: string, metadata: Record<string, unknown> | null = null): string =>
   `${serializeFrontmatter(metadata)}\n${GENERATED_NOTICE}\n\n${body.trim()}\n`;
-const compose = (...parts: string[]): string => parts.map((part) => part.trim()).join('\n\n');
 
 interface Inputs {
   arguments: string;
@@ -130,6 +130,9 @@ const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
 const integrationDisplayName = (host: string): string => {
   if (host === 'codex') {
     return 'Codex CLI';
+  }
+  if (host === 'claude-code') {
+    return 'Claude Code and ZCode';
   }
   if (host === 'omp') {
     return 'OMP';
@@ -299,63 +302,6 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   );
 };
 
-// Each host that reads a plain session file gets its own, holding the always-on core and only its
-// own host note, so it stays under that host's cap. Devin loads the root AGENTS.md always-on and
-// reads its modes as skills; the CLI installs the Codex file into Codex's global AGENTS.md;
-// Hermes users add theirs as project context; Kimi Code reads its file through `systemPromptPath`.
-// Hermes caps context files in characters, which UTF-16 length never undercounts.
-const KIMI_FILE = 'kimi.system-prompt.md';
-const SESSION_FILES = [
-  { cap: 'Devin 16 KiB', file: 'AGENTS.md', host: 'devin', limit: 16 * 1024, modes: false },
-  { cap: 'Codex 32 KiB', file: 'codex.agents.md', host: 'codex', limit: 32 * 1024, modes: true },
-  {
-    cap: 'Hermes 20,000-character',
-    file: 'hermes.context.md',
-    host: 'hermes',
-    limit: 20_000,
-    modes: false,
-  },
-  { cap: 'Kimi Code 32 KiB', file: KIMI_FILE, host: 'kimi-code', limit: 32 * 1024, modes: true },
-] as const;
-const demote = (markdown: string): string =>
-  markdown.replaceAll(/^(?<hashes>#{2,5}) /gmu, '#$<hashes> ');
-
-const addSessionContext = (
-  plan: Map<string, string>,
-  input: Inputs,
-  routerPolicy: string,
-): void => {
-  const modeBodies = MODES.map((mode) => input.modes[mode].body);
-  for (const session of SESSION_FILES) {
-    const { cap, file, host, limit } = session;
-    const content = document(
-      compose(
-        routerPolicy,
-        ...(session.modes ? modeBodies : []),
-        '## Host Notes',
-        demote(input.contexts[host]),
-      ),
-    );
-    const size = host === 'hermes' ? content.length : Buffer.byteLength(content);
-    if (size > limit) {
-      throw new Error(`${file} exceeds the ${cap} cap`);
-    }
-    addOutput(plan, file, content);
-  }
-};
-
-// Devin has no plugin commands component, so its modes ship as skills only its manifest selects.
-const addDevinModeSkills = (plan: Map<string, string>, input: Inputs): void => {
-  for (const mode of MODES) {
-    const { body, metadata } = input.modes[mode];
-    addOutput(
-      plan,
-      `devin/skills/${mode}/SKILL.md`,
-      document(compose(body, input.arguments), { description: metadata.description, name: mode }),
-    );
-  }
-};
-
 const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {
   for (const mode of MODES) {
     const { body, metadata } = input.modes[mode];
@@ -372,9 +318,10 @@ const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy:
 const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   const routerPolicy = compose(input.roles['main-loop'], input.rules);
   addPolicyRules(plan, input, routerPolicy);
-  addSessionContext(plan, input, routerPolicy);
-  addDevinModeSkills(plan, input);
   addModeCommands(plan, input, routerPolicy);
+  for (const [relative, content] of hostSessionOutputs(input, routerPolicy, document)) {
+    addOutput(plan, relative, content);
+  }
 };
 
 // Manifests may also select the method skills that scripts/sync-bundled-skills.ts writes.
@@ -389,8 +336,12 @@ const validateManifestResources = (
     if (!isRecord(manifest)) {
       throw new Error(`Invalid plugin manifest: ${output}`);
     }
-    for (const field of ['skills', 'agents', 'commands', 'rules', 'systemPromptPath']) {
+    for (const field of ['skills', 'agents', 'commands', 'rules', 'systemPromptPath', 'hooks']) {
       const selected = manifest[field];
+      // Kimi declares hooks inline; only a path selects a resource.
+      if (field === 'hooks' && typeof selected !== 'string') {
+        continue;
+      }
       const relatives: unknown[] = [];
       if (Array.isArray(selected)) {
         for (const item of selected) {
@@ -405,6 +356,11 @@ const validateManifestResources = (
         }
         const normalized = relative.replace(/^\.\//u, '').replace(/\/$/u, '');
         assertContainedFile(packageRoot, normalized);
+        // Hook configurations are hand-authored beside the generated outputs they run.
+        if (field === 'hooks') {
+          readInput(packageRoot, normalized);
+          continue;
+        }
         // Every selected resource must be a generated output, so a stale file left on disk
         // cannot satisfy a manifest after the generator stops producing it.
         if (

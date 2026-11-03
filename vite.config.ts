@@ -24,6 +24,9 @@ export default defineConfig({
         'packages/agent-plugins/codex.agents.md',
         'packages/agent-plugins/devin/**',
         'packages/agent-plugins/hermes.context.md',
+        'packages/agent-plugins/hooks/context/**',
+        'packages/agent-plugins/hooks/lib/policy.mjs',
+        'packages/agent-plugins/modes/**',
         'packages/agent-plugins/kimi.system-prompt.md',
         // Generated skill copies; the canonical core skills stay formatted.
         'packages/*/skills/**',
@@ -63,7 +66,13 @@ export default defineConfig({
     // Ultracite oxlint/core preset as base - composed in the authoritative Vite+ config.
     // Spread first so repo rules win. No standalone oxlint.config.ts.
     ...oxlintPreset,
-    ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
+    ignorePatterns: [
+      ...new Set([
+        ...(oxlintPreset.ignorePatterns ?? []),
+        'dist/**',
+        'packages/agent-plugins/hooks/lib/policy.mjs',
+      ]),
+    ],
     jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
     options: { typeAware: true, typeCheck: true },
     overrides: [...(oxlintPreset.overrides ?? []), testOverrides],

@@ -18,5 +18,5 @@
     "specialists"
   ],
   "skills": "./skills/",
-  "commands": "./commands/"
+  "commands": "./modes/"
 }

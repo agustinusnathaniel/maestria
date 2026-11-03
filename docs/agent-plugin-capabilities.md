@@ -17,7 +17,8 @@ The directly installable `packages/agent-plugins/` root keeps all five host mani
 | Integrations | Core host notes (`packages/core/agent-directives/integrations/`) composed into the generated rules and profiles; not shipped as separate guides |
 | Generation | Development-only profile metadata (`generation/profiles.json`); root host manifests are hand-edited and validated against the generated outputs |
 | CLI | Standalone companion in `apps/maestria-cli`, not an executable plugin component |
-| Hooks, automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
+| Hooks | Node scripts under `hooks/` that reinforce existing rules ([CORE-037](adr/core/ADR-CORE-037-hooks-as-deterministic-reinforcement.md)): core loading on Claude Code and ZCode, project customization, git safety, the generated-file guard, and the email scan; registered by `hooks/hooks.json` (Claude Code, ZCode), `hooks/codex.json`, `hooks/cursor.json`, root `hooks.json` (Devin), and `kimi.plugin.json` |
+| Automations, MCP | Intentionally absent; no concrete executable or service capability requires them |
 
 The portable v1 manifest exposes the eight skills. It does not establish native agents, commands, policy injection, scheduling, permissions, or session lifecycle. See the [published specification](https://agent-plugins.org/specification). The existing OpenCode and Pi packages retain their native runtime adapters; Prime Agent and the former OMP/Hermes adapters remain retired.
 
@@ -36,7 +37,7 @@ The portable v1 manifest exposes the eight skills. It does not establish native 
 | OMP | One reviewer task profile | Three shared commands and one always-apply `rules/global.md` | No denylist, but a `tools` allowlist can enforce read-only; hooks are executable extensions only; `.toml` files not loaded |
 | Hermes | No portable native profiles | Optional manual project context (`hermes.context.md`), separate from skill installation | No Python route; portable skills are named `<plugin>:<skill>` from v0.22.6; context files past the model-dependent cap (floor 20,000 characters) are truncated |
 
-On Cursor, Kimi Code, and OMP, which also load the policy always-on, each mode command repeats the full router and policy (about 3,900 words per invocation). This is deliberate: the command still fails safe if the always-on rule is not loaded.
+On Cursor, Kimi Code, and OMP, which also load the policy always-on, each mode command in `commands/` repeats the full router and policy (about 2,150 words per invocation). This is deliberate: the command still fails safe if the always-on rule is not loaded. Claude Code and ZCode select `modes/` instead, which carries only the mode body, because their SessionStart hook loads the core.
 
 ## Verification levels
 
@@ -58,4 +59,4 @@ A doctor command, dry-run installation, accepted unknown frontmatter, or resolve
 
 Verify semantic components and parent/child context, every manifest resource, archive reachability, local/npm staging, native settings preservation, lifecycle ownership, no-write preflight failures, and unrelated-file preservation. Published archives exclude generation tooling and tests. Generic config preflight and the consolidated compiler validate before writes; processing errors must return failure in all CLI modes.
 
-Hooks and MCP remain available host capabilities but are unused by this package. Automations belong to host scheduling APIs and are not installed by these manifests. Permission, trust, sandbox, model, and session-state controls remain host-owned. Plugin-host evidence lives in the [host verification register](plugin-host-verification.md); non-plugin runtime evidence stays in the [runtime support matrix](runtime-support-matrix.md). This contract defines the consolidated component selection.
+MCP remains an available host capability unused by this package; hooks are selected per host as above, and each host's own control disables them. Automations belong to host scheduling APIs and are not installed by these manifests. Permission, trust, sandbox, model, and session-state controls remain host-owned. Plugin-host evidence lives in the [host verification register](plugin-host-verification.md); non-plugin runtime evidence stays in the [runtime support matrix](runtime-support-matrix.md). This contract defines the consolidated component selection.

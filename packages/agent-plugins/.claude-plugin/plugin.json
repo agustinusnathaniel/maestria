@@ -20,5 +20,5 @@
     "specialists"
   ],
   "agents": ["./agents/reviewer.md"],
-  "commands": ["./commands/fein.md", "./commands/sonar.md", "./commands/blitz.md"]
+  "commands": ["./modes/fein.md", "./modes/sonar.md", "./modes/blitz.md"]
 }

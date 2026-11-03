@@ -24,7 +24,7 @@ Evidence updated: 2026-10-12. Package validation confirms shipped files and mani
 | OMP `18.4.8` | One reviewer task profile, three commands, one always-apply rule, eight skills | The real OMP loader probe (`scripts/e2e/omp-plugin-discovery.ts`, 2026-10-13) on archive and git root found 7 agents, 3 commands, 1 rule, and 4 skills for the previous layout; the package now ships 1 reviewer profile and 8 skills and `.toml` files are not loaded. A real isolated install lifecycle run (2026-10-13: install, disable, reinstall, uninstall) passed 39 of 39 checks with the previous four skills. No inference or task spawning ran. OMP has no denylist, but a `tools` allowlist can enforce read-only; the reviewer does not set one yet, so it ships prompt-level. |
 | Hermes | Eight portable skills; optional manually configured host context | Documented portable and context-loader contracts. Current eight-skill archive smoke requires separate evidence. Context is not automatically imported and does not register a reviewer. |
 
-OpenCode and Pi retain their separate native packages and guides. The Agent Plugins archive intentionally ships no executable adapter, hooks, automation, or MCP server; this does not imply those capabilities are unsupported by a host.
+OpenCode and Pi retain their separate native packages and guides. The Agent Plugins archive ships no executable adapter, automation, or MCP server. It ships [hooks](/agent-plugins/usage/#hooks) on Claude Code, ZCode, Codex, Cursor, Devin, and Kimi Code; their live behavior on each host is not yet verified.
 
 <Aside type="caution" title="Activation remains client-owned">
   Follow the host's section in [Installation](/agent-plugins/installation/), enable the plugin when
