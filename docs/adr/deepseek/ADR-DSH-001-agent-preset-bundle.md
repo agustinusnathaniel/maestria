@@ -27,7 +27,7 @@ Prompts and mode skills are generated from canonical core by `packages/deepseek/
 
 - **Positive:** the reviewer cannot run a shell or change files, enforced by what its preset mounts, not by a filter or prompt; risky git commands and generated-file edits meet a check on every call, with DSH's own approval prompt for asks; project customization reaches every turn without a model reading it.
 - **Positive:** `dsh plugin` owns install, update, and removal, and the plugin needs no runtime dependency: host packages are type-only imports and the shared policy is bundled.
-- **Negative:** the restated `standard` rows drift as DSH evolves and must be re-diffed against each supported release; customizations of `standard` do not carry over.
+- **Negative:** the restated `standard` rows drift as DSH evolves. A unit test compares them with a checked-in copy of the pinned release's `presets/standard.patch.yml`; raising the supported release means replacing that copy and reconciling the diff. Customizations of `standard` do not carry over.
 - **Negative:** the reviewer preset appears in the preset picker, since DSH documents no way to hide one; it is labelled for use by `maestria_reviewer`.
 - **Negative:** the host keeps its global `working_directory` tool in the reviewer, so the reviewer can change its own session directory (not files).
 - **Negative:** project files and guards read the local filesystem, so remote or SSH workspaces are not supported. The guard does not cover the Windows `pwsh` tool, whose commands the shared POSIX classifier does not parse.

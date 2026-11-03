@@ -174,7 +174,7 @@ Docs read on 2026-11-04 at https://deepseek-harness.github.io/deepseek-harness/e
 
 ### Statuses and gates
 
-- **Promotion to `Native`:** a live-inference session on a released (non-preview) DSH line, plus a re-diff of the restated `standard` preset rows against that release.
+- **Promotion to `Native`:** a live-inference session on a released (non-preview) DSH line, plus a re-diff of the restated `standard` preset rows against that release: replace `packages/deepseek/tests/fixtures/dsh-web-app-<version>-standard.patch.yml` with that release's file and reconcile what the preset test reports.
 - **Rollback:** `maestria uninstall deepseek` (or `dsh plugin --profile web remove @maestria/deepseek`); remove `packages/deepseek` and the CLI handler entry.
 
 ---

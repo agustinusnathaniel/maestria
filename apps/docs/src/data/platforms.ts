@@ -69,7 +69,8 @@ export const platforms: Platform[] = [
   },
   {
     badge: 'PROVISIONAL',
-    blurb: 'A maestria agent preset with host-filtered specialist delegation for DeepSeek Harness.',
+    blurb:
+      'A maestria agent preset with git guards and a host-enforced read-only reviewer for DeepSeek Harness.',
     href: '/deepseek/',
     id: 'deepseek',
     installArgs: 'install deepseek',

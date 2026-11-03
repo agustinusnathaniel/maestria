@@ -30,12 +30,12 @@ const rowsIn = (value: unknown): Row[] =>
     : [];
 
 // `!!js` scalars are Loader expressions; keep them as text.
-const patchText = readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf-8');
-const patchRows = rowsIn(
-  parse(patchText, {
+const parseYaml = (file: string): unknown =>
+  parse(readFileSync(new URL(file, import.meta.url), 'utf-8'), {
     customTags: [{ resolve: (source: string) => source, tag: 'tag:yaml.org,2002:js' }],
-  }),
-);
+  });
+const patchText = readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf-8');
+const patchRows = rowsIn(parseYaml('../cordis.patch.yml'));
 const presetPlugins = (id: string): Row[] => {
   const config = patchRows.find((row) => isRow(row.config) && row.config.id === id)?.config;
   return isRow(config) ? rowsIn(config.plugins) : [];
@@ -148,6 +148,32 @@ describe('maestria guard on tools/pre-execute', () => {
 });
 
 describe('maestria preset composition', () => {
+  it('restates the pinned standard preset except for the maestria rows', () => {
+    const upstream = rowsIn(parseYaml('fixtures/dsh-web-app-0.2.1-rc.5-standard.patch.yml'));
+    const plugins = (rows: Row[], id: string): unknown =>
+      rows.find((row) => isRow(row.config) && row.config.id === id)?.config;
+    const standard = structuredClone(plugins(upstream, 'standard'));
+    const preset = structuredClone(plugins(patchRows, 'maestria'));
+    if (!isRow(standard) || !isRow(preset) || !Array.isArray(preset.plugins)) {
+      throw new TypeError('missing preset');
+    }
+    const rows = rowsIn(preset.plugins);
+    const persona = rows.find((row) => row.id === 'persona');
+    const skills = rows.find((row) => row.id === 'skill-filesystem');
+    const delegation = rows.find((row) => row.id === 'delegation');
+    if (!isRow(persona?.config) || !Array.isArray(delegation?.config) || skills === undefined) {
+      throw new TypeError('missing restated row');
+    }
+    persona.config.prefix = 'You are a coding agent powered by the {{model}} model.';
+    delete skills.config;
+    delegation.config = delegation.config.filter(
+      (row) => !isRow(row) || row.id !== 'maestria-reviewer',
+    );
+    expect(preset.plugins.filter((row) => !isRow(row) || row.id !== 'maestria')).toEqual(
+      standard.plugins,
+    );
+  });
+
   it('starts the reviewer on its own preset with only read, search, and skill tools', () => {
     expect(presetPlugins('maestria').find((row) => row.id === 'maestria-reviewer')).toMatchObject({
       config: { agentPreset: 'maestria-reviewer', toolName: 'maestria_reviewer' },
