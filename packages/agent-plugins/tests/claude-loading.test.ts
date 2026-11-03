@@ -90,13 +90,13 @@ describe('Claude Code native plugin loading', () => {
 
     const pluginName = typeof manifest.name === 'string' ? manifest.name : '';
     expect(pluginName).toBe('maestria');
-    expect(manifest.commands).toEqual(modes.map((mode) => `./commands/${mode}.md`));
+    // The SessionStart hook supplies the core, so Claude Code's commands carry only the mode.
+    expect(manifest.commands).toEqual(modes.map((mode) => `./modes/${mode}.md`));
     for (const mode of modes) {
-      const command = fs.readFileSync(path.join(pluginRoot, `commands/${mode}.md`), 'utf-8');
+      const command = fs.readFileSync(path.join(pluginRoot, `modes/${mode}.md`), 'utf-8');
       expect(command).toContain(`[MODE: ${mode}]`);
       expect(command).toContain('$ARGUMENTS');
-      expect(command).toContain('## Routing');
-      expect(command).toContain('## Universal Floors');
+      expect(command).not.toContain('## Universal Floors');
       expect(fs.existsSync(path.join(pluginRoot, `skills/${mode}/SKILL.md`))).toBe(false);
     }
   });

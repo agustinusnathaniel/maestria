@@ -1,0 +1,182 @@
+import { describe, expect, it } from 'vite-plus/test';
+
+import {
+  classifyEmailScan,
+  classifyGeneratedEdit,
+  classifyGitSafety,
+  editTargets,
+  findEmails,
+  generatedMarker,
+  splitCommands,
+} from '@/index.js';
+import type { ShellContext } from '@/index.js';
+
+const on = (branch?: string, files: Record<string, string> = {}): ShellContext => ({
+  currentBranch: () => branch,
+  readFile: (file) => files[file],
+});
+const verdict = (command: string, context = on('feature/x')): string =>
+  classifyGitSafety(command, context).verdict;
+
+describe('git safety classifier', () => {
+  it.each([
+    'git commit --no-verify -m "x"',
+    'git commit -n -m x',
+    'git commit -anm x',
+    'git push --no-verify',
+    'cd repo && git -C . commit --no-verify',
+  ])('blocks hook bypass: %s', (command) => {
+    expect(verdict(command)).toBe('block');
+  });
+
+  it.each([
+    'git push --force',
+    'git push -f origin feature/x',
+    'git push --force-with-lease',
+    'git push --force-with-lease=feature/x:abc',
+    'git push origin +feature/x',
+    'git push origin feature/x:main',
+    'git push origin HEAD:refs/heads/release/1.2',
+    'git push --all',
+    'git reset --hard HEAD~1',
+    'git clean -fd',
+    'git clean --force',
+    'git checkout -- src/a.ts',
+    'git checkout main -- src/a.ts',
+    'git restore src/a.ts',
+    'git restore --staged --worktree src/a.ts',
+    'git stash drop',
+    'npm test; git reset --hard',
+  ])('asks before a risky history edit: %s', (command) => {
+    expect(verdict(command)).toBe('ask');
+  });
+
+  it.each(['main', 'develop', 'staging', 'release/2.0'])(
+    'asks before committing or pushing on the protected branch %s',
+    (branch) => {
+      expect(verdict('git commit -m "fix"', on(branch))).toBe('ask');
+      expect(verdict('git push', on(branch))).toBe('ask');
+      expect(verdict('git push -u origin', on(branch))).toBe('ask');
+    },
+  );
+
+  it.each([
+    'git commit -m "no -n here, see --no-verify docs"',
+    'git commit -m x',
+    'git push -u origin feature/x',
+    'git push origin feature/x:feature/y',
+    'git restore --staged src/a.ts',
+    'git checkout -b feature/y',
+    'git stash list',
+    'git reset --soft HEAD~1',
+    'git clean -n',
+    'echo "git push --force"',
+    'grep -r "git reset --hard" docs',
+    'git log --oneline',
+  ])('allows routine or quoted commands: %s', (command) => {
+    expect(verdict(command)).toBe('allow');
+  });
+
+  it('allows a commit when the branch is unknown', () => {
+    expect(verdict('git commit -m x', on())).toBe('allow');
+  });
+
+  it('reads the branch of the -C directory', () => {
+    const asked: (string | undefined)[] = [];
+    classifyGitSafety('git -C ../other commit -m x', {
+      currentBranch: (directory) => {
+        asked.push(directory);
+        return 'main';
+      },
+    });
+    expect(asked).toEqual(['../other']);
+  });
+
+  it('keeps the strictest decision across chained commands', () => {
+    expect(verdict('git push --force && git commit --no-verify')).toBe('block');
+  });
+
+  it('splits on separators outside quotes only', () => {
+    expect(splitCommands('a "b && c" && d \'e;f\'; g | h')).toEqual([
+      ['a', 'b && c'],
+      ['d', 'e;f'],
+      ['g'],
+      ['h'],
+    ]);
+  });
+});
+
+describe('email scan', () => {
+  it('finds addresses and skips noreply ones', () => {
+    expect(
+      findEmails('ping a.person@example.org, 1+x@users.noreply.github.com, noreply@ci.dev'),
+    ).toEqual(['a.person@example.org']);
+  });
+
+  it.each([
+    'gh pr create --title "Fix" --body "Reported by a.person@example.org"',
+    'gh pr edit 12 --body=a.person@example.org',
+    'gh pr comment 12 -b "cc a.person@example.org"',
+    'gh issue create -t x -b a.person@example.org',
+    'gh api repos/o/r/issues/1/comments -f body="a.person@example.org"',
+    'git commit -m "Co-authored-by: A <a.person@example.org>"',
+    'git commit --message=a.person@example.org',
+  ])('asks before publishing an email address: %s', (command) => {
+    const decision = classifyEmailScan(command, on('feature/x'));
+    expect(decision.verdict).toBe('ask');
+    expect(decision.reason).not.toContain('a.person@example.org');
+    expect(decision.reason).toContain('a***@example.org');
+  });
+
+  it('reads body and message files relative to the session', () => {
+    const context = on('feature/x', { 'body.md': 'Thanks a.person@example.org' });
+    expect(classifyEmailScan('gh pr create --body-file body.md', context).verdict).toBe('ask');
+    expect(classifyEmailScan('git commit -F body.md', context).verdict).toBe('ask');
+    expect(classifyEmailScan('gh pr create -F missing.md', context).verdict).toBe('allow');
+  });
+
+  it.each([
+    'gh pr view 12 --json author',
+    'git commit -m "Signed-off-by: bot <1+bot@users.noreply.github.com>"',
+    'git log --author a.person@example.org',
+    'echo a.person@example.org',
+  ])('ignores commands that publish no PR, issue, or commit text: %s', (command) => {
+    expect(classifyEmailScan(command, on('feature/x')).verdict).toBe('allow');
+  });
+});
+
+describe('generated-file guard', () => {
+  it.each([
+    ['// @generated by protoc', '@generated'],
+    ['# DO NOT EDIT', 'DO NOT EDIT'],
+    [
+      '---\nname: x\ndescription: y\n---\n\n<!-- Generated from core. Do not edit directly. -->',
+      'Do not edit directly',
+    ],
+    ['/* Generated by tool */', 'Generated by'],
+  ])('finds the marker in the first five lines: %s', (head, marker) => {
+    expect(generatedMarker(head)).toBe(marker);
+  });
+
+  it('ignores markers past the fifth line', () => {
+    expect(generatedMarker('1\n2\n3\n4\n5\n// @generated')).toBeUndefined();
+  });
+
+  it('collects edit targets from path fields and apply_patch bodies', () => {
+    expect(editTargets({ file_path: 'a.ts' })).toEqual(['a.ts']);
+    expect(
+      editTargets({
+        command:
+          '*** Begin Patch\n*** Update File: b.ts\n*** Add File: c.ts\n*** Delete File: d.ts\n',
+      }),
+    ).toEqual(['b.ts', 'd.ts']);
+    expect(editTargets(null)).toEqual([]);
+  });
+
+  it('asks before editing a generated file and allows new or ordinary files', () => {
+    const heads: Record<string, string> = { 'gen.ts': '// @generated', 'src.ts': 'export {};' };
+    const read = (file: string): string | undefined => heads[file];
+    expect(classifyGeneratedEdit(['gen.ts'], read).verdict).toBe('ask');
+    expect(classifyGeneratedEdit(['src.ts', 'new.ts'], read).verdict).toBe('allow');
+  });
+});

@@ -25,5 +25,6 @@
     "brandColor": "#6c63ff",
     "logo": "./assets/logo.svg"
   },
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": "./hooks/codex.json"
 }
