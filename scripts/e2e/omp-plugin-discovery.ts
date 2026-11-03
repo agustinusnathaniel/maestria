@@ -11,7 +11,7 @@ import { loadPackedPlugin } from './omp-plugin-package.ts';
 
 const EXPECTED_HOST_VERSION = '18.4.8';
 const PLUGIN_NAME = '@maestria/agent-plugins';
-const EXPECTED_PLUGIN_COUNTS = { agents: 1, commands: 3, rules: 1, skills: 7 } as const;
+const EXPECTED_PLUGIN_COUNTS = { agents: 1, commands: 3, rules: 1, skills: 8 } as const;
 const EXPECTED_AGENT_NAMES = 'reviewer'.split(' ');
 const EXPECTED_SKILL_NAMES = [
   'architecture-plan',
@@ -19,8 +19,9 @@ const EXPECTED_SKILL_NAMES = [
   'diagnose',
   'docs-update',
   'handoff',
-  'iteration-limits',
+  'implement',
   'recon',
+  'review-loop',
 ];
 const scriptDir = import.meta.dirname;
 const repoRoot = path.resolve(scriptDir, '../..');

@@ -183,7 +183,6 @@ export const createCodexAgentConfig = (
   model: string,
   nativeName = codexManagedAgentName(agent),
 ): string => {
-  const readOnly = new Set<AgentName>(['reviewer']);
   const description = `maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
   const instructions = [
     `Load the $maestria:${agent} skill before acting.`,
@@ -195,9 +194,6 @@ export const createCodexAgentConfig = (
     `developer_instructions = ${JSON.stringify(instructions)}`,
     `model = ${JSON.stringify(model)}`,
   ];
-  if (readOnly.has(agent)) {
-    lines.push('sandbox_mode = "read-only"');
-  }
   return `${lines.join('\n')}\n`;
 };
 

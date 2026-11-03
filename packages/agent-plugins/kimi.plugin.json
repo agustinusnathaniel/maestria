@@ -22,9 +22,29 @@
   "interface": {
     "displayName": "maestria Agent Pack",
     "shortDescription": "Native specialists and workflow commands for Kimi Code",
-    "longDescription": "A native reviewer profile, complete primary-session policy and routing, three workflow commands, and four maestria skills. Models, tool authority, and session lifecycle remain Kimi-owned.",
+    "longDescription": "A native reviewer profile, complete primary-session policy and routing, three workflow commands, and eight maestria skills. Models, tool authority, and session lifecycle remain Kimi-owned.",
     "developerName": "Agustinus Nathaniel",
     "websiteURL": "https://github.com/agustinusnathaniel/maestria"
   },
-  "agents": "./agents/"
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/git-safety.mjs kimi",
+      "timeout": 10
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/email-scan.mjs kimi",
+      "timeout": 10
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "Write|Edit",
+      "command": "node ./hooks/generated-guard.mjs kimi",
+      "timeout": 10
+    }
+  ]
 }

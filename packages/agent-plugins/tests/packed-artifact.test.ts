@@ -70,7 +70,11 @@ const assertResourcePaths = (manifest: Manifest, packedRoot: string): void => {
       expect(fs.existsSync(absolute), `missing ${String(relative)}`).toBe(true);
     }
   }
-  for (const field of ['hooks', 'mcpServers', 'automations']) {
+  // Codex and Cursor select their own hook file; Kimi declares its hooks inline.
+  if (typeof manifest.hooks === 'string') {
+    expect(fs.existsSync(path.resolve(packedRoot, manifest.hooks)), manifest.hooks).toBe(true);
+  }
+  for (const field of ['mcpServers', 'automations']) {
     expect(manifest[field]).toBeUndefined();
   }
 };
@@ -91,7 +95,7 @@ const assertNativeMetadata = (packedRoot: string): void => {
   for (const role of readOnlyRoles) {
     expect(
       fs.readFileSync(path.join(packedRoot, `agents/maestria-${role}.toml`), 'utf-8'),
-    ).toContain('sandbox_mode = "read-only"');
+    ).not.toMatch(/^sandbox_mode/mu);
   }
 };
 
@@ -124,17 +128,22 @@ describe('published consolidated plugin', () => {
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(7);
-      // Generated utilities plus the methodology skills bundled from the repository root.
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(11);
+      // The method skills bundled from packages/core/agent-directives/skills.
       expect(skills.map((entry) => entry.split('/')[2]).toSorted()).toEqual([
         'architecture-plan',
         'create-pull-request',
         'diagnose',
         'docs-update',
         'handoff',
-        'iteration-limits',
+        'implement',
         'recon',
+        'review-loop',
       ]);
+      // Devin's modes ship as skills only the Devin manifest selects.
+      expect(
+        entries.filter((entry) => /^package\/devin\/skills\/[^/]+\/SKILL\.md$/u.test(entry)),
+      ).toHaveLength(3);
       const agentEntries = entries.filter((entry) => entry.startsWith('package/agents/'));
       expect(agentEntries.filter((entry) => entry.endsWith('.md'))).toHaveLength(roles.length);
       expect(agentEntries.filter((entry) => entry.endsWith('.toml'))).toHaveLength(roles.length);
@@ -151,6 +160,15 @@ describe('published consolidated plugin', () => {
         3,
       );
       expect(entries).toContain('package/rules/global.md');
+      for (const hookFile of [
+        'hooks/hooks.json',
+        'hooks/codex.json',
+        'hooks/cursor.json',
+        'hooks.json',
+      ]) {
+        expect(entries).toContain(`package/${hookFile}`);
+      }
+      expect(entries).toContain('package/hooks/lib/policy.mjs');
       expect(packageManifest.private).toBe(false);
       expect(packageManifest.publishConfig).toEqual({ access: 'public', provenance: true });
       expect(packageManifest.repository).toEqual(
@@ -168,20 +186,24 @@ describe('published consolidated plugin', () => {
       // ZCode reads command selectors as directories and discovers agents/ by convention;
       // its `agents` manifest key only adds paths on top of that.
       expect(manifests[5].agents).toBeUndefined();
-      expect(manifests[5].commands).toBe('./commands/');
+      // Claude Code and ZCode get the core from a SessionStart hook, so their commands carry
+      // only the mode body.
+      expect(manifests[5].commands).toBe('./modes/');
       expect(manifests[6].agents).toBe('./agents/');
       expect(manifests[6].skills).toBe('./skills/');
       expect(manifests[6].commands).toBe('./commands/');
       expect(manifests[6].systemPromptPath).toBe('./kimi.system-prompt.md');
-      expect(entries).toContain('package/kimi.system-prompt.md');
+      for (const sessionFile of ['kimi.system-prompt.md', 'codex.agents.md', 'hermes.context.md']) {
+        expect(entries).toContain(`package/${sessionFile}`);
+      }
       expect(manifests[1].commands).toEqual([
-        './commands/fein.md',
-        './commands/sonar.md',
-        './commands/blitz.md',
+        './modes/fein.md',
+        './modes/sonar.md',
+        './modes/blitz.md',
       ]);
       expect(manifests[2].agents).toBe('./agents/');
       expect(manifests[2].commands).toBe('./commands/');
-      expect(manifests[4].skills).toBe('./skills/');
+      expect(manifests[4].skills).toEqual(['./skills/', './devin/skills/']);
       expect(manifests[2].rules).toBe('./rules/cursor/');
       for (const role of roles) {
         expect(entries).toContain(`package/agents/${role}.md`);

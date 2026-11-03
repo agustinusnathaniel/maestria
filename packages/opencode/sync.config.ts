@@ -11,6 +11,7 @@
 // `shell` and `subagent` actions, and a scalar effect applies to resource `*`. Commands keep their
 // canonical frontmatter, whose description the plugin registers with each slash command.
 
+import { methodSkillBody } from '../core/scripts/lib/agent-directive-sync.js';
 import type { FileConfig, SyncConfig } from '../core/scripts/lib/config.js';
 
 type BashPermissionEntry = readonly [string, 'allow' | 'ask' | 'deny'];
@@ -122,6 +123,8 @@ const permissionMaps = {
       },
     },
     'reviewer.md': {
+      // The reviewer embeds `implement`, so it reviews against the same judgment.
+      append: `\n\n${methodSkillBody('implement')}`,
       frontmatter: {
         description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
         mode: 'subagent',

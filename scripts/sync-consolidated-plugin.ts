@@ -3,11 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
 import {
-  extractSections,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
 } from '../packages/core/scripts/lib/transforms.js';
+import { compose, hostSessionOutputs } from './host-session-files.js';
+import { bundledSkills } from './sync-bundled-skills.js';
 
 const ROLES = ['reviewer'];
 // rules.md is split into `# ` parts; each specialist profile embeds only the parts its role acts on,
@@ -16,15 +17,13 @@ const RULE_PARTS = ['Every Agent', 'Implementation and Review', 'Writing Changes
 const ROLE_RULE_PARTS: Record<string, readonly string[]> = {
   reviewer: ['Every Agent', 'Implementation and Review'],
 };
-const MODES = ['fein', 'sonar', 'blitz'];
-const UTILITIES = ['handoff', 'iteration-limits'] as const;
-// Each utility skill projects rules.md sections, so it cannot drift from policy.
-const UTILITY_SECTIONS: Record<(typeof UTILITIES)[number], readonly string[]> = {
-  handoff: ['Delegation and Context'],
-  'iteration-limits': ['Repair Budget', 'Fail-Loud Repair'],
+// Method skills whose text a role profile embeds, because subagents may not load skills.
+const ROLE_SKILLS: Record<string, readonly string[]> = {
+  reviewer: ['implement'],
 };
+const MODES = ['fein', 'sonar', 'blitz'] as const;
 // Hosts whose canonical integration note is composed into a shipped rule, context, or profile.
-const HOSTS = ['codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
+const HOSTS = ['claude-code', 'codex', 'cursor', 'devin', 'hermes', 'kimi-code', 'omp'];
 export const GENERATED_NOTICE =
   '<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->';
 export const TOML_NOTICE = '# Generated from canonical core directives.';
@@ -71,16 +70,15 @@ const readInput = (root: string, relative: string): string => {
 
 const document = (body: string, metadata: Record<string, unknown> | null = null): string =>
   `${serializeFrontmatter(metadata)}\n${GENERATED_NOTICE}\n\n${body.trim()}\n`;
-const compose = (...parts: string[]): string => parts.map((part) => part.trim()).join('\n\n');
 
 interface Inputs {
   arguments: string;
   contexts: Record<string, string>;
   modes: Record<string, { body: string; metadata: Record<string, unknown> }>;
   roleRules: Record<string, string>;
+  roleSkills: Record<string, string>;
   roles: Record<string, string>;
   rules: string;
-  utilities: Record<string, string>;
 }
 
 const requiredHeading = (source: string, heading: string, label: string): void => {
@@ -118,14 +116,6 @@ const roleRules = (rules: string): Record<string, string> => {
   );
 };
 
-const utilitySection = (rules: string, headings: readonly string[]): string => {
-  const result = extractSections(rules, headings);
-  if ('missing' in result) {
-    throw new Error(`Missing canonical heading ## ${result.missing}: rules.md`);
-  }
-  return result.section;
-};
-
 const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
   const source = readInput(coreRoot, `commands/${mode}.md`);
   const frontmatter = /^---\n(?<metadata>[\s\S]*?)\n---\n/u.exec(source)?.groups?.metadata;
@@ -140,6 +130,9 @@ const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
 const integrationDisplayName = (host: string): string => {
   if (host === 'codex') {
     return 'Codex CLI';
+  }
+  if (host === 'claude-code') {
+    return 'Claude Code and ZCode';
   }
   if (host === 'omp') {
     return 'OMP';
@@ -173,16 +166,24 @@ const readCanonicalInputs = (repoRoot: string): Inputs => {
   }
   const args = readInput(coreRoot, 'integrations/command-arguments.md');
   requiredHeading(args, '$ARGUMENTS', 'integrations/command-arguments.md');
+  const roleSkills = Object.fromEntries(
+    ROLES.map((role) => [
+      role,
+      compose(
+        ...ROLE_SKILLS[role].map((skill) =>
+          stripFrontmatter(readInput(coreRoot, `skills/${skill}/SKILL.md`)),
+        ),
+      ),
+    ]),
+  );
   return {
     arguments: args,
     contexts,
     modes: Object.fromEntries(MODES.map((mode) => [mode, readMode(coreRoot, mode)])),
     roleRules: roleRules(rules),
+    roleSkills,
     roles,
     rules,
-    utilities: Object.fromEntries(
-      UTILITIES.map((name) => [name, utilitySection(rules, UTILITY_SECTIONS[name])]),
-    ),
   };
 };
 
@@ -194,7 +195,7 @@ const addOutput = (plan: Map<string, string>, relative: string, content: string)
 };
 
 interface Profile {
-  codex: { description: string; sandboxMode?: string };
+  codex: { description: string };
   description: string;
   name: string;
   readOnly: boolean;
@@ -214,18 +215,12 @@ const profileMetadata = (packageRoot: string): Record<string, Profile> => {
       typeof profile.description !== 'string' ||
       typeof profile.readOnly !== 'boolean' ||
       !isRecord(profile.codex) ||
-      typeof profile.codex.description !== 'string' ||
-      !['string', 'undefined'].includes(typeof profile.codex.sandboxMode)
+      typeof profile.codex.description !== 'string'
     ) {
       throw new Error(`Invalid profile metadata: ${role}`);
     }
     profiles[role] = {
-      codex: {
-        description: profile.codex.description,
-        ...(typeof profile.codex.sandboxMode === 'string'
-          ? { sandboxMode: profile.codex.sandboxMode }
-          : {}),
-      },
+      codex: { description: profile.codex.description },
       description: profile.description,
       name: role,
       readOnly: profile.readOnly,
@@ -235,13 +230,15 @@ const profileMetadata = (packageRoot: string): Record<string, Profile> => {
 };
 
 // One profile serves every Markdown host: each loader reads its own keys and ignores the rest
-// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents).
+// (Claude and Kimi: disallowedTools, Cursor: readonly, Kimi: subagents, Devin: allowed-tools).
 // Entries keep the emitted YAML in reading order: identity first, then host controls.
 const nativeMetadata = (profile: Profile): Record<string, unknown> => {
   const readOnly: [string, unknown][] = profile.readOnly
     ? [
         ['readonly', true],
         ['disallowedTools', ['Write', 'Edit']],
+        // Devin has no denylist; its allowlist keeps the reviewer to its read tools.
+        ['allowed-tools', ['read', 'grep', 'glob']],
       ]
     : [];
   return Object.fromEntries<unknown>([
@@ -259,9 +256,6 @@ const codexProfile = (profile: Profile, instructions: string): string => {
   const header = [
     `name = ${JSON.stringify(`maestria-${profile.name}`)}`,
     `description = ${JSON.stringify(profile.codex.description)}`,
-    ...(profile.codex.sandboxMode === undefined
-      ? []
-      : [`sandbox_mode = ${JSON.stringify(profile.codex.sandboxMode)}`]),
   ];
   return `${header.join('\n')}\n\n${TOML_NOTICE}\ndeveloper_instructions = """\n${instructions.replaceAll('\\', '\\\\')}\n"""\n`;
 };
@@ -269,7 +263,7 @@ const codexProfile = (profile: Profile, instructions: string): string => {
 const addProfiles = (plan: Map<string, string>, packageRoot: string, input: Inputs): void => {
   const profiles = profileMetadata(packageRoot);
   for (const role of ROLES) {
-    const body = compose(input.roles[role], input.roleRules[role]);
+    const body = compose(input.roles[role], input.roleRules[role], input.roleSkills[role]);
     addOutput(plan, `agents/${role}.md`, document(body, nativeMetadata(profiles[role])));
     addOutput(
       plan,
@@ -301,29 +295,6 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   );
 };
 
-// One root AGENTS.md serves hosts that read a plain session context: Devin loads it always-on,
-// the CLI installs it into Codex's AGENTS.md, and Hermes users add it manually. Each host note
-// sits under its own heading.
-const SESSION_HOSTS = ['devin', 'codex', 'hermes'];
-const HOST_NOTES_INTRO =
-  '## Host Notes\n\nEach section below applies only on the host it names; skip the others.';
-// Kimi Code reads its own copy through `systemPromptPath` and ignores one over 32 KB, so it
-// carries only its own host note.
-const KIMI_CONTEXT = 'kimi.system-prompt.md';
-const KIMI_CONTEXT_LIMIT = 32 * 1024;
-const demote = (markdown: string): string =>
-  markdown.replaceAll(/^(?<hashes>#{2,5}) /gmu, '#$<hashes> ');
-
-const addSessionContext = (plan: Map<string, string>, input: Inputs, complete: string): void => {
-  const notes = SESSION_HOSTS.map((host) => demote(input.contexts[host]));
-  addOutput(plan, 'AGENTS.md', document(compose(complete, HOST_NOTES_INTRO, ...notes)));
-  const kimi = document(compose(complete, '## Host Notes', demote(input.contexts['kimi-code'])));
-  if (Buffer.byteLength(kimi) > KIMI_CONTEXT_LIMIT) {
-    throw new Error(`${KIMI_CONTEXT} exceeds Kimi Code's documented 32 KB system prompt limit`);
-  }
-  addOutput(plan, KIMI_CONTEXT, kimi);
-};
-
 const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {
   for (const mode of MODES) {
     const { body, metadata } = input.modes[mode];
@@ -337,44 +308,33 @@ const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy:
   }
 };
 
-const utilityDescription = (utility: string): string => {
-  if (utility === 'handoff') {
-    return 'Pass outcome, constraints, evidence, blockers, and next steps between workflow stages';
-  }
-  return 'Bound repair and stop repeated work using verifiable termination criteria';
-};
-
-const addUtilitySkills = (plan: Map<string, string>, input: Inputs): void => {
-  for (const utility of UTILITIES) {
-    const source = input.utilities[utility];
-    addOutput(
-      plan,
-      `skills/${utility}/SKILL.md`,
-      document(source, {
-        description: utilityDescription(utility),
-        name: utility,
-      }),
-    );
-  }
-};
-
 const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   const routerPolicy = compose(input.roles['main-loop'], input.rules);
-  const complete = compose(routerPolicy, ...MODES.map((mode) => input.modes[mode].body));
   addPolicyRules(plan, input, routerPolicy);
-  addSessionContext(plan, input, complete);
   addModeCommands(plan, input, routerPolicy);
-  addUtilitySkills(plan, input);
+  for (const [relative, content] of hostSessionOutputs(input, routerPolicy, document)) {
+    addOutput(plan, relative, content);
+  }
 };
 
-const validateManifestResources = (packageRoot: string, plan: Map<string, string>): void => {
+// Manifests may also select the method skills that scripts/sync-bundled-skills.ts writes.
+const validateManifestResources = (
+  packageRoot: string,
+  plan: Map<string, string>,
+  bundled: readonly string[],
+): void => {
+  const outputs = [...plan.keys(), ...bundled];
   for (const output of ROOT_MANIFESTS) {
     const manifest: unknown = JSON.parse(readInput(packageRoot, output));
     if (!isRecord(manifest)) {
       throw new Error(`Invalid plugin manifest: ${output}`);
     }
-    for (const field of ['skills', 'agents', 'commands', 'rules', 'systemPromptPath']) {
+    for (const field of ['skills', 'agents', 'commands', 'rules', 'systemPromptPath', 'hooks']) {
       const selected = manifest[field];
+      // Kimi declares hooks inline; only a path selects a resource.
+      if (field === 'hooks' && typeof selected !== 'string') {
+        continue;
+      }
       const relatives: unknown[] = [];
       if (Array.isArray(selected)) {
         for (const item of selected) {
@@ -389,11 +349,16 @@ const validateManifestResources = (packageRoot: string, plan: Map<string, string
         }
         const normalized = relative.replace(/^\.\//u, '').replace(/\/$/u, '');
         assertContainedFile(packageRoot, normalized);
+        // Hook configurations are hand-authored beside the generated outputs they run.
+        if (field === 'hooks') {
+          readInput(packageRoot, normalized);
+          continue;
+        }
         // Every selected resource must be a generated output, so a stale file left on disk
         // cannot satisfy a manifest after the generator stops producing it.
         if (
-          !plan.has(normalized) &&
-          ![...plan.keys()].some((key) => key.startsWith(`${normalized}/`))
+          !outputs.includes(normalized) &&
+          !outputs.some((key) => key.startsWith(`${normalized}/`))
         ) {
           throw new Error(`Unreachable ${field} resource in ${output}: ${relative}`);
         }
@@ -408,7 +373,11 @@ const outputPlan = (repoRoot: string): Map<string, string> => {
   const plan = new Map<string, string>();
   addProfiles(plan, packageRoot, input);
   addContexts(plan, input);
-  validateManifestResources(packageRoot, plan);
+  validateManifestResources(
+    packageRoot,
+    plan,
+    [...bundledSkills(repoRoot).keys()].map((name) => `skills/${name}/SKILL.md`),
+  );
   return plan;
 };
 

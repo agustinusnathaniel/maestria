@@ -7,7 +7,8 @@ const skills = [
   'maestria',
   'global-rules',
   'handoff',
-  'iteration-limits',
+  'review-loop',
+  'implement',
   'create-pull-request',
   'docs-update',
 ];

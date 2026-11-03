@@ -39,26 +39,27 @@ The modes are defined by ModeKeyword in `packages/shared/pi/src/state-core.ts` a
 
 | Specialist | Role | When to Use | Key Constraints |
 | --- | --- | --- | --- |
-| **Main loop** | Investigator, designer, maker, and owner - investigates, designs, implements, and delivers each outcome itself | Every task; loads `recon`, `architecture-plan`, or `diagnose` when the task needs them | Does recon, design, diagnosis, and implementation itself. Dispatches only reviewer. Presents an `architecture-plan` design before dependent edits. |
+| **Main loop** | Investigator, designer, maker, and owner - investigates, designs, implements, and delivers each outcome itself | Every task; loads `recon`, `architecture-plan`, `diagnose`, `implement`, `docs-update`, `create-pull-request`, or `review-loop` when the task needs them | Does recon, design, diagnosis, and implementation itself. Dispatches only reviewer. Presents an `architecture-plan` design before dependent edits. |
 | **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Post-implementation validation, pre-merge review, security audit | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
 
 ## Portable Utilities
 
-The consolidated [Agent Plugins package](/agent-plugins/) exports two portable utilities, `handoff` for transferring task context and `iteration-limits` for bounding repair loops, alongside the [bundled methodology skills](#bundled-methodology-skills). Each is generated from the matching section of the global rules, so it always states the same policy the full integrations carry. Full methodology uses host-specific native profiles, commands, and policy entry points. Portable utilities alone do not activate this roster or its modes.
+The consolidated [Agent Plugins package](/agent-plugins/) exports two portable utilities, `handoff` for briefing delegates and tracking work across sessions and `review-loop` for briefing the reviewer and bounding repair passes, alongside the [bundled methodology skills](#bundled-methodology-skills). Full methodology uses host-specific native profiles, commands, and policy entry points. Portable utilities alone do not activate this roster or its modes.
 
 ## Skills
 
 ### Bundled methodology skills
 
-The rules and the main loop name five maestria method skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, and `@maestria/pi`. They update with the package; there is nothing extra to install or select.
+The main loop's skill map names maestria's method skills, so every maestria package ships them: `@maestria/agent-plugins` (Claude Code, Codex, Cursor, Kimi Code, Devin, ZCode, OMP, Hermes), `@maestria/opencode`, and `@maestria/pi`. They update with the package; there is nothing extra to install or select.
 
 - **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Agents load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
 - **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/docs-update/SKILL.md)** - Documentation and changeset procedure. Agents load it before finishing a change to behavior, interfaces, configuration, or user-facing workflows, and follow it to classify and update affected docs; ordinary docs work proceeds without it.
 - **[diagnose](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/diagnose/SKILL.md)** - Systematic debugging that traces errors from symptom to root cause. The main loop loads it for a bug, regression, failure, or crash with an unknown cause.
 - **[recon](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/recon/SKILL.md)** - Maps unfamiliar code before a change: entry points, call chains, boundaries, and every consumer the change must reach. The main loop loads it before changing code it has not read.
+- **[implement](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/implement/SKILL.md)** - Implementation judgment (reuse, the smallest change shaped like its siblings, guards sized to evidence, shared-interface migration), behavior-level testing, and comments. The main loop loads it before writing or changing code or tests, and the reviewer profile embeds it.
 - **[architecture-plan](https://github.com/agustinusnathaniel/maestria/blob/main/packages/core/agent-directives/skills/architecture-plan/SKILL.md)** - Compares approaches and writes a phased plan, including rollback for migrations and rollouts. The main loop loads it for trade-offs, boundaries, ADR decisions, and multi-phase work, and presents the plan before dependent edits.
 
-Supported agents get these skills with their maestria plugin; that is the recommended install. Only for an agent maestria does not package, install them with [skills.sh](https://skills.sh); this offers the plugin's seven skills, including `handoff` and `iteration-limits`:
+Supported agents get these skills with their maestria plugin; that is the recommended install. Only for an agent maestria does not package, install them with [skills.sh](https://skills.sh); this offers the plugin's eight skills, including `handoff` and `review-loop`:
 
 ```bash
 npx skills add agustinusnathaniel/maestria

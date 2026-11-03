@@ -1,5 +1,5 @@
 ---
-description: Draft, publish, or refresh a pull request title and body with its visual evidence, and check it is ready for review. Use when preparing or revising a PR, capturing or publishing evidence for a rendered change, after a push to an open PR, or before marking a PR ready.
+description: Plan PR boundaries, then draft, publish, or refresh a pull request title and body with its visual evidence, and check it is ready for review. Use when splitting work into PRs, preparing or revising a PR, capturing or publishing evidence for a rendered change, after a push to an open PR, or before marking a PR ready.
 name: create-pull-request
 ---
 
@@ -11,7 +11,7 @@ name: create-pull-request
 
 Drafting or revising PR text needs no capture, upload, or publishing tool. A project ban on creating PRs or installing tools stops only that operation: still draft, and report the blocked step.
 
-For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft, keep each description to its own diff, and check that no open PR already covers the scope.
+For multi-slice outcomes, plan PR boundaries early around independently acceptable, verifiable changes; if implementation reveals another such slice, split the diff before PR delivery. Stack only when a later slice depends on an earlier one, and keep a cohesive outcome in one PR. For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft, keep each description to its own diff, and check that no open PR already covers the scope.
 
 ## Title and body
 

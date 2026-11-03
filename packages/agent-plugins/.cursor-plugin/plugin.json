@@ -16,5 +16,6 @@
   "agents": "./agents/",
   "commands": "./commands/",
   "rules": "./rules/cursor/",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": "./hooks/cursor.json"
 }

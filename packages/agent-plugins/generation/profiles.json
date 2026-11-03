@@ -4,8 +4,7 @@
     "description": "Independent review agent covering correctness, security, performance, maintainability, and quality gates.",
     "readOnly": true,
     "codex": {
-      "description": "maestria independent reviewer for correctness, security, performance, and missing-test risks.",
-      "sandboxMode": "read-only"
+      "description": "maestria independent reviewer for correctness, security, performance, and missing-test risks."
     }
   }
 }

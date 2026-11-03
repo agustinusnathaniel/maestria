@@ -1,12 +1,20 @@
 ---
-description: Pass outcome, constraints, evidence, blockers, and next steps between workflow stages
+description: Brief a delegate, recover a failed delegation, and keep a cross-session tracker. Use when briefing another agent or session, writing a handoff document for another session, host, or person, receiving a delegated task, retrying an empty, failed, or cancelled delegation, or tracking work that spans sessions.
 name: handoff
 ---
 
-<!-- Generated from packages/core/agent-directives by scripts/sync-consolidated-plugin.ts. Do not edit directly. -->
+<!-- Bundled from packages/core/agent-directives/skills/handoff/SKILL.md by scripts/sync-bundled-skills.ts. Do not edit directly. -->
 
-# Delegation and Context
+# Handoff
 
-Each delegation owns one coherent outcome, briefed with only the material needed to act: the original goal, acceptance criteria, acceptance evidence, binding user constraints, material assumptions, and next step. When an existing spec owns them (for example OpenSpec or Spec Kit), point to it read-only instead of copying it, and reference artifacts instead of copying history.
+## Brief a delegate
 
-Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Run independent work in parallel instead of idling. An empty, malformed, or incomplete result, or a cancelled or failed delegation, is not a verdict or lost authorization: make one recovery attempt with a changed brief, then report the exact delta; user-initiated or intentional platform cancellation is terminal. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
+Each delegation owns one coherent outcome, briefed for the delegate's task with only the material needed to act: the original goal, acceptance criteria and evidence, binding user constraints, any hold or approval gate (a gate sent in a later message usually arrives after the delegate has acted), material assumptions, the method skills to load, and the next step. Mark what you verified apart from what you only believe: an unverified "X is done" becomes the delegate's premise. Reference specs (for example OpenSpec or Spec Kit) and other artifacts read-only by path or URL instead of copying them or the history, and only ones the delegate can reach from where it runs. Pass a long brief as a file, never interpolated into a shell command, where backticks and `$` silently mangle it. The brief is ready when a fresh agent could act on it cold without asking you to re-explain.
+
+## Recover a failed delegation
+
+An empty, malformed, or incomplete result, or a cancelled or failed delegation, is not a verdict or lost authorization: make one recovery attempt with a changed brief, then report the exact delta. User-initiated or intentional platform cancellation is terminal.
+
+## Track work across sessions
+
+For work that spans sessions, keep a tracker that closes each task with its evidence (commit, checks run, where the behavior was observed) and a decision log that marks superseded entries instead of rewriting them. A done mark holds only while its evidence is present and its acceptance check passes; when the user reports missing work, another session wrote the tracker, or a done task fails, audit every done item in scope, reopen what fails, and correct the tracker.

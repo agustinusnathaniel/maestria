@@ -20,9 +20,9 @@ describe('Codex managed native agents', () => {
 
     try {
       await mkdir(join(sourceRoot, 'agents'), { recursive: true });
-      // The package ships one root AGENTS.md; the installer adds the managed-block markers.
+      // The package ships a Codex session file; the installer adds the managed-block markers.
       await writeFile(
-        join(sourceRoot, 'AGENTS.md'),
+        join(sourceRoot, 'codex.agents.md'),
         [
           '## maestria orchestration',
           'Self-contained routing, policy, and per-turn FEIN, SONAR, BLITZ instructions.',
@@ -37,7 +37,6 @@ describe('Codex managed native agents', () => {
               `name = "maestria-${agent}"`,
               `description = "new ${agent}"`,
               `developer_instructions = "new instructions for ${agent}"`,
-              ...(agent === 'reviewer' ? ['sandbox_mode = "read-only"'] : []),
               '',
             ].join('\n'),
           );
@@ -54,7 +53,7 @@ describe('Codex managed native agents', () => {
       const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
       expect(installedInstructions).toContain(
-        `<!-- maestria:codex-orchestrator:start -->\n\n${await readFile(join(sourceRoot, 'AGENTS.md'), 'utf-8')}\n<!-- maestria:codex-orchestrator:end -->`,
+        `<!-- maestria:codex-orchestrator:start -->\n\n${await readFile(join(sourceRoot, 'codex.agents.md'), 'utf-8')}\n<!-- maestria:codex-orchestrator:end -->`,
       );
       expect(installedInstructions).not.toContain('$maestria:orchestrator');
       expect(installedInstructions.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
@@ -133,7 +132,7 @@ describe('Codex managed native agents', () => {
           );
         }),
       );
-      await writeFile(join(sourceRoot, 'AGENTS.md'), 'managed\n');
+      await writeFile(join(sourceRoot, 'codex.agents.md'), 'managed\n');
       await mkdir(codexHome, { recursive: true });
       await writeFile(join(codexHome, 'AGENTS.md'), 'default user instructions\n');
       await writeFile(join(codexHome, 'AGENTS.override.md'), 'override user instructions\n');

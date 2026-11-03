@@ -39,6 +39,12 @@
     "commands",
     "rules",
     "AGENTS.md",
+    "codex.agents.md",
+    "devin",
+    "hermes.context.md",
+    "hooks",
+    "hooks.json",
+    "modes",
     "kimi.system-prompt.md"
   ],
   "type": "module",
