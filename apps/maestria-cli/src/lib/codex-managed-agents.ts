@@ -253,8 +253,8 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
     const sourceDir = `${packageRoot}/agents`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
-    // Package AGENTS.md is shared; markers belong to this installer.
-    const sourceInstructionsPath = `${packageRoot}/AGENTS.md`;
+    // The package's Codex session file; markers belong to this installer.
+    const sourceInstructionsPath = `${packageRoot}/codex.agents.md`;
 
     const sourceContext = yield* Effect.tryPromise({
       catch: (error) =>

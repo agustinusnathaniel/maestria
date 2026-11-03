@@ -128,6 +128,7 @@ Dated evidence for the Pi tool-enforcement boundary. Enforcement here is host-ob
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-PI-TOOLS-02 | Pi | Tool-level enforcement | Tool-level enforcement is conditional on the host emitting `tool_call` for every tool invocation: that handler is the only maestria layer in this Pi extension that observes a call, and review-mode `setActiveTools` narrowing can only withhold tools the host already exposes. Whether a non-default host execution mode emits `tool_call` for in-script invocations is unverified (codemode is one example). In review mode the interceptor blocks any tool name outside the read-only set, which bounds the exposure but cannot cover a call the host never surfaces. No live host probe has been performed | unpinned - reverify before implementation | `packages/pi/src/tools.ts`; `packages/shared/pi/src/commands-core.ts`; `packages/shared/pi/src/tools-core.ts` | 2026-10-04 | not tested |
+| E-PI-RULES-01 | Pi | Always-on rules | The adapter's `before_agent_start` handler returns only the active mode prompt and the `.maestria/` project sections; the global rules and main loop ship as the `global-rules` and `maestria` skills, which load on demand, so they are not always-on in Pi sessions | Package peer `^1.0.0` | `packages/pi/src/rules.ts`; `packages/pi/sync.config.ts` | 2026-11-03 | not tested |
 
 ---
 
@@ -162,6 +163,7 @@ This file is the dated evidence ledger for non-plugin runtimes. Plugin-host evid
 | E-JCODE-01, E-JCODE-03 | JCode | https://github.com/1jehuang/jcode | 2026-08-11 | not tested |
 | E-JCODE-02 | JCode | https://jcode.sh/sdk | 2026-08-11 | not tested |
 | E-CRUSH-01, E-CRUSH-02, E-CRUSH-03, E-CRUSH-04, E-CRUSH-05 | Crush | https://github.com/charmbracelet/crush | 2026-08-11 | not tested |
+| E-PI-RULES-01 | Pi | `packages/pi/src/rules.ts`; `packages/pi/sync.config.ts` (working-tree snapshot) | 2026-11-03 | not tested |
 | E-PI-TOOLS-02 | Pi | `packages/pi/src/tools.ts`; `packages/shared/pi/src/commands-core.ts`; `packages/shared/pi/src/tools-core.ts` (working-tree snapshot; no pinned host source read for execution-mode behavior) | 2026-10-04 | not tested |
 | E-PROJ-OC-01, E-PROJ-OC-03 | OpenCode | `packages/opencode/src/session.ts`; `scripts/e2e/opencode-evidence.ts` against OpenCode CLI `2.0.28` | 2026-10-14 | tested: real-host E2E with a local fake provider (no live model run) |
 | E-PI-SUB-01, E-PI-SUB-02, E-PI-SUB-03, E-PI-SUB-04, E-PI-TOOLS-01 | Pi | `packages/pi/node_modules/@gotgenes/pi-subagents/dist/public.d.ts` and `package.json` (resolved `21.9.0`); `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.84.2_*/node_modules/@earendil-works/pi-coding-agent/dist/` (host `0.84.2` where those claims were read; `allToolNames` re-verified unchanged in the installed `1.0.1` host on 2026-10-05) | 2026-10-02 (claims); 2026-10-05 (`allToolNames` re-verification) | tested: source inspection + package/unit tests (no live runtime E2E) |

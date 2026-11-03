@@ -299,27 +299,61 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   );
 };
 
-// One root AGENTS.md serves hosts that read a plain session context: Devin loads it always-on,
-// the CLI installs it into Codex's AGENTS.md, and Hermes users add it manually. Each host note
-// sits under its own heading.
-const SESSION_HOSTS = ['devin', 'codex', 'hermes'];
-const HOST_NOTES_INTRO =
-  '## Host Notes\n\nEach section below applies only on the host it names; skip the others.';
-// Kimi Code reads its own copy through `systemPromptPath` and ignores one over 32 KB, so it
-// carries only its own host note.
-const KIMI_CONTEXT = 'kimi.system-prompt.md';
-const KIMI_CONTEXT_LIMIT = 32 * 1024;
+// Each host that reads a plain session file gets its own, holding the always-on core and only its
+// own host note, so it stays under that host's cap. Devin loads the root AGENTS.md always-on and
+// reads its modes as skills; the CLI installs the Codex file into Codex's global AGENTS.md;
+// Hermes users add theirs as project context; Kimi Code reads its file through `systemPromptPath`.
+// Hermes caps context files in characters, which UTF-16 length never undercounts.
+const KIMI_FILE = 'kimi.system-prompt.md';
+const SESSION_FILES = [
+  { cap: 'Devin 16 KiB', file: 'AGENTS.md', host: 'devin', limit: 16 * 1024, modes: false },
+  { cap: 'Codex 32 KiB', file: 'codex.agents.md', host: 'codex', limit: 32 * 1024, modes: true },
+  {
+    cap: 'Hermes 20,000-character',
+    file: 'hermes.context.md',
+    host: 'hermes',
+    limit: 20_000,
+    modes: false,
+  },
+  { cap: 'Kimi Code 32 KiB', file: KIMI_FILE, host: 'kimi-code', limit: 32 * 1024, modes: true },
+] as const;
 const demote = (markdown: string): string =>
   markdown.replaceAll(/^(?<hashes>#{2,5}) /gmu, '#$<hashes> ');
 
-const addSessionContext = (plan: Map<string, string>, input: Inputs, complete: string): void => {
-  const notes = SESSION_HOSTS.map((host) => demote(input.contexts[host]));
-  addOutput(plan, 'AGENTS.md', document(compose(complete, HOST_NOTES_INTRO, ...notes)));
-  const kimi = document(compose(complete, '## Host Notes', demote(input.contexts['kimi-code'])));
-  if (Buffer.byteLength(kimi) > KIMI_CONTEXT_LIMIT) {
-    throw new Error(`${KIMI_CONTEXT} exceeds Kimi Code's documented 32 KB system prompt limit`);
+const addSessionContext = (
+  plan: Map<string, string>,
+  input: Inputs,
+  routerPolicy: string,
+): void => {
+  const modeBodies = MODES.map((mode) => input.modes[mode].body);
+  for (const session of SESSION_FILES) {
+    const { cap, file, host, limit } = session;
+    const content = document(
+      compose(
+        routerPolicy,
+        ...(session.modes ? modeBodies : []),
+        '## Host Notes',
+        demote(input.contexts[host]),
+      ),
+    );
+    const size = host === 'hermes' ? content.length : Buffer.byteLength(content);
+    if (size > limit) {
+      throw new Error(`${file} exceeds the ${cap} cap`);
+    }
+    addOutput(plan, file, content);
   }
-  addOutput(plan, KIMI_CONTEXT, kimi);
+};
+
+// Devin has no plugin commands component, so its modes ship as skills only its manifest selects.
+const addDevinModeSkills = (plan: Map<string, string>, input: Inputs): void => {
+  for (const mode of MODES) {
+    const { body, metadata } = input.modes[mode];
+    addOutput(
+      plan,
+      `devin/skills/${mode}/SKILL.md`,
+      document(compose(body, input.arguments), { description: metadata.description, name: mode }),
+    );
+  }
 };
 
 const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {
@@ -337,9 +371,9 @@ const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy:
 
 const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   const routerPolicy = compose(input.roles['main-loop'], input.rules);
-  const complete = compose(routerPolicy, ...MODES.map((mode) => input.modes[mode].body));
   addPolicyRules(plan, input, routerPolicy);
-  addSessionContext(plan, input, complete);
+  addSessionContext(plan, input, routerPolicy);
+  addDevinModeSkills(plan, input);
   addModeCommands(plan, input, routerPolicy);
 };
 

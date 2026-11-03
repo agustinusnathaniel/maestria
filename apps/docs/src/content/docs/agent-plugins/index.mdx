@@ -27,10 +27,10 @@ Start with [Installation](/agent-plugins/installation/), then see [Usage](/agent
 | Host | Reviewer | Workflow modes | Always-on policy | Read-only roles |
 | --- | --- | --- | --- | --- |
 | [Claude Code](/agent-plugins/installation/#claude-code) | 1 reviewer | 3 native commands (`/maestria:fein` and others) | In the commands | Write and Edit tools denied |
-| [Codex](/agent-plugins/installation/#codex) | 1 reviewer, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | `sandbox_mode = "read-only"` |
+| [Codex](/agent-plugins/installation/#codex) | 1 reviewer, via the companion CLI | Mode keywords | Managed block in global instructions (companion CLI) | Prompt-level (Codex no longer applies a role's `sandbox_mode`) |
 | [Cursor](/agent-plugins/installation/#cursor) | 1 reviewer | 3 commands | Always-apply rule | Declared, not enforced for plugin agents |
 | [Kimi Code](/agent-plugins/installation/#kimi-code) | 1 reviewer | 3 commands | `systemPromptPath` to `kimi.system-prompt.md` | Write and Edit tools denied |
-| [Devin](/agent-plugins/installation/#devin) | 1 reviewer profile, local only | Mode keywords | Root `AGENTS.md` | Prompt-level |
+| [Devin](/agent-plugins/installation/#devin) | 1 reviewer profile, local only | 3 mode skills (`/maestria:fein` and others) | Root `AGENTS.md` (Devin reads 16 KiB) | Prompt-level |
 | [ZCode](/agent-plugins/installation/#zcode) | 1 reviewer | 3 commands | In the profile and commands (no rules component) | Write and Edit removed from subagent tools; shell remains |
 | [OMP](/agent-plugins/installation/#omp) | 1 reviewer task profile | 3 commands | Always-apply rule | Prompt-level |
 | [Hermes](/agent-plugins/installation/#hermes) | None | None | Optional manual context | Not applicable |

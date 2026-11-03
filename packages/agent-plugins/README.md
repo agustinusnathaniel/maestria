@@ -8,7 +8,7 @@ maestria ships one directly installable plugin with native host components and e
 | --- | --- | --- |
 | `agents/` | One reviewer profile for every Markdown host, plus a generated Codex TOML beside it | Core `specialists/` and `generation/profiles.json` |
 | `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, routing, and policy |
-| `rules/`, `AGENTS.md`, `kimi.system-prompt.md` | `rules/global.md` (OMP) and `rules/cursor/` (Cursor); the root `AGENTS.md` serves Devin, Codex, and Hermes, and `kimi.system-prompt.md` is Kimi Code's `systemPromptPath` copy with only its own host note | Core `rules.md` and integration notes |
+| `rules/`, session files, `devin/skills/` | `rules/global.md` (OMP) and `rules/cursor/` (Cursor); one session file per host, each with only its own host note and sized to that host's cap: root `AGENTS.md` (Devin), `codex.agents.md` (installed by the CLI), `hermes.context.md` (manual), `kimi.system-prompt.md` (`systemPromptPath`); Devin's three mode skills | Core `rules.md` and integration notes |
 | `skills/` | The bundled `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` method skills | Core `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
 | `generation/` | Development-only profile metadata (`profiles.json`); not shipped | Hand-authored mechanical input |
 | `assets/` | Logo shared by the host manifests | Hand-authored package file |

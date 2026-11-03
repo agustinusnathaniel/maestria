@@ -124,7 +124,7 @@ describe('published consolidated plugin', () => {
         assertResourcePaths(manifest, packedRoot);
       }
       const skills = entries.filter((entry) => /^package\/skills\/[^/]+\/SKILL\.md$/u.test(entry));
-      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(8);
+      expect(entries.filter((entry) => entry.endsWith('/SKILL.md'))).toHaveLength(11);
       // The method skills bundled from packages/core/agent-directives/skills.
       expect(skills.map((entry) => entry.split('/')[2]).toSorted()).toEqual([
         'architecture-plan',
@@ -136,6 +136,10 @@ describe('published consolidated plugin', () => {
         'recon',
         'review-loop',
       ]);
+      // Devin's modes ship as skills only the Devin manifest selects.
+      expect(
+        entries.filter((entry) => /^package\/devin\/skills\/[^/]+\/SKILL\.md$/u.test(entry)),
+      ).toHaveLength(3);
       const agentEntries = entries.filter((entry) => entry.startsWith('package/agents/'));
       expect(agentEntries.filter((entry) => entry.endsWith('.md'))).toHaveLength(roles.length);
       expect(agentEntries.filter((entry) => entry.endsWith('.toml'))).toHaveLength(roles.length);
@@ -174,7 +178,9 @@ describe('published consolidated plugin', () => {
       expect(manifests[6].skills).toBe('./skills/');
       expect(manifests[6].commands).toBe('./commands/');
       expect(manifests[6].systemPromptPath).toBe('./kimi.system-prompt.md');
-      expect(entries).toContain('package/kimi.system-prompt.md');
+      for (const sessionFile of ['kimi.system-prompt.md', 'codex.agents.md', 'hermes.context.md']) {
+        expect(entries).toContain(`package/${sessionFile}`);
+      }
       expect(manifests[1].commands).toEqual([
         './commands/fein.md',
         './commands/sonar.md',
@@ -182,7 +188,7 @@ describe('published consolidated plugin', () => {
       ]);
       expect(manifests[2].agents).toBe('./agents/');
       expect(manifests[2].commands).toBe('./commands/');
-      expect(manifests[4].skills).toBe('./skills/');
+      expect(manifests[4].skills).toEqual(['./skills/', './devin/skills/']);
       expect(manifests[2].rules).toBe('./rules/cursor/');
       for (const role of roles) {
         expect(entries).toContain(`package/agents/${role}.md`);
