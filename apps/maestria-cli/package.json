@@ -38,11 +38,11 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@clack/core": "^1.5.0",
-    "yaml": "^2.9.0"
+    "@clack/core": "catalog:",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@clack/prompts": "^1.8.0",
+    "@clack/prompts": "catalog:",
     "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "citty": "^0.2.2",

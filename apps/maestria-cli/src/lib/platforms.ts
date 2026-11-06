@@ -702,9 +702,8 @@ const cursor: PlatformDefinition = {
       catch: (e) =>
         new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) }),
       try: async () => {
-        await import('node:fs/promises').then(async (m) => {
-          await m.rm(CURSOR_PLUGIN_DIR, { force: true, recursive: true });
-        });
+        const fs = await import('node:fs/promises');
+        await fs.rm(CURSOR_PLUGIN_DIR, { force: true, recursive: true });
       },
     });
   }).pipe(Effect.asVoid),

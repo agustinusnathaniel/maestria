@@ -1,6 +1,7 @@
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
+  Skill,
 } from '@earendil-works/pi-coding-agent';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -31,16 +32,18 @@ const writeProjectFile = (root: string, rel: string, content: string): void => {
 };
 
 const baseEvent: BeforeAgentStartEvent = {
+  messageType: 'user',
   prompt: 'build the feature',
   systemPrompt: 'You are an AI assistant.',
   systemPromptOptions: {
     appendSystemPrompt: '',
-    contextFiles: [],
+    contextFiles: [] as { path: string; content: string }[],
     cwd: '',
-    promptGuidelines: [],
+    hiddenTools: [] as string[],
+    promptGuidelines: [] as string[],
     sections: {},
-    selectedTools: [],
-    skills: [],
+    selectedTools: [] as string[],
+    skills: [] as Skill[],
     toolGuidelines: {},
     toolSnippets: {},
   },
