@@ -45,13 +45,13 @@
     "test": "vp test"
   },
   "dependencies": {
-    "yaml": "^2.9.0"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@maestria/shared-hook-policy": "workspace:*",
     "@maestria/shared-mode": "workspace:*",
     "@maestria/shared-project-config": "workspace:*",
-    "@opencode/plugin": "^2.0.28",
+    "@opencode/plugin": "catalog:",
     "@types/node": "catalog:",
     "effect": "catalog:",
     "typescript": "catalog:"
