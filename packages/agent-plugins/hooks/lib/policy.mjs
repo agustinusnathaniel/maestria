@@ -357,7 +357,7 @@ const scanSubstitutions = (text, inDoubleQuotes = false) => {
 		plain
 	};
 };
-const HEREDOC = /(?<!<)<<(?<dash>-?)[ \t]*(?<quote>['"]?)(?<word>[A-Za-z_][\w.-]*)\k<quote>/gu;
+const HEREDOC = /(?<!<)<<(?<dash>-?)[ \t]*(?<quote>\\|['"]?)(?<word>[A-Za-z_][\w.-]*)['"]?/gu;
 /** Remove heredoc bodies, which are data, keeping the lines that start them. */
 const stripHeredocs = (command) => {
 	const lines = command.split("\n");
@@ -423,6 +423,15 @@ const SUDO_VALUED = new Set([
 ]);
 const REDIRECTION = /^(?:\d+|&)?(?:<<<|<<-?|>>|>\||<>|>&|<&|>|<)/u;
 const PROC_ENVIRON = /^<?\/proc\/(?:self|thread-self|\d+|\$\$|\$\{?[A-Za-z_]\w*\}?)\/(?:task\/\d+\/)?environ$/u;
+/** Commands that name a file without printing its contents. */
+const NOT_READING = new Set([
+	"[",
+	"echo",
+	"ls",
+	"printf",
+	"stat",
+	"test"
+]);
 /** Words of a simple command without redirections and a trailing comment. */
 const commandWords = (words) => {
 	const result = [];
@@ -431,8 +440,12 @@ const commandWords = (words) => {
 		if (word.startsWith("#")) {
 			break;
 		}
+		// A redirection attached to a word, as in `env>out.txt`, ends that word.
+		const attached = /^(?<head>[^<>]*[^<>\d&])[<>]/u.exec(word)?.groups?.head;
 		const redirect = REDIRECTION.exec(word);
-		if (redirect === null) {
+		if (attached !== undefined) {
+			result.push(attached);
+		} else if (redirect === null) {
 			result.push(word);
 		} else if (redirect[0] === word) {
 			index += 1;
@@ -511,7 +524,7 @@ const environmentDump = (raw) => {
 	}
 	const [name, ...args] = words;
 	const head = basename(name);
-	if (!["echo", "printf"].includes(head)) {
+	if (!NOT_READING.has(head)) {
 		const proc = raw.find((word) => PROC_ENVIRON.test(word));
 		if (proc !== undefined) {
 			return `reading ${proc.replace(/^</u, "")}`;
