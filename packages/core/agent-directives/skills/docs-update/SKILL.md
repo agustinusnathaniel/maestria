@@ -15,7 +15,7 @@ Assess internal docs, user-facing docs, changelog or release notes, and changese
 
 ## 3. Edit for the reader
 
-Write each affected source for its reader: why first, then usage with examples. In content the user authored, make the clear edits and ask about unclear parts instead of changing them. Trim before adding, and state each concept once, as the principle and how to check it rather than its origin story. Split content into another file only when a distinct reader or branch needs it. Durable docs never live only in scratch or temporary locations.
+Write each affected source for its reader: why first, then usage with examples. When rewriting a page, compare it with the old version section by section and restore anything dropped that is not history. In content the user authored, make the clear edits and ask about unclear parts instead of changing them. Trim before adding, and state each concept once, as the principle and how to check it rather than its origin story. Split content into another file only when a distinct reader or branch needs it. Durable docs never live only in scratch or temporary locations.
 
 ## 4. Verify
 
