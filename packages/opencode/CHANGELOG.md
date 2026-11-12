@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.17.0
+
+### Minor Changes
+
+- [#452](https://github.com/agustinusnathaniel/maestria/pull/452) [`17007a9`](https://github.com/agustinusnathaniel/maestria/commit/17007a9b56a4af224715a7f4961618fa06bb29aa) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Directive refinements from observed failures. Agents read environment variables by name instead of dumping them all. When you challenge a claim ("you sure?", "cmiiw"), they read it against your whole request and re-check the sources, change the answer only on new evidence they can name, and otherwise keep it and say what they re-checked; the rule for acting on an uncheckable precondition is removed. Milestone reports state the choices made for you and why, and agents ask you to check something only with a screenshot or a link they tested. In the method skills, a rare guard case whose worst case is lost or wrong user data, lost access, or an untraceable failure counts as real; visual evidence for a shared layout or component covers every screen that mounts it or a stated sample; and a rewritten docs page is compared with the old version so nothing that is not history is dropped.
+
+- [#453](https://github.com/agustinusnathaniel/maestria/pull/453) [`08731d1`](https://github.com/agustinusnathaniel/maestria/commit/08731d13a826a65a27d4d5ea00b131061da5b2fb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - A new guard asks before a shell command prints the whole environment, which would put every secret in it into the transcript: `env` or `printenv` with no command or variable name, a bare `set`, `export` or `export -p`, `declare -x`, `declare -p`, or `typeset -x` with no names, and reading `/proc/<pid>/environ`, in any part of a pipeline, list, subshell, or command substitution and under wrappers such as `sudo`. Ordinary use stays allowed: `env FOO=1 node app.js`, `printenv HOME`, `set -e`, `export FOO=bar`, and these words as data in arguments, quoted text, or heredocs. The message tells the agent to read the one variable by name, and for a secret to check presence only (`[ -n "$NAME" ] && echo set`). It runs as a plugin hook on Claude Code, ZCode, Codex, Cursor, Devin, and Kimi Code (hosts that cannot ask block with a message that approval is needed), in OpenCode's permission prompt, and in Pi's `tool_call` and `!` shell commands.
+  
+  Long chains of `env` wrappers remain checked without exhausting the call stack. Quoted or commented heredoc markers cannot hide a later environment dump from the guard. Attached option values such as `env -uSSH_AUTH_SOCK` are treated as variable names rather than flags.
+
 ## 0.16.0
 
 ### Minor Changes
