@@ -128,6 +128,8 @@ describe('environment dump guard', () => {
     'set>out.txt',
     'env 2>/dev/null',
     'env -u HOME',
+    'env -uSSH_AUTH_SOCK',
+    'env -uignored',
     'sudo printenv',
     'sudo -u root env',
     '/usr/bin/env',
@@ -155,6 +157,17 @@ describe('environment dump guard', () => {
     'dd if=/proc/self/environ 2>/dev/null',
     'strings /proc/$$/environ',
     'cat <<EOF\n$(env)\nEOF',
+    'echo "<<EOF"\nenv\nEOF',
+    "echo '<<EOF'\nprintenv\nEOF",
+    'echo ok # <<EOF\nenv\nEOF',
+    "echo ok # '\nenv",
+    'echo $(true)#; env',
+    'echo \\ #; env',
+    'echo \\;#; env',
+    'echo \\&#; env',
+    'echo `true # comment`; env',
+    "echo \"$(cat <<'EOF')\"\n'\nEOF\nenv",
+    'echo "$(cat <<EOF)"\n\'\nEOF\nenv',
   ])('asks before an environment dump: %s', (command) => {
     expect(classifyEnvDump(command).verdict).toBe('ask');
   });
@@ -163,6 +176,7 @@ describe('environment dump guard', () => {
     'env FOO=1 node app.js',
     'env -i PATH=/usr/bin make',
     'env -u HOME node app.js',
+    'env -uPUBLIC true',
     'env -S "node app.js"',
     'env --help',
     'printenv HOME',
@@ -189,6 +203,7 @@ describe('environment dump guard', () => {
     'grep printenv file',
     'grep -rn "env" src',
     'echo "run env to list"',
+    'echo ok # ; env',
     "echo 'printenv'",
     "echo '$(env)'",
     'echo /proc/self/environ',
@@ -198,6 +213,8 @@ describe('environment dump guard', () => {
     "git commit -F - <<'EOF'\nfix: avoid dumping the environment\n\nenv\nprintenv\nset\nexport -p\nEOF",
     'cat <<EOF > notes.md\nRun env to list variables.\nenv\nEOF',
     'cat <<\\EOF\nenv\nEOF',
+    'echo "$(cat <<\'EOF\')"\nenv\nEOF',
+    'echo "$(cat <<EOF)"\nenv\nEOF',
     'git commit -m "$(cat <<\'EOF\'\nUse printenv NAME, not env.\nset\nEOF\n)"',
     'kubectl set env deploy/app FOO=1',
     'pnpm env use --global lts',
@@ -211,6 +228,10 @@ describe('environment dump guard', () => {
     expect(reason).toContain('env without a command prints the whole environment');
     expect(reason).toContain('printenv NAME');
     expect(reason).toContain('[ -n "$NAME" ] && echo set');
+  });
+
+  it('handles a long chain of env wrappers without exhausting the stack', () => {
+    expect(classifyEnvDump(`${'env '.repeat(10_000)}printenv`).verdict).toBe('ask');
   });
 });
 

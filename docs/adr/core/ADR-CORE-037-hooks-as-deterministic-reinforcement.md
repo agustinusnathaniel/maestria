@@ -29,6 +29,8 @@ Ship hooks on every host that supports them, as deterministic reinforcement of r
 
 OMP hooks are executable extensions rather than declarative files, so the OMP module is a follow-up. Hermes portable packages cannot ship hooks; it keeps the text rules.
 
+Amendment (2026-11-12): use the existing Vite+ bundler for the standalone policy artifact instead of maintaining a regex-based module linker. Keep policy sources dependency-free and reject imports outside their source tree; disable project configuration and environment-file loading during bundling. Standard module scope and import evaluation replace the linker's restrictions on names and declaration order.
+
 ## Consequences
 
 - Positive: Claude Code and ZCode sessions get the always-on core without a mode command, after `/clear`, and after compaction; risky git commands and generated-file edits meet a check on every matching call; project customization reaches five more hosts without relying on the model.

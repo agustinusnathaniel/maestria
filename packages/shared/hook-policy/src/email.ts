@@ -1,6 +1,3 @@
-// Email scan: asks before PR, issue, API, or commit text that names a person
-// by email address. Reads `git commit` commands with the shared git parser.
-
 import type { Decision, ShellContext } from './types.js';
 import { ALLOW, ask } from './types.js';
 import { basename, program, splitCommands } from './shell.js';

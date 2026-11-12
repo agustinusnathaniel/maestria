@@ -1,6 +1,3 @@
-// Generated-file guard: asks before an edit tool changes a file whose head
-// carries a generated marker. Scripts that regenerate files are unaffected.
-
 import type { Decision } from './types.js';
 import { ALLOW, ask } from './types.js';
 

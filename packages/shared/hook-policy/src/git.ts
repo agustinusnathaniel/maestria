@@ -1,7 +1,3 @@
-// Git safety: blocks hook bypasses, asks before risky history edits and
-// protected-branch commits or pushes. `parseGit` is also shared with the
-// email policy, which reads `git commit` message text.
-
 import type { Decision, ShellContext } from './types.js';
 import { ALLOW, ask, block, strictest } from './types.js';
 import { basename, hasLong, positionals, program, shortFlags, splitCommands } from './shell.js';

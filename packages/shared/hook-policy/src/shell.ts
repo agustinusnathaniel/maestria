@@ -1,7 +1,3 @@
-// Shared shell parsing: splitting a command line into simple commands, shared
-// predicates over words, and exposing substitution and heredoc bodies as
-// separate command texts. Imported by the git, env-dump, and email policies.
-
 const SEPARATORS = new Set(['&&', '||', ';', '|', '&', '\n']);
 
 /**
@@ -180,8 +176,10 @@ interface Scan {
 /** Expose subshells, process and command substitutions, and backticks as separate commands. */
 const scanSubstitutions = (text: string, inDoubleQuotes = false): Scan => {
   const nested: string[] = [];
+  const substitutions: boolean[] = [];
   let plain = '';
-  let quote: '"' | "'" | undefined = inDoubleQuotes ? '"' : undefined;
+  let inWord = inDoubleQuotes;
+  let quote: string | undefined = inDoubleQuotes ? '"' : undefined;
   for (let index = 0; index < text.length; index += 1) {
     const char = text[index];
     if (quote === "'") {
@@ -189,17 +187,20 @@ const scanSubstitutions = (text: string, inDoubleQuotes = false): Scan => {
       if (char === "'") {
         quote = undefined;
       }
-    } else if (char === '\\' && index + 1 < text.length) {
-      plain += char + text[index + 1];
+    } else if (char === '\\') {
+      plain += text.slice(index, index + 2);
+      inWord ||= text[index + 1] !== '\n';
       index += 1;
+    } else if (char === '`') {
+      const close = closingBacktick(text, index);
+      nested.push(text.slice(index + 1, close));
+      plain += quote === '"' ? '' : ';';
+      inWord = true;
+      index = close;
     } else if (quote === '"') {
-      if (char === '$' && text[index + 1] === '(') {
+      if (text.startsWith('$(', index)) {
         const close = closingParen(text, index + 1);
         nested.push(text.slice(index + 2, close));
-        index = close;
-      } else if (char === '`') {
-        const close = closingBacktick(text, index);
-        nested.push(text.slice(index + 1, close));
         index = close;
       } else {
         plain += char;
@@ -207,17 +208,31 @@ const scanSubstitutions = (text: string, inDoubleQuotes = false): Scan => {
           quote = undefined;
         }
       }
-    } else if (char === '"' || char === "'") {
+    } else if (/["']/u.test(char)) {
       plain += char;
       quote = char;
+      inWord = true;
+    } else if (char === '#' && !inWord) {
+      const end = text.indexOf('\n', index);
+      index = (end === -1 ? text.length : end) - 1;
     } else {
-      plain += char === '(' || char === ')' || char === '`' ? ';' : char;
+      plain += /[()`]/u.test(char) ? ';' : char;
+      if (char === '(') {
+        substitutions.push(/[$<>]/u.test(text.charAt(index - 1)));
+        inWord = false;
+      } else if (char === ')') {
+        inWord = substitutions.pop() === true;
+      } else {
+        inWord = !/[\s;|&]/u.test(char);
+      }
     }
   }
   return { nested, plain };
 };
 
-const HEREDOC = /(?<!<)<<(?<dash>-?)[ \t]*(?<quote>\\|['"]?)(?<word>[A-Za-z_][\w.-]*)['"]?/gu;
+// A quoted or escaped heredoc operator is data; substitution bodies are scanned separately.
+const HEREDOC =
+  /\\.|'[^']*'|"(?:\\.|[^"\\])*"|(?<!<)<<(?<dash>-?)[ \t]*(?<quote>\\|['"]?)(?<word>[A-Za-z_][\w.-]*)['"]?/gu;
 
 interface Heredocs {
   /** Bodies with an unquoted delimiter, whose command substitutions still run. */
@@ -232,17 +247,27 @@ const stripHeredocs = (command: string): Heredocs => {
   const expanded: string[] = [];
   for (let index = 0; index < lines.length; index += 1) {
     kept.push(lines[index]);
-    for (const match of lines[index].matchAll(HEREDOC)) {
-      const { dash = '', quote = '', word = '' } = match.groups ?? {};
-      const end = lines.findIndex(
-        (line, position) =>
-          position > index && (dash === '' ? line : line.replace(/^\t+/u, '')) === word,
-      );
-      if (end !== -1) {
-        if (quote === '') {
-          expanded.push(lines.slice(index + 1, end).join('\n'));
+    const pending = [lines[index]];
+    for (const text of pending) {
+      const { nested, plain } = scanSubstitutions(text);
+      for (const body of nested) {
+        pending.push(body);
+      }
+      for (const match of plain.matchAll(HEREDOC)) {
+        if (match.groups?.word === undefined) {
+          continue;
         }
-        index = end;
+        const { dash = '', quote = '', word } = match.groups;
+        const end = lines.findIndex(
+          (line, position) =>
+            position > index && (dash === '' ? line : line.replace(/^\t+/u, '')) === word,
+        );
+        if (end !== -1) {
+          if (quote === '') {
+            expanded.push(lines.slice(index + 1, end).join('\n'));
+          }
+          index = end;
+        }
       }
     }
   }
