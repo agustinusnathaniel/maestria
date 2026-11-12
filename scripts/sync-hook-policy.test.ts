@@ -161,6 +161,14 @@ describe('bundleSources', () => {
     {
       files: {
         'index.ts': "export { a } from './part.js';\n",
+        'part.ts': "import { x } from '../src-evil.js';\nexport const a = x;\n",
+      },
+      label: 'sibling-prefix escape',
+      message: 'outside',
+    },
+    {
+      files: {
+        'index.ts': "export { a } from './part.js';\n",
         'part.ts': "import './setup.js';\nexport const a = 1;\n",
       },
       label: 'side-effect import',
@@ -215,6 +223,16 @@ describe('bundleSources', () => {
       expect(() => bundleSources(root)).toThrow(message);
     },
   );
+});
+
+describe('hookPolicyModule', () => {
+  it('rejects dynamic imports in the shipped module', async () => {
+    const root = makeRepo({
+      'index.ts': "export { a } from './part.js';\n",
+      'part.ts': 'export const a = import("./other.js");\n',
+    });
+    await expect(hookPolicyModule(root)).rejects.toThrow('import-free');
+  });
 });
 
 describe('syncHookPolicy', () => {

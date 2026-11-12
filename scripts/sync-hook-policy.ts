@@ -27,7 +27,8 @@ const specifierToFile = (repoRoot: string, importerDir: string, specifier: strin
     SOURCE_DIR,
     path.normalize(path.join(importerDir, `${base}.ts`)),
   );
-  if (!absolute.startsWith(path.join(repoRoot, SOURCE_DIR))) {
+  const root = path.join(repoRoot, SOURCE_DIR);
+  if (absolute !== root && !absolute.startsWith(`${root}${path.sep}`)) {
     throw new Error(`sync-hook-policy: import outside ${SOURCE_DIR}: ${specifier}`);
   }
   return absolute;
