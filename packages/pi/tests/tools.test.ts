@@ -370,7 +370,7 @@ describe('installToolInterceptors', () => {
   });
 });
 
-describe('git safety guard', () => {
+describe('shell safety guard', () => {
   let repo = '';
   beforeAll(() => {
     repo = mkdtempSync(path.join(tmpdir(), 'maestria-pi-git-'));
@@ -405,6 +405,15 @@ describe('git safety guard', () => {
   it('blocks with an approval message when the session has no UI', async () => {
     const result = await run('git push --force', { hasUI: false });
     expect(getBlockedResult(result).reason).toContain("needs the user's explicit approval");
+  });
+
+  it('asks before a whole-environment dump, in tool calls and user commands', async () => {
+    const decline = vi.fn<() => Promise<boolean>>().mockResolvedValue(false);
+    const declined = await run('printenv', { hasUI: true, ui: { confirm: decline } });
+    expect(getBlockedResult(declined).reason).toContain('printenv NAME');
+    expect(await run('printenv HOME', { hasUI: false })).toBeUndefined();
+    const blocked = await createUserBashGuard()({ command: 'env', cwd: repo }, { hasUI: false });
+    expect(JSON.stringify(blocked)).toContain('prints the whole environment');
   });
 
   it('guards the user own shell commands, returning the reason instead of running', async () => {

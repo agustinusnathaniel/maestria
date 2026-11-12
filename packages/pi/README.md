@@ -25,7 +25,7 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 - **Compaction preservation** - session state survives compaction with structured summaries.
 - **Subagent dispatch** - dispatch of the reviewer for independent blind review via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
-- **Git safety** - blocks `--no-verify` and asks before commits or pushes to protected branches, force pushes, and commands that discard work, for agent and `!` shell commands alike; without a UI it blocks with a message that approval is needed.
+- **Git safety** - blocks `--no-verify` and asks before commits or pushes to protected branches, force pushes, commands that discard work, and commands that print the whole environment (`env`, `printenv`, or `export -p` alone), for agent and `!` shell commands alike; without a UI it blocks with a message that approval is needed.
 - **Root project customization** - `.maestria/workflow.md` then `.maestria/rules.md` from the session directory, injected every turn as subordinate guidance (never waives safety, authorization, or host permissions).
 
 ## Root Project Customization

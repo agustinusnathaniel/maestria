@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import {
   classifyEmailScan,
+  classifyEnvDump,
   classifyGeneratedEdit,
   classifyGitSafety,
   editTargets,
@@ -112,6 +113,104 @@ describe('git safety classifier', () => {
       ['g'],
       ['h'],
     ]);
+  });
+});
+
+describe('environment dump guard', () => {
+  it.each([
+    'env',
+    'printenv',
+    'printenv -0',
+    'env | grep TOKEN',
+    'env > out.txt',
+    'env>out.txt',
+    'printenv>>out.txt',
+    'set>out.txt',
+    'env 2>/dev/null',
+    'env -u HOME',
+    'sudo printenv',
+    'sudo -u root env',
+    '/usr/bin/env',
+    'FOO=1 env',
+    'env FOO=1 printenv',
+    'exec env',
+    'echo "$(env)"',
+    'echo `printenv`',
+    'echo "`env`"',
+    'diff <(env) saved.txt',
+    '(set -o posix; set)',
+    '{ env; }',
+    'if true; then env; fi',
+    'npm test && printenv',
+    'set',
+    'set | sort',
+    'export',
+    'export -p',
+    'declare -x',
+    'declare -p',
+    'declare -px',
+    'typeset -x',
+    'cat /proc/self/environ',
+    "tr '\\0' '\\n' < /proc/1/environ",
+    'dd if=/proc/self/environ 2>/dev/null',
+    'strings /proc/$$/environ',
+    'cat <<EOF\n$(env)\nEOF',
+  ])('asks before an environment dump: %s', (command) => {
+    expect(classifyEnvDump(command).verdict).toBe('ask');
+  });
+
+  it.each([
+    'env FOO=1 node app.js',
+    'env -i PATH=/usr/bin make',
+    'env -u HOME node app.js',
+    'env -S "node app.js"',
+    'env --help',
+    'printenv HOME',
+    'printenv HOME PATH',
+    'printenv HOME>out.txt',
+    'printenv HOME 2>/dev/null',
+    'sudo printenv HOME',
+    '[ -n "$TOKEN" ] && echo set',
+    'set -e',
+    'set -euo pipefail',
+    'set -o pipefail',
+    'set -x',
+    'set +e',
+    'set -- a b',
+    'export FOO=bar',
+    'export -n FOO',
+    'declare -x FOO=1',
+    'declare -p FOO',
+    'declare -a list',
+    'command -v env',
+    'command -v printenv',
+    'type env',
+    'which printenv',
+    'grep printenv file',
+    'grep -rn "env" src',
+    'echo "run env to list"',
+    "echo 'printenv'",
+    "echo '$(env)'",
+    'echo /proc/self/environ',
+    'ls -l /proc/self/environ',
+    'test -f /proc/self/environ && echo exists',
+    'git commit -m "debug: stop running env and printenv"',
+    "git commit -F - <<'EOF'\nfix: avoid dumping the environment\n\nenv\nprintenv\nset\nexport -p\nEOF",
+    'cat <<EOF > notes.md\nRun env to list variables.\nenv\nEOF',
+    'cat <<\\EOF\nenv\nEOF',
+    'git commit -m "$(cat <<\'EOF\'\nUse printenv NAME, not env.\nset\nEOF\n)"',
+    'kubectl set env deploy/app FOO=1',
+    'pnpm env use --global lts',
+    'echo $((1 + 2))',
+  ])('allows ordinary use: %s', (command) => {
+    expect(classifyEnvDump(command)).toEqual({ reason: '', verdict: 'allow' });
+  });
+
+  it('says why and what to read instead', () => {
+    const { reason } = classifyEnvDump('env | grep TOKEN');
+    expect(reason).toContain('env without a command prints the whole environment');
+    expect(reason).toContain('printenv NAME');
+    expect(reason).toContain('[ -n "$NAME" ] && echo set');
   });
 });
 

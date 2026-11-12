@@ -114,6 +114,24 @@ describe('PreToolUse adapters', () => {
     expect(JSON.stringify(output)).not.toContain('a.person@example.org');
   });
 
+  it('guards whole-environment dumps: ask where the host can, block elsewhere', () => {
+    const asked = run('env-dump.mjs', ['claude'], shell('env | grep TOKEN')).output;
+    expect(asked).toMatchObject({ hookSpecificOutput: { permissionDecision: 'ask' } });
+    expect(JSON.stringify(asked)).toContain('printenv NAME');
+    expect(
+      run('env-dump.mjs', ['cursor'], { command: 'printenv', cwd: repo }).output,
+    ).toMatchObject({ permission: 'ask' });
+    for (const host of ['codex', 'kimi']) {
+      expect(run('env-dump.mjs', [host], shell('export -p')).output).toMatchObject({
+        hookSpecificOutput: { permissionDecision: 'deny' },
+      });
+    }
+    expect(run('env-dump.mjs', ['devin'], shell('set')).output).toMatchObject({
+      decision: 'block',
+    });
+    expect(run('env-dump.mjs', ['claude'], shell('set -euo pipefail')).output).toBeUndefined();
+  });
+
   it('guards edits to generated files: ask on Claude Code, block on Cursor', () => {
     expect(run('generated-guard.mjs', ['claude'], edit('generated.ts')).output).toMatchObject({
       hookSpecificOutput: { permissionDecision: 'ask' },

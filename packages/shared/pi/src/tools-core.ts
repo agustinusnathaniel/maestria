@@ -1,6 +1,6 @@
 /** Shared tool interceptor utilities for Pi-family packages. */
 
-import { classifyGitSafety } from '@maestria/shared-hook-policy';
+import { classifyEnvDump, classifyGitSafety, strictest } from '@maestria/shared-hook-policy';
 
 import { recordFileModified, recordFileRead } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
@@ -142,23 +142,27 @@ const checkDangerousPattern = async (
 };
 
 /**
- * Git safety from the shared hook policy: hook bypasses are blocked, and risky history edits
- * need the user's confirmation, which a session without a UI cannot give.
+ * Shell safety from the shared hook policy: hook bypasses are blocked, and risky history edits
+ * and whole-environment dumps need the user's confirmation, which a session without a UI cannot
+ * give.
  */
-export const checkGitSafety = async (
+export const checkShellSafety = async (
   command: string,
   ctx: ToolCallContext,
   currentBranch: ToolCallHandlerOptions['currentBranch'],
 ): Promise<ToolCallResult | undefined> => {
-  const decision = classifyGitSafety(command, {
-    currentBranch: (directory) => currentBranch?.(ctx.cwd, directory),
-  });
+  const decision = strictest([
+    classifyGitSafety(command, {
+      currentBranch: (directory) => currentBranch?.(ctx.cwd, directory),
+    }),
+    classifyEnvDump(command),
+  ]);
   if (decision.verdict === 'allow') {
     return undefined;
   }
   const reason = `maestria: ${decision.reason}.`;
   if (decision.verdict === 'ask' && ctx.hasUI === true && ctx.ui !== undefined) {
-    if (await ctx.ui.confirm('Confirm git command', `${reason}\n\n${command}\n\nProceed?`)) {
+    if (await ctx.ui.confirm('Confirm shell command', `${reason}\n\n${command}\n\nProceed?`)) {
       return undefined;
     }
     return { block: true, reason: `${reason} The user declined.` };
@@ -172,7 +176,7 @@ export const checkGitSafety = async (
   };
 };
 
-const checkGitCommand = async (
+const checkShellCommand = async (
   event: ToolCallEventLike,
   options: ToolCallHandlerOptions,
   ctx: ToolCallContext,
@@ -181,7 +185,7 @@ const checkGitCommand = async (
   if (!options.isBashTool(event) || typeof command !== 'string' || command === '') {
     return undefined;
   }
-  return await checkGitSafety(command, ctx, options.currentBranch);
+  return await checkShellSafety(command, ctx, options.currentBranch);
 };
 
 const trackFileAccess = (
@@ -237,7 +241,7 @@ export const createToolCallHandler = (options: ToolCallHandlerOptions): ToolCall
     if (dangerous !== undefined) {
       return dangerous;
     }
-    const git = await checkGitCommand(event, options, ctx);
+    const git = await checkShellCommand(event, options, ctx);
     if (git !== undefined) {
       return git;
     }
