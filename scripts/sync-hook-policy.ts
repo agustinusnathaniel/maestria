@@ -91,11 +91,11 @@ export const bundleSources = (repoRoot: string): { code: string; publicNames: st
   const ordered: string[] = [];
   const visited = new Set<string>();
   const visit = (absolute: string, stack: string[]): void => {
-    if (visited.has(absolute)) {
-      return;
-    }
     if (stack.includes(absolute)) {
       throw new Error(`sync-hook-policy: circular import: ${absolute}`);
+    }
+    if (visited.has(absolute)) {
+      return;
     }
     visited.add(absolute);
     const source = normalizeLineEndings(fs.readFileSync(absolute, 'utf-8'));
@@ -119,7 +119,7 @@ export const bundleSources = (repoRoot: string): { code: string; publicNames: st
       if (/^\s*export\s+default\b/u.test(line)) {
         throw new Error(`sync-hook-policy: default exports are not supported: ${line.trim()}`);
       }
-      if (/^\s*export\s*\{/u.test(line) || /\bfrom\s+['"]/u.test(line)) {
+      if (/^\s*export\s*\{/u.test(line) || /^\s*export\b.*\bfrom\s+['"]/u.test(line)) {
         throw new Error(`sync-hook-policy: re-exports only live in the entry: ${line.trim()}`);
       }
       // Every declaration ships without `export`; the entry's public names are
@@ -134,7 +134,7 @@ export const bundleSources = (repoRoot: string): { code: string; publicNames: st
 
 export const hookPolicyModule = async (repoRoot: string): Promise<string> => {
   const { code } = bundleSources(repoRoot);
-  if (/^\s*import\s/mu.test(code)) {
+  if (/^\s*import\s/mu.test(code) || /\bimport\s*\(/u.test(code)) {
     throw new Error(`${SOURCE_DIR} must bundle to an import-free standalone hook module`);
   }
   const { code: transpiled } = await transformWithOxc(code, ENTRY, { lang: 'ts' });
