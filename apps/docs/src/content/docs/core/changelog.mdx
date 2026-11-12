@@ -5,6 +5,13 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-11-12
+
+- **Challenges get a re-check, not a flip.** When you push back on a claim ("you sure?", "cmiiw"), agents read it against your whole request, re-check the sources, and change the answer only on new evidence they can name; otherwise they keep it and say what they re-checked. The rule for acting on a precondition they cannot check is gone.
+- **Choices you can reverse.** Milestone reports say which choices the agent made for you and why, and a request to check something comes with a screenshot or a link the agent tested, or the reason there is none.
+- **Environment variables by name.** Agents read the one variable they need instead of printing the whole environment.
+- **Sharper method skills.** A rare case whose worst outcome is lost or wrong user data, lost access, or a failure nobody can trace gets real handling, visual evidence for a shared layout or component covers every screen that mounts it (or a stated sample), and a rewritten docs page is compared section by section with the old one so nothing but history is dropped.
+
 ## 2026-11-02
 
 - **Smaller always-on rules.** The global rules and main loop carry about 16% fewer words. Overlapping rules are merged into one principle each, and procedure that only some tasks need now lives in the skill that loads for it: removing superseded code in `architecture-plan` and writing docs for their reader in `docs-update`. maestria no longer prescribes rerunning an unrelated CI failure once or how a held PR behaves; agents still wait for CI after a push and report delivery complete only when required checks pass or the remaining failure is reported. Safety, authorization, review, and branch rules are unchanged.
