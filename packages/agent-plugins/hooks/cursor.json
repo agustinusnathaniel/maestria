@@ -15,6 +15,10 @@
       {
         "command": "node ./hooks/email-scan.mjs cursor",
         "timeout": 10
+      },
+      {
+        "command": "node ./hooks/env-dump.mjs cursor",
+        "timeout": 10
       }
     ],
     "preToolUse": [

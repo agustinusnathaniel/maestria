@@ -299,7 +299,7 @@ const evaluation = (command: string, effect: PermissionEvaluation['effect'] = 'a
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard reads only the action, resources, and effect.
   ({ action: 'shell', effect, resources: [command] }) as unknown as PermissionEvaluation;
 
-describe('git safety guard', () => {
+describe('shell safety guard', () => {
   it('fails a hook bypass before the shell command runs', async () => {
     const { registrations } = await load();
     const exit = await Effect.runPromiseExit(
@@ -326,5 +326,16 @@ describe('git safety guard', () => {
     await Effect.runPromise(registrations.evaluate?.(denied) ?? Effect.void);
     expect(denied).toMatchObject({ effect: 'deny' });
     expect(denied.message).toBeUndefined();
+  });
+
+  it('asks before a whole-environment dump and allows shell options', async () => {
+    const { registrations } = await load();
+    const dump = evaluation('env | grep TOKEN');
+    await Effect.runPromise(registrations.evaluate?.(dump) ?? Effect.void);
+    expect(dump.effect).toBe('ask');
+    expect(dump.message).toContain('printenv NAME');
+    const options = evaluation('set -euo pipefail');
+    await Effect.runPromise(registrations.evaluate?.(options) ?? Effect.void);
+    expect(options).toMatchObject({ effect: 'allow' });
   });
 });

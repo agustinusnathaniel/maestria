@@ -35,6 +35,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/email-scan.mjs\" claude",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/env-dump.mjs\" claude",
+            "timeout": 10
           }
         ]
       },

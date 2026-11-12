@@ -1,5 +1,5 @@
 import type { ExtensionAPI, UserBashEventResult } from '@earendil-works/pi-coding-agent';
-import { checkGitSafety, createToolCallHandler } from '@maestria/shared-pi/tools-core';
+import { checkShellSafety, createToolCallHandler } from '@maestria/shared-pi/tools-core';
 import type { ToolCallContext } from '@maestria/shared-pi/tools-core';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -25,7 +25,7 @@ export const currentBranch = (cwd: string | undefined, directory?: string): stri
 };
 
 /**
- * Git safety for the user's own `!cmd` and `!!cmd` shell commands, which bypass `tool_call`.
+ * Shell safety for the user's own `!cmd` and `!!cmd` shell commands, which bypass `tool_call`.
  * A blocked command returns its reason as the result instead of running.
  */
 export const createUserBashGuard =
@@ -34,7 +34,11 @@ export const createUserBashGuard =
     event: { command: string; cwd: string },
     ctx: ToolCallContext,
   ): Promise<UserBashEventResult | undefined> => {
-    const blocked = await checkGitSafety(event.command, { ...ctx, cwd: event.cwd }, currentBranch);
+    const blocked = await checkShellSafety(
+      event.command,
+      { ...ctx, cwd: event.cwd },
+      currentBranch,
+    );
     return blocked === undefined
       ? undefined
       : { result: { cancelled: false, exitCode: 1, output: blocked.reason, truncated: false } };
