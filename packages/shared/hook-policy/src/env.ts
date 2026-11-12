@@ -1,6 +1,3 @@
-// Environment-dump guard: asks before a shell command prints the whole
-// environment, which would put every secret in it into the transcript.
-
 import type { Decision } from './types.js';
 import { ALLOW, ask } from './types.js';
 import { ASSIGNMENT, basename, commandTexts, hasLong, shortFlags, splitCommands } from './shell.js';
@@ -52,15 +49,15 @@ const commandWords = (words: readonly string[]): string[] => {
 };
 
 /** Drop keywords, assignments, and wrappers that run the next word, such as `sudo` or `exec`. */
-const unwrap = (words: readonly string[]): string[] | undefined => {
-  let index = 0;
+const unwrap = (words: readonly string[], start = 0): number => {
+  let index = start;
   while (index < words.length) {
     const word = words[index];
     if (SHELL_KEYWORDS.has(word) || ASSIGNMENT.test(word)) {
       index += 1;
     } else if (ELEVATORS.has(basename(word)) || PREFIX_COMMANDS.has(word)) {
       if (word === 'command' && ['-v', '-V'].includes(words[index + 1])) {
-        return undefined;
+        return words.length;
       }
       index += 1;
       while (index < words.length && words[index].startsWith('-') && words[index] !== '--') {
@@ -73,7 +70,7 @@ const unwrap = (words: readonly string[]): string[] | undefined => {
       break;
     }
   }
-  return words.slice(index);
+  return index;
 };
 
 const ENV_VALUED = new Set(['-C', '-u', '--chdir', '--unset']);
@@ -82,9 +79,9 @@ const ENV_VALUED = new Set(['-C', '-u', '--chdir', '--unset']);
  * The command `env` runs after its options and assignments, or `'dump'` when it runs none and
  * prints the inherited environment. `-i` starts from an empty environment, and `-S` runs a command.
  */
-const envCommand = (args: readonly string[]): string[] | 'dump' | undefined => {
+const envCommand = (args: readonly string[], start: number): number | 'dump' | undefined => {
   let empty = false;
-  let index = 0;
+  let index = start;
   let options = true;
   while (index < args.length) {
     const arg = args[index];
@@ -96,17 +93,19 @@ const envCommand = (args: readonly string[]): string[] | 'dump' | undefined => {
         return undefined;
       }
       const short = arg.startsWith('--') ? '' : arg.slice(1);
-      if (arg === '-' || arg === '--ignore-environment' || short.includes('i')) {
+      const valueAt = short.search(/[CuS]/u);
+      const flags = valueAt === -1 ? short : short.slice(0, valueAt + 1);
+      if (arg === '-' || arg === '--ignore-environment' || flags.includes('i')) {
         empty = true;
       }
-      if (short.includes('S')) {
+      if (flags.includes('S')) {
         return undefined;
       }
-      index += ENV_VALUED.has(arg) || /[Cu]$/u.test(short) ? 2 : 1;
+      index += ENV_VALUED.has(arg) || (valueAt !== -1 && valueAt === short.length - 1) ? 2 : 1;
     } else if (ASSIGNMENT.test(arg)) {
       index += 1;
     } else {
-      return args.slice(index);
+      return index;
     }
   }
   return empty ? undefined : 'dump';
@@ -114,28 +113,32 @@ const envCommand = (args: readonly string[]): string[] | 'dump' | undefined => {
 
 /** What a simple command dumps from the environment, or undefined when it reads none of it. */
 const environmentDump = (raw: readonly string[]): string | undefined => {
-  const words = unwrap(commandWords(raw));
-  if (words === undefined || words.length === 0) {
+  const words = commandWords(raw);
+  let start = unwrap(words);
+  if (start >= words.length) {
     return undefined;
   }
-  const [name, ...args] = words;
-  const head = basename(name);
-  if (!NOT_READING.has(head)) {
+  if (!NOT_READING.has(basename(words[start]))) {
     const proc = raw.find((word) => PROC_ENVIRON.test(word.replace(ATTACHED_PATH, '')));
     if (proc !== undefined) {
       return `reading ${proc.replace(/^</u, '')}`;
     }
   }
+  while (basename(words[start]) === 'env') {
+    const next = envCommand(words, start + 1);
+    if (next === 'dump') {
+      return 'env without a command';
+    }
+    start = next === undefined ? words.length : unwrap(words, next);
+    if (start >= words.length) {
+      return undefined;
+    }
+  }
+  const head = basename(words[start]);
+  const args = words.slice(start + 1);
   const options = args.filter((arg) => arg.startsWith('-'));
   const names = args.filter((arg) => !arg.startsWith('-'));
   switch (head) {
-    case 'env': {
-      const rest = envCommand(args);
-      if (rest === 'dump') {
-        return 'env without a command';
-      }
-      return rest === undefined ? undefined : environmentDump(rest);
-    }
     case 'printenv': {
       return names.length === 0 && !hasLong(options, '--help', '--version')
         ? 'printenv without a variable name'

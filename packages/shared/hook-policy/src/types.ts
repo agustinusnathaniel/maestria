@@ -1,5 +1,3 @@
-// Shared decision types for maestria's hook policy. Imported by every policy
-// module and re-exported through the package entry; see ./index.ts.
 export type Verdict = 'allow' | 'ask' | 'block';
 
 export interface Decision {
