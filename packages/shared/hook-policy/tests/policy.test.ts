@@ -152,6 +152,7 @@ describe('environment dump guard', () => {
     'typeset -x',
     'cat /proc/self/environ',
     "tr '\\0' '\\n' < /proc/1/environ",
+    'dd if=/proc/self/environ 2>/dev/null',
     'strings /proc/$$/environ',
     'cat <<EOF\n$(env)\nEOF',
   ])('asks before an environment dump: %s', (command) => {

@@ -38,7 +38,7 @@ const importedFiles = (repoRoot: string, importerDir: string, source: string): s
   const files: string[] = [];
   for (const match of source.matchAll(new RegExp(IMPORT_STATEMENT.source, 'gmu'))) {
     const specifier = match.groups?.specifier;
-    if (specifier === undefined || !specifier.startsWith('./')) {
+    if (specifier === undefined || (!specifier.startsWith('./') && !specifier.startsWith('../'))) {
       throw new Error(`sync-hook-policy: only relative imports are allowed: ${match[0].trim()}`);
     }
     files.push(specifierToFile(repoRoot, importerDir, specifier));
@@ -108,6 +108,7 @@ export const bundleSources = (repoRoot: string): { code: string; publicNames: st
     visit(dep, []);
   }
   const parts: string[] = [];
+  const declared = new Map<string, string>();
   for (const absolute of ordered) {
     const relative = path.relative(repoRoot, absolute);
     const source = stripImports(normalizeLineEndings(fs.readFileSync(absolute, 'utf-8')));
@@ -124,7 +125,18 @@ export const bundleSources = (repoRoot: string): { code: string; publicNames: st
       }
       // Every declaration ships without `export`; the entry's public names are
       // re-exported once at the end, so the artifact surface matches the entry.
-      body.push(line.replace(EXPORT_DECLARATION, ''));
+      const stripped = line.replace(EXPORT_DECLARATION, '');
+      const declaration = /^(?:const|let|var|function|class)\s+(?<name>\w+)/u.exec(stripped);
+      if (declaration?.groups !== undefined) {
+        const owner = declared.get(declaration.groups.name);
+        if (owner !== undefined) {
+          throw new Error(
+            `sync-hook-policy: duplicate declaration ${declaration.groups.name} in ${relative} and ${owner}; value names must be unique across policy modules`,
+          );
+        }
+        declared.set(declaration.groups.name, relative);
+      }
+      body.push(stripped);
     }
     parts.push(`// ----- ${relative} -----\n${body.join('\n').trim()}`);
   }

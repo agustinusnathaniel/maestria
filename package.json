@@ -13,6 +13,7 @@
     "build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build",
     "test": "vp run -r test",
     "test-sync-plugin-versions": "vp test run scripts/sync-plugin-versions.test.ts",
+    "test-sync-hook-policy": "vp test run scripts/sync-hook-policy.test.ts",
     "changeset": "changeset",
     "version-packages": "changeset version && tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",

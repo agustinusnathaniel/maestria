@@ -105,6 +105,7 @@ export default defineConfig({
         command: [
           'vp run lint',
           'vp run test-sync-plugin-versions',
+          'vp run test-sync-hook-policy',
           'vp run test',
           'vp run check-manifest-versions',
         ],
@@ -121,7 +122,12 @@ export default defineConfig({
       'ci-test': {
         cache: false,
         command: 'vp run test',
-        dependsOn: ['build:ci', 'test-sync-plugin-versions', 'check-manifest-versions'],
+        dependsOn: [
+          'build:ci',
+          'test-sync-plugin-versions',
+          'test-sync-hook-policy',
+          'check-manifest-versions',
+        ],
       },
     },
   },

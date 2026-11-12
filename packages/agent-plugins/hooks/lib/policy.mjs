@@ -434,6 +434,8 @@ const SUDO_VALUED = new Set([
 ]);
 const REDIRECTION = /^(?:\d+|&)?(?:<<<|<<-?|>>|>\||<>|>&|<&|>|<)/u;
 const PROC_ENVIRON = /^<?\/proc\/(?:self|thread-self|\d+|\$\$|\$\{?[A-Za-z_]\w*\}?)\/(?:task\/\d+\/)?environ$/u;
+/** Prefixes such as dd's `if=` that attach a file path to a single word. */
+const ATTACHED_PATH = /^[A-Za-z_][A-Za-z0-9_-]*=/u;
 /** Commands that name a file without printing its contents. */
 const NOT_READING = new Set([
 	"[",
@@ -536,7 +538,7 @@ const environmentDump = (raw) => {
 	const [name, ...args] = words;
 	const head = basename(name);
 	if (!NOT_READING.has(head)) {
-		const proc = raw.find((word) => PROC_ENVIRON.test(word));
+		const proc = raw.find((word) => PROC_ENVIRON.test(word.replace(ATTACHED_PATH, "")));
 		if (proc !== undefined) {
 			return `reading ${proc.replace(/^</u, "")}`;
 		}
