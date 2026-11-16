@@ -51,10 +51,17 @@ jobs:
         run: pnpm runtime set bun 1.4.2 -g
       # A pull request runs only the test files its diff can reach. A changed file that tests read
       # without importing (tooling/test/force-rerun-triggers.ts) runs them all, as main always does.
+      # The task cache does not key on git state, so a cached `--changed` result could stand in for
+      # a different diff: the pull request run never uses the cache.
       - name: Build and test
         env:
-          CHANGED: ${{ github.event_name == 'pull_request' && '--changed=HEAD^1' || '' }}
-        run: pnpm check:ci:test $CHANGED
+          PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [ "$PULL_REQUEST" = "true" ]; then
+            pnpm exec vp run --no-cache ci-test --changed=HEAD^1
+          else
+            pnpm check:ci:test
+          fi
       - name: Verify opencode plugin loads in Bun
         run: |
           bun -e "
