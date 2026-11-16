@@ -76,6 +76,10 @@ Use the cheapest verification that gives meaningful confidence after the behavio
 
 Every asynchronous operation started by a test must have an awaitable completion boundary. Avoid fire-and-forget work whose assertions race against unfinished work.
 
+## Tests that run in pull requests
+
+Pull request CI runs only the test files its diff can reach through imports (`vp test --changed` against the base). Main runs every test. A test that reads a file without importing it, or runs a script as a process, is invisible to that selection, so add the file or its directory to `tooling/test/force-rerun-triggers.ts`: a change to it then runs every test. Files that are not JS or TS modules already count. A new package's `vite.config.ts` must pass that list as `test.forceRerunTriggers`.
+
 ## Test structure
 
 - Use `describe`/`it` with explicit names: `it("does X when Y")` so the condition and expected behavior are clear from the name alone.

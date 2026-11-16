@@ -38,7 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # Depth 2 keeps the merge commit's first parent, the base the pull request merges into.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
       - uses: ./.github/actions/setup
         timeout-minutes: 3
         with:
@@ -46,8 +49,19 @@ jobs:
           save-cache: ${{ github.event_name == 'push' }}
       - name: Install Bun
         run: pnpm runtime set bun 1.4.2 -g
+      # A pull request runs only the test files its diff can reach. A changed file that tests read
+      # without importing (tooling/test/force-rerun-triggers.ts) runs them all, as main always does.
+      # The task cache does not key on git state, so a cached `--changed` result could stand in for
+      # a different diff: the pull request run never uses the cache.
       - name: Build and test
-        run: pnpm check:ci:test
+        env:
+          PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [ "$PULL_REQUEST" = "true" ]; then
+            pnpm exec vp run --no-cache ci-test --changed=HEAD^1
+          else
+            pnpm check:ci:test
+          fi
       - name: Verify opencode plugin loads in Bun
         run: |
           bun -e "
