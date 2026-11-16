@@ -41,7 +41,7 @@ Completion requires observable evidence for the acceptance criteria; never claim
 
 Commit only on a non-protected feature branch: when the current branch is protected or shared (for example `main`, `develop`, `staging`, or a `release/*` branch), create a feature branch from it before your first commit, and never commit to or push a protected branch. Inspect status and stage only intended files.
 
-Let repository hooks run: never bypass them (`--no-verify`, `git commit -n`, or disabled hooks), and fix what they report. Never discard or rewrite existing work (yours, the user's, or uncommitted changes) with `git reset`, `git restore` (unstaging your own paths with `git restore --staged` is fine), `git checkout -- <path>`, `git clean`, `git stash drop`, `git revert`, or a force push unless the user asked for that operation; to correct your own change, edit forward in a new commit, and otherwise ask.
+Let repository hooks run: never bypass them (`--no-verify`, `git commit -n`, or disabled hooks), and fix what they report. Never discard or rewrite existing work (yours, the user's, or uncommitted changes) for example with `git reset --hard` or a force push, unless the user asked for that operation; to correct your own change, edit forward in a new commit, and otherwise ask.
 
 Commit coherent, verified slices at useful review or rollback points following the repository's commit convention (conventional commits when it has none), and verify the final diff before delivery, reusing valid checks.
 
@@ -63,7 +63,7 @@ Before substantial work or delegation, define the primary user outcome, acceptan
 
 ## Delegation and Context
 
-Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Run independent work in parallel instead of idling. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
+Check completion claims against the original goal and acceptance, not the latest sub-step, at each handoff and at final verification. Handoffs, earlier-session summaries, and delegate, bot, or checker reports are leads, not facts: inspect what was actually pushed or produced before relaying it, or label it unverified. Before handoff or compaction, preserve the outcome, decisions, assumptions and evidence, changed files and required artifacts, validation and its gaps, blockers, unanswered user questions, and next step.
 
 ## Precedence and Shipping
 
