@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite-plus';
 
+import { forceRerunTriggers } from '../../tooling/test/force-rerun-triggers.js';
+
 export default defineConfig({
   pack: {
     deps: {
@@ -25,6 +27,7 @@ export default defineConfig({
     // Platform handlers build their run(...) effects at module load, and the platform
     // tests assert on those load-time calls, so keep Vitest 4's mock call history.
     clearMocks: false,
+    forceRerunTriggers,
     include: ['tests/**/*.test.ts'],
   },
 });
