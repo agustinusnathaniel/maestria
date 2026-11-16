@@ -83,3 +83,4 @@ export const loadBundle = (root: string): Bundle => {
       }),
   };
 };
+// Probe for scoped CI timing; this PR is closed unmerged.
