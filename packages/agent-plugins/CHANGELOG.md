@@ -1,5 +1,11 @@
 # @maestria/agent-plugins
 
+## 0.16.0
+
+### Minor Changes
+
+- [#459](https://github.com/agustinusnathaniel/maestria/pull/459) [`c397c5c`](https://github.com/agustinusnathaniel/maestria/commit/c397c5c5b42300350e1e1f7ddfe0f4a1b2b0dcbb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Directive refinement and trim. Agents answer only what you asked before other work: an adjacent issue gets one line after the answer, never mixed in or gating it. The always-on text shrinks by 43 words with no obligation dropped from delivery: the two sentences on routine commit, push, and PR creation are merged, and the list of discarding git commands is cut to three examples: the git-safety hook already asks on the destructive forms of the others, and `git revert`, which the hook does not cover, stays named. Two lines current models follow unprompted are removed (run independent work in parallel; a terse go-ahead approves the recommendation). The word budgets drop to 1,220 for the rules and 905 for the main loop.
+
 ## 0.15.0
 
 ### Minor Changes
