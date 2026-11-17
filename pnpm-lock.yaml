@@ -224,9 +224,6 @@ catalogs:
     effect:
       specifier: 4.0.6
       version: 4.0.6
-    es-toolkit:
-      specifier: ^1.53.1
-      version: 1.53.1
     jsonc-parser:
       specifier: ^3.3.1
       version: 3.3.1
@@ -483,9 +480,15 @@ importers:
       '@maestria/core':
         specifier: workspace:*
         version: link:../core
-      '@maestria/shared-pi':
+      '@maestria/shared-hook-policy':
         specifier: workspace:*
-        version: link:../shared/pi
+        version: link:../shared/hook-policy
+      '@maestria/shared-mode':
+        specifier: workspace:*
+        version: link:../shared/mode
+      '@maestria/shared-project-config':
+        specifier: workspace:*
+        version: link:../shared/project-config
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -503,28 +506,6 @@ importers:
         version: 7.0.2
 
   packages/shared/mode:
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.6
-      typescript:
-        specifier: 'catalog:'
-        version: 7.0.2
-
-  packages/shared/pi:
-    dependencies:
-      '@maestria/shared-hook-policy':
-        specifier: workspace:*
-        version: link:../hook-policy
-      '@maestria/shared-mode':
-        specifier: workspace:*
-        version: link:../mode
-      '@maestria/shared-project-config':
-        specifier: workspace:*
-        version: link:../project-config
-      es-toolkit:
-        specifier: 'catalog:'
-        version: 1.53.1
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -3703,9 +3684,6 @@ packages:
 
   es-module-lexer@3.0.4:
     resolution: {integrity: sha512-BldNY5mwkVu+cQ5Ymn3e6hB9Sx8XHx4ZevWbiUyZbfKxJxYO27Hf0wfzkxIaD5CAJMaGl3YspKELj0ff/7nCMA==}
-
-  es-toolkit@1.53.1:
-    resolution: {integrity: sha512-VhMc6IXmexu8iYFfL2aaAww6IvJTdHlqBLruLoEUs33YD4IcP5DdZcLOybMsMmmLsiy1c8PsiLsrM0DdIuuRUA==}
 
   esbuild@0.28.2:
     resolution: {integrity: sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==}
@@ -8935,8 +8913,6 @@ snapshots:
   es-module-lexer@2.3.2: {}
 
   es-module-lexer@3.0.4: {}
-
-  es-toolkit@1.53.1: {}
 
   esbuild@0.28.2:
     optionalDependencies:

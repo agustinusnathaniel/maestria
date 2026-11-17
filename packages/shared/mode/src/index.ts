@@ -4,9 +4,9 @@
  * Pure TypeScript - no host SDKs, no filesystem APIs.
  * Consolidates the duplicated pure logic from:
  * - the former `packages/opencode/src/modes/index.ts` (OpenCode V1 adapter)
- * - `packages/shared/pi/src/modes-core.ts`
+ * - `packages/pi/src/modes.ts`
  *
- * Consumers (OpenCode, shared-pi) delegate pure detection,
+ * Consumers (OpenCode, Pi) delegate pure detection,
  * stripping, and mode-section extraction to this module while
  * keeping host-specific concerns (lazy file loading, session
  * state, command registration) locally.

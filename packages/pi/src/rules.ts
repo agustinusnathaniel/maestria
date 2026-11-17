@@ -5,18 +5,16 @@ import type {
 import {
   formatProjectErrorBanner,
   formatProjectSection,
-  tryLoadProjectSections,
-} from '@maestria/shared-pi/project-config';
-import type { ProjectConfigFs, ProjectPromptContext } from '@maestria/shared-pi/project-config';
-import { getModePrompt } from '@maestria/shared-pi/modes-core';
+  loadProjectSections,
+} from '@maestria/shared-project-config';
+import type { ProjectConfigFs, ProjectSection } from '@maestria/shared-project-config';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { getModePrompt } from '@/modes.js';
+import type { MaestriaState } from '@/state.js';
 
-const __dirname = import.meta.dirname;
-const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');
-const SKILLS_DIR = path.resolve(__dirname, '../skills');
+const SKILLS_DIR = path.resolve(import.meta.dirname, '../skills');
 
 /** The skill files that carry the always-on core: the main loop, then the global rules. */
 const CORE_SKILLS = ['maestria', 'global-rules'] as const;
@@ -37,6 +35,37 @@ export const loadCore = (skillsDir = SKILLS_DIR): string =>
  */
 type AgentStartEvent = Pick<BeforeAgentStartEvent, 'systemPrompt'> & {
   readonly messageType?: string;
+};
+
+/** Minimal host surface handlers read: session cwd plus notify. */
+interface ProjectPromptContext {
+  cwd?: unknown;
+  ui?: { notify?: (message: string) => void };
+}
+
+/**
+ * Root project customization from the session cwd, re-read every turn. An unusable file never
+ * throws: it is reported through notify (best-effort) and returned as a banner message.
+ */
+const tryLoadProjectSections = (
+  ctx: ProjectPromptContext | undefined,
+  fs?: ProjectConfigFs,
+): { sections: ProjectSection[]; errorMessage: string | undefined } => {
+  const root = typeof ctx?.cwd === 'string' && ctx.cwd !== '' ? ctx.cwd : undefined;
+  if (root === undefined) {
+    return { errorMessage: undefined, sections: [] };
+  }
+  try {
+    return { errorMessage: undefined, sections: loadProjectSections(root, fs) };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    try {
+      ctx?.ui?.notify?.(message);
+    } catch {
+      // Notify is best-effort UI surfacing; the banner is authoritative.
+    }
+    return { errorMessage: message, sections: [] };
+  }
 };
 
 const CORE_UNAVAILABLE =
@@ -75,7 +104,7 @@ export const createModePromptHandler = (
     }
     if (state.mode !== null) {
       parts.push(
-        getModePrompt(state.mode, COMMANDS_DIR),
+        getModePrompt(state.mode),
         '',
         `The user has set workflow mode to "${state.mode}". ` +
           'Honor this mode throughout the session until changed via /command.',

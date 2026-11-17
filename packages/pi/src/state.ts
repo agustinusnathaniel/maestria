@@ -1,5 +1,3 @@
-/** Shared state management for Pi-family packages (no platform dependencies). */
-
 export type ModeKeyword = 'fein' | 'sonar' | 'blitz';
 
 export const HANDOFF_HISTORY_CAP = 5;

@@ -9,8 +9,8 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { createModePromptHandler } from '@/rules.js';
-import type { ProjectConfigFs } from '@maestria/shared-pi/project-config';
-import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { ProjectConfigFs } from '@maestria/shared-project-config';
+import { createInitialState } from '@/state.js';
 
 const getSystemPrompt = (result: BeforeAgentStartEventResult): string => {
   if (result.systemPrompt === undefined) {
@@ -21,6 +21,10 @@ const getSystemPrompt = (result: BeforeAgentStartEventResult): string => {
 
 const brokenCore = (): string => {
   throw new Error('missing skill');
+};
+
+const throwingNotify = (): void => {
+  throw new Error('UI closed');
 };
 
 const makeTempRoot = (): string => mkdtempSync(path.join(tmpdir(), 'maestria-pi-rules-'));
@@ -156,6 +160,30 @@ describe('createModePromptHandler project customization (thin: order plus STOP n
     } finally {
       rmSync(root, { force: true, recursive: true });
     }
+  });
+
+  it('skips project files without a usable session cwd', () => {
+    const handler = createModePromptHandler(createInitialState(), undefined, () => 'CORE');
+    for (const cwd of [undefined, '', 42]) {
+      expect(handler(baseEvent, { cwd })).toEqual({
+        systemPrompt: 'You are an AI assistant.\n\nCORE\n',
+      });
+    }
+  });
+
+  it('keeps the STOP banner when notify itself throws', () => {
+    const fs: ProjectConfigFs = {
+      kindOf: () => 'directory',
+      readFile: () => '',
+      resolveLink: (candidate) => candidate,
+    };
+    const prompt = getSystemPrompt(
+      createModePromptHandler(createInitialState(), fs)(baseEvent, {
+        cwd: '/projects/acme',
+        ui: { notify: throwingNotify },
+      }),
+    );
+    expect(prompt).toContain('STOP');
   });
 
   it('surfaces unusable files as a STOP banner plus notify instead of throwing', () => {

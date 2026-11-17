@@ -15,8 +15,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseDocument } from 'yaml';
 
-import { isReadOnlyBashCommand } from '../../packages/shared/pi/src/bash-policy.ts';
-import { stateFromSessionEntries } from '../../packages/shared/pi/src/state-core.ts';
+import { isReadOnlyBashCommand } from '../../packages/pi/src/bash-policy.ts';
+import { stateFromSessionEntries } from '../../packages/pi/src/state.ts';
 
 interface EvidenceCheck {
   detail: string;

@@ -35,7 +35,9 @@
   },
   "devDependencies": {
     "@maestria/core": "workspace:*",
-    "@maestria/shared-pi": "workspace:*",
+    "@maestria/shared-hook-policy": "workspace:*",
+    "@maestria/shared-mode": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },

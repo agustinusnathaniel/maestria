@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11. Distribution-status decision partially superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) on 2026-10-10.
+Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11. Distribution-status decision partially superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) on 2026-10-10. Pi-family sharing amended 2026-11-17 (see Decision).
 
 ## Context
 
@@ -14,7 +14,7 @@ A universal runtime would remove some duplication by coupling incompatible host 
 
 Keep private canonical directives and development tooling in core, explicit generated projections in separately published host packages, and public host-native runtime adapters. Core library modules remain platform-independent and browser-safe; development scripts may use Node APIs. Each host owns its SDK integration and distribution contract.
 
-Share pure host-neutral mechanics through narrow private workspace modules under `packages/shared/`. Their public consumers bundle these build-time dependencies rather than publishing a universal runtime. Keep Pi-family state, compaction, review, commands, and tools in family-specific sharing; host types, model guards, lifecycle payloads, prompt loading, session state, and distinct tool contracts stay at the host seam.
+Share pure host-neutral mechanics through narrow private workspace modules under `packages/shared/`. Their public consumers bundle these build-time dependencies rather than publishing a universal runtime. Keep Pi-family state, compaction, review, commands, and tools in family-specific sharing; host types, model guards, lifecycle payloads, prompt loading, session state, and distinct tool contracts stay at the host seam. Amended 2026-11-17: once OMP retired to the declarative bundle, the Pi adapter was the family's only member, so the private `@maestria/shared-pi` package folded into `packages/pi` and its host-injection wrappers were removed. A family module returns to `packages/shared/` only when a second native Pi-family adapter needs it.
 
 The mode-sharing decision preserves case-insensitive word boundaries, priority, disabled keywords, code-span exclusion, stripping, section extraction, and the accepted unclosed-fence false-positive behavior recorded in [OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md). Share tested mechanics without imposing one adapter's strictness or mode lifetime on another.
 

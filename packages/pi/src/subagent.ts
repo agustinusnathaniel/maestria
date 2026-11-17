@@ -1,24 +1,31 @@
 import type { AgentToolUpdateCallback } from '@earendil-works/pi-coding-agent';
-import {
-  ALLOWED_AGENTS,
-  assertNonEmptyTask,
-  assertValidAgent,
-} from '@maestria/shared-pi/subagent-utils';
 import { Type } from 'typebox';
 import type { Static } from 'typebox';
 
-import type { MaestriaState } from '@maestria/shared-pi/state-core';
-import {
-  persistState,
-  recordHandoff,
-  recordSpecialistDelegated,
-} from '@maestria/shared-pi/state-core';
+import { ALLOWED_AGENTS } from '@/agents.js';
+import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
 import { pollWithDefaults } from '@/subagent-polling.js';
 import type { SubagentPollingService, SubagentRecord } from '@/subagent-polling.js';
 import { subscribeSubagentEvents } from '@/subagent-events.js';
 import type { SubagentEventHost } from '@/subagent-events.js';
 
 const ALLOWED_AGENT_NAMES: readonly string[] = ALLOWED_AGENTS;
+
+const assertValidAgent = (agent: string): void => {
+  if (!ALLOWED_AGENT_NAMES.includes(agent)) {
+    throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENT_NAMES.join(', ')}`);
+  }
+};
+
+const assertNonEmptyTask: (task: string | undefined, label: string) => asserts task is string = (
+  task,
+  label,
+) => {
+  if (task === undefined || !task.trim()) {
+    throw new Error(label);
+  }
+};
 
 const MAX_PARALLEL_TASKS = 8;
 

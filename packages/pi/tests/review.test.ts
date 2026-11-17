@@ -1,22 +1,36 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { cycleToReviewModel, restoreOriginalState } from '@/review-core.js';
-import { createInitialState } from '@/state-core.js';
-import type { MaestriaState } from '@/state-core.js';
+import { isPiModel } from '@/model.js';
+import { cycleToReviewModel, restoreOriginalState } from '@/review.js';
+import { createInitialState } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
+
+import { piModel } from './pi-model.js';
 
 interface MockCtx {
   modelRegistry: { getAll: () => { id: string }[] };
   ui: { notify: ReturnType<typeof vi.fn<(message: string) => void>> };
 }
 
-const createMockCtx = (models: { id: string }[] = [{ id: 'original-model' }]): MockCtx => ({
-  modelRegistry: { getAll: vi.fn(() => models) },
+const createMockCtx = (ids: string[] = ['original-model']): MockCtx => ({
+  modelRegistry: { getAll: vi.fn(() => ids.map(piModel)) },
   ui: { notify: vi.fn<(message: string) => void>() },
 });
 
 const createMockPi = () => ({
   setActiveTools: vi.fn<(tools: string[]) => void>(),
-  setModel: vi.fn<(model: unknown) => Promise<unknown>>().mockResolvedValue(true),
+  setModel: vi.fn<(model: unknown) => Promise<boolean>>().mockResolvedValue(true),
+});
+
+describe('isPiModel', () => {
+  it('accepts a model with the pi model shape', () => {
+    expect(isPiModel(piModel('gpt-4o'))).toBe(true);
+  });
+
+  it('rejects values that are not pi models', () => {
+    expect(isPiModel(null)).toBe(false);
+    expect(isPiModel({ id: 'gpt-4o' })).toBe(false);
+  });
 });
 
 describe('restoreOriginalState', () => {
@@ -33,7 +47,7 @@ describe('restoreOriginalState', () => {
 
     expect(restored).toBe(true);
     expect(pi.setActiveTools).toHaveBeenCalledWith(['read', 'edit']);
-    expect(pi.setModel).toHaveBeenCalledWith({ id: 'original-model' });
+    expect(pi.setModel).toHaveBeenCalledWith(piModel('original-model'));
     expect(state.reviewMode).toBe(false);
     expect(state.originalModel).toBeNull();
     expect(state.originalTools).toBeNull();
@@ -72,7 +86,7 @@ describe('restoreOriginalState', () => {
       reviewMode: true,
     };
 
-    const restored = await restoreOriginalState(pi, createMockCtx([{ id: 'other-model' }]), state);
+    const restored = await restoreOriginalState(pi, createMockCtx(['other-model']), state);
 
     expect(restored).toBe(false);
     expect(pi.setModel).not.toHaveBeenCalled();
@@ -114,17 +128,17 @@ describe('cycleToReviewModel', () => {
 
     const result = await cycleToReviewModel(
       pi,
-      createMockCtx([{ id: 'original-model' }, { id: 'review-model' }]),
+      createMockCtx(['original-model', 'review-model']),
       state,
     );
 
     expect(result).toBe('review-model');
-    expect(pi.setModel).toHaveBeenCalledWith({ id: 'review-model' });
+    expect(pi.setModel).toHaveBeenCalledWith(piModel('review-model'));
   });
 
   it('notifies and returns null when the review model is not registered', async () => {
     const pi = createMockPi();
-    const ctx = createMockCtx([{ id: 'original-model' }]);
+    const ctx = createMockCtx(['original-model']);
     const state: MaestriaState = { ...createInitialState(), reviewModel: 'missing-model' };
 
     const result = await cycleToReviewModel(pi, ctx, state);
@@ -151,7 +165,7 @@ describe('cycleToReviewModel', () => {
   it('notifies and returns null when the model switch rejects', async () => {
     const pi = createMockPi();
     pi.setModel.mockRejectedValue(new Error('no key'));
-    const ctx = createMockCtx([{ id: 'review-model' }]);
+    const ctx = createMockCtx(['review-model']);
     const state: MaestriaState = { ...createInitialState(), reviewModel: 'review-model' };
 
     const result = await cycleToReviewModel(pi, ctx, state);

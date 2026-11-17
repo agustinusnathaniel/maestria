@@ -1,14 +1,5 @@
-/**
- * Shared compaction handlers for maestria platform packages.
- *
- * Pure TypeScript - no platform-specific dependencies.
- * Imported by @maestria/pi.
- *
- * @module
- */
-
-import { renderMaestriaSummary } from './state-core.js';
-import type { MaestriaState } from './state-core.js';
+import { renderMaestriaSummary } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
 
 export interface CompactionEvent {
   preparation?: {
