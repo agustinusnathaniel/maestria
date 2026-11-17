@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "maestria",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "maestria methodology plugin with portable skills and native host components in the same package",
   "author": {
     "name": "agustinusnathaniel",

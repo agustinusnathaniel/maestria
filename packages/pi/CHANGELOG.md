@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.1
+
+### Patch Changes
+
+- [#463](https://github.com/agustinusnathaniel/maestria/pull/463) [`d7e820f`](https://github.com/agustinusnathaniel/maestria/commit/d7e820f8daf3c12faf06128cd86d6c36157ada8c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - The research-only mode (`/sonar`) now also blocks the `maestria_subagent` tool, so it dispatches no subagents as its mode prompt says. Before, only the `subagent` tool from `@gotgenes/pi-subagents` was blocked.
+
 ## 0.18.0
 
 ### Minor Changes
