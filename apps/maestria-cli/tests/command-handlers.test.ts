@@ -1,8 +1,4 @@
 import { Effect } from 'effect';
-import { mkdtempSync } from 'node:fs';
-import { rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { handleRoot } from '@/cli.js';
@@ -15,7 +11,6 @@ import { CliError } from '@/lib/command-result.js';
 import type * as detect from '@/lib/detect.js';
 import type * as platforms from '@/lib/platforms.js';
 import type { PlatformHandler, PlatformId } from '@/lib/platforms.js';
-import type * as skillCompanion from '@/lib/skill-companion.js';
 import type { PlatformResult, PlatformStatus } from '@/types.js';
 import { version } from '^/package.json';
 import { createTtyTestSupport } from './tty-test-support.js';
@@ -72,25 +67,12 @@ vi.mock('@/lib/platform-transaction.js', () => ({
   updateOne: transactionMocks.updateOne,
 }));
 
-vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof skillCompanion>();
-  const { fakeSkillCli } = await import('./skill-test-support.js');
-  // Stateless transport: a fresh fake per call keeps observed inventory empty
-  // across handler flows (same contract as the retired canned transport).
-  const runSkillsCli = async (
-    ...args: Parameters<skillCompanion.SkillCommandRunner>
-  ): ReturnType<skillCompanion.SkillCommandRunner> => await fakeSkillCli({})(...args);
-  return { ...actual, runSkillsCli };
-});
-
 vi.mock('@/lib/group-multiselect.js', () => ({
   // oxlint-disable-next-line require-await -- synchronous echo stub by design.
   groupMultiselect: vi.fn(async (opts: { initialValues?: string[] }) => [
     ...(opts.initialValues ?? []),
   ]),
 }));
-
-const configDirs: string[] = [];
 
 vi.mock('@clack/prompts', () => ({
   cancel: promptMocks.cancel,
@@ -152,9 +134,6 @@ const { restoreTty, setTty } = createTtyTestSupport();
 describe('command handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    const dir = mkdtempSync(path.join(tmpdir(), 'maestria-handler-record-'));
-    configDirs.push(dir);
-    vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
     platformMocks.getPlatform.mockImplementation((id: string) => handlers.get(id));
     detectMocks.detectAll.mockReturnValue(Effect.succeed([]));
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed([]));
@@ -173,15 +152,10 @@ describe('command handlers', () => {
     promptMocks.isCancel.mockReturnValue(false);
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     restoreTty();
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
-    await Promise.all(
-      configDirs.splice(0).map(async (dir) => {
-        await rm(dir, { force: true, recursive: true });
-      }),
-    );
   });
 
   describe('status', () => {
@@ -450,7 +424,7 @@ describe('command handlers', () => {
       expect(result).toEqual({ exitCode: 0, output: 'No maestria installations found to update.' });
     });
 
-    it('returns the up-to-date output unchanged when no legacy record exists', async () => {
+    it('returns the up-to-date output unchanged', async () => {
       setTty(true);
       detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
 
@@ -459,25 +433,6 @@ describe('command handlers', () => {
       expect(transactionMocks.updateOne).not.toHaveBeenCalled();
       expect(result.exitCode).toBe(0);
       expect(result.output).toContain('All platforms are up to date.');
-    });
-
-    it('runs legacy cleanup when plugins are already current but a record exists', async () => {
-      setTty(true);
-      detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
-      const { writeSkillsRecord } = await import('@/lib/skills.js');
-      await writeSkillsRecord({
-        platforms: { opencode: { skills: ['create-pull-request'] } },
-        version: 2,
-      });
-
-      const result = await handleUpdate({ json: true });
-
-      expect(transactionMocks.updateOne).not.toHaveBeenCalled();
-      expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('Already up to date');
-      const { readSkillsRecord } = await import('@/lib/skills.js');
-      const savedRecord = await readSkillsRecord();
-      expect(savedRecord?.platforms.opencode).toBeUndefined();
     });
 
     it('reports an already-current platform as up to date in text output', async () => {
@@ -510,17 +465,6 @@ describe('command handlers', () => {
       );
       const newer = await handleUpdate({ platform: 'opencode', quiet: true });
       expect(newer.output).toContain(`OpenCode: ${skipped}`);
-    });
-
-    it('rejects removed skill flags before any effect', async () => {
-      // Non-fresh literal on purpose: removed flags are undeclared by design.
-      const args = { platform: 'opencode', quiet: true, skills: 'none' };
-      const error = await captureCliError(handleUpdate(args));
-
-      expect(error.exitCode).toBe(1);
-      expect(error.message).toMatch(/removed/u);
-      expect(error.message).toMatch(/bundle/u);
-      expect(transactionMocks.updateOne).not.toHaveBeenCalled();
     });
 
     it('returns the batch failure exit code when one update fails', async () => {

@@ -377,9 +377,6 @@ importers:
       '@clack/core':
         specifier: 'catalog:'
         version: 1.5.1
-      yaml:
-        specifier: ^2.9.1
-        version: 2.9.1
     devDependencies:
       '@clack/prompts':
         specifier: 'catalog:'

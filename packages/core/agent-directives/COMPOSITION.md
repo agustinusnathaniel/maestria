@@ -17,8 +17,7 @@ The reviewer is the checker of the maker/checker split: it receives the requirem
 | Main-session policy (`rules/global.md`, `rules/cursor/maestria-global.mdc`) | `main-loop.md` and all four parts, plus that host's note |
 | Per-host session files | Main-session policy plus one host note: root `AGENTS.md` (Devin, 16 KiB cap) and `hermes.context.md` (20,000-character cap) without modes; `codex.agents.md` and `kimi.system-prompt.md` (32 KiB caps) with the three mode bodies. The generator fails when a file exceeds its cap |
 | Devin mode skills (`devin/skills/<mode>/SKILL.md`) | The mode body and `integrations/command-arguments.md` |
-| Mode commands (`commands/<mode>.md`, Cursor, Kimi Code, OMP) | The mode body, main-session policy, and `integrations/command-arguments.md` |
-| Body-only mode commands (`modes/<mode>.md`, Claude Code and ZCode) | The mode body and `integrations/command-arguments.md` |
+| Mode commands (`commands/<mode>.md`) | The mode body and `integrations/command-arguments.md` |
 | Hook context (`hooks/context/core-loop.md`, `core-rules.md`) | `main-loop.md` with the Claude Code and ZCode note, and `rules.md`, each under 10,000 characters |
 | Reviewer profile (`agents/reviewer.md`, `agents/maestria-reviewer.toml`) | `reviewer.md` with `Every Agent`, `Implementation and Review`, and the `implement` skill body; the TOML adds the Codex note |
 | Method skills, `handoff` and `review-loop` included | Copied unchanged from `skills/` into `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi` |

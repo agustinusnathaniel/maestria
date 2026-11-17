@@ -3,7 +3,6 @@ import type { ArgsDef, CommandDef } from 'citty';
 
 import { checkCommand } from '@/commands/check.js';
 import { configureCommand } from '@/commands/configure.js';
-import { doctorCommand } from '@/commands/doctor.js';
 import { installCommand } from '@/commands/install.js';
 import { pluginCommand } from '@/commands/plugin.js';
 import { handleStatus, statusCommand } from '@/commands/status.js';
@@ -39,13 +38,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'For CI pipelines, pass --set with --global or --project and add --quiet.',
     ].join('\n'),
   },
-  doctor: {
-    examples: [
-      'maestria doctor                   Report legacy CLI-installed skills without changing anything',
-      'maestria doctor --json            Show legacy skill diagnostics as JSON',
-      'maestria doctor --quiet           Suppress spinner output',
-    ],
-  },
   install: {
     examples: [
       'maestria install opencode         Install for a specific platform',
@@ -79,8 +71,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria configure codex          Configure native Codex custom-agent models',
       'maestria configure cursor        Configure native Cursor agent models',
       'maestria configure pi --set reviewer=opencode-go/deepseek-v4-flash  Set a model non-interactively',
-      'maestria plugin install            Stage a portable Agent Plugin',
-      'maestria plugin validate ./my-plugin  Validate a portable Agent Plugin directory',
+      'maestria plugin install            Stage @maestria/agent-plugins from npm',
       'maestria --help                   Show this help',
     ],
     tip: [
@@ -92,13 +83,12 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   },
   plugin: {
     examples: [
-      'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
       'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
-      'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
-      'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
+      'maestria plugin install --destination ./staged-plugin  Stage into a new directory',
+      'maestria plugin install --json          Output the staged package report as JSON',
     ],
     tip: [
-      "The portable workflow stages and validates a directory package; it does not replace each client's own activation or permission model.",
+      "The command stages @maestria/agent-plugins from npm; it does not replace each client's own activation or permission model.",
       'Use a client-specific plugin installer or point the client at the staged directory.',
     ].join('\n'),
   },
@@ -129,18 +119,10 @@ const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: str
   install: {
     examples: [
       'maestria plugin install                 Stage @maestria/agent-plugins in the maestria cache',
-      'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
-      'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
+      'maestria plugin install --destination ./staged-plugin  Stage into a new directory',
       'maestria plugin install --json          Output the staged package report as JSON',
     ],
-    tip: 'The command stages a validated directory package; use the compatible client to activate it.',
-  },
-  validate: {
-    examples: [
-      'maestria plugin validate ./my-plugin       Validate a local Agent Plugin directory',
-      'maestria plugin validate ./my-plugin --json  Output the validation report as JSON',
-    ],
-    tip: 'Validation is read-only and checks the manifest, skills, optional MCP configuration, and package paths.',
+    tip: 'The command stages @maestria/agent-plugins from npm; use the compatible client to activate it.',
   },
 };
 
@@ -240,7 +222,6 @@ export const main = defineCommand({
   subCommands: {
     check: checkCommand,
     configure: configureCommand,
-    doctor: doctorCommand,
     install: installCommand,
     plugin: pluginCommand,
     status: statusCommand,

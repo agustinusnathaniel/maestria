@@ -22,6 +22,8 @@ Limit the portable package to the v1 `plugin.json` manifest and generated Agent 
 
 Generate the projection from `packages/core/agent-directives/`; do not maintain a second hand-authored skills tree. The maestria CLI may validate a package and stage it in its cache or a chosen destination. Staging does not install, register, or activate it in a client.
 
+Amendment (2026-11-17): the generic validate path is retired. `maestria plugin validate` is removed, and `maestria plugin install` stages only `@maestria/agent-plugins` from npm into the maestria cache or a new `--destination` directory. Package correctness is covered by `packages/agent-plugins/tests/` and `packages/core` tests instead of a CLI validator.
+
 Do not add portable MCP configuration until there is a concrete host-neutral capability and credential story. Host-specific runtime behavior remains the responsibility of each consuming host and its native integration.
 
 ## Security Boundaries

@@ -13,8 +13,6 @@ import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { getPlatform, platforms } from '@/lib/platforms.js';
 import { uninstallOne } from '@/lib/platform-transaction.js';
-import { defaultSkillRunner, removeLegacyCompanions } from '@/lib/skill-reconcile.js';
-import { readSkillsRecord } from '@/lib/skills.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 
 export interface UninstallArgs {
@@ -61,14 +59,12 @@ const collectUninstallTargets = async (
 
 export const handleUninstall = async (args: UninstallArgs): Promise<CommandResult> => {
   const isQuiet = resolveQuiet(args);
-  const record = await readSkillsRecord();
   const targets = await collectUninstallTargets(args.platform, args.all === true, isQuiet);
   if (!Array.isArray(targets)) {
     return targets;
   }
   const results = await runBatchSelected(targets, isQuiet, uninstallOne);
-  const combined = await removeLegacyCompanions(defaultSkillRunner, record, results);
-  return batchCommandResult(combined.results, args);
+  return batchCommandResult(results, args);
 };
 
 export const uninstallCommand = defineCommand({

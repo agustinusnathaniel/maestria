@@ -18,6 +18,4 @@ export interface PlatformResult {
   readonly message: string;
   readonly prevVersion?: string;
   readonly nextVersion?: string;
-  /** Legacy CLI-managed skill state left by this operation (absent when untouched). */
-  readonly skills?: string[];
 }

@@ -26,7 +26,6 @@ export default defineConfig({
         'packages/agent-plugins/hermes.context.md',
         'packages/agent-plugins/hooks/context/**',
         'packages/agent-plugins/hooks/lib/policy.mjs',
-        'packages/agent-plugins/modes/**',
         'packages/agent-plugins/kimi.system-prompt.md',
         // Generated skill copies; the canonical core skills stay formatted.
         'packages/*/skills/**',

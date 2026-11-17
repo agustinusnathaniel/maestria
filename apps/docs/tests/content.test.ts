@@ -271,7 +271,7 @@ describe('portable Agent Plugin documentation', () => {
     expect(cli.full).toContain('Stage a portable Agent Plugin');
     expect(cli.full).toContain('href="/agent-plugins/"');
     expect(gettingStarted.full).toContain('--destination ./staged-plugin');
-    expect(commands.full).toContain('~/.cache/maestria/agent-plugins/<name>/<version>/');
+    expect(commands.full).toContain('~/.cache/maestria/agent-plugins/maestria');
     expect(about.full).toContain('npx maestria plugin install');
     expect(decisionGuide.full).toContain('[Portable Agent Plugin](/agent-plugins/)');
     expect(howItWorks.full).toContain('[Agent Plugin package](/agent-plugins/)');

@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, configure, and doctor - with flags, options, and examples.
+description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, and configure - with flags, options, and examples.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -17,7 +17,7 @@ These flags apply across the CLI:
 
 Spinners render only for human-readable output on a terminal: `--json`, `--compact`, and redirected or piped stdout leave them out, so `maestria status --json | jq` reads clean JSON.
 
-`--compact` (machine-friendly text) is supported on status, install, update, uninstall, and configure. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes; examples appear on every command except `uninstall`.
+`--compact` (machine-friendly text) is supported on status, install, update, uninstall, and configure. `check` supports `--json` and `--quiet` only; `plugin install` supports `--json` only. Every command's `--help` shows exit codes; examples appear on every command except `uninstall`.
 
 `maestria` with no arguments runs `maestria status`. `maestria --version` (or `-v`) prints the CLI version.
 
@@ -119,7 +119,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria install --all` | Installs for every detected platform that lacks maestria |
 | `maestria install opencode --json` | Installs OpenCode, outputs JSON result |
 
-Every maestria package bundles the `create-pull-request`, `docs-update`, and `diagnose` skills, so `install` adds no separate skills. The `--skills`, `--exclude-skills`, and `--maestria-skills` flags were removed; passing one fails before any change.
+Every maestria package bundles the `create-pull-request`, `docs-update`, and `diagnose` skills, so `install` adds no separate skills.
 
 ### Platform identifiers
 
@@ -161,48 +161,39 @@ Claude Code and Codex CLI use host-native marketplace managers; the CLI first st
 
 ## `plugin`
 
-Validate and stage portable Agent Plugins v1 directory packages, separate from the runtime platform registry: the result is a package for a compatible client's own installer or directory loader.
+Stage the portable Agent Plugin, separate from the runtime platform registry: the result is a package for a compatible client's own installer or directory loader.
 
 ```bash
-maestria plugin validate <path> [--json]
-maestria plugin install [source] [--destination <path>] [--json]
+maestria plugin install [--destination <path>] [--json]
 ```
 
 ### Commands
 
 | Invocation | What happens |
 | --- | --- |
-| `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, and package path containment without writing files |
-| `maestria plugin validate ./my-plugin --json` | Emits the validation report as JSON |
-| `maestria plugin install` | Fetches `@maestria/agent-plugins`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
-| `maestria plugin install ./my-plugin` | Validates and stages a local package |
-| `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
+| `maestria plugin install` | Fetches `@maestria/agent-plugins` and stages it under `~/.cache/maestria/agent-plugins/maestria` |
+| `maestria plugin install --destination ./staged-plugin` | Stages the package at an explicit directory |
+| `maestria plugin install --json` | Emits the staged package report as JSON |
 
-The staged directory contains the root `plugin.json` and fixed `skills/` layout. The command does not activate the package: installation scope, permissions, trust, and session behavior remain client-owned.
+The staged directory contains the published package content. The command does not activate the package: installation scope, permissions, trust, and session behavior remain client-owned.
 
-### Sources and destinations
-
-`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugins`:
+### Destinations
 
 <AllPackageManagers type="dlx" pkg="maestria" args="plugin install" />
-<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugins@0.7.0" />
-<AllPackageManagers type="dlx" pkg="maestria" args="plugin install ./my-plugin" />
 
 Without `--destination`, the package is staged under:
 
 ```text
-~/.cache/maestria/agent-plugins/<name>/<version>/
+~/.cache/maestria/agent-plugins/maestria
 ```
 
-On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead. `<version>` is URL-encoded, or `unversioned` when the manifest has no version.
+On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead.
 
-Use `--destination` to choose another directory; the CLI refuses to overwrite an existing one.
+Use `--destination` to choose another directory; the directory must not already exist or the command fails without deleting anything. Only the default cache destination may be replaced.
 
-### Validation report
+### Report
 
-`plugin validate --json` returns `valid`, `name`, `version` when present, `root`, `skillNames`, `validationScope` (`portable-manifest-skills`), `errors`, and `warnings`. `plugin install --json` returns the same validation fields plus `destination` and the original `source`.
-
-The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, and filesystem containment. maestria ships no MCP server, so a package that declares `mcp.json` is rejected. It does not execute package code or grant permissions.
+`plugin install --json` returns `destination`, `package`, and `version`. `version` is read from the staged `package.json`, or `unknown` when it cannot be determined.
 
 ---
 
@@ -241,8 +232,6 @@ Use `--version` to pin a specific version instead of the latest:
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
 Exact version pinning is not available for `claude-code`, `codex`, or `hermes`; each returns a validation error if `--version` is passed. Claude Code and Codex update from the latest staged npm package, and Hermes updates from its Git-based plugin installation.
-
-After each successful plugin update, `update` removes the `create-pull-request` and `docs-update` copies that earlier CLI versions installed through the `skills` CLI, using the CLI's ownership record (`skills.json` in `$MAESTRIA_CONFIG_DIR` when set, otherwise `$XDG_CONFIG_HOME/maestria/` or `~/.config/maestria/`), and drops that record entry. Copies the record does not list, such as ones you installed yourself, are left alone. A copy whose installed path another agent still uses is kept and reported. When every installed plugin is already current, `update` still runs this cleanup for platforms that have a record entry and reports the plugin step as a no-op.
 
 | Invocation | What happens |
 | --- | --- |
@@ -317,11 +306,9 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 
 Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields. When the host uninstaller fails and maestria is not installed there, the platform reports `Not installed` and succeeds.
 
-Uninstall also removes the skill copies earlier CLI versions installed for that platform, with the same ownership and shared-path rules as `update`. A platform with no skill record keeps any copy in place and reports a manual removal command; unknown skill IDs keep their history.
-
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
-OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config and drops any maestria entry left in a V1 `plugin` array; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later, and replace a maestria entry in the V1 `plugin` array with one in `plugins`; on OpenCode V1 they fail and point to `@maestria/opencode@0.8.0`. A version change adds the new entry before removing old ones and keeps plugin options. An unpinned update of the lone `@maestria/opencode` entry runs `opencode plugin update` in place and waits up to a minute while OpenCode loads the directory's plugins.
+OpenCode uninstall runs `opencode plugin remove` for each maestria entry in the global config; project-level entries are left for you to remove. OpenCode install and update require OpenCode 2.0.28 or later. A version change adds the new entry before removing old ones and keeps plugin options. An unpinned update of the lone `@maestria/opencode` entry runs `opencode plugin update` in place and waits up to a minute while OpenCode loads the directory's plugins.
 
 ### Example
 
@@ -349,7 +336,7 @@ maestria check --all [--json] [--quiet]
 | `--json`      | Output as JSON. Default: `false` - human-readable text is the default.    |
 | `--quiet`     | Suppress error messages on stderr. Does not suppress the result on stdout |
 
-Like `doctor` and `plugin`, `check` has no `--compact` flag; `--quiet` suppresses stderr error messages, not the stdout result.
+Like `plugin`, `check` has no `--compact` flag; `--quiet` suppresses stderr error messages, not the stdout result.
 
 ### Behavior
 
@@ -450,32 +437,3 @@ opencode writes the OpenCode V2 `agents.<name>.model` key, preserving comments a
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.
 </Aside>
-
----
-
-## `doctor`
-
-Report skill copies left over from earlier CLI versions, without changing anything (read-only).
-
-```bash
-maestria doctor [--json] [--quiet]
-```
-
-### Flags
-
-| Flag      | Description                                  |
-| --------- | -------------------------------------------- |
-| `--json`  | Output the diagnostics as JSON               |
-| `--quiet` | Suppress spinner output (recommended for CI) |
-
-`doctor` has no `--compact` flag.
-
-### Behavior
-
-maestria packages bundle `create-pull-request` and `docs-update`, so `doctor` looks for separate copies of them. It reports the skill record path and whether it is present, then per platform: plugin state, the record entry, and the observed copies with their install paths. A copy the record lists is a legacy CLI install, and `maestria update <platform>` removes it. A copy the record does not list duplicates the bundled skill; `doctor` prints the `skills` CLI removal command and leaves the decision to you. A corrupt record fails loud with exit code `1` before any observation. A failed skills-list degrades into a per-platform note instead of aborting the run. A completed report exits with `0`; use `--json` for machine-readable output.
-
-### Example
-
-<AllPackageManagers type="dlx" pkg="maestria" args="doctor" />
-
----

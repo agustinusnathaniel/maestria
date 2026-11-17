@@ -33,7 +33,6 @@ const ROOT_MANIFESTS = [
   '.codex-plugin/plugin.json',
   '.cursor-plugin/plugin.json',
   '.devin-plugin/plugin.json',
-  '.zcode-plugin/plugin.json',
   'kimi.plugin.json',
 ] as const;
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -295,23 +294,9 @@ const addPolicyRules = (plan: Map<string, string>, input: Inputs, routerPolicy: 
   );
 };
 
-const addModeCommands = (plan: Map<string, string>, input: Inputs, routerPolicy: string): void => {
-  for (const mode of MODES) {
-    const { body, metadata } = input.modes[mode];
-    const command = compose(body, routerPolicy, input.arguments);
-    addOutput(
-      plan,
-      `commands/${mode}.md`,
-      // Hosts name commands by filename; ZCode warns on an unknown `name` key.
-      document(command, { description: metadata.description }),
-    );
-  }
-};
-
 const addContexts = (plan: Map<string, string>, input: Inputs): void => {
   const routerPolicy = compose(input.roles['main-loop'], input.rules);
   addPolicyRules(plan, input, routerPolicy);
-  addModeCommands(plan, input, routerPolicy);
   for (const [relative, content] of hostSessionOutputs(input, routerPolicy, document)) {
     addOutput(plan, relative, content);
   }

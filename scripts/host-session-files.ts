@@ -71,15 +71,15 @@ export const hostSessionOutputs = (
     return checked(file, content, size, limit, cap);
   });
   // Devin has no plugin commands component, so its modes ship as skills only its manifest
-  // selects; Claude Code and ZCode get the core from the hook, so their commands carry only the
-  // mode body.
+  // selects; the shared commands carry only the mode body, with policy coming from each
+  // host's always-on rule, context, or hook.
   const modeFiles = modes.flatMap(([name, { body, metadata }]) => [
     [
       `devin/skills/${name}/SKILL.md`,
       document(compose(body, input.arguments), { description: metadata.description, name }),
     ] as const,
     [
-      `modes/${name}.md`,
+      `commands/${name}.md`,
       document(compose(body, input.arguments), { description: metadata.description }),
     ] as const,
   ]);

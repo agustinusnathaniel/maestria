@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it } from 'vite-plus/test';
 import {
   isFileNotFound,
   isRecord,
-  isWithin,
   parseJsonRecord,
   parseJsonValue,
   readJsonRecord,
@@ -62,15 +61,6 @@ describe('primitives', () => {
       expect(isFileNotFound({ code: 'EEXIST' })).toBe(false);
       expect(isFileNotFound(null)).toBe(false);
       expect(isFileNotFound('ENOENT')).toBe(false);
-    });
-  });
-
-  describe('isWithin', () => {
-    it('accepts the root itself and nested paths, rejects escapes', () => {
-      expect(isWithin('/root', '/root')).toBe(true);
-      expect(isWithin('/root', '/root/nested/file')).toBe(true);
-      expect(isWithin('/root', '/other')).toBe(false);
-      expect(isWithin('/root', '/root/../escape')).toBe(false);
     });
   });
 

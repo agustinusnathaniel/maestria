@@ -48,6 +48,7 @@ Docs and source reading only; no model run.
 | E-CLAUDE-15 | Claude Code | Plugin session context | A plugin cannot ship a loaded `CLAUDE.md` or rules. A `SessionStart` hook's `additionalContext` or stdout is added before the first prompt, summarized away at compaction, and added again when the hook matches the `compact` or `clear` source | docs as of v2.1.314 | https://code.claude.com/docs/en/plugins/components; https://code.claude.com/docs/en/context-window | 2026-11-03 | not tested |
 | E-CLAUDE-16 | Claude Code | Plugin hook trust | No per-hook approval: enabling the plugin is consent; `allowManagedHooksOnly` blocks plugin hooks except managed or force-enabled plugins | docs as of v2.1.314 | https://code.claude.com/docs/en/plugins/security | 2026-11-03 | not tested |
 | E-CLAUDE-17 | Claude Code | maestria hooks in a real session | With the package loaded through `--plugin-dir` against a local Anthropic-compatible fixture (`pnpm e2e:claude-hooks`), the startup request carried both SessionStart core parts in full (through `## Precedence and Shipping`) and the `.maestria/workflow.md` text, and a fixture `Bash` call of `git commit --no-verify` returned the hook's block reason as the tool result. The `clear` and `compact` sources and the ask path were not exercised | Claude Code 2.1.316 | `scripts/e2e/claude-hooks.ts` | 2026-11-03 | tested: real CLI with a local fake provider (no model run) |
+| E-CLAUDE-18 | Claude Code | Plugin manifest discovery | `claude plugin validate --strict` passed with the `agents` and `commands` fields removed from `.claude-plugin/plugin.json` (default discovery of `agents/` and `commands/`) | Claude Code 2.1.319 | This register (`claude plugin validate --strict packages/agent-plugins`) | 2026-11-17 | tested: strict validation only |
 
 ### Capability vs control
 
@@ -224,7 +225,7 @@ Docs and source reading only; no model run.
 
 ## ZCode
 
-ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agree. The plugin loader reads `.zcode-plugin/plugin.json`; `commands` and `skills` selectors are directories (file-list entries are ignored) and the default directories load automatically, so the Codex TOMLs are skipped. The subagent parser reads `name`, `description`, `model`, `tools`, `disallowedTools`, `skills`, `permissionMode`, and a few display fields. Bash and MCP tools remain after `disallowedTools` is applied. An omitted `model` inherits the parent model. Command files substitute `$ARGUMENTS`, name commands by filename, and run inline shell expansion. Shipped Markdown must therefore never contain an exclamation mark directly before a backtick, because ZCode and Claude Code commands run that as inline shell; the packed-artifact test enforces it. No live ZCode run was performed: it is desktop-only.
+ZCode source (`zai-org/ZCode`, 2026-10-12) and the installed desktop bundle agree. The plugin loader looks for `.zcode-plugin/plugin.json`, then `.claude-plugin/plugin.json`, then `.codex-plugin/plugin.json`, and auto-discovers `skills/`, `commands/`, `agents/`, and `hooks/hooks.json`. maestria no longer ships `.zcode-plugin/plugin.json`, so ZCode loads the package through `.claude-plugin/plugin.json`; `commands` and `skills` selectors are directories (file-list entries are ignored) and the default directories load automatically, so the Codex TOMLs are skipped. The subagent parser reads `name`, `description`, `model`, `tools`, `disallowedTools`, `skills`, `permissionMode`, and a few display fields. Bash and MCP tools remain after `disallowedTools` is applied. An omitted `model` inherits the parent model. Command files substitute `$ARGUMENTS`, name commands by filename, and run inline shell expansion. Shipped Markdown must therefore never contain an exclamation mark directly before a backtick, because ZCode and Claude Code commands run that as inline shell; the packed-artifact test enforces it. No live ZCode run was performed: it is desktop-only.
 
 ### Evidence (reviewed 2026-10-12)
 
@@ -239,6 +240,7 @@ Docs and source reading only; no model run.
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-ZCODE-PLUGIN-02 | ZCode | Hooks | Seven events (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `Stop`); `command` and `process` handlers. `PreToolUse` returns allow, ask, or deny and `additionalContext`; `SessionStart` context is injected as hook context. Plugin `hooks/hooks.json` loads with the plugin, with no separate hook trust | main synced 2026-10-30 (v3.17.1); desktop 3.14.5 bundle strings | https://github.com/zai-org/ZCode/blob/main/docs/plugin-hooks-compat.md; https://zcode.z.ai/en/docs/plugin | 2026-11-03 | not tested |
+| E-ZCODE-PLUGIN-03 | ZCode | Manifest discovery order | ZCode looks for `.zcode-plugin/plugin.json`, then `.claude-plugin/plugin.json`, then `.codex-plugin/plugin.json`, and auto-discovers `skills/`, `commands/`, `agents/`, and `hooks/hooks.json`; maestria no longer ships `.zcode-plugin/plugin.json` and loads through `.claude-plugin/plugin.json` | ZCode `main` checkout 2026-11-17 | ZCode repo `docs/plugin-hooks-compat.md` (Manifest discovery order); `apps/zcode-cli/packages/bootstrap/tests/` loading `.claude-plugin/plugin.json` | 2026-11-17 | not tested |
 
 ## OMP
 
@@ -300,7 +302,7 @@ Docs and source reading only; no model run.
 
 ## Remaining evidence boundaries
 
-- Claude's explicit agent-file form passes strict validation; directory form is rejected. Acceptance of extra frontmatter does not establish runtime enforcement.
+- Claude's default `agents/` and `commands/` discovery passes strict validation; explicit file lists are no longer shipped. Acceptance of extra frontmatter does not establish runtime enforcement.
 - Kimi native profiles, command/bootstrap resources, and size limits have package/schema evidence; live dispatch and reload remain unverified.
 - Cursor plugin agents do not enforce `readonly` (see above). Devin discovery is verified, but Devin and ZCode native task execution remains unverified; Devin and OMP have no denylist; the reviewer sets Devin's `allowed-tools` allowlist (E-DEVIN-PLUGIN-03), while OMP's `tools` allowlist is not set because other hosts read the same key with different tool names (E-OMP-PLUGIN-03). Codex no longer applies a role's `sandbox_mode` (E-CODEX-CLI-19); a trusted plugin hook blocks edits inside `maestria-reviewer` (E-CODEX-CLI-22). ZCode removes `disallowedTools` from subagent tools per its source, but no live ZCode run was performed.
 - Codex marketplace exposes only the eight skills; its complete agent/policy/mode context is supplied by the managed CLI path.
@@ -320,6 +322,8 @@ Run the completion gates as well as these probes. Regenerate affected evidence w
 | E-CLAUDE-08 | Working-tree package snapshot; verify at landing (historical first-package snapshot) | 2026-08-12 | tested |
 | E-CLAUDE-09 | This register; `scripts/e2e/claude-skill-preload.ts` | 2026-10-10 | tested: native CLI fixture (superseded) |
 | E-CLAUDE-10, E-CLAUDE-11, E-CLAUDE-12 | This register; `scripts/e2e/claude-skill-preload.ts`; https://code.claude.com/docs/en/plugins/components; https://claude.com/docs/plugins/platform-support | 2026-10-12 (E-CLAUDE-10 reviewed 2026-10-11) | tested: native CLI fixture |
+| E-CLAUDE-18 | This register (`claude plugin validate --strict packages/agent-plugins`) | 2026-11-17 | tested: strict validation only |
+| E-ZCODE-PLUGIN-03 | ZCode repo `docs/plugin-hooks-compat.md` (Manifest discovery order); `apps/zcode-cli/packages/bootstrap/tests/` loading `.claude-plugin/plugin.json` | 2026-11-17 | not tested |
 | E-CURSOR-PLUGIN-01 | This register (live CLI probe); https://cursor.com/docs/reference/plugins; https://cursor.com/docs/subagents | 2026-10-12 | tested: live Cursor CLI |
 | E-CURSOR-PLUGIN-02 | This register (live CLI probe, `cursor-agent -p --plugin-dir`) | 2026-10-13 | tested: live Cursor CLI |
 | E-KIMI-PLUGIN-01 | Kimi `v0.38.0` and `v2.1.1` source tool registry; https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents | 2026-10-12 | tested: source inspection |

@@ -1,19 +1,19 @@
 # @maestria/agent-plugins
 
-maestria ships one directly installable plugin with native host components and eight skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all five host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
+maestria ships one directly installable plugin with native host components and eight skills. Canonical methodology lives in `packages/core/agent-directives/`; generated resources and all four host manifest directories live at this package root. Git/local installations and npm archives expose the same resource paths.
 
 ## Component ownership
 
 | Package folder | Contents | Canonical input |
 | --- | --- | --- |
 | `agents/` | One reviewer profile for every Markdown host, plus a generated Codex TOML beside it | Core `specialists/` and `generation/profiles.json` |
-| `commands/` | Complete FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/`, routing, and policy |
+| `commands/` | Slim FEIN, SONAR, and BLITZ workflow entry points shared by every command-capable host | Core `commands/` mode bodies and the argument contract |
 | `rules/`, session files, `devin/skills/` | `rules/global.md` (OMP) and `rules/cursor/` (Cursor); one session file per host, each with only its own host note and sized to that host's cap: root `AGENTS.md` (Devin), `codex.agents.md` (installed by the CLI), `hermes.context.md` (manual), `kimi.system-prompt.md` (`systemPromptPath`); Devin's three mode skills | Core `rules.md` and integration notes |
 | `skills/` | The bundled `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` method skills | Core `skills/<name>/SKILL.md` for each bundled skill (`scripts/sync-bundled-skills.ts`) |
 | `generation/` | Development-only profile metadata (`profiles.json`); not shipped | Hand-authored mechanical input |
 | `assets/` | Logo shared by the host manifests | Hand-authored package file |
 
-Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode, routing, policy, and argument contract without loading removed skills.
+Roles, modes, dispatch, and policy are not published as root skills. Full native profiles include the role and policy required in an isolated child. Workflow commands carry their mode body and argument contract without loading removed skills.
 
 Each profile's frontmatter carries every Markdown host's keys at once, and each host reads only its own: `readonly` (Cursor), `disallowedTools: [Write, Edit]` (Claude Code, Kimi Code, ZCode), and `subagents: []` (Kimi). Profiles omit `model`, so hosts use the main conversation's model. Primary-session routing comes from each host's always-on rule, context, or companion installation, not from a dispatcher profile.
 

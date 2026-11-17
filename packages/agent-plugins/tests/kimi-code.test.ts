@@ -89,7 +89,7 @@ describe('Kimi native methodology loading', () => {
     }
   });
 
-  it('carries complete context and arguments in each native mode command', async () => {
+  it('carries the mode body and arguments in each native mode command', async () => {
     const config = await manifest();
     expect(config.commands).toBe('./commands/');
     const commands = await Promise.all(
@@ -101,8 +101,8 @@ describe('Kimi native methodology loading', () => {
     for (const { command, mode } of commands) {
       expect(command).toContain(`[MODE: ${mode}]`);
       expect(command).toContain('$ARGUMENTS');
-      expect(command).toContain('## Routing');
-      expect(command).toContain('## Universal Floors');
+      expect(command).not.toContain('## Routing');
+      expect(command).not.toContain('## Universal Floors');
     }
   });
 });

@@ -1,5 +1,5 @@
-// Drives the built maestria CLI against a real OpenCode V2 CLI in an isolated home: install moves a
-// V1 `plugin` entry to `plugins`, a pinned update keeps plugin options, and uninstall removes it.
+// Drives the built maestria CLI against a real OpenCode V2 CLI in an isolated home: install adds
+// `@maestria/opencode` to `plugins`, a pinned update keeps plugin options, and uninstall removes it.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -54,10 +54,7 @@ const check = (name: string, pass: boolean, detail: unknown): void => {
 
 await fs.mkdir(path.dirname(configFile), { recursive: true });
 await fs.mkdir(env.HOME, { recursive: true });
-await fs.writeFile(
-  configFile,
-  '{\n  // user comment\n  "plugin": ["@maestria/opencode@latest"],\n  "plugins": ["opencode-wakatime"]\n}\n',
-);
+await fs.writeFile(configFile, '{\n  // user comment\n  "plugins": ["opencode-wakatime"]\n}\n');
 try {
   // A private service port keeps the probe off any OpenCode service the developer is running.
   exec('opencode', ['service', 'set', 'port', String(40_000 + (process.pid % 20_000))]);
@@ -65,9 +62,8 @@ try {
   maestria('install', 'opencode', '--quiet');
   let current = await config();
   check(
-    'install moves the V1 entry to plugins',
-    JSON.stringify(current.plugin) === '[]' &&
-      JSON.stringify(current.plugins) === '["opencode-wakatime","@maestria/opencode"]',
+    'install adds maestria to plugins',
+    JSON.stringify(current.plugins) === '["opencode-wakatime","@maestria/opencode"]',
     current,
   );
   const installedText = await fs.readFile(configFile, 'utf-8');

@@ -14,7 +14,6 @@ import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { installOne } from '@/lib/platform-transaction.js';
-import { assertNoRemovedSkillFlags } from '@/lib/skill-reconcile.js';
 import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
 
 export interface InstallArgs {
@@ -75,7 +74,6 @@ const collectInstallTargets = async (
 };
 
 export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult> => {
-  assertNoRemovedSkillFlags(rawArgs);
   const isQuiet = resolveQuiet(rawArgs);
   let platformIds: string[] | undefined;
   if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {
