@@ -135,6 +135,18 @@ const getResultText = (result: ToolResult): string => {
   return content.text;
 };
 
+describe('MAESTRIA_EVENTS', () => {
+  it('keeps the cross-extension event names other extensions subscribe to', () => {
+    expect(MAESTRIA_EVENTS).toEqual({
+      REVIEW_ACTIVATED: 'maestria:review:activated',
+      REVIEW_DEACTIVATED: 'maestria:review:deactivated',
+      SUBAGENT_COMPLETED: 'maestria:subagent:completed',
+      SUBAGENT_FAILED: 'maestria:subagent:failed',
+      SUBAGENT_STARTED: 'maestria:subagent:started',
+    });
+  });
+});
+
 describe('installSubagentTool - single mode (backward compat)', () => {
   it('registers a tool named "maestria_subagent"', () => {
     const { toolDef } = setup();

@@ -22,7 +22,7 @@ const assertNonEmptyTask: (task: string | undefined, label: string) => asserts t
   task,
   label,
 ) => {
-  if (task === undefined || !task.trim()) {
+  if (typeof task !== 'string' || !task.trim()) {
     throw new Error(label);
   }
 };

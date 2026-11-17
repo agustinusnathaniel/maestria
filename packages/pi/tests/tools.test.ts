@@ -2,11 +2,11 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import type { ModeKeyword } from '@maestria/shared-mode';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import type { Mock } from 'vite-plus/test';
 
 import { createInitialState } from '@/state.js';
-import type { ModeKeyword } from '@/state.js';
 import { createUserBashGuard, DANGEROUS_PATTERNS, installToolInterceptors } from '@/tools.js';
 import type { ToolApi, ToolCallContext, ToolCallHandler, ToolCallResult } from '@/tools.js';
 
