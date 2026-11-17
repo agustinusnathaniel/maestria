@@ -18,9 +18,16 @@ for script in sync-consolidated-plugin sync-bundled-skills sync-hook-policy; do
   pnpm exec tsx "scripts/$script.ts" "$MODE" || HAD_ERROR=1
 done
 
-if [ "$HAD_ERROR" -eq 0 ]; then
-  echo "=== All generated packages are in sync ==="
+if [ "$MODE" = "--check" ]; then
+  OK="=== All generated packages are in sync ==="
+  FAIL="=== Generated packages are out of sync (run scripts/sync-all) ==="
 else
-  echo "=== Generated packages are out of sync (run scripts/sync-all) ===" >&2
+  OK="=== All generated packages synced ==="
+  FAIL="=== Sync failed ==="
+fi
+if [ "$HAD_ERROR" -eq 0 ]; then
+  echo "$OK"
+else
+  echo "$FAIL" >&2
 fi
 exit $HAD_ERROR
