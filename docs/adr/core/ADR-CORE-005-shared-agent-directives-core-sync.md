@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-23), Confidence: High. Consolidated 2026-10-03 with root-resolved tooling (2026-08-12), anchor preflight (2026-09-10), and fail-closed source resolution (2026-09-11). Amended 2026-10-12 with skill ownership tiers and 2026-10-13 with bundled methodology skills authored in core.
+Accepted (2026-06-23), Confidence: High. Consolidated 2026-10-03 with root-resolved tooling (2026-08-12), anchor preflight (2026-09-10), and fail-closed source resolution (2026-09-11). Amended 2026-10-12 with skill ownership tiers, 2026-10-13 with bundled methodology skills authored in core, and 2026-11-17 with one plan compiler for every generated package, which retires the config-driven engine, its anchor validation, and its git provenance check.
 
 ## Context
 
@@ -14,11 +14,11 @@ Literal replacements introduced another risk: an anchor could disappear or be re
 
 ### Ownership and projection
 
-Author shared prompts, rules, workflow modes, and skills only in `packages/core/agent-directives/`. Keep prose readable Markdown with canonical role tokens; host-specific tool syntax, frontmatter, and layouts belong in the native adapter packages' `sync.config.ts` (OpenCode and Pi) or, for declarative hosts, in the consolidated generator's manifest inputs (see [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md)). The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the maintained source layout.
+Author shared prompts, rules, workflow modes, and skills only in `packages/core/agent-directives/`. Keep prose readable Markdown with canonical role tokens; host-specific tool syntax, frontmatter, and layouts belong in the generator: `scripts/native-adapter-files.ts` and `packages/opencode/generation/agents.ts` for the OpenCode and Pi adapters, and the consolidated generator's manifest inputs for declarative hosts (see [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md)). The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the maintained source layout.
 
-One monorepo-internal TypeScript sync tool derives host artifacts through declarative string replacements, content composition, frontmatter serialization, generated provenance, and normalized output. Configs support defaults plus explicit per-file overrides and preserved host-local content; the engine does not know platform identities. Static frontmatter avoids another dynamic extension surface. Library YAML quoting is sufficient unless a host demonstrates a stricter need.
+One monorepo-internal TypeScript sync tool derives host artifacts through content composition, frontmatter serialization, generated notices, and normalized output. Until 2026-11-17 it was a config-driven engine with defaults, per-file overrides, and preserved host-local content that did not know platform identities; it is now one plan compiler that names every output (see the 2026-11-17 amendment). Static frontmatter avoids another dynamic extension surface. Library YAML quoting is sufficient unless a host demonstrates a stricter need.
 
-The orchestrator follows the same projection path because its methodology was also mostly duplicated; host-local integration is not a reason to maintain the entire prompt separately. Generated notices are unconditional. `scripts/sync-all` writes projections; `scripts/check-sync` regenerates and compares byte identity, including provenance. Generated output is excluded from ordinary formatting so format and sync cannot repeatedly undo each other. Commands, flags, and exact transform ordering are maintained in [the sync source](../../../packages/core/scripts/sync.ts) and its libraries, rather than copied here.
+The orchestrator follows the same projection path because its methodology was also mostly duplicated; host-local integration is not a reason to maintain the entire prompt separately. Generated notices are unconditional. `scripts/sync-all` writes projections; `scripts/check-sync` regenerates and compares byte identity. Generated output is excluded from ordinary formatting so format and sync cannot repeatedly undo each other. Commands, flags, and exact composition are maintained in [the plan compiler](../../../scripts/sync-consolidated-plugin.ts) and its helper modules, rather than copied here.
 
 ### Root-resolved development tooling
 
@@ -28,9 +28,11 @@ The tool is not published: it runs only within this monorepo, so a publish/consu
 
 ### Consolidated compositions and whole-run preflight (2026-10-11)
 
-The consolidated plugin compiler (`scripts/sync-consolidated-plugin.ts`) composes multiple canonical role, policy, router and mode inputs into native resources while retaining core ownership and shared normalization/frontmatter helpers. Generic sync configs remain in use for the native adapters only. The root wrapper freezes the discovered config list and validates every entry with a read-only dry-run before any write. Detected processing errors return failure in dry-run and write modes as well as check mode, so output-file errors cannot silently bypass the preflight.
+The consolidated plugin compiler (`scripts/sync-consolidated-plugin.ts`) composes multiple canonical role, policy, router and mode inputs into native resources while retaining core ownership and shared normalization/frontmatter helpers. Until 2026-11-17, generic sync configs remained in use for the native adapters, and the root wrapper validated every discovered config with a read-only dry-run before any write. Detected processing errors return failure in dry-run and write modes as well as check mode, so output-file errors cannot silently bypass the preflight.
 
-### Shared source plan and no-write preflight
+### Shared source plan and no-write preflight (retired 2026-11-17)
+
+This section described the config-driven engine and is kept as history; the plan compiler below replaced it.
 
 Resolve one ordered plan for validation and processing: primary Markdown in walk order, then secondary configured entries in declaration order. A missing source directory or configured file absent from both resolution locations throws `ConfigError` before any writes, cleanup, or removal. Missing inputs are not a verbose-only skip. Exit codes distinguish success (0), projection drift (1), and invalid configuration (2).
 
@@ -46,12 +48,24 @@ Every skill has one owner and one install path:
 
 Anything every role needs stays inline in core policy; a skill tier is never the only home of a cross-role obligation ([CORE-019](ADR-CORE-019-directive-simplification.md)).
 
+### One plan compiler (2026-11-17)
+
+The config-driven engine (`packages/core/scripts/sync.ts`, its config loader, plan, anchor, provenance, diff, and auto-clean libraries, and the two `sync.config.ts` files) served only OpenCode and Pi, which needed fourteen files built from a few fixed compositions. It is retired. `scripts/sync-consolidated-plugin.ts` now builds one explicit output plan per generated package: `@maestria/agent-plugins`, plus the OpenCode and Pi adapter files listed in `scripts/native-adapter-files.ts`. OpenCode's permission maps stay in its package, in `packages/opencode/generation/agents.ts`. Every plan is built and its paths validated before any package is written, and stale removal touches only files carrying the generator's notice, as it already did for the consolidated plugin. The port kept every generated byte unchanged.
+
+What each retired mechanism protected, and what protects it now:
+
+- **Configs, defaults, and per-file overrides:** the generator names each output and its canonical inputs directly, so no general configuration surface remains to validate.
+- **Anchor validation:** the only replacement left rewrites canonical `@role` mentions to Pi's `/role`; an absent mention needs no rewrite, so a dead anchor cannot drop content. `packages/core/tests/roster.test.ts` asserts that no Pi output keeps an `@role` mention.
+- **Missing inputs and sections:** reading a missing canonical file or `## heading` throws while the plan is built, before any write.
+- **Git provenance:** byte comparison already reports a hand-edited output as drift; the git check only distinguished hand edits that happened to match regenerated bytes, and could misfire when generator code changed.
+- **Auto-clean of every unlisted agent file:** the roster test asserts each adapter's `agents/*.md` set matches the canonical roster, and stale generated files are found by notice.
+
 ## Consequences
 
-- One source removes manual methodology porting; adding a host requires its own projection config rather than changes to a universal runtime.
+- One source removes manual methodology porting; adding a host requires its own output plan in the compiler rather than changes to a universal runtime.
 - Declarative transformations and generated provenance make ownership reviewable, but maintainers must edit canonical sources and regenerate before delivery.
-- Fail-closed resolution and ordered preflight prevent silent or partial projections. Conditional replacements that stop matching now need an explicit config update.
-- Validation adds source reads and configs add a navigation hop; those costs buy evidence that the actual resolved transforms apply.
+- Fail-closed resolution and ordered preflight prevent silent or partial projections. Adding or renaming a projected output needs an explicit output-plan update.
+- Validation adds source reads; that cost buys evidence that every input a plan names exists before any write.
 - Root tooling avoids registry fallback and runner drift while depending on the workspace's package manager and installation.
 - Bundled skills add two generated copies per package to every release and make the packages larger; a change to a root skill ships only when each package releases.
 - Utility skills read as policy sections rather than curated checklists, and whatever a skill-only host needs from them must live in the source section, which keeps always-on policy slightly larger. Section headings become a generation contract.
@@ -81,4 +95,4 @@ Anything every role needs stays inline in core policy; a skill tier is never the
 
 ## Date
 
-2026-06-23; consolidated 2026-10-03; amended 2026-10-12 and 2026-10-13.
+2026-06-23; consolidated 2026-10-03; amended 2026-10-12, 2026-10-13, and 2026-11-17.

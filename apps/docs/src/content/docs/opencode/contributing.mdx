@@ -19,7 +19,7 @@ scripts/check-sync
 pnpm --filter @maestria/opencode test
 ```
 
-Keep permission changes in `sync.config.ts`, and test them against the generated output. It authors each agent's permissions as a compact map and translates it to ordered OpenCode rules.
+Keep permission changes in `packages/opencode/generation/agents.ts`, and test them against the generated output. It authors each agent's permissions as a compact map and translates it to ordered OpenCode rules.
 
 Changes that affect the host integration need the real-host probes, which run an isolated OpenCode V2 CLI with a local fake provider and write JSON evidence under `artifacts/`:
 

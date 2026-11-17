@@ -62,7 +62,7 @@ Keywords match case-insensitively outside code spans; when several appear, `fein
 
 ## Development
 
-Edit shared directives in `packages/core/agent-directives/` and the agent permission maps in `sync.config.ts`, which translates them to ordered OpenCode permission rules. Generated agents, commands, rules, and skills are not hand-authored. From the repository root:
+Edit shared directives in `packages/core/agent-directives/` and the agent permission maps in `generation/agents.ts`, which translates them to ordered OpenCode permission rules. Generated agents, commands, rules, and skills are not hand-authored. From the repository root:
 
 ```bash
 scripts/sync-all

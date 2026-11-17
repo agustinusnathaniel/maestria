@@ -27,7 +27,7 @@ The consolidated `@maestria/agent-plugins` package lives at `packages/agent-plug
 
 Root host manifests and semantic agent, command, policy, and utility resources are tracked for Git consumers and ship at the same paths in npm archives. Root skills contain the bundled method skills described below. Complete native profiles derive from canonical roles and global policy; modes derive from canonical commands, router, and policy. Each role ships once as `agents/<role>.md`, whose frontmatter carries every Markdown host's keys, plus a generated `agents/maestria-<role>.toml` for Codex. Portable discovery remains skills-only.
 
-The consolidated compiler is the sole writer for this package's composed resources. It reuses core normalization/frontmatter helpers and validates canonical sources, required headings, profile metadata, manifest paths, size limits, and output containment before mutation. `scripts/sync-all` first preflights all other package configs without writes, then regenerates resources; `scripts/check-sync` remains read-only. There is no nested installation root. The standalone CLI remains in `apps/maestria-cli`.
+The consolidated compiler (`scripts/sync-consolidated-plugin.ts`) is the sole writer for this package's composed resources and for the OpenCode and Pi adapter files that `scripts/native-adapter-files.ts` defines. It reuses core normalization/frontmatter helpers and validates canonical sources, required headings, profile metadata, manifest paths, size limits, and output containment for every package before any write. `scripts/sync-all` preflights that plan without writes, then regenerates resources; `scripts/check-sync` remains read-only. There is no nested installation root. The standalone CLI remains in `apps/maestria-cli`.
 
 Method skills that the directives name (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `handoff`, `implement`, `recon`, `review-loop`) are authored once under `skills/` here. `scripts/sync-bundled-skills.ts` (run by `scripts/sync-all`, guarded by `scripts/check-sync`) copies each into `skills/` of `@maestria/agent-plugins`, `@maestria/opencode`, and `@maestria/pi`; edit the skill here, never a copy. Runtimes maestria does not package get the agent-plugins copies through `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source. Directives refer to any other skill by capability only (for example "a browser-automation skill, when one is installed"), so they never depend on a skill maestria does not ship, and such skills are never vendored here. [CORE-005](../../../docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) records these three ownership tiers.
 
@@ -37,9 +37,9 @@ Host notes live under `integrations/`; they define native invocation and activat
 
 ## Reuse a Canonical Input in a Projection
 
-Sync configs use a top-level `source` for the default canonical input. A file entry can set its own `source` path, relative to that sync config, when one generated output should reuse a different canonical input. The `source` override changes which input is rendered; it does not create another methodology source. A file entry can also set `section` to one `## heading`, or a list of them, to render only those sections of its input in order, each titled by its heading; this is how OpenCode projects the main loop's `Modes` and `Continuation and Delivery` sections, and a missing heading fails the sync before any write.
+Each generated file names the canonical inputs it composes in the generator, so reusing an input in another projection adds an output entry rather than another methodology source. A projection can render one `## heading` section of an input as a standalone document titled by that heading; this is how OpenCode projects the main loop's `Modes` and `Continuation and Delivery` sections, and a missing heading fails the sync before any write.
 
-Use per-file source overrides when an adapter needs to select a different canonical input. Keep native metadata and mechanical transforms in adapter inputs rather than copying prose into configuration. The consolidated compiler composes full specialist policy and complete workflow context instead of relying on removed role/mode skills.
+Keep native metadata and mechanical transforms in generator inputs rather than copying prose into them. The consolidated compiler composes full specialist policy and complete workflow context instead of relying on removed role/mode skills.
 
 After changing canonical input or projection metadata, run `scripts/sync-all` and `scripts/check-sync` from the repository root.
 
@@ -60,5 +60,5 @@ After changing canonical input or projection metadata, run `scripts/sync-all` an
 1. Create a new file in `specialists/<name>.md`
 2. Define the role, task-specific judgment, acceptance evidence, and handoff. Use conditional skill triggers; keep shared contracts in `rules.md`.
 3. Add the specialist to the Routing section in `specialists/main-loop.md` (add a new method skill to its skill map the same way, one line per skill)
-4. Add the projection to each relevant adapter sync config and the consolidated compiler/profile registry, then update native metadata required by that integration
-5. Run the sync tool to generate plugin-specific agent files
+4. Add the role to `ROLES` and the profile registry for the consolidated compiler, and its OpenCode and Pi agent files to `scripts/native-adapter-files.ts`, then update native metadata required by that integration
+5. Run `scripts/sync-all` to generate plugin-specific agent files

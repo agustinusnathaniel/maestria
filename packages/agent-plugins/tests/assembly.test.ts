@@ -7,6 +7,7 @@ import {
   GENERATED_NOTICE,
   main,
   syncConsolidatedPlugin,
+  syncGeneratedPackages,
   TOML_NOTICE,
 } from '../../../scripts/sync-consolidated-plugin.js';
 
@@ -138,6 +139,18 @@ describe('consolidated plugin assembly', () => {
 
     expect(() => syncConsolidatedPlugin(root)).toThrow(/reviewer\.md/u);
     expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
+  });
+
+  it('rejects a missing native adapter section before writing any package', () => {
+    const root = fixture();
+    const target = path.join(root, 'packages/agent-plugins/rules/global.md');
+    fs.writeFileSync(target, 'drift\n');
+    const mainLoop = path.join(root, 'packages/core/agent-directives/specialists/main-loop.md');
+    fs.writeFileSync(mainLoop, fs.readFileSync(mainLoop, 'utf-8').replace('## Modes\n', ''));
+
+    expect(() => syncGeneratedPackages(root)).toThrow(/## Modes/u);
+    expect(fs.readFileSync(target, 'utf-8')).toBe('drift\n');
+    expect(fs.existsSync(path.join(root, 'packages/opencode'))).toBe(false);
   });
 
   it('rejects linked output directories without writing outside the package', () => {

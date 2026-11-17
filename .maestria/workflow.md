@@ -33,7 +33,7 @@ Before changing code:
 
 - Search for an existing utility, directive, sync transform, or package pattern.
 - Check packages/core/agent-directives/ before adding methodology.
-- Check the relevant sync.config.ts before adding a platform transform.
+- Check `scripts/native-adapter-files.ts` or `scripts/sync-consolidated-plugin.ts` before adding a platform transform.
 - Justify new dependencies against the lightweight, platform-independent design.
 
 ## Implement and Verify

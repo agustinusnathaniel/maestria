@@ -22,7 +22,7 @@ Share Pi-family filesystem/frontmatter validation as development tooling while r
 
 The management CLI remains a separate distribution. Derive platform validation from its handler registry while preserving ordering, messages, and public types, without importing effectful handlers into validation or creating cycles. Shared batch mechanics keep sequencing and result handling consistent while individual commands retain choices and messages.
 
-Share demonstrated adapter surfaces directly: narrow installers accept what they use rather than re-wrapping the entire extension API. Private exports and config features without consumers need no compatibility aliases; public plugin contracts still require consumer evidence. Anchor and provenance checks remain load-bearing even when wrappers and test-only APIs are removed.
+Share demonstrated adapter surfaces directly: narrow installers accept what they use rather than re-wrapping the entire extension API. Private exports and config features without consumers need no compatibility aliases; public plugin contracts still require consumer evidence. Anchor and provenance checks remained load-bearing until 2026-11-17, when [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) retired them with the config-driven engine.
 
 ## Consequences
 

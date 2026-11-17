@@ -13,11 +13,9 @@
     "test": "vp test"
   },
   "dependencies": {
-    "diff": "^9.0.0",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/diff": "^8.0.0",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }

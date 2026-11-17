@@ -1,6 +1,6 @@
 # Directive Composition
 
-How the canonical directives combine into what each host loads. The generators are the source of truth: `scripts/sync-consolidated-plugin.ts` for `@maestria/agent-plugins`, `packages/opencode/sync.config.ts` and `packages/pi/sync.config.ts` for the native adapters, and `scripts/sync-bundled-skills.ts` for the method skills. Check this file against them when either changes.
+How the canonical directives combine into what each host loads. The generators are the source of truth: `scripts/sync-consolidated-plugin.ts` for `@maestria/agent-plugins`, `scripts/native-adapter-files.ts` (with `packages/opencode/generation/agents.ts`) for the native adapters, and `scripts/sync-bundled-skills.ts` for the method skills. Check this file against them when either changes.
 
 ## One Main Loop and One Reviewer
 

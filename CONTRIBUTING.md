@@ -49,20 +49,13 @@ packages/core/agent-directives/
 packages/<platform>/ generated agents, skills, commands, and rules
 ```
 
-Native adapters use `sync.config.ts`. The shared plugin uses `scripts/sync-consolidated-plugin.ts` to compose canonical sources into an explicit output plan; its hand-authored manifest/profile/native metadata lives under `generation/`. The pipeline validates all inputs before mutation and retires only owned generated files.
+`scripts/sync-consolidated-plugin.ts` composes canonical sources into an explicit output plan for every generated package: the shared plugin, whose hand-authored manifest/profile/native metadata lives under `generation/`, and the OpenCode and Pi adapters, whose outputs `scripts/native-adapter-files.ts` defines. The pipeline validates all inputs before mutation and retires only owned generated files.
 
 Never edit a generated file. Edit the canonical source, then regenerate and verify:
 
 ```bash
 scripts/sync-all
 scripts/check-sync
-```
-
-Use a package-local sync command only when you are working on one projection:
-
-```bash
-cd packages/opencode
-pnpm exec tsx ../core/scripts/sync.ts --diff
 ```
 
 ## Change an Agent Directive
@@ -82,7 +75,7 @@ Choose the path that matches how the host consumes maestria.
 **Native adapter package** (runtime code, like `opencode` and `pi`):
 
 1. Create `packages/<name>/` with its manifest, package metadata, and runtime source.
-2. Add `sync.config.ts` for the generated directives it consumes; `scripts/sync-all` discovers it automatically.
+2. Add its generated outputs to `scripts/native-adapter-files.ts`, keeping host metadata too large to read inline in the package's `generation/` directory.
 3. Add user-facing docs under `apps/docs/src/content/docs/<name>/` and tests for the platform's actual boundary.
 
 **Declarative host in `@maestria/agent-plugins`** (manifest and file conventions only, no runtime source):
@@ -99,7 +92,7 @@ Use the package README for detailed setup. This table shows where changes normal
 
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
-| `opencode` | `src/` OpenCode V2 plugin; permission maps in `sync.config.ts` | `agents/`, `rules/`, `skills/` | `pnpm --filter @maestria/opencode test` and `pnpm e2e:opencode` |
+| `opencode` | `src/` OpenCode V2 plugin; permission maps in `generation/agents.ts` | `agents/`, `rules/`, `skills/` | `pnpm --filter @maestria/opencode test` and `pnpm e2e:opencode` |
 | `agent-plugins` | `generation/` manifest/profile/native metadata; package usage docs | Root host manifests, agent and skill exports, and selected runtime integration resources | `pnpm --filter @maestria/agent-plugins test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 
