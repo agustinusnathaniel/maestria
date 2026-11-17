@@ -12,6 +12,4 @@ export const forceRerunTriggers = [
   '**/!(*.@(ts|tsx|mts|cts|js|jsx|mjs|cjs))',
   // hooks.test.ts runs the hook scripts with node, and packed-artifact.test.ts packs the package.
   '**/packages/agent-plugins/**',
-  // sync.test.ts runs the sync script with tsx.
-  '**/packages/core/scripts/**',
 ];

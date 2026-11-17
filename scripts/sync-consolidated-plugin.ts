@@ -8,6 +8,7 @@ import {
   stripFrontmatter,
 } from '../packages/core/scripts/lib/transforms.js';
 import { compose, hostSessionOutputs } from './host-session-files.js';
+import { NATIVE_NOTICE, nativeAdapterOutputs } from './native-adapter-files.js';
 import { bundledSkills } from './sync-bundled-skills.js';
 
 const ROLES = ['reviewer'];
@@ -73,7 +74,7 @@ const document = (body: string, metadata: Record<string, unknown> | null = null)
 interface Inputs {
   arguments: string;
   contexts: Record<string, string>;
-  modes: Record<string, { body: string; metadata: Record<string, unknown> }>;
+  modes: Record<string, { body: string; metadata: Record<string, unknown>; source: string }>;
   roleRules: Record<string, string>;
   roleSkills: Record<string, string>;
   roles: Record<string, string>;
@@ -123,7 +124,7 @@ const readMode = (coreRoot: string, mode: string): Inputs['modes'][string] => {
     throw new Error(`Invalid canonical mode frontmatter: ${mode}`);
   }
   requiredHeading(source, `[MODE: ${mode}]`, mode);
-  return { body: stripFrontmatter(source), metadata };
+  return { body: stripFrontmatter(source), metadata, source };
 };
 
 const integrationDisplayName = (host: string): string => {
@@ -352,9 +353,8 @@ const validateManifestResources = (
   }
 };
 
-const outputPlan = (repoRoot: string): Map<string, string> => {
+const outputPlan = (repoRoot: string, input: Inputs): Map<string, string> => {
   const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
-  const input = readCanonicalInputs(repoRoot);
   const plan = new Map<string, string>();
   addProfiles(plan, packageRoot, input);
   addContexts(plan, input);
@@ -366,8 +366,7 @@ const outputPlan = (repoRoot: string): Map<string, string> => {
   return plan;
 };
 
-const validateOutputPaths = (repoRoot: string, plan: Map<string, string>): void => {
-  const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
+const validateOutputPaths = (packageRoot: string, plan: Map<string, string>): void => {
   for (const relative of plan.keys()) {
     const absolute = assertContainedFile(packageRoot, relative);
     if (fs.existsSync(absolute) && !fs.statSync(absolute).isFile()) {
@@ -376,26 +375,29 @@ const validateOutputPaths = (repoRoot: string, plan: Map<string, string>): void 
   }
 };
 
+type Notice = (file: string) => string;
+
+const pluginNotice: Notice = (file) => (file.endsWith('.toml') ? TOML_NOTICE : GENERATED_NOTICE);
+const nativeNotice: Notice = () => NATIVE_NOTICE.split('\n')[0];
+
 /** A file is ours only when it carries the generator's notice line; others are never touched. */
-const isGenerated = (absolute: string): boolean => {
-  const notice = absolute.endsWith('.toml') ? TOML_NOTICE : GENERATED_NOTICE;
-  return normalizeLineEndings(fs.readFileSync(absolute, 'utf-8')).split('\n').includes(notice);
-};
+const isGenerated = (absolute: string, notice: Notice): boolean =>
+  normalizeLineEndings(fs.readFileSync(absolute, 'utf-8')).split('\n').includes(notice(absolute));
 
 /** Generated files the current plan no longer produces, found by notice instead of a path list. */
-const staleOutputs = (packageRoot: string, plan: Map<string, string>): string[] => {
+const staleOutputs = (packageRoot: string, plan: Map<string, string>, notice: Notice): string[] => {
   const stale: string[] = [];
   const visit = (directory: string): void => {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       const absolute = path.join(directory, entry.name);
       const relative = path.relative(packageRoot, absolute).split(path.sep).join('/');
-      if (entry.isDirectory() && entry.name !== 'node_modules') {
+      if (entry.isDirectory() && !['dist', 'node_modules'].includes(entry.name)) {
         visit(absolute);
       } else if (
         entry.isFile() &&
         /\.(?:md|mdc|toml)$/u.test(entry.name) &&
         !plan.has(relative) &&
-        isGenerated(absolute)
+        isGenerated(absolute, notice)
       ) {
         stale.push(relative);
       }
@@ -405,8 +407,30 @@ const staleOutputs = (packageRoot: string, plan: Map<string, string>): string[] 
   return stale;
 };
 
-export const preflightPluginPaths = (repoRoot: string): void => {
-  validateOutputPaths(repoRoot, outputPlan(repoRoot));
+interface PackagePlan {
+  readonly notice: Notice;
+  readonly plan: Map<string, string>;
+  readonly root: string;
+}
+
+const packagePlans = (repoRoot: string): PackagePlan[] => {
+  const input = readCanonicalInputs(repoRoot);
+  const plans = [
+    {
+      notice: pluginNotice,
+      plan: outputPlan(repoRoot, input),
+      root: path.resolve(repoRoot, 'packages/agent-plugins'),
+    },
+    ...Object.entries(nativeAdapterOutputs(input, ROLES)).map(([relative, plan]) => ({
+      notice: nativeNotice,
+      plan,
+      root: path.resolve(repoRoot, relative),
+    })),
+  ];
+  for (const { plan, root } of plans) {
+    validateOutputPaths(root, plan);
+  }
+  return plans;
 };
 
 const pruneEmptyParents = (packageRoot: string, relative: string): void => {
@@ -421,31 +445,42 @@ const pruneEmptyParents = (packageRoot: string, relative: string): void => {
   }
 };
 
-export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[] => {
-  const packageRoot = path.resolve(repoRoot, 'packages/agent-plugins');
-  const plan = outputPlan(repoRoot);
-  validateOutputPaths(repoRoot, plan);
-  const stale = staleOutputs(packageRoot, plan);
+/** Writes drifted outputs and removes stale ones unless checking; returns package-relative paths. */
+const applyPlan = ({ notice, plan, root }: PackagePlan, check: boolean): string[] => {
+  const stale = staleOutputs(root, plan, notice);
   const changed = [...plan]
     .filter(
       ([relative, content]) =>
-        !fs.existsSync(path.join(packageRoot, relative)) ||
-        fs.readFileSync(path.join(packageRoot, relative), 'utf-8') !== content,
+        !fs.existsSync(path.join(root, relative)) ||
+        fs.readFileSync(path.join(root, relative), 'utf-8') !== content,
     )
     .map(([relative]) => relative);
   if (!check) {
     for (const relative of changed) {
-      const absolute = path.join(packageRoot, relative);
+      const absolute = path.join(root, relative);
       fs.mkdirSync(path.dirname(absolute), { recursive: true });
       fs.writeFileSync(absolute, plan.get(relative) ?? '', 'utf-8');
     }
     for (const relative of stale) {
-      fs.unlinkSync(path.join(packageRoot, relative));
-      pruneEmptyParents(packageRoot, relative);
+      fs.unlinkSync(path.join(root, relative));
+      pruneEmptyParents(root, relative);
     }
   }
   return [...changed, ...stale].toSorted();
 };
+
+/** Syncs every generated package, building and validating all plans before any write. */
+export const syncGeneratedPackages = (repoRoot: string, check = false): string[] => {
+  const plans = packagePlans(repoRoot);
+  return plans.flatMap((plan) =>
+    applyPlan(plan, check).map((relative) =>
+      path.relative(repoRoot, path.join(plan.root, relative)).split(path.sep).join('/'),
+    ),
+  );
+};
+
+export const syncConsolidatedPlugin = (repoRoot: string, check = false): string[] =>
+  applyPlan(packagePlans(repoRoot)[0], check);
 
 export const main = (
   args: string[],
@@ -460,13 +495,13 @@ export const main = (
   }
   try {
     if (args[0] === '--preflight') {
-      preflightPluginPaths(repoRoot);
+      packagePlans(repoRoot);
       return 0;
     }
     const check = args[0] === '--check';
-    const changes = syncConsolidatedPlugin(repoRoot, check);
+    const changes = syncGeneratedPackages(repoRoot, check);
     for (const relative of changes) {
-      console.log(`${check ? 'DRIFT' : 'SYNC'}: packages/agent-plugins/${relative}`);
+      console.log(`${check ? 'DRIFT' : 'SYNC'}: ${relative}`);
     }
     return check && changes.length > 0 ? 1 : 0;
   } catch (error) {

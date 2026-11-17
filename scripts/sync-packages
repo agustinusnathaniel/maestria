@@ -3,71 +3,24 @@ set -euo pipefail
 export LC_ALL=C
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SYNC_SCRIPT="$ROOT/packages/core/scripts/sync.ts"
-HAD_ERROR=0
-
-if [ "${1:---write}" = "--check" ]; then
-  VERB="Checking"; FLAG="--check"
-  RESULT_OK="=== All plugins are in sync ==="
-  RESULT_FAIL="=== Some plugins are out of sync (run scripts/sync-all) ==="
-elif [ "${1:-}" = "--write" ] || [ "$#" -eq 0 ]; then
-  VERB="Syncing"; FLAG="--verbose"
-  RESULT_OK="=== All syncs complete ==="
-  RESULT_FAIL="=== Some syncs failed ==="
-else
+MODE="${1:---write}"
+if [ "$MODE" != "--check" ] && [ "$MODE" != "--write" ]; then
   echo "Usage: scripts/sync-packages [--check|--write]" >&2
   exit 2
 fi
 
-(cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts --preflight)
+cd "$ROOT"
+# Build and validate every package plan before any generator writes.
+pnpm exec tsx scripts/sync-consolidated-plugin.ts --preflight
 
-shopt -s nullglob
-CONFIGS=("$ROOT"/packages/*/sync.config.ts)
-shopt -u nullglob
-
-# Validate every discovered config before any package can write or clean output.
-for config in "${CONFIGS[@]}"; do
-  echo ""
-  echo "=== Validating ${config#"$ROOT/"} ==="
-  (cd "$(dirname "$config")" && pnpm exec tsx "$SYNC_SCRIPT" --config "$config" --dry-run)
-done
-
-for config in "${CONFIGS[@]}"; do
-  PKG_DIR="$(dirname "$config")"
-  PKG_NAME="$(basename "$PKG_DIR")"
-
-  echo ""
-  echo "=== $VERB $PKG_NAME ==="
-  SYNC_COMMAND=(pnpm exec tsx "$SYNC_SCRIPT" --config "$config" "$FLAG")
-
-  if (cd "$PKG_DIR" && "${SYNC_COMMAND[@]}"); then
-    if [ "$FLAG" = "--check" ]; then
-      echo "  ✅ $PKG_NAME is in sync"
-    fi
-  else
-    HAD_ERROR=1
-    if [ "$FLAG" = "--check" ]; then
-      echo "  ❌ $PKG_NAME is out of sync"
-    fi
-  fi
+HAD_ERROR=0
+for script in sync-consolidated-plugin sync-bundled-skills sync-hook-policy; do
+  pnpm exec tsx "scripts/$script.ts" "$MODE" || HAD_ERROR=1
 done
 
 if [ "$HAD_ERROR" -eq 0 ]; then
-  if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-consolidated-plugin.ts "${1:---write}"); then
-    HAD_ERROR=1
-  fi
-  if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-bundled-skills.ts "${1:---write}"); then
-    HAD_ERROR=1
-  fi
-  if ! (cd "$ROOT" && pnpm exec tsx scripts/sync-hook-policy.ts "${1:---write}"); then
-    HAD_ERROR=1
-  fi
-fi
-
-echo ""
-if [ "$HAD_ERROR" -eq 0 ]; then
-  echo "$RESULT_OK"
+  echo "=== All generated packages are in sync ==="
 else
-  echo "$RESULT_FAIL"
+  echo "=== Generated packages are out of sync (run scripts/sync-all) ===" >&2
 fi
 exit $HAD_ERROR

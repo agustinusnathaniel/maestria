@@ -2,10 +2,7 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import opencodeConfig from '../../opencode/sync.config.js';
-import piConfig from '../../pi/sync.config.js';
 import { ALLOWED_AGENTS } from '../../pi/src/agents.js';
-import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
 const SPECIALISTS_DIR = path.join(import.meta.dirname, '..', 'agent-directives', 'specialists');
 const MAIN_LOOP = 'main-loop';
@@ -37,25 +34,15 @@ const findViolations = (
   };
 };
 
-const hasExplicitReplacement = (config: SyncConfig): boolean =>
-  (config.default !== undefined && Object.hasOwn(config.default, 'replace')) ||
-  Object.values(config.files ?? {}).some((file) => Object.hasOwn(file, 'replace'));
-
-const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
-  const ops: ReplaceOp[] = [...(config.default?.replace ?? [])];
-  for (const file of Object.values(config.files ?? {})) {
-    ops.push(...(file.replace ?? []));
-  }
-  return ops;
-};
-
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const syncConfigs: Record<string, SyncConfig> = {
-  opencode: opencodeConfig,
-  pi: piConfig,
-};
+const PACKAGES_DIR = path.join(import.meta.dirname, '..', '..');
+
+const agentFiles = (platform: string): string[] =>
+  readdirSync(path.join(PACKAGES_DIR, platform, 'agents'))
+    .filter((file) => file.endsWith('.md'))
+    .toSorted();
 
 describe('canonical specialist roster', () => {
   it('derives two specialist files and one delegable role', () => {
@@ -83,31 +70,26 @@ describe('canonical specialist roster', () => {
     expect(findViolations(delegableNames, ALLOWED_AGENTS)).toEqual({ extra: [], missing: [] });
   });
 
-  for (const [platform, config] of Object.entries(syncConfigs)) {
-    describe(platform, () => {
-      it('registers the expected canonical specialist roster', () => {
-        const expected = canonicalFiles;
-        const { missing } = findViolations(expected, Object.keys(config.files ?? {}));
-        expect(missing).toEqual([]);
-      });
-    });
-  }
+  it('generates one native agent per delegable role', () => {
+    const delegableFiles = delegableNames.map((name) => `${name}.md`);
+    expect(agentFiles('opencode')).toEqual(['maestria.md', ...delegableFiles].toSorted());
+    expect(agentFiles('pi')).toEqual(delegableFiles);
+  });
 
-  it('covers every explicit replacement-bearing config', () => {
-    const replacementConfigs = Object.entries(syncConfigs).filter(([, config]) =>
-      hasExplicitReplacement(config),
-    );
-    expect(replacementConfigs.length).toBeGreaterThan(0);
-    for (const [platform, config] of replacementConfigs) {
-      const ops = collectReplaceOps(config);
-      expect(ops.length, platform).toBeGreaterThan(0);
-      const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
-      const referencedNames = delegableNames;
-      const uncovered = referencedNames.filter(
-        (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
-      );
-      expect(uncovered, platform).toEqual([]);
-      expect(/\borchestrator\b/u.test(text), platform).toBe(false);
+  it('rewrites every role mention to the Pi subagent command', () => {
+    const generated = [
+      ...agentFiles('pi').map((file) => path.join('agents', file)),
+      ...readdirSync(path.join(PACKAGES_DIR, 'pi', 'agents', 'commands')).map((file) =>
+        path.join('agents', 'commands', file),
+      ),
+      'skills/maestria/SKILL.md',
+      'skills/global-rules/SKILL.md',
+    ];
+    for (const file of generated) {
+      const content = readFileSync(path.join(PACKAGES_DIR, 'pi', file), 'utf-8');
+      for (const name of delegableNames) {
+        expect(content, file).not.toMatch(new RegExp(`@${name}\\b`, 'u'));
+      }
     }
   });
 });
@@ -119,8 +101,6 @@ describe('canonical specialist roster', () => {
 // entry silently denies nothing and the capability is simply lost. Both host
 // lists are read from each installed host's own shipped constant rather than
 // from any declaration here, so these assertions can fail when a host changes.
-
-const PACKAGES_DIR = path.join(import.meta.dirname, '..', '..');
 
 /** Package root of an installed host, so a missing install fails loudly here. */
 const hostPackageRoot = (platform: string, packageName: string): string => {
@@ -165,11 +145,6 @@ const grantedTools = (platform: string, agentFile: string): string[] | null => {
   const declared = TOOLS_LINE.exec(source)?.groups?.names;
   return declared === undefined ? null : declared.split(',').map((name) => name.trim());
 };
-
-const agentFiles = (platform: string): string[] =>
-  readdirSync(path.join(PACKAGES_DIR, platform, 'agents'))
-    .filter((file) => file.endsWith('.md'))
-    .toSorted();
 
 describe('generated agent tool lists', () => {
   it('grants only tools the Pi host registers', () => {

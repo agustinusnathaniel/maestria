@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, 2026-10-13, 2026-10-25, and 2026-11-17. Its no-hooks stance is superseded by [CORE-037](ADR-CORE-037-hooks-as-deterministic-reinforcement.md) (2026-11-03), and its shared session context by per-host session files (2026-11-03).
+Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, 2026-10-13, 2026-10-25, and twice on 2026-11-17 (slim commands and manifest reduction; and the consolidated compiler also writes the OpenCode and Pi adapter files, see [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md)). Its no-hooks stance is superseded by [CORE-037](ADR-CORE-037-hooks-as-deterministic-reinforcement.md) (2026-11-03), and its shared session context by per-host session files (2026-11-03).
 
 ## Context
 
