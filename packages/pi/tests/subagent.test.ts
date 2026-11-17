@@ -1,6 +1,6 @@
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
-import { createInitialState } from '@maestria/shared-pi/state-core';
+import { MAESTRIA_EVENTS } from '@/subagent-events.js';
+import { createInitialState } from '@/state.js';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { installSubagentTool } from '@/subagent.js';
@@ -134,6 +134,18 @@ const getResultText = (result: ToolResult): string => {
   }
   return content.text;
 };
+
+describe('MAESTRIA_EVENTS', () => {
+  it('keeps the cross-extension event names other extensions subscribe to', () => {
+    expect(MAESTRIA_EVENTS).toEqual({
+      REVIEW_ACTIVATED: 'maestria:review:activated',
+      REVIEW_DEACTIVATED: 'maestria:review:deactivated',
+      SUBAGENT_COMPLETED: 'maestria:subagent:completed',
+      SUBAGENT_FAILED: 'maestria:subagent:failed',
+      SUBAGENT_STARTED: 'maestria:subagent:started',
+    });
+  });
+});
 
 describe('installSubagentTool - single mode (backward compat)', () => {
   it('registers a tool named "maestria_subagent"', () => {

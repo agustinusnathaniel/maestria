@@ -1,37 +1,39 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { createCommandsHost, installCommands } from '@/commands-core.js';
-import type { CommandsCtx, CommandsPi } from '@/commands-core.js';
-import { createInitialState } from '@/state-core.js';
-import type { MaestriaState } from '@/state-core.js';
-import { MAESTRIA_EVENTS } from '@/subagent-utils.js';
+import { installCommands } from '@/commands.js';
+import type { CommandsCtx, CommandsHost } from '@/commands.js';
+import { createInitialState } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
+import { MAESTRIA_EVENTS } from '@/subagent-events.js';
+
+import { piModel } from './pi-model.js';
 
 type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;
 
 interface MockPi {
-  appendEntry: ReturnType<typeof vi.fn<CommandsPi['appendEntry']>>;
+  appendEntry: ReturnType<typeof vi.fn<CommandsHost['appendEntry']>>;
   events: { emit: ReturnType<typeof vi.fn<(event: string, data: unknown) => void>> };
-  getActiveTools: ReturnType<typeof vi.fn<CommandsPi['getActiveTools']>>;
-  registerCommand: ReturnType<typeof vi.fn<CommandsPi['registerCommand']>>;
-  sendUserMessage: ReturnType<typeof vi.fn<CommandsPi['sendUserMessage']>>;
-  setActiveTools: ReturnType<typeof vi.fn<CommandsPi['setActiveTools']>>;
-  setModel: ReturnType<typeof vi.fn<CommandsPi['setModel']>>;
+  getActiveTools: ReturnType<typeof vi.fn<CommandsHost['getActiveTools']>>;
+  registerCommand: ReturnType<typeof vi.fn<CommandsHost['registerCommand']>>;
+  sendUserMessage: ReturnType<typeof vi.fn<CommandsHost['sendUserMessage']>>;
+  setActiveTools: ReturnType<typeof vi.fn<CommandsHost['setActiveTools']>>;
+  setModel: ReturnType<typeof vi.fn<CommandsHost['setModel']>>;
 }
 
 const createMockPi = (): MockPi => ({
-  appendEntry: vi.fn<CommandsPi['appendEntry']>(),
+  appendEntry: vi.fn<CommandsHost['appendEntry']>(),
   events: { emit: vi.fn<(event: string, data: unknown) => void>() },
   getActiveTools: vi
-    .fn<CommandsPi['getActiveTools']>()
+    .fn<CommandsHost['getActiveTools']>()
     .mockReturnValue(['read', 'grep', 'bash', 'edit', 'write', 'find', 'ls']),
-  registerCommand: vi.fn<CommandsPi['registerCommand']>(),
-  sendUserMessage: vi.fn<CommandsPi['sendUserMessage']>(),
-  setActiveTools: vi.fn<CommandsPi['setActiveTools']>(),
-  setModel: vi.fn<CommandsPi['setModel']>().mockResolvedValue(true),
+  registerCommand: vi.fn<CommandsHost['registerCommand']>(),
+  sendUserMessage: vi.fn<CommandsHost['sendUserMessage']>(),
+  setActiveTools: vi.fn<CommandsHost['setActiveTools']>(),
+  setModel: vi.fn<CommandsHost['setModel']>().mockResolvedValue(true),
 });
 
 const createMockCtx = (overrides: Partial<CommandsCtx> = {}): CommandsCtx => {
-  const mockModel = { id: 'claude-sonnet-4-20250514', name: 'Claude 4 Sonnet' };
+  const mockModel = piModel('claude-sonnet-4-20250514');
   return {
     model: mockModel,
     modelRegistry: {
@@ -158,7 +160,7 @@ describe('/review command', () => {
 
     const ctx = createMockCtx({
       modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+        getAll: vi.fn().mockReturnValue([piModel('claude-sonnet-4-20250514'), piModel('gpt-4o')]),
       },
     });
     await requireHandler(pi, 'review')('review code', ctx);
@@ -209,7 +211,7 @@ describe('/restore-model command', () => {
 
     const ctx = createMockCtx({
       modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
+        getAll: vi.fn().mockReturnValue([piModel('claude-sonnet-4-20250514')]),
       },
     });
     await requireHandler(pi, 'restore-model')('', ctx);
@@ -281,7 +283,7 @@ describe('/review-model command', () => {
 
     const ctx = createMockCtx({
       modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+        getAll: vi.fn().mockReturnValue([piModel('claude-sonnet-4-20250514'), piModel('gpt-4o')]),
       },
     });
     await requireHandler(pi, 'review-model')('gpt-4o', ctx);
@@ -299,7 +301,7 @@ describe('/review-model command', () => {
     install(pi, state);
 
     const ctx = createMockCtx({
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]) },
+      modelRegistry: { getAll: vi.fn().mockReturnValue([piModel('claude-sonnet-4-20250514')]) },
     });
     await requireHandler(pi, 'review-model')('nonexistent', ctx);
 
@@ -315,58 +317,5 @@ describe('/review-model command', () => {
     await requireHandler(pi, 'review-model')('', ctx);
 
     expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Usage: /review-model'));
-  });
-});
-
-const isTestModel = (value: unknown): value is { id: string } =>
-  typeof value === 'object' && value !== null && 'id' in value && typeof value.id === 'string';
-
-describe('createCommandsHost delegation', () => {
-  it('calls host methods that live on the prototype', async () => {
-    const emit = vi.fn<(event: string, data: unknown) => void>();
-    const prototype = {
-      appendEntry: vi.fn<(type: string, data: unknown) => void>(),
-      events: { emit },
-      getActiveTools: vi.fn<() => string[]>().mockReturnValue(['read', 'grep', 'bash', 'edit']),
-      registerCommand:
-        vi.fn<(name: string, options: { description: string; handler: CommandHandler }) => void>(),
-      sendUserMessage:
-        vi.fn<(text: string, options: { deliverAs: 'steer' | 'followUp' }) => void>(),
-      setActiveTools: vi.fn<(tools: string[]) => void>(),
-      setModel: vi.fn<(model: unknown) => Promise<unknown>>().mockResolvedValue(true),
-    };
-
-    const state: MaestriaState = { ...createInitialState(), reviewModel: 'gpt-4o' };
-    const ctx = createMockCtx({
-      modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
-      },
-    });
-
-    // The shared host closes over SDK methods at call time (never via
-    // spread), so prototype-resident methods keep working.
-    const host = createCommandsHost(prototype, isTestModel);
-    installCommands(host, state);
-
-    const getHostHandler = (name: string): CommandHandler => {
-      const match = prototype.registerCommand.mock.calls.find(
-        ([registeredName]) => registeredName === name,
-      );
-      const handler = match?.[1]?.handler;
-      if (handler === undefined) {
-        throw new Error(`Command not registered: ${name}`);
-      }
-      return handler;
-    };
-
-    await getHostHandler('handoff')('document the fix', ctx);
-    await getHostHandler('review')('audit command wiring', ctx);
-    await getHostHandler('restore-model')('', ctx);
-    await getHostHandler('review-model')('gpt-4o', ctx);
-
-    expect(prototype.appendEntry).toHaveBeenCalled();
-    expect(prototype.getActiveTools).toHaveBeenCalled();
-    expect(prototype.setActiveTools).toHaveBeenCalled();
-    expect(emit).toHaveBeenCalled();
   });
 });

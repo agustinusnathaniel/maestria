@@ -1,8 +1,16 @@
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 
-import type { MaestriaState } from '@maestria/shared-pi/state-core';
-import { persistState } from '@maestria/shared-pi/state-core';
+import { persistState } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
+
+/** maestria cross-extension event names. */
+export const MAESTRIA_EVENTS = {
+  REVIEW_ACTIVATED: 'maestria:review:activated',
+  REVIEW_DEACTIVATED: 'maestria:review:deactivated',
+  SUBAGENT_COMPLETED: 'maestria:subagent:completed',
+  SUBAGENT_FAILED: 'maestria:subagent:failed',
+  SUBAGENT_STARTED: 'maestria:subagent:started',
+} as const;
 
 export interface SubagentEventHost {
   appendEntry: (type: string, data: unknown) => void;

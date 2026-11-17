@@ -49,7 +49,9 @@ The orchestrator prompt template has a "Post-Compaction Recovery" section instru
 
 ## State Relocation and Deferred Persistence
 
-Moved 2026-09-11: the module-scope state and its renderer live in `@maestria/shared-pi/state-core` (formerly shared with the retired OMP package), so consumers import `state-core` directly; see [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md).
+Moved 2026-09-11: the module-scope state and its renderer moved into the private `@maestria/shared-pi/state-core` module, then shared with the retired OMP package; see [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md).
+
+Moved 2026-11-17: with OMP retired, Pi was that module's only consumer, so the state and renderer now live in the Pi adapter (`packages/pi/src/state.ts`) and the compaction handlers beside them. The decision above is unchanged.
 
 Full session persistence surviving `/reload` and `/new` still requires `pi.appendEntry`; deferred to v1.1 (see ADR-PI-000 for v1.1 scope).
 

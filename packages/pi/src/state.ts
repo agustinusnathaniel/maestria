@@ -1,6 +1,4 @@
-/** Shared state management for Pi-family packages (no platform dependencies). */
-
-export type ModeKeyword = 'fein' | 'sonar' | 'blitz';
+import type { ModeKeyword } from '@maestria/shared-mode';
 
 export const HANDOFF_HISTORY_CAP = 5;
 export const FILE_HISTORY_CAP = 10;

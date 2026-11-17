@@ -1,13 +1,8 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { installCompactionHandlers } from '@/compaction-core.js';
-import type {
-  CompactionEvent,
-  CompactionResult,
-  TreeEvent,
-  TreeResult,
-} from '@/compaction-core.js';
-import { createInitialState } from '@/state-core.js';
+import { installCompactionHandlers } from '@/compaction.js';
+import type { CompactionEvent, CompactionResult, TreeEvent, TreeResult } from '@/compaction.js';
+import { createInitialState } from '@/state.js';
 
 type CompactHandler = (event: CompactionEvent) => CompactionResult;
 type TreeHandler = (event: TreeEvent) => TreeResult | undefined;

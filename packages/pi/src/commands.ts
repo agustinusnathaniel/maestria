@@ -1,10 +1,11 @@
-/** Shared slash-command installation for Pi-family packages. */
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
-import { cycleToReviewModel, restoreOriginalState } from './review-core.js';
-import type { MaestriaState } from './state-core.js';
-import { persistState, recordHandoff, renderMaestriaSummary } from './state-core.js';
-import { MAESTRIA_EVENTS } from './subagent-utils.js';
-import { REVIEW_READ_ONLY_TOOLS } from './tools-core.js';
+import { cycleToReviewModel, restoreOriginalState } from '@/review.js';
+import type { ReviewHost } from '@/review.js';
+import { persistState, recordHandoff, renderMaestriaSummary } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
+import { MAESTRIA_EVENTS } from '@/subagent-events.js';
+import { REVIEW_READ_ONLY_TOOLS } from '@/tools.js';
 
 export interface CommandsCtx {
   ui: {
@@ -15,34 +16,9 @@ export interface CommandsCtx {
   modelRegistry: { getAll: () => { id: string }[] };
 }
 
-export interface CommandsPi {
-  registerCommand: (
-    name: string,
-    opts: {
-      description: string;
-      handler: (args: string, ctx: CommandsCtx) => Promise<void> | void;
-    },
-  ) => void;
-  getActiveTools: () => string[];
-  setActiveTools: (tools: string[]) => void | Promise<void>;
-  setModel: (model: unknown) => unknown;
-  sendUserMessage: (text: string, opts: { deliverAs: string }) => void;
-  appendEntry: (type: string, data: unknown) => void;
-  events?: { emit: (event: string, data: unknown) => void };
-}
-
-/**
- * Bind a platform host to the shared command API.
- *
- * `isModel` is the platform's model guard; a model reaches the host only
- * when the guard accepts it. The closures read host methods at call time
- * (never via spread), so prototype-resident SDK methods keep working.
- */
-export const createCommandsHost = <Model>(
-  pi: {
-    appendEntry: (type: string, data: unknown) => void;
-    events?: { emit: (event: string, data: unknown) => void };
-    getActiveTools: () => string[];
+export type CommandsHost = ReviewHost &
+  Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'sendUserMessage'> & {
+    events?: Pick<ExtensionAPI['events'], 'emit'>;
     registerCommand: (
       name: string,
       options: {
@@ -50,53 +26,25 @@ export const createCommandsHost = <Model>(
         handler: (args: string, ctx: CommandsCtx) => Promise<void>;
       },
     ) => void;
-    sendUserMessage: (text: string, options: { deliverAs: 'steer' | 'followUp' }) => void;
-    setActiveTools: (tools: string[]) => void | Promise<void>;
-    setModel: (model: Model) => Promise<unknown>;
-  },
-  isModel: (value: unknown) => value is Model,
-): CommandsPi => ({
-  appendEntry: (type, data) => {
-    pi.appendEntry(type, data);
-  },
-  events: pi.events,
-  getActiveTools: () => pi.getActiveTools(),
-  registerCommand: (name, options) => {
-    pi.registerCommand(name, {
-      description: options.description,
-      handler: async (args, ctx) => {
-        await options.handler(args, ctx);
-      },
-    });
-  },
-  sendUserMessage: (text, options) => {
-    if (options.deliverAs === 'steer' || options.deliverAs === 'followUp') {
-      pi.sendUserMessage(text, { deliverAs: options.deliverAs });
-    }
-  },
-  setActiveTools: (tools): void | Promise<void> => pi.setActiveTools(tools),
-  setModel: async (model) => {
-    if (isModel(model)) {
-      return await pi.setModel(model);
-    }
-    return null;
-  },
-});
+  };
 
-/**
- * Read-only tools that let a reviewer inspect code without making changes.
- *
- * - `read`, `grep`, `find`, `ls`, `glob` - all non-destructive.
- * - Excluded: `bash`, `edit`, `write` - these can modify the filesystem.
- *
- * `glob` is included for file pattern matching even though it's not a
- * built-in Pi tool - extensions may register it, and including it is a no-op
- * if absent.
- */
-const READ_ONLY_TOOLS = [...REVIEW_READ_ONLY_TOOLS];
+type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;
 
-const registerMaestriaStatus = (pi: CommandsPi, state: MaestriaState): void => {
-  pi.registerCommand('maestria-status', {
+const register = (
+  pi: CommandsHost,
+  name: string,
+  command: { description: string; handler: CommandHandler },
+): void => {
+  pi.registerCommand(name, {
+    description: command.description,
+    handler: async (args, ctx) => {
+      await command.handler(args, ctx);
+    },
+  });
+};
+
+const registerMaestriaStatus = (pi: CommandsHost, state: MaestriaState): void => {
+  register(pi, 'maestria-status', {
     description: 'Show current maestria session state including handoff history',
     handler: (_args: string, ctx) => {
       const summary = renderMaestriaSummary(state);
@@ -109,8 +57,8 @@ const registerMaestriaStatus = (pi: CommandsPi, state: MaestriaState): void => {
   });
 };
 
-const registerReviewCommand = (pi: CommandsPi, state: MaestriaState): void => {
-  pi.registerCommand('review', {
+const registerReviewCommand = (pi: CommandsHost, state: MaestriaState): void => {
+  register(pi, 'review', {
     description: 'Enter review mode. Blocks destructive tools, sets read-only toolset.',
     handler: async (args: string, ctx) => {
       if (!args.trim()) {
@@ -124,7 +72,7 @@ const registerReviewCommand = (pi: CommandsPi, state: MaestriaState): void => {
       state.reviewMode = true;
       persistState(pi, state);
 
-      await pi.setActiveTools(READ_ONLY_TOOLS);
+      pi.setActiveTools([...REVIEW_READ_ONLY_TOOLS]);
 
       let switched: string | null = null;
       if (
@@ -155,8 +103,8 @@ const registerReviewCommand = (pi: CommandsPi, state: MaestriaState): void => {
   });
 };
 
-const registerRestoreModel = (pi: CommandsPi, state: MaestriaState): void => {
-  pi.registerCommand('restore-model', {
+const registerRestoreModel = (pi: CommandsHost, state: MaestriaState): void => {
+  register(pi, 'restore-model', {
     description:
       'Restore the original model and tools that were active before review mode was entered.',
     handler: async (_args: string, ctx) => {
@@ -179,8 +127,8 @@ const registerRestoreModel = (pi: CommandsPi, state: MaestriaState): void => {
   });
 };
 
-const registerHandoffCommand = (pi: CommandsPi, state: MaestriaState): void => {
-  pi.registerCommand('handoff', {
+const registerHandoffCommand = (pi: CommandsHost, state: MaestriaState): void => {
+  register(pi, 'handoff', {
     description: 'Generate a structured handoff prompt for a new task context',
     handler: (args: string, ctx) => {
       if (!args.trim()) {
@@ -231,8 +179,8 @@ const registerHandoffCommand = (pi: CommandsPi, state: MaestriaState): void => {
   });
 };
 
-const registerReviewModel = (pi: CommandsPi, state: MaestriaState): void => {
-  pi.registerCommand('review-model', {
+const registerReviewModel = (pi: CommandsHost, state: MaestriaState): void => {
+  register(pi, 'review-model', {
     description: 'Set which model to use when entering review mode',
     handler: (args: string, ctx) => {
       if (!args.trim()) {
@@ -255,7 +203,7 @@ const registerReviewModel = (pi: CommandsPi, state: MaestriaState): void => {
   });
 };
 
-export const installCommands = (pi: CommandsPi, state: MaestriaState): void => {
+export const installCommands = (pi: CommandsHost, state: MaestriaState): void => {
   registerMaestriaStatus(pi, state);
   registerReviewCommand(pi, state);
   registerRestoreModel(pi, state);

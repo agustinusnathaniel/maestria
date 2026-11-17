@@ -20,11 +20,11 @@ The allowlist covers exact filesystem, text, location, and executable queries, p
 
 The policy blocks `find`, package-manager execution, command or process substitution, file-target redirection, chaining, background work, lookalike command names, Git mutation, and unknown options. Destructive-pattern confirmation is a separate host path and cannot make a command read-only.
 
-The maintained option lists and representative allow and deny cases live in [`bash-policy.ts`](../../../packages/shared/pi/src/bash-policy.ts) and its [behavior tests](../../../packages/shared/pi/tests/tools-core.test.ts). They are maintained there and are not restated here.
+The maintained option lists and representative allow and deny cases live in [`bash-policy.ts`](../../../packages/pi/src/bash-policy.ts) and its [behavior tests](../../../packages/pi/tests/bash-policy.test.ts). They are maintained there and are not restated here.
 
 ## Failure-mode inventory
 
-The case IDs below retain the planned boundary contract. The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and `pnpm e2e:fail-closed` sample behavior; they do not prove every case or live-host enforcement.
+The case IDs below retain the planned boundary contract. The [parser tests](../../../packages/pi/tests/bash-policy.test.ts) and `pnpm e2e:fail-closed` sample behavior; they do not prove every case or live-host enforcement.
 
 | ID | Input or failure mode | Required result |
 | --- | --- | --- |

@@ -2,31 +2,24 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import type { ModeKeyword } from '@maestria/shared-mode';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import type { Mock } from 'vite-plus/test';
 
-import { createInitialState } from '@maestria/shared-pi/state-core';
-import type { ModeKeyword } from '@maestria/shared-pi/state-core';
-import { createUserBashGuard, installToolInterceptors } from '@/tools.js';
-import type { ToolApi } from '@/tools.js';
-import type {
-  ToolCallContext,
-  ToolCallHandler,
-  ToolCallResult,
-} from '@maestria/shared-pi/tools-core';
+import { createInitialState } from '@/state.js';
+import { createUserBashGuard, DANGEROUS_PATTERNS, installToolInterceptors } from '@/tools.js';
+import type { ToolApi, ToolCallContext, ToolCallHandler, ToolCallResult } from '@/tools.js';
 
 interface MockPi {
   appendEntry: ReturnType<typeof vi.fn<ToolApi['appendEntry']>>;
-  getActiveTools: ReturnType<typeof vi.fn<ToolApi['getActiveTools']>>;
   handlers: ToolCallHandler[];
   on: Mock;
 }
 
-const createMockPi = (activeTools: string[] = []): MockPi => {
+const createMockPi = (): MockPi => {
   const handlers: ToolCallHandler[] = [];
   return {
     appendEntry: vi.fn(),
-    getActiveTools: vi.fn(() => activeTools),
     handlers,
     on: vi.fn((_event: string, handler: ToolCallHandler) => {
       handlers.push(handler);
@@ -57,6 +50,20 @@ const getBlockedResult = (result: Awaited<ReturnType<ToolCallHandler>>): ToolCal
 // bash policy: global safety flags are required and diff/log need patch guards.
 const GUARDED_GIT =
   'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
+
+describe('DANGEROUS_PATTERNS', () => {
+  it('catches destructive commands', () => {
+    for (const command of ['rm -rf /', 'dd if=/dev/zero of=/dev/sda', 'mkfs.ext4 /dev/sdb']) {
+      expect(DANGEROUS_PATTERNS.some((pattern) => pattern.test(command))).toBe(true);
+    }
+  });
+
+  it('does not match benign commands', () => {
+    for (const command of ['ls -la', 'git status', 'pnpm test']) {
+      expect(DANGEROUS_PATTERNS.some((pattern) => pattern.test(command))).toBe(false);
+    }
+  });
+});
 
 describe('installToolInterceptors', () => {
   it('registers a tool_call handler', () => {
@@ -140,7 +147,7 @@ describe('installToolInterceptors', () => {
     it('allows edits, writes, and mutating bash under the full-method and fast modes', async () => {
       await Promise.all(
         (['fein', 'blitz'] as ModeKeyword[]).map(async (mode) => {
-          const pi = createMockPi(['subagent', 'read', 'bash']);
+          const pi = createMockPi();
           const state = { ...createInitialState(), mode };
           install(pi, state);
 
@@ -160,7 +167,7 @@ describe('installToolInterceptors', () => {
 
     it('blocks edits, writes, and mutating bash under the research-only mode', async () => {
       const mode = 'sonar' as ModeKeyword;
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode };
       install(pi, state);
 
@@ -175,7 +182,7 @@ describe('installToolInterceptors', () => {
 
     it('allows read-only bash under the research-only mode', async () => {
       const mode = 'sonar' as ModeKeyword;
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode };
       install(pi, state);
 
@@ -189,7 +196,7 @@ describe('installToolInterceptors', () => {
 
     it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {
       const mode = 'sonar' as ModeKeyword;
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode };
       install(pi, state);
 
@@ -203,7 +210,7 @@ describe('installToolInterceptors', () => {
 
     it('blocks command substitution in bash under the research-only mode', async () => {
       const mode = 'sonar' as ModeKeyword;
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode };
       install(pi, state);
 
@@ -217,7 +224,7 @@ describe('installToolInterceptors', () => {
 
     it('allows read-only bash pipelines under the research-only mode', async () => {
       const mode = 'sonar' as ModeKeyword;
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode };
       install(pi, state);
 
@@ -236,7 +243,7 @@ describe('installToolInterceptors', () => {
 
     it('allows read-only tools (read, grep) under the research-only mode', async () => {
       const mode = 'sonar' as ModeKeyword;
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode };
       install(pi, state);
 
@@ -247,8 +254,8 @@ describe('installToolInterceptors', () => {
       expect(grepResult).toBeUndefined();
     });
 
-    it('blocks subagent dispatch under the research-only mode and allows it otherwise', async () => {
-      const blockedPi = createMockPi(['subagent', 'read', 'bash']);
+    it('blocks both subagent tools under the research-only mode and allows them otherwise', async () => {
+      const blockedPi = createMockPi();
       const blockedState = {
         ...createInitialState(),
         mode: 'sonar' as ModeKeyword,
@@ -256,12 +263,14 @@ describe('installToolInterceptors', () => {
       install(blockedPi, blockedState);
 
       const blockedHandler = getHandler(blockedPi);
-      const blockedResult = await blockedHandler({ toolName: 'subagent' }, {});
-      expect(getBlockedResult(blockedResult).block).toBe(true);
+      for (const toolName of ['subagent', 'maestria_subagent']) {
+        // oxlint-disable-next-line no-await-in-loop -- sequential awaits keep each tool's failure attributable.
+        expect(getBlockedResult(await blockedHandler({ toolName }, {})).block).toBe(true);
+      }
 
       await Promise.all(
         (['fein', 'blitz'] as ModeKeyword[]).map(async (mode) => {
-          const pi = createMockPi(['subagent', 'read', 'bash']);
+          const pi = createMockPi();
           const state = { ...createInitialState(), mode };
           install(pi, state);
 
@@ -271,7 +280,7 @@ describe('installToolInterceptors', () => {
         }),
       );
 
-      const unblockedPi = createMockPi(['subagent', 'read', 'bash']);
+      const unblockedPi = createMockPi();
       const unblockedState = { ...createInitialState(), mode: null };
       install(unblockedPi, unblockedState);
 
@@ -281,22 +290,12 @@ describe('installToolInterceptors', () => {
     });
 
     it('allows maestria_subagent calls when no mode blocks them', async () => {
-      const pi = createMockPi(['subagent', 'read', 'bash']);
+      const pi = createMockPi();
       const state = { ...createInitialState(), mode: 'fein' as const };
       install(pi, state);
 
       const handler = getHandler(pi);
       const result = await handler({ toolName: 'maestria_subagent' }, {});
-      expect(result).toBeUndefined();
-    });
-
-    it('does not block mutating bash under the full-method mode when the subagent tool is absent', async () => {
-      const pi = createMockPi(['read', 'bash']);
-      const state = { ...createInitialState(), mode: 'fein' as const };
-      install(pi, state);
-
-      const handler = getHandler(pi);
-      const result = await handler({ input: { command: 'rm -rf dist' }, toolName: 'bash' }, {});
       expect(result).toBeUndefined();
     });
   });

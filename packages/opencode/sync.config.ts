@@ -50,7 +50,7 @@ const allow = (...patterns: readonly string[]): BashPermissionEntry[] =>
   patterns.map((pattern): BashPermissionEntry => [pattern, 'allow']);
 
 // Guarded recon prefix: byte-identical to REQUIRED_GIT_GLOBAL_ARGS enforced
-// by bash-policy.ts (packages/shared/pi/src/bash-policy.ts). Only commands
+// by bash-policy.ts (packages/pi/src/bash-policy.ts). Only commands
 // starting with this literal prefix auto-allow; bare `git status` and every
 // other unguarded form falls through to `* ask`. Diff-capable diff/log/show
 // additionally require the `--no-ext-diff --no-textconv` patch guards in

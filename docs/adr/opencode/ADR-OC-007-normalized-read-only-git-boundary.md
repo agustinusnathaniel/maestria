@@ -19,7 +19,7 @@ The earlier read-only Bash amendment narrowed the command family but still descr
 
 ## Failure-mode inventory
 
-The case IDs below retain the planned boundary contract. The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and `pnpm e2e:fail-closed` sample behavior; they do not prove every case or live-host enforcement.
+The case IDs below retain the planned boundary contract. The [parser tests](../../../packages/pi/tests/bash-policy.test.ts) and `pnpm e2e:fail-closed` sample behavior; they do not prove every case or live-host enforcement.
 
 | ID | Required result |
 | --- | --- |
@@ -61,7 +61,7 @@ The case IDs below retain the planned boundary contract. The [shared parser test
 ## Assumptions
 
 - `[verified]` OpenCode permission entries are coarse glob or prefix patterns and do not expose a token-level normalized-command contract.
-- `[verified]` The executable parser checks for these cases live in `packages/shared/pi/tests/tools-core.test.ts`.
+- `[verified]` The executable parser checks for these cases live in `packages/pi/tests/bash-policy.test.ts`.
 - `[inferred]` The implementation owner will choose platform-appropriate fixed environment paths for empty Git configuration, fsmonitor, and hooks while preserving the fixed behavior contract.
 
 ## Alternatives Considered
