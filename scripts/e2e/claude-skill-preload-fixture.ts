@@ -45,6 +45,12 @@ export interface Evidence {
   status: 'passed' | 'failed';
 }
 
+interface ExpectedContext {
+  globalPolicy: string[];
+  profileBody: string;
+  roleInstructions: string;
+}
+
 export interface PreloadFixture {
   port: number;
   state: RuntimeState;
@@ -55,6 +61,7 @@ const packageRoot = path.resolve(import.meta.dirname, '../../packages/agent-plug
 const fixtureStopText = 'CLAUDE_PRELOAD_FIXTURE_STOP';
 const childResultText = 'CLAUDE_PRELOAD_CHILD_RESULT';
 const parentResultText = 'CLAUDE_PRELOAD_PARENT_RESULT';
+const reviewerRulesParts = ['Every Agent', 'Implementation and Review'];
 const requestLimitBytes = 8 * 1024 * 1024;
 const diagnosticLimit = 5;
 
@@ -345,8 +352,7 @@ const recordChildEvidence = (
   state: RuntimeState,
   requestBody: Record<string, unknown>,
   temporaryRoot: string,
-  roleInstructions: string,
-  globalPolicy: string,
+  expected: ExpectedContext,
 ): void => {
   const systemText = normalizeText(
     collectText({ messages: requestBody.messages, system: requestBody.system }).join('\n'),
@@ -355,11 +361,11 @@ const recordChildEvidence = (
   const toolNames = readToolNames(requestBody.tools);
   const normalizedNames = new Set(toolNames.map((name) => name.toLowerCase()));
   state.checks.childRequestObserved = true;
-  state.checks.nativeProfileLoaded = systemText.includes(
-    'You review code for quality. You do not edit files',
+  state.checks.nativeProfileLoaded = systemText.includes(expected.profileBody);
+  state.checks.roleInstructionsPresent = systemText.includes(expected.roleInstructions);
+  state.checks.globalPolicyPresent = expected.globalPolicy.every((part) =>
+    systemText.includes(part),
   );
-  state.checks.roleInstructionsPresent = systemText.includes(roleInstructions);
-  state.checks.globalPolicyPresent = systemText.includes(globalPolicy);
   state.checks.childToolsPresent = toolNames.length > 0;
   state.checks.writeToolUnavailable = !normalizedNames.has('write');
   state.checks.editToolUnavailable = !normalizedNames.has('edit');
@@ -385,10 +391,9 @@ const respondToChild = (
   requestBody: Record<string, unknown>,
   response: ServerResponse,
   temporaryRoot: string,
-  roleInstructions: string,
-  globalPolicy: string,
+  expected: ExpectedContext,
 ): void => {
-  recordChildEvidence(state, requestBody, temporaryRoot, roleInstructions, globalPolicy);
+  recordChildEvidence(state, requestBody, temporaryRoot, expected);
   state.phase = 'awaiting-parent-result';
   sendText(response, requestBody, 'msg_child_result', childResultText);
 };
@@ -412,8 +417,7 @@ const handleFixtureRequest = async (
   response: ServerResponse,
   state: RuntimeState,
   temporaryRoot: string,
-  roleInstructions: string,
-  globalPolicy: string,
+  expected: ExpectedContext,
 ): Promise<void> => {
   const diagnostic = requestDiagnostic(request);
   recordDiagnostic(state, diagnostic);
@@ -442,7 +446,7 @@ const handleFixtureRequest = async (
   if (state.phase === 'awaiting-parent') {
     respondToParent(state, requestBody, response);
   } else if (state.phase === 'awaiting-child') {
-    respondToChild(state, requestBody, response, temporaryRoot, roleInstructions, globalPolicy);
+    respondToChild(state, requestBody, response, temporaryRoot, expected);
   } else if (state.phase === 'awaiting-parent-result') {
     respondToParentResult(state, requestBody, response);
   } else {
@@ -477,32 +481,33 @@ export const createPreloadFixture = async (
   temporaryRoot: string,
   state = createPreloadState(),
 ): Promise<PreloadFixture> => {
-  const roleInstructions = normalizeText(
-    fs
-      .readFileSync(
-        path.resolve(packageRoot, '../core/agent-directives/specialists/reviewer.md'),
-        'utf-8',
-      )
-      .trim(),
-    temporaryRoot,
-  );
-  const globalPolicy = normalizeText(
-    fs.readFileSync(path.resolve(packageRoot, '../core/agent-directives/rules.md'), 'utf-8').trim(),
-    temporaryRoot,
-  );
+  const core = path.resolve(packageRoot, '../core/agent-directives');
+  const read = (file: string): string =>
+    normalizeText(fs.readFileSync(file, 'utf-8'), temporaryRoot).trim();
+  const roleInstructions = read(path.join(core, 'specialists/reviewer.md'));
+  const ruleSections = read(path.join(core, 'rules.md')).split(/^(?=# )/mu);
+  const globalPolicy = reviewerRulesParts.map((part) => {
+    const section = ruleSections.find((text) => text.startsWith(`# ${part}\n`));
+    if (section === undefined) {
+      throw new Error(`rules.md lacks the ${part} part`);
+    }
+    return section.trim();
+  });
+  const profileBody = read(path.join(packageRoot, 'agents/reviewer.md'))
+    .replace(/^---\n[\s\S]*?\n---\n/u, '')
+    .replace(/^\s*<!--[\s\S]*?-->\s*/u, '')
+    .trim();
+  const expected: ExpectedContext = { globalPolicy, profileBody, roleInstructions };
+  if ([profileBody, roleInstructions, ...globalPolicy].some((text) => text === '')) {
+    throw new Error('expected reviewer context is empty');
+  }
   state.contextDigests.roleInstructions = sha256(roleInstructions);
-  state.contextDigests.globalRules = sha256(globalPolicy);
+  state.contextDigests.globalRules = sha256(globalPolicy.join('\n'));
+  state.contextDigests.profileBody = sha256(profileBody);
   const server = createServer((request, response) => {
     void (async () => {
       try {
-        await handleFixtureRequest(
-          request,
-          response,
-          state,
-          temporaryRoot,
-          roleInstructions,
-          globalPolicy,
-        );
+        await handleFixtureRequest(request, response, state, temporaryRoot, expected);
       } catch {
         setFailure(state, 'fixture-handler-failed');
         response.writeHead(500);
