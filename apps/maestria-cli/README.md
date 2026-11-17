@@ -1,6 +1,6 @@
 # maestria
 
-A single CLI to install, update, and uninstall maestria runtime integrations across coding agent platforms, and to validate or stage portable Agent Plugins.
+A single CLI to install, update, and uninstall maestria runtime integrations across coding agent platforms, and to stage the portable Agent Plugin.
 
 ```bash
 npx maestria status
@@ -17,23 +17,17 @@ npx maestria status
 | `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
-| `maestria doctor` | Report skill copies left over from earlier CLI versions, without changing anything (read-only) |
 | `maestria configure [platform] [--set agent=model,...]` | Choose which model the maestria reviewer uses (opencode, codex, cursor, pi); the main loop uses the host session model; `--set` configures non-interactively. Cursor global configuration edits the installed plugin's `agents/<role>.md`, and `maestria update cursor` carries configured models over |
-| `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
-| `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the maestria cache or an explicit destination |
+| `maestria plugin install [--destination <dir>]` | Stage `@maestria/agent-plugins` from npm into the maestria cache or a new directory |
 
 ### Methodology skills
 
-Every maestria package bundles the `create-pull-request` and `docs-update` methodology skills (canonical source: `packages/core/agent-directives/skills/<skill>/SKILL.md`), so the CLI no longer installs them. Earlier versions installed them through the official `skills` CLI and recorded ownership per platform in `$XDG_CONFIG_HOME/maestria/skills.json` (version 2). `update` and `uninstall` now remove the copies that record lists, through the pinned `skills@1.7.0` CLI, and then drop the record entry; a copy whose path another agent still uses is kept and reported, and copies the record does not list are never removed. The removed `--skills`, `--exclude-skills`, and `--maestria-skills` flags fail before any change.
-
-### Doctor
-
-`maestria doctor` reports leftover skill copies without changing anything: plugin install state from detection, the record entry from `skills.json`, and the tool-observed inventory from `skills list --json`. A recorded copy is a legacy CLI install that `maestria update <platform>` removes; an unrecorded copy duplicates the bundled skill, and doctor prints the manual removal command. Supports `--json` and `--quiet`. A corrupt record fails with a clear error; unknown platforms or agents degrade honestly with a note.
+Every maestria package bundles the `create-pull-request` and `docs-update` methodology skills (canonical source: `packages/core/agent-directives/skills/<skill>/SKILL.md`), so the CLI installs no separate skills.
 
 ### Output options
 
 - All commands accept `--json`.
-- Runtime platform commands also accept `--quiet` and `--compact`; portable `plugin` commands do not.
+- Runtime platform commands also accept `--quiet` and `--compact`; the `plugin` command does not.
 - `check` requires a platform argument and outputs JSON by default.
 - `--help` shows examples, exit codes, and AI-agent usage tips.
 
@@ -44,7 +38,7 @@ The CLI uses each host's installation mechanism and manages native agent/model c
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
 - **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi package installer, OMP plugin installer, Kimi Code managed install, Cursor plugin directory, Hermes, Claude Code/Codex marketplaces and native Codex agent files). Devin and ZCode have no `install` target; stage the package with `maestria plugin install` and use the host's own installer.
-- **Portable artifact workflow** - validates Agent Plugins v1 manifests, skills, and path containment (packages with `mcp.json` are rejected), then stages a package for a compatible client's own installer or directory loader.
+- **Portable artifact workflow** - stages `@maestria/agent-plugins` from npm for a compatible client's own installer or directory loader.
 
 ## Support / Platform Notes
 
@@ -53,7 +47,7 @@ The CLI uses each host's installation mechanism and manages native agent/model c
 - Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code and Codex CLI select the latest available package and reject `--version`.
 - Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless removed separately.
 - The CLI manages plugin installation and native agent/model configuration where the host exposes a stable file format; it does not run agents or enforce methodology.
-- `maestria plugin install` stages a portable package but does not activate it in every client. Client activation, permissions, trust, and session behavior remain client-owned.
+- `maestria plugin install` stages `@maestria/agent-plugins` but does not activate it in any client. Client activation, permissions, trust, and session behavior remain client-owned.
 
 ## Documentation and Changelog
 

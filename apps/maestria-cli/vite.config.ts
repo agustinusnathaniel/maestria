@@ -5,15 +5,7 @@ import { forceRerunTriggers } from '../../tooling/test/force-rerun-triggers.js';
 export default defineConfig({
   pack: {
     deps: {
-      alwaysBundle: [
-        '@clack/prompts',
-        'citty',
-        'effect',
-        'jsonc-parser',
-        'picocolors',
-        'semver',
-        'yaml',
-      ],
+      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'jsonc-parser', 'picocolors', 'semver'],
     },
     entry: ['src/index.ts'],
     fixedExtension: false,

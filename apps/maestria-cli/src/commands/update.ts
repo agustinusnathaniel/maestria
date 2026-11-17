@@ -18,13 +18,6 @@ import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { updateOne } from '@/lib/platform-transaction.js';
 import {
-  assertNoRemovedSkillFlags,
-  defaultSkillRunner,
-  removeLegacyCompanions,
-} from '@/lib/skill-reconcile.js';
-import { readSkillsRecord } from '@/lib/skills.js';
-import type { SkillsRecord } from '@/lib/skills.js';
-import {
   VALID_PLATFORMS,
   validateOrThrow,
   validatePlatforms,
@@ -84,30 +77,7 @@ const collectInteractiveUpdateTargets = async (): Promise<
     .map((platform) => ({ id: platform.id, label: platform.label }));
 };
 
-/** Already-current installs still run legacy cleanup; without records output is unchanged. */
-const cleanupCurrentInstalls = async (
-  record: SkillsRecord | null,
-  upToDate: CommandResult,
-  args: UpdateArgs,
-): Promise<CommandResult> => {
-  const installed = await Effect.runPromise(detectInstalled({ includeLatest: false }));
-  if (!installed.some((platform) => record?.platforms[platform.id] !== undefined)) {
-    return upToDate;
-  }
-  const results = installed.map((platform) => ({
-    id: platform.id,
-    label: platform.label,
-    message: 'Already up to date',
-    ok: true,
-  }));
-  const combined = await removeLegacyCompanions(defaultSkillRunner, record, results, {
-    silentWhenUnrecorded: true,
-  });
-  return batchCommandResult(combined.results, args);
-};
-
 export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
-  assertNoRemovedSkillFlags(rawArgs);
   const isQuiet = resolveQuiet(rawArgs);
   let platformIds: string[] | undefined;
   if (rawArgs.platform !== undefined && rawArgs.platform !== null && rawArgs.platform !== '') {
@@ -116,7 +86,6 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
   if (rawArgs.version !== undefined && rawArgs.version !== null && rawArgs.version !== '') {
     await validateOrThrow(validateVersion(rawArgs.version));
   }
-  const record = await readSkillsRecord();
 
   let targets: { id: string; label?: string }[];
   if (platformIds && platformIds.length > 0) {
@@ -130,18 +99,14 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
   } else {
     const outcome = await collectInteractiveUpdateTargets();
     if (!Array.isArray(outcome)) {
-      return await cleanupCurrentInstalls(record, outcome, rawArgs);
+      return outcome;
     }
     targets = outcome;
   }
-  // Plugin batch first; skill cleanup runs only for succeeded platforms.
   const results = await runBatchSelected(targets, isQuiet, (platform, quiet) =>
     updateOne(platform, quiet, rawArgs.version),
   );
-  const combined = await removeLegacyCompanions(defaultSkillRunner, record, results, {
-    silentWhenUnrecorded: true,
-  });
-  return batchCommandResult(combined.results, rawArgs);
+  return batchCommandResult(results, rawArgs);
 };
 
 export const updateCommand = defineCommand({

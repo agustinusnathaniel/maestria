@@ -15,7 +15,6 @@ const manifestPaths = [
   '.cursor-plugin/plugin.json',
   '.codex-plugin/plugin.json',
   '.devin-plugin/plugin.json',
-  '.zcode-plugin/plugin.json',
   'kimi.plugin.json',
 ];
 
@@ -182,25 +181,21 @@ describe('published consolidated plugin', () => {
       expect(manifests[4].commands).toBeUndefined();
       expect(entries).toContain('package/AGENTS.md');
       expect(manifests[1].skills).toBeUndefined();
-      expect(manifests[1].agents).toEqual(roles.map((role) => `./agents/${role}.md`));
-      // ZCode reads command selectors as directories and discovers agents/ by convention;
-      // its `agents` manifest key only adds paths on top of that.
-      expect(manifests[5].agents).toBeUndefined();
-      // Claude Code and ZCode get the core from a SessionStart hook, so their commands carry
-      // only the mode body.
-      expect(manifests[5].commands).toBe('./modes/');
-      expect(manifests[6].agents).toBe('./agents/');
-      expect(manifests[6].skills).toBe('./skills/');
-      expect(manifests[6].commands).toBe('./commands/');
-      expect(manifests[6].systemPromptPath).toBe('./kimi.system-prompt.md');
+      // Claude Code relies on default discovery of agents/ and commands/, so the manifest
+      // carries neither field; the shared slim commands still ship.
+      expect(manifests[1].agents).toBeUndefined();
+      expect(manifests[1].commands).toBeUndefined();
+      expect(manifests[5].agents).toBe('./agents/');
+      expect(manifests[5].skills).toBe('./skills/');
+      expect(manifests[5].commands).toBe('./commands/');
+      expect(manifests[5].systemPromptPath).toBe('./kimi.system-prompt.md');
       for (const sessionFile of ['kimi.system-prompt.md', 'codex.agents.md', 'hermes.context.md']) {
         expect(entries).toContain(`package/${sessionFile}`);
       }
-      expect(manifests[1].commands).toEqual([
-        './modes/fein.md',
-        './modes/sonar.md',
-        './modes/blitz.md',
-      ]);
+      expect(entries).toContain('package/commands/fein.md');
+      expect(entries).toContain('package/commands/sonar.md');
+      expect(entries).toContain('package/commands/blitz.md');
+      expect(entries.some((entry) => entry.startsWith('package/modes/'))).toBe(false);
       expect(manifests[2].agents).toBe('./agents/');
       expect(manifests[2].commands).toBe('./commands/');
       expect(manifests[4].skills).toEqual(['./skills/', './devin/skills/']);

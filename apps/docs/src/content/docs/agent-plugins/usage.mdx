@@ -15,7 +15,7 @@ Pick a mode and give it a concrete goal:
 | `sonar` | Research only in the main loop, then stop before implementation; change no files and dispatch no subagents |
 | `blitz` | Smallest safe route for familiar work, keeping verification and required review |
 
-Each command or keyword carries the complete routing, mode instructions, and global policy, so no skill preload is needed and your task arguments are preserved. For example, on Claude Code:
+Each command or keyword carries the mode instructions and preserves your task arguments; routing and global policy come from the host's always-on rule, context, or SessionStart hook, so no skill preload is needed. For example, on Claude Code:
 
 ```text
 /maestria:fein Add rate limiting to the API.
@@ -93,7 +93,7 @@ To turn the hooks off, use your host's own settings for plugin hooks, or leave t
 A few host details are worth knowing:
 
 - **Codex.** The modes are instruction entry points from the managed routing block, not installed skills or slash commands. Codex no longer applies a role file's `sandbox_mode`, so the reviewer's read-only role rests on its instructions and a hook that blocks edit-tool calls (`apply_patch`, `Edit`, `Write`) inside `maestria-reviewer` once you trust the plugin hooks (not live-run; writes through the shell are not covered). A marketplace-only install has the utilities but no modes or reviewer.
-- **Cursor.** Profiles and commands embed their full methodology, and the always-apply rule supplies routing. Direct execution or the reviewer alone is often better for small changes and expensive models.
+- **Cursor.** Profiles embed their full methodology and the always-apply rule supplies routing; commands carry the mode body. Direct execution or the reviewer alone is often better for small changes and expensive models.
 - **Kimi Code.** Kimi chooses the model because plugin profiles have no per-agent model field.
 - **Devin.** Root `AGENTS.md` carries the routing and policy within Devin's 16 KiB always-on cap, and the modes ship as skills. Cloud sessions can use the skills and policy but not plugin subagents.
 - **OMP.** Profiles inherit the parent model by default, and the package adds no persistent mode mechanism or session interception.

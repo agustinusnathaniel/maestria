@@ -12,9 +12,6 @@ export const OPENCODE_PACKAGE = '@maestria/opencode';
 /** The oldest OpenCode release whose plugin API `@maestria/opencode` targets. */
 const MIN_OPENCODE_VERSION = [2, 0, 28] as const;
 
-/** The last `@maestria/opencode` release that OpenCode V1 can load. */
-export const OPENCODE_V1_LAST_VERSION = '0.8.0';
-
 const JSONC_OPTIONS = { formattingOptions: { insertSpaces: true, tabSize: 2 } } as const;
 
 // OpenCode V2 reads the global config from the same location as V1 and honors XDG_CONFIG_HOME.
@@ -52,13 +49,10 @@ export interface PluginEntry {
   readonly options?: unknown;
 }
 
-/** V2 entries are strings or `{ package, options }`; V1 entries are strings or `[spec, options]`. */
+/** V2 entries are strings or `{ package, options }`. */
 const entrySpec = (entry: unknown): string | undefined => {
   if (typeof entry === 'string') {
     return entry;
-  }
-  if (Array.isArray(entry) && typeof entry[0] === 'string') {
-    return entry[0];
   }
   return isRecord(entry) && typeof entry.package === 'string' ? entry.package : undefined;
 };
@@ -72,10 +66,10 @@ const uniqueSpecs = (entries: readonly PluginEntry[]): string[] => [
   ...new Set(entries.map((entry) => entry.spec)),
 ];
 
-/** maestria entries in V2 `plugins` or the V1 `plugin` array V2 ignores. */
-export const maestriaEntries = (text: string, key: 'plugin' | 'plugins'): PluginEntry[] => {
+/** maestria entries in the V2 `plugins` array. */
+export const maestriaEntries = (text: string): PluginEntry[] => {
   const config: unknown = parse(text);
-  const list: unknown = isRecord(config) ? config[key] : undefined;
+  const list: unknown = isRecord(config) ? config.plugins : undefined;
   if (!Array.isArray(list)) {
     return [];
   }
@@ -88,22 +82,9 @@ export const maestriaEntries = (text: string, key: 'plugin' | 'plugins'): Plugin
   });
 };
 
-/** Drops V1 `plugin` entries so OpenCode V1 cannot load a V2-only release. */
-export const removeLegacyEntries = (text: string): string => {
-  const legacy = new Set(maestriaEntries(text, 'plugin').map((entry) => entry.index));
-  if (legacy.size === 0) {
-    return text;
-  }
-  const config: unknown = parse(text);
-  const list: unknown[] = isRecord(config) && Array.isArray(config.plugin) ? config.plugin : [];
-  // Rewritten whole: jsonc-parser corrupts the text when removing consecutive trailing elements.
-  const kept = list.filter((_entry, index) => !legacy.has(index));
-  return applyEdits(text, modify(text, ['plugin'], kept, JSONC_OPTIONS));
-};
-
 /** Turns the configured `spec` string entry into `{ package, options }`. */
 export const withOptions = (text: string, spec: string, options?: unknown): string => {
-  const entry = maestriaEntries(text, 'plugins').find((candidate) => candidate.spec === spec);
+  const entry = maestriaEntries(text).find((candidate) => candidate.spec === spec);
   if (entry === undefined || options === undefined) {
     return text;
   }
@@ -162,23 +143,20 @@ export const requireOpenCodeV2: Effect.Effect<void, CommandError> = Effect.suspe
       : Effect.fail(
           new CommandError({
             command: 'opencode --version',
-            message: `${OPENCODE_PACKAGE} requires OpenCode ${MIN_OPENCODE_VERSION.join('.')} or later (found ${output.trim() || 'an unknown version'}). Upgrade OpenCode, or on OpenCode V1 keep ${OPENCODE_PACKAGE}@${OPENCODE_V1_LAST_VERSION} in the "plugin" array.`,
+            message: `${OPENCODE_PACKAGE} requires OpenCode ${MIN_OPENCODE_VERSION.join('.')} or later (found ${output.trim() || 'an unknown version'}). Upgrade OpenCode.`,
           }),
         );
   }),
 );
 
 export const isOpenCodeInstalled: Effect.Effect<boolean> = Effect.suspend(readConfig).pipe(
-  Effect.map(
-    ({ text }) =>
-      maestriaEntries(text, 'plugins').length > 0 || maestriaEntries(text, 'plugin').length > 0,
-  ),
+  Effect.map(({ text }) => maestriaEntries(text).length > 0),
 );
 
-/** Reads the newest cached package for the configured spec; V1-only entries report `unknown`. */
+/** Reads the newest cached package for the configured spec. */
 export const openCodeInstalledVersion: Effect.Effect<string> = Effect.suspend(readConfig).pipe(
   Effect.flatMap(({ text }) => {
-    const [entry] = maestriaEntries(text, 'plugins');
+    const [entry] = maestriaEntries(text);
     if (entry === undefined) {
       return Effect.succeed('unknown');
     }
@@ -225,8 +203,7 @@ const replaceEntries = (
 const currentEntries = (): Effect.Effect<PluginEntry[], CommandError> =>
   Effect.gen(function* currentEntriesEffect() {
     yield* requireOpenCodeV2;
-    yield* editConfig(removeLegacyEntries);
-    return maestriaEntries((yield* readConfig()).text, 'plugins');
+    return maestriaEntries((yield* readConfig()).text);
   });
 
 export const installOpenCode: Effect.Effect<void, CommandError> = Effect.gen(
@@ -256,9 +233,8 @@ export const updateOpenCode = (
 
 export const uninstallOpenCode: Effect.Effect<void, CommandError> = Effect.gen(
   function* uninstallOpenCodeEffect() {
-    for (const spec of uniqueSpecs(maestriaEntries((yield* readConfig()).text, 'plugins'))) {
+    for (const spec of uniqueSpecs(maestriaEntries((yield* readConfig()).text))) {
       yield* plugin(['remove', spec]);
     }
-    yield* editConfig(removeLegacyEntries);
   },
 );

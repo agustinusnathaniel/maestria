@@ -246,7 +246,6 @@ describe('main wiring', () => {
       '.codex-plugin/plugin.json',
       '.cursor-plugin/plugin.json',
       '.devin-plugin/plugin.json',
-      '.zcode-plugin/plugin.json',
       'kimi.plugin.json',
     ]);
   });

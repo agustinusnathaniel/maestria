@@ -56,10 +56,6 @@ OpenCode installs missing packages in the background when its server starts and 
 
 </details>
 
-## Moving from OpenCode V1
-
-OpenCode V2 reads the same config files as V1 but ignores the V1 `plugin` array, so an existing `"plugin": ["@maestria/opencode@latest"]` entry does nothing in V2. Run `maestria update opencode` (or `maestria install opencode`): it removes the maestria entry from the V1 `plugin` array and adds the package to `plugins`. Other plugins are kept, and so are comments outside the V1 `plugin` array.
-
 ## Verify Installation
 
 Start a new OpenCode session. The `maestria` and `reviewer` agents are available, the `/fein`, `/sonar`, and `/blitz` commands are listed, and the global workflow rules are active. Read [When to use maestria](/core/when-to-use/) before choosing `maestria`.
@@ -80,7 +76,7 @@ Without the CLI, run `opencode plugin update @maestria/opencode`. OpenCode also 
 
 <AllPackageManagers type="dlx" pkg="maestria" args="uninstall opencode" />
 
-This runs `opencode plugin remove` for each global maestria entry and drops any maestria entry left in a V1 `plugin` array. Without the CLI, run `opencode plugin remove @maestria/opencode` with the exact configured specifier (for example `@maestria/opencode@0.9.0` when pinned). Remove project-level entries from that project's config by hand.
+This runs `opencode plugin remove` for each global maestria entry. Without the CLI, run `opencode plugin remove @maestria/opencode` with the exact configured specifier (for example `@maestria/opencode@0.9.0` when pinned). Remove project-level entries from that project's config by hand.
 
 ## Next Steps
 

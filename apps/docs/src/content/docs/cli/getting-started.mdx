@@ -33,15 +33,14 @@ Use the plugin namespace when the client supports Agent Plugins v1:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. Portable discovery supplies the eight skills (handoff, review-loop, implement, create-pull-request, docs-update, diagnose, recon, architecture-plan); full methodology uses the selected host's native resources. The client controls activation, permissions, trust, and session behavior.
+The CLI stages `@maestria/agent-plugins` from npm and prints its directory for the client's own plugin installer or local-plugin setting. Portable discovery supplies the eight skills (handoff, review-loop, implement, create-pull-request, docs-update, diagnose, recon, architecture-plan); full methodology uses the selected host's native resources. The client controls activation, permissions, trust, and session behavior.
 
-For a local package:
+To stage into a directory you choose:
 
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
 <AllPackageManagers
   type="dlx"
   pkg="maestria@latest"
-  args="plugin install /path/to/plugin --destination ./staged-plugin"
+  args="plugin install --destination ./staged-plugin"
 />
 
 ### Update an Integration
@@ -66,14 +65,6 @@ Assign a model to the reviewer when the platform supports per-agent configuratio
 />
 
 See the [configure reference](/cli/commands/#configure) for supported platforms and reset syntax.
-
-### Skill Setup
-
-Check methodology skill state without changing anything:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="doctor" />
-
-This reports the skill record path, per-platform plugin state, recorded selections, and observed skills with next steps. See the [doctor reference](/cli/commands/#doctor).
 
 ## Prerequisites
 

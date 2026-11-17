@@ -53,10 +53,7 @@ const readManifest = (): Record<string, unknown> => {
 
 describe('Claude Code native plugin loading', () => {
   it('embeds the complete role and its own rules parts while retaining native metadata', () => {
-    const manifest = readManifest();
-    const agentPaths = manifest.agents;
-
-    expect(agentPaths).toEqual(roles.map((role) => `./agents/${role}.md`));
+    expect(readManifest().agents).toBeUndefined();
 
     for (const role of roles) {
       const agentPath = path.join(pluginRoot, `agents/${role}.md`);
@@ -85,18 +82,19 @@ describe('Claude Code native plugin loading', () => {
     }
   });
 
-  it('exposes each workflow mode once through explicit native commands', () => {
+  it('relies on default command discovery with slim mode commands', () => {
     const manifest = readManifest();
 
     const pluginName = typeof manifest.name === 'string' ? manifest.name : '';
     expect(pluginName).toBe('maestria');
-    // The SessionStart hook supplies the core, so Claude Code's commands carry only the mode.
-    expect(manifest.commands).toEqual(modes.map((mode) => `./modes/${mode}.md`));
+    // The SessionStart hook supplies the core, so the shared commands carry only the mode body.
+    expect(manifest.commands).toBeUndefined();
     for (const mode of modes) {
-      const command = fs.readFileSync(path.join(pluginRoot, `modes/${mode}.md`), 'utf-8');
+      const command = fs.readFileSync(path.join(pluginRoot, `commands/${mode}.md`), 'utf-8');
       expect(command).toContain(`[MODE: ${mode}]`);
       expect(command).toContain('$ARGUMENTS');
       expect(command).not.toContain('## Universal Floors');
+      expect(command).not.toContain('## Routing');
       expect(fs.existsSync(path.join(pluginRoot, `skills/${mode}/SKILL.md`))).toBe(false);
     }
   });

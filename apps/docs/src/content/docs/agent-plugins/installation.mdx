@@ -18,13 +18,9 @@ Hosts without a `maestria install` command (Devin, ZCode) and any other Agent Pl
 
 Install `@maestria/agent-plugins` through the selected client using its package installer or the staged directory. The exact activation command depends on the client.
 
-The command prints a staged directory for your client's installer or local-plugin setting. Staging does not activate the plugin or change client configuration. To validate an existing directory:
+The command prints a staged directory for your client's installer or local-plugin setting. Staging does not activate the plugin or change client configuration. Use `--json` for a machine-readable report, or `--destination` to stage into a directory you choose.
 
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
-
-A successful check reports a valid manifest and the eight skills. Use `--json` for a machine-readable report.
-
-The command is intentionally namespaced as `maestria plugin ...`: `maestria install` manages runtime integrations and host installation flows; `maestria plugin` validates and stages artifacts.
+The command is intentionally namespaced as `maestria plugin ...`: `maestria install` manages runtime integrations and host installation flows; `maestria plugin` stages artifacts.
 
 To use a checkout instead, point the host at the directory containing `plugin.json`:
 
@@ -38,7 +34,7 @@ If utilities do not appear, confirm the selected directory contains `plugin.json
 
 ## Claude Code
 
-`@maestria/agent-plugins` is a declarative Claude Code plugin. Its `.claude-plugin/plugin.json` manifest lists the shared `agents/reviewer.md` profile and the three shared `commands/*.md` workflows explicitly, because Claude rejects directory agent selectors, and Claude Code adds the eight skills from `skills/` by convention. No build step or runtime code is required. The host-side model is described in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
+`@maestria/agent-plugins` is a declarative Claude Code plugin. Its `.claude-plugin/plugin.json` manifest relies on default discovery of the shared `agents/` profile and the three shared `commands/*.md` workflows, and Claude Code adds the eight skills from `skills/` by convention. No build step or runtime code is required. The host-side model is described in the [Claude Code plugin components guide](https://code.claude.com/docs/en/plugins/components).
 
 **Prerequisites.** Claude Code with the `claude` CLI on `PATH`, and Node.js with npm for `maestria install claude-code`. Node.js and pnpm are needed only to regenerate files from the canonical directives.
 
@@ -92,7 +88,7 @@ claude plugin validate ./packages/agent-plugins --strict
 | Native commands | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` |
 | Skills | `maestria:handoff`, `maestria:review-loop`, `maestria:implement`, `maestria:create-pull-request`, `maestria:docs-update`, `maestria:diagnose`, `maestria:recon`, `maestria:architecture-plan` |
 
-**Limits.** `disallowedTools: Write, Edit` filters those tools for the read-only reviewer. Shell-mediated writes are outside the filter, and role text remains guidance. Profiles set no `model`, so Claude uses the main conversation's model. Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter for plugin-loaded agents; maestria ships no hooks or MCP server and does not modify `CLAUDE.md`. Strict validation passes on Claude Code `2.1.295`, and an offline fixture (2026-10-12) loaded the reviewer from the shared profile with Write and Edit unavailable and the full role and global policy in the child context. Model judgment, shell isolation, other CLI versions, account sync, Cowork, and Desktop behavior are not covered. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [compatibility](/agent-plugins/compatibility/).
+**Limits.** `disallowedTools: Write, Edit` filters those tools for the read-only reviewer. Shell-mediated writes are outside the filter, and role text remains guidance. Profiles set no `model`, so Claude uses the main conversation's model. Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` agent frontmatter for plugin-loaded agents; maestria ships no hooks or MCP server and does not modify `CLAUDE.md`. Strict validation passes on Claude Code `2.1.319` with default discovery (and passed on `2.1.295` with explicit file lists), and an offline fixture (2026-10-12) loaded the reviewer from the shared profile with Write and Edit unavailable and the full role and global policy in the child context. Model judgment, shell isolation, other CLI versions, account sync, Cowork, and Desktop behavior are not covered. See the [host verification record](https://github.com/agustinusnathaniel/maestria/blob/main/docs/plugin-host-verification.md) and [compatibility](/agent-plugins/compatibility/).
 
 ### Claude Code Desktop
 
@@ -236,7 +232,7 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 | `agents/*.md` | One complete reviewer Task agent (shared across hosts) |
 | `skills/*/SKILL.md` | The bundled `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, and `architecture-plan` skills |
 | `rules/cursor/maestria-global.mdc` | Always-apply global policy and routing (`alwaysApply: true`) |
-| `commands/*.md` | Complete workflow slash commands (shared) |
+| `commands/*.md` | Slim workflow slash commands (shared; mode body plus arguments) |
 
 Profiles embed complete role and global policy, so no role skill preload is needed. Other hosts' frontmatter keys do not affect Cursor loading.
 
@@ -282,7 +278,7 @@ Updates replace the managed package, so back up local changes first. Your own pe
 | Component | Purpose |
 | --- | --- |
 | One native reviewer | Complete role and global policy for independent review |
-| Three native commands | Complete fein, sonar, and blitz workflows with task arguments (`$ARGUMENTS` is substituted) |
+| Three native commands | Slim fein, sonar, and blitz workflows with task arguments (`$ARGUMENTS` is substituted) |
 | `systemPromptPath` to `kimi.system-prompt.md` | Complete policy, routing, and mode guidance within Kimi's 32 KB contribution limit |
 | Eight skills | `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, `architecture-plan` |
 
@@ -304,7 +300,7 @@ The integration uses neither `sessionStart.skill` nor `skillInstructions`. The n
 
 Devin reads `@maestria/agent-plugins` through `.devin-plugin/plugin.json`. The package supplies a conventional root reviewer profile and always-on policy and routing in root `AGENTS.md`, sized under Devin's 16 KiB always-on cap. The manifest selects `skills/` for the eight skills and `devin/skills/` for the three modes, because Devin has no plugin commands component: run `/maestria:fein <task>` in the CLI or Desktop, or `@skills:fein <task>` in the web app (see [per-host syntax](/agent-plugins/usage/#per-host-syntax)).
 
-**Install.** Stage a validated package, then install the printed directory through Devin:
+**Install.** Stage the package, then install the printed directory through Devin:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
@@ -325,7 +321,7 @@ Changes apply to new sessions. Use **Reindex plugins** on Devin's Customize page
 
 ## ZCode
 
-The ZCode manifest (`.zcode-plugin/plugin.json`) selects the shared `commands/` and `skills/` directories, and ZCode discovers `agents/` by convention: one reviewer profile, three native commands, and eight skills. They are the same files other Markdown hosts use. ZCode ignores file lists and loads only `.md` agents, so the manifest uses directory selectors.
+ZCode loads the package through `.claude-plugin/plugin.json` with auto-discovered `commands/`, `skills/`, `agents/`, and `hooks/hooks.json`: one reviewer profile, three native commands, and eight skills. They are the same files other Markdown hosts use. maestria ships no `.zcode-plugin/plugin.json`; ZCode ignores file lists and loads only `.md` agents.
 
 **Install.** Stage the plugin in a directory beside a ZCode marketplace file:
 
@@ -392,7 +388,7 @@ Or remove the package with `omp plugin uninstall @maestria/agent-plugins`. If th
 | Resource | Purpose |
 | --- | --- |
 | `agents/reviewer.md` | Reviewer profile with complete role and policy |
-| `/fein`, `/sonar`, `/blitz` | Complete native mode commands with routing and policy |
+| `/fein`, `/sonar`, `/blitz` | Slim native mode commands (mode body plus arguments) |
 | `rules/global.md` | Always-apply global policy and routing for the main session |
 | `skills/` | `handoff`, `review-loop`, `implement`, `create-pull-request`, `docs-update`, `diagnose`, `recon`, `architecture-plan` |
 

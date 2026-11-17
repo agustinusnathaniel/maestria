@@ -20,12 +20,6 @@ export const getCacheDir = (): string => {
 
 export const getMaestriaCacheDir = (): string => path.join(getCacheDir(), 'maestria');
 
-export const getMaestriaConfigDir = (): string => {
-  const xdg = process.env.XDG_CONFIG_HOME?.trim();
-  const base = xdg !== undefined && xdg !== '' ? xdg : path.join(homedir(), '.config');
-  return path.join(base, 'maestria');
-};
-
 export const getVersionCacheFile = (): string => path.join(getMaestriaCacheDir(), 'versions.json');
 
 export class CommandError extends Data.TaggedError('CommandError')<{

@@ -40,7 +40,7 @@ import type { PlatformResult } from '@/types.js';
 
 const { join } = nodePath;
 
-const installNpmTarball = (
+export const installNpmTarball = (
   pkg: string,
   dest: string,
   opts: { tag?: string } = {},

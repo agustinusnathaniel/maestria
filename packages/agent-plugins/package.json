@@ -28,7 +28,6 @@
     ".cursor-plugin/plugin.json",
     ".codex-plugin/plugin.json",
     ".devin-plugin/plugin.json",
-    ".zcode-plugin/plugin.json",
     "kimi.plugin.json",
     "skills",
     "agents",
@@ -44,7 +43,6 @@
     "hermes.context.md",
     "hooks",
     "hooks.json",
-    "modes",
     "kimi.system-prompt.md"
   ],
   "type": "module",

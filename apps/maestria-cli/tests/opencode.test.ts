@@ -9,7 +9,6 @@ import {
   installOpenCode,
   maestriaEntries,
   openCodeInstalledVersion,
-  removeLegacyEntries,
   uninstallOpenCode,
   updateOpenCode,
   withOptions,
@@ -23,7 +22,6 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
 
 const config = `{
   // keep this comment
-  "plugin": ["other-plugin", ["@maestria/opencode@0.8.0", { "x": 1 }], "@maestria/opencode"],
   "plugins": [
     { "package": "@maestria/opencode@0.9.0", "options": { "modes": { "disabledKeywords": ["blitz"] } } },
     "@maestria/opencode-extras"
@@ -31,25 +29,14 @@ const config = `{
 }`;
 
 describe('OpenCode plugin entries', () => {
-  it('finds maestria entries in V2 objects and V1 tuples, not other packages', () => {
-    expect(maestriaEntries(config, 'plugins')).toEqual([
+  it('finds maestria entries in V2 objects, not other packages', () => {
+    expect(maestriaEntries(config)).toEqual([
       {
         index: 0,
         options: { modes: { disabledKeywords: ['blitz'] } },
         spec: '@maestria/opencode@0.9.0',
       },
     ]);
-    expect(maestriaEntries(config, 'plugin').map((entry) => entry.spec)).toEqual([
-      '@maestria/opencode@0.8.0',
-      '@maestria/opencode',
-    ]);
-  });
-
-  it('removes only maestria from the V1 plugin array and keeps comments', () => {
-    const next = removeLegacyEntries(config);
-    expect(parse(next)).toMatchObject({ plugin: ['other-plugin'] });
-    expect(maestriaEntries(next, 'plugins')).toEqual(maestriaEntries(config, 'plugins'));
-    expect(next).toContain('// keep this comment');
   });
 
   it('carries plugin options onto a re-added entry', () => {
@@ -134,10 +121,10 @@ describe('OpenCode CLI flows', () => {
     vi.unstubAllEnvs();
   });
 
-  it('install moves a V1 entry to plugins', async () => {
-    writeConfig('{ "plugin": ["@maestria/opencode@latest", "other"], "plugins": ["x"] }');
+  it('install adds maestria to plugins', async () => {
+    writeConfig('{ "plugins": ["x"] }');
     await Effect.runPromise(installOpenCode);
-    expect(readConfig()).toEqual({ plugin: ['other'], plugins: ['x', '@maestria/opencode'] });
+    expect(readConfig()).toEqual({ plugins: ['x', '@maestria/opencode'] });
   });
 
   it('updates a lone unpinned entry in place', async () => {
@@ -205,10 +192,10 @@ describe('OpenCode CLI flows', () => {
   it.each(['1.18.31', 'opencode v2.0.5', ''])(
     'refuses OpenCode %j, older than 2.0.28, without touching the config',
     async (version) => {
-      writeConfig('{ "plugin": ["@maestria/opencode@latest"] }');
+      writeConfig('{ "plugins": ["@maestria/opencode@latest"] }');
       host.version = version;
-      await expect(Effect.runPromise(installOpenCode)).rejects.toThrow('@maestria/opencode@0.8.0');
-      expect(readConfig()).toEqual({ plugin: ['@maestria/opencode@latest'] });
+      await expect(Effect.runPromise(installOpenCode)).rejects.toThrow('requires OpenCode 2.0.28');
+      expect(readConfig()).toEqual({ plugins: ['@maestria/opencode@latest'] });
     },
   );
 
@@ -219,13 +206,12 @@ describe('OpenCode CLI flows', () => {
     expect(pluginsOf()).toEqual(['@maestria/opencode']);
   });
 
-  it('uninstall removes every maestria spec once and the V1 entry', async () => {
+  it('uninstall removes every maestria spec once', async () => {
     writeConfig({
-      plugin: ['@maestria/opencode'],
       plugins: ['@maestria/opencode', '@maestria/opencode@0.9.0', '@maestria/opencode', 'other'],
     });
     await Effect.runPromise(uninstallOpenCode);
-    expect(readConfig()).toEqual({ plugin: [], plugins: ['other'] });
+    expect(readConfig()).toEqual({ plugins: ['other'] });
   });
 
   it('reads the installed version from the newest cached install of the configured spec', async () => {
