@@ -25,8 +25,8 @@ const assertOrdered = (document: string, headings: string[]): void => {
 
 describe('canonical directive behavioral contracts', () => {
   it('keeps always-on directives within their word budgets', () => {
-    expect(countWords(readDirective('rules.md'))).toBeLessThanOrEqual(1250);
-    expect(countWords(readDirective('specialists', 'main-loop.md'))).toBeLessThanOrEqual(925);
+    expect(countWords(readDirective('rules.md'))).toBeLessThanOrEqual(1220);
+    expect(countWords(readDirective('specialists', 'main-loop.md'))).toBeLessThanOrEqual(905);
   });
 
   it('preserves safety, authorization, acceptance, branch, and sync floors', () => {
