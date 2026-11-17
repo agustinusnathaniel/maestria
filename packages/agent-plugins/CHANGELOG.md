@@ -1,5 +1,11 @@
 # @maestria/agent-plugins
 
+## 0.17.0
+
+### Minor Changes
+
+- [#461](https://github.com/agustinusnathaniel/maestria/pull/461) [`541c80b`](https://github.com/agustinusnathaniel/maestria/commit/541c80b1fecdc72100612b446ff7413bebef02a5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Mode commands on Cursor, Kimi Code, and OMP now carry only the mode body, with policy coming from each host's always-on rule; `.zcode-plugin/plugin.json` is removed and ZCode loads the package through `.claude-plugin/plugin.json`; the Claude Code manifest relies on default discovery.
+
 ## 0.16.0
 
 ### Minor Changes

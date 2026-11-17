@@ -1,5 +1,13 @@
 # maestria
 
+## 0.19.0
+
+### Minor Changes
+
+- [#461](https://github.com/agustinusnathaniel/maestria/pull/461) [`541c80b`](https://github.com/agustinusnathaniel/maestria/commit/541c80b1fecdc72100612b446ff7413bebef02a5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove obsolete CLI compatibility code. `maestria doctor` is removed. `update` and `uninstall` no longer remove skill copies installed by CLI versions before 2026-10-13; remove those copies by hand with the `skills` CLI. `install`, `update`, and `uninstall` no longer move OpenCode V1 `plugin` entries; the CLI manages only the V2 `plugins` array and still requires OpenCode 2.0.28 or later.
+
+- [#461](https://github.com/agustinusnathaniel/maestria/pull/461) [`541c80b`](https://github.com/agustinusnathaniel/maestria/commit/541c80b1fecdc72100612b446ff7413bebef02a5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - `maestria plugin validate` is removed; `maestria plugin install` now stages only `@maestria/agent-plugins` from npm and no longer accepts a source argument (local directories and other packages are not staged). An existing `--destination` is still refused.
+
 ## 0.18.0
 
 ### Minor Changes
