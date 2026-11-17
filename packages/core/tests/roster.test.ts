@@ -91,6 +91,13 @@ describe('canonical specialist roster', () => {
         expect(content, file).not.toMatch(new RegExp(`@${name}\\b`, 'u'));
       }
     }
+    const mainLoop = readFileSync(
+      path.join(PACKAGES_DIR, 'pi', 'skills/maestria/SKILL.md'),
+      'utf-8',
+    );
+    for (const name of delegableNames) {
+      expect(mainLoop).toContain(`/${name}`);
+    }
   });
 });
 

@@ -16,7 +16,7 @@ Literal replacements introduced another risk: an anchor could disappear or be re
 
 Author shared prompts, rules, workflow modes, and skills only in `packages/core/agent-directives/`. Keep prose readable Markdown with canonical role tokens; host-specific tool syntax, frontmatter, and layouts belong in the generator: `scripts/native-adapter-files.ts` and `packages/opencode/generation/agents.ts` for the OpenCode and Pi adapters, and the consolidated generator's manifest inputs for declarative hosts (see [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md)). The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the maintained source layout.
 
-One monorepo-internal TypeScript sync tool derives host artifacts through declarative string replacements, content composition, frontmatter serialization, generated provenance, and normalized output. Configs support defaults plus explicit per-file overrides and preserved host-local content; the engine does not know platform identities. Static frontmatter avoids another dynamic extension surface. Library YAML quoting is sufficient unless a host demonstrates a stricter need.
+One monorepo-internal TypeScript sync tool derives host artifacts through content composition, frontmatter serialization, generated notices, and normalized output. Until 2026-11-17 it was a config-driven engine with defaults, per-file overrides, and preserved host-local content that did not know platform identities; it is now one plan compiler that names every output (see the 2026-11-17 amendment). Static frontmatter avoids another dynamic extension surface. Library YAML quoting is sufficient unless a host demonstrates a stricter need.
 
 The orchestrator follows the same projection path because its methodology was also mostly duplicated; host-local integration is not a reason to maintain the entire prompt separately. Generated notices are unconditional. `scripts/sync-all` writes projections; `scripts/check-sync` regenerates and compares byte identity, including provenance. Generated output is excluded from ordinary formatting so format and sync cannot repeatedly undo each other. Commands, flags, and exact composition are maintained in [the plan compiler](../../../scripts/sync-consolidated-plugin.ts) and its helper modules, rather than copied here.
 
@@ -64,8 +64,8 @@ What each retired mechanism protected, and what protects it now:
 
 - One source removes manual methodology porting; adding a host requires its own output plan in the compiler rather than changes to a universal runtime.
 - Declarative transformations and generated provenance make ownership reviewable, but maintainers must edit canonical sources and regenerate before delivery.
-- Fail-closed resolution and ordered preflight prevent silent or partial projections. Conditional replacements that stop matching now need an explicit config update.
-- Validation adds source reads and configs add a navigation hop; those costs buy evidence that the actual resolved transforms apply.
+- Fail-closed resolution and ordered preflight prevent silent or partial projections. Adding or renaming a projected output needs an explicit output-plan update.
+- Validation adds source reads; that cost buys evidence that every input a plan names exists before any write.
 - Root tooling avoids registry fallback and runner drift while depending on the workspace's package manager and installation.
 - Bundled skills add two generated copies per package to every release and make the packages larger; a change to a root skill ships only when each package releases.
 - Utility skills read as policy sections rather than curated checklists, and whatever a skill-only host needs from them must live in the source section, which keeps always-on policy slightly larger. Section headings become a generation contract.
