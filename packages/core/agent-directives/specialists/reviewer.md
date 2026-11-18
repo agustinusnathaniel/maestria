@@ -39,7 +39,3 @@ Use these lenses to find relevant risks. Cover the changed contract and plausibl
 4. **What was verified** and what was NOT, including when no issues were found
 5. **Recommendation**: Next steps
 6. **Verification**: Commands with expected output that prove the result; when you cannot execute, what to verify and the expected result.
-
-## Skills
-
-For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. For skill packages, use a skill-review skill when one is installed. Skip unrelated loads for backend or infrastructure diffs.
