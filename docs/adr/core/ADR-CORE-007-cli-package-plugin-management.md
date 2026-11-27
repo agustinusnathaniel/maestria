@@ -14,7 +14,7 @@ Provide a standalone `maestria` CLI that coordinates install, update, status, an
 
 ### Dependencies and versions
 
-The CLI runs through npm package runners, so its artifact carries its runtime dependencies: bundle them with the workspace build instead of making each user install the development graph (externalizing them once pulled a native addon and its install warnings into every run). Compare versions with npm's `semver` through focused subpath imports. Keep the CLI syntax strict (no `v` prefix, ranges, or coercion) and keep `latest`, `unknown`, and empty-string behavior at the boundary. Publish no sourcemaps while nothing consumes them.
+The CLI runs through npm package runners, so its artifact carries its runtime dependencies: bundle them with the workspace build instead of making each user install the development graph (externalizing them once pulled a native addon and its install warnings into every run). Compare versions with npm's `semver` through focused subpath imports. Keep the CLI syntax strict (no `v` prefix, surrounding whitespace, ranges, or coercion) and keep `latest`, `unknown`, and empty-string behavior at the boundary. Publish no sourcemaps while nothing consumes them.
 
 ### Effect at the I/O boundary only
 

@@ -20,7 +20,7 @@ The choices:
 
 `MaestriaState` lives in the Pi adapter (`packages/pi/src/state.ts`) and is maintained by event handlers: `before_agent_start` for `activeTask`, `tool_call` for file tracking, `subagent` tool invocations for `handoffHistory`, and `/review` for `reviewMode`.
 
-On `session_before_compact`, the extension renders `MaestriaState` to a markdown summary returned as `compaction.summary`. The render includes ## Goal (activeTask), ## Completion Promise, ## Blockers, ## Files Modified, ## Files Read, ## Recent Handoffs, and ## Review State.
+On `session_before_compact`, the extension renders `MaestriaState` to a markdown summary returned as `compaction.summary`. `renderMaestriaSummary` in `state.ts` owns the rendered fields (goal, completion promise, blockers, files, recent handoffs, mode, and review state among them).
 
 The main loop's directives tell the model to read this block and resume. The `details` field is also populated with the structured `MaestriaState` object for future-proofing.
 
