@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-24), Confidence: High. Extended 2026-09-18 for runtime loading and 2026-09-24 for the shared Node loader; consolidated 2026-10-03.
+Accepted (2026-06-24), Confidence: High. Extended 2026-09-18 for runtime loading and 2026-09-24 for the shared Node loader.
 
 ## Context
 
@@ -16,7 +16,7 @@ The original protocol relied on prompt-level discovery and delegation. Runtime l
 
 Read `.maestria/workflow.md` for sequencing, followed by `.maestria/rules.md` for project constraints, at the project root only. Absent or empty files leave defaults unchanged. Safety, authorization, and host permissions retain precedence; project content cannot waive them. Carry binding constraints into delegation briefs and re-establish missing context after compaction.
 
-This complements built-in modes rather than introducing custom keyword discovery, a workflow engine, or another persisted state store. The [canonical orchestrator](../../../packages/core/agent-directives/specialists/orchestrator.md) owns advisory loading and routing; current operational guidance stays in the project's files.
+This complements built-in modes rather than introducing custom keyword discovery, a workflow engine, or another persisted state store. The [canonical main loop](../../../packages/core/agent-directives/specialists/main-loop.md) owns advisory loading; current operational guidance stays in the project's files.
 
 ### Runtime boundary
 
@@ -34,7 +34,7 @@ OpenCode's pinned pipeline covered primary and child model calls. Pi child injec
 
 ### Shared implementation
 
-Use a narrow private Node loader under `packages/shared/project-config/`, bundled into public host builds, for the common filesystem contract. Host adapters keep root selection and error presentation. The loader imports no host SDK and stays outside browser-safe core because it requires Node filesystem APIs. Declarative hosts ship no executable loader; the retired Hermes Python adapter's separate loader was removed with it ([CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md), 2026-10-10).
+Use a narrow private Node loader under `packages/shared/project-config/`, bundled into public host builds, for the common filesystem contract. Host adapters keep root selection and error presentation. The loader imports no host SDK and stays outside browser-safe core because it requires Node filesystem APIs. Declarative hosts ship no executable loader; on hosts that support it, a `SessionStart` hook prints the two files ([CORE-037](ADR-CORE-037-hooks-as-deterministic-reinforcement.md)).
 
 Shared real-filesystem tests own missing/empty files, order, freshness, symlinks, containment, file kinds, and safe diagnostics. Host tests own wrappers and injection. These checks establish the adapter boundary rather than an untested live-host guarantee.
 
@@ -48,8 +48,8 @@ Shared real-filesystem tests own missing/empty files, order, freshness, symlinks
 
 ## Alternatives Considered
 
-- **Rely only on AGENTS.md references:** rejected because platform-injected project context was not reliably reachable by the orchestrator and had no separate workflow namespace.
-- **Package project workflows as orchestrator skills:** rejected in the original design because it needed new loading infrastructure instead of two project files.
+- **Rely only on AGENTS.md references:** rejected because platform-injected project context was not reliably reachable by the main session and had no separate workflow namespace.
+- **Package project workflows as skills:** rejected in the original design because it needed new loading infrastructure instead of two project files.
 - **Discover custom mode keywords:** rejected because it requires cross-platform registries and type/config expansion for a problem local prose solves.
 - **Keep duplicated Node loaders:** rejected because identical security-sensitive filesystem checks can diverge; share the contract and preserve host wrappers.
 - **Move the loader into core:** rejected by the browser-safe core boundary.
@@ -59,9 +59,9 @@ Shared real-filesystem tests own missing/empty files, order, freshness, symlinks
 - [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): shared directive projection.
 - [CORE-019](ADR-CORE-019-directive-simplification.md): ownership and authorization precedence.
 - [CORE-020](ADR-CORE-020-hybrid-package-topology.md): narrow private sharing.
-- [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md): declarative hosts and Hermes adapter retirement.
+- [CORE-037](ADR-CORE-037-hooks-as-deterministic-reinforcement.md): hooks that load project files on declarative hosts.
 - [OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md): the mode system this protocol complements.
 
 ## Date
 
-2026-06-24; consolidated 2026-10-03.
+2026-06-24

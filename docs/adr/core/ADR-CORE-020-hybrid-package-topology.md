@@ -2,27 +2,27 @@
 
 ## Status
 
-Accepted (2026-08-27), Confidence: High. Consolidated 2026-10-03 with consumer-driven sharing decisions from 2026-09-11. Distribution-status decision partially superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) on 2026-10-10. Pi-family sharing amended 2026-11-17 (see Decision).
+Accepted (2026-08-27), Confidence: High. Declarative distribution is decided in [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md). Amended 2026-11-17: Pi-family sharing folded back into the Pi adapter.
 
 ## Context
 
 Canonical methodology already had one projection pipeline, but host-neutral mode mechanics, Pi-family validators, and adapter helpers were duplicated. The CLI also maintained a platform-ID list separately from its authoritative handler registry. These copies could drift even when every host still built.
 
-A universal runtime would remove some duplication by coupling incompatible host SDKs, manifests, install paths, peer dependencies, and Node/Python distributions. Sharing must follow demonstrated common behavior rather than a presumed cross-host abstraction.
+A universal runtime would remove some duplication by coupling incompatible host SDKs, manifests, install paths, and peer dependencies. Sharing must follow demonstrated common behavior rather than a presumed cross-host abstraction.
 
 ## Decision
 
 Keep private canonical directives and development tooling in core, explicit generated projections in separately published host packages, and public host-native runtime adapters. Core library modules remain platform-independent and browser-safe; development scripts may use Node APIs. Each host owns its SDK integration and distribution contract.
 
-Share pure host-neutral mechanics through narrow private workspace modules under `packages/shared/`. Their public consumers bundle these build-time dependencies rather than publishing a universal runtime. Share Pi-family state, compaction, review, commands, and tools only while two or more native Pi-family adapters exist; host types, model guards, lifecycle payloads, prompt loading, session state, and distinct tool contracts stay at the host seam. Amended 2026-11-17: once OMP retired to the declarative bundle, the Pi adapter was the family's only member, so the private `@maestria/shared-pi` package folded into `packages/pi` and its host-injection wrappers were removed. A family module returns to `packages/shared/` only when a second native Pi-family adapter needs it.
+Share pure host-neutral mechanics through narrow private workspace modules under `packages/shared/`. Their public consumers bundle these build-time dependencies rather than publishing a universal runtime. A module moves to `packages/shared/` only when a second consumer needs it: Pi-family state, compaction, review, commands, and tools were shared with a native OMP adapter until OMP moved to the declarative bundle, then folded back into `packages/pi` on 2026-11-17. Host types, model guards, lifecycle payloads, prompt loading, session state, and distinct tool contracts stay at the host seam.
 
 The mode-sharing decision preserves case-insensitive word boundaries, priority, disabled keywords, code-span exclusion, stripping, section extraction, and the accepted unclosed-fence false-positive behavior recorded in [OC-003](../opencode/ADR-OC-003-keyword-triggered-workflow-modes.md). Share tested mechanics without imposing one adapter's strictness or mode lifetime on another.
 
-Share Pi-family filesystem/frontmatter validation as development tooling while retaining its output, exit status, and strictness. Runtimes whose types or extension subsets are not shown equivalent remain independent under [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md). Distribution topology for Hermes, OMP, and Prime Agent was later superseded by [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md).
+Runtimes whose types or extension subsets are not shown equivalent remain independent under [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md).
 
 The management CLI remains a separate distribution. Derive platform validation from its handler registry while preserving ordering, messages, and public types, without importing effectful handlers into validation or creating cycles. Shared batch mechanics keep sequencing and result handling consistent while individual commands retain choices and messages.
 
-Share demonstrated adapter surfaces directly: narrow installers accept what they use rather than re-wrapping the entire extension API. Private exports and config features without consumers need no compatibility aliases; public plugin contracts still require consumer evidence. Anchor and provenance checks remained load-bearing until 2026-11-17, when [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) retired them with the config-driven engine.
+Share demonstrated adapter surfaces directly: narrow installers accept what they use rather than re-wrapping the entire extension API. Private exports and config features without consumers need no compatibility aliases; public plugin contracts still require consumer evidence.
 
 ## Consequences
 
@@ -36,7 +36,7 @@ Share demonstrated adapter surfaces directly: narrow installers accept what they
 ## Alternatives Considered
 
 - **Keep byte-identical copies:** rejected because long-tail drift is a maintenance failure even before an immediate regression appears.
-- **One shared core runtime for every host mechanic:** rejected because pure mode functions do not establish common state, compaction, dispatch, or Python behavior.
+- **One shared core runtime for every host mechanic:** rejected because pure mode functions do not establish common state, compaction, or dispatch behavior.
 - **One universal bundle:** rejected because it conflates host SDKs, marketplace manifests, runtime languages, peer dependencies, and install paths.
 - **Compatibility shims for unused private APIs:** rejected because no consumer requires them and they prolong dead surface.
 - **Merge host wrappers wholesale:** rejected because host-specific types and lifecycle payloads have not been shown equivalent.
@@ -48,10 +48,6 @@ Share demonstrated adapter surfaces directly: narrow installers accept what they
 - [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md): supported host surfaces and enforcement evidence.
 - [CORE-007](ADR-CORE-007-cli-package-plugin-management.md): CLI ownership and native install handlers.
 
-## Supersession
-
-[CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md) supersedes this record's distribution-status claims for Hermes, OMP, and Prime Agent, and records the consolidated declarative package topology. The decisions here about narrow private code sharing and runtime boundaries remain in force.
-
 ## Date
 
-2026-08-27; consolidated 2026-10-03.
+2026-08-27; amended 2026-11-17.

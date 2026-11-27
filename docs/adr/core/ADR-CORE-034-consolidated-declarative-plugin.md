@@ -2,93 +2,54 @@
 
 ## Status
 
-Accepted (2026-10-10), Confidence: Medium. Amended 2026-10-11, 2026-10-12, 2026-10-13, 2026-10-25, and twice on 2026-11-17 (slim commands and manifest reduction; and the consolidated compiler also writes the OpenCode and Pi adapter files, see [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md)). Its no-hooks stance is superseded by [CORE-037](ADR-CORE-037-hooks-as-deterministic-reinforcement.md) (2026-11-03), and its shared session context by per-host session files (2026-11-03).
+Accepted (2026-10-10), Confidence: Medium. Its no-hooks stance is superseded by [CORE-037](ADR-CORE-037-hooks-as-deterministic-reinforcement.md), and its role roster by [CORE-035](ADR-CORE-035-main-loop-with-one-reviewer.md). Absorbed the portable-format record CORE-022, the Cursor record CR-001, and the Kimi Code record KC-001 on 2026-11-27.
 
 ## Context
 
-Codex, Claude Code, Cursor, and Kimi Code shipped separate packages even though their workflow methodology comes from the same canonical directives. Agent Plugins adds a portable distribution, while Devin and ZCode expose additional declarative plugin surfaces. Maintaining separate product identities and releases obscures which package users should install.
-
-The owner approved consolidating these distributions and removing the old package directories, then selected the portable distribution for Hermes in place of its Python adapter. OpenCode and Pi retain separate runtime adapters. OMP and Prime Agent are not current native runtime adapters.
-
-### Hermes retirement rationale (2026-10-10)
-
-The former Hermes adapter added Python and host-version maintenance to provide tool gates, mode commands and persistence, child tracking, and an OpenCode subprocess bridge. Those capabilities could enforce behavior beyond portable skills, but duplicated host-owned lifecycle and trust mechanisms and expanded the release surface. The consolidated package accepts the loss of those adapter controls: portable methodology does not grant capabilities, while Hermes owns permissions, delegation, trust, goals, memory, and session lifecycle. Role names or delegated text are not authenticated capability grants. Hermes core owns `/goal`; the plugin does not wrap its loop or create competing persistent state. Migration disables the old adapter only after the replacement installs and leaves legacy user files intact. The retired subprocess boundary was removed with its bridge; it is not a current runtime guarantee.
+Codex, Claude Code, Cursor, and Kimi Code shipped separate packages even though their methodology came from the same canonical directives. Agent Plugins v1 adds a vendor-neutral manifest and Agent Skills layout, and Devin, ZCode, OMP, and Hermes expose further declarative surfaces. Separate product identities and releases obscured which package users should install. OpenCode and Pi keep their own runtime adapters.
 
 ## Decision
 
-Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. The package root is directly installable, with host manifests beside generated components, following the PostHog/Pstack structure. Its portable root manifest and native host manifests identify the same versioned product. Native agent, command, and policy compositions carry methodology; the root skill surface contains only reusable handoff and iteration-limit utilities. Native schemas and metadata preserve each host contract.
+Publish one `@maestria/agent-plugins` package from `packages/agent-plugins/`. Its root is directly installable: the portable `plugin.json` and each host manifest sit beside the generated resources, so Git and local loaders select the package root and npm archives expose the same layout. Generated resources are committed because Git consumers do not run the generator. Generation inputs live under `generation/` and are not published. The consolidated compiler is the only writer and composes every resource from `packages/core/agent-directives/`; no host directory becomes a second methodology source.
 
-Canonical shared methodology remains in `packages/core/agent-directives/`. Host-specific profile/native metadata and manifest inputs live in the development-only `generation/` directory. The consolidated compiler is their sole resource writer and composes complete contexts from canonical core sources. Host guidance stays canonical in core; package integrations contain generated runtime guides. Sync checks cover projections and derived installation resources. No host-specific directory becomes a second methodology source.
+Resources follow core's semantic classes: roles in `agents/`, workflow modes in `commands/`, policy in rules or session files, reusable utilities in `skills/`. Each role and mode ships once for every Markdown host. A read-only role carries each host's control in one frontmatter block (`readonly` for Cursor, `disallowedTools: [Write, Edit]` for Claude Code, Kimi Code, and ZCode), because evidence on 2026-10-12 showed these hosts ignore keys meant for others. Codex gets generated TOML, which only the CLI installs. Profiles omit `model` so they use the session's model. Rules stay per host only where formats differ. The per-host mapping and which hosts actually enforce each control live in the [capability contract](../../agent-plugin-capabilities.md).
 
-Start the consolidated version line above every retired package version so ordinary updates are not rejected as downgrades. Keep the existing maestria CLI platform identifiers. Their installers consume the consolidated package while retaining host-native installation and managed-file ownership behavior. Remove the old source package directories and version targets; previously published packages and installed user content are not deleted by this repository migration.
+### Portable format boundary
 
-Core separates semantic ownership: specialists own roles, commands own workflow definitions, rules own shared policy, and skills own reusable utility guidance. The installable root respects those semantic classes: roles in agents, modes in commands, policy in rules, and utilities in skills. Role, mode, dispatcher, and global-policy root SKILL exports are retired. These projections do not become a second methodology source. Describing a future hook, automation, or command in documentation does not implement or activate it; runtime behavior requires an explicit package resource and host configuration. The standalone CLI remains in `apps/maestria-cli`.
+Agent Plugins v1 is a distribution format, not a runtime model, so it is never the canonical representation. The portable surface is the manifest plus generated utility skills; roles, modes, and policy are not converted into portable skills. It declares no MCP configuration, executable agents, commands, or hooks until a concrete host-neutral capability exists. `maestria plugin install` stages the npm package into the CLI cache or a chosen directory; staging does not install or activate it in a client.
 
-Hermes consumes the portable root manifest and discovers qualified skills through its host tools. Retire the Hermes Python adapter, its role gating, mode commands, subprocess bridge, and lifecycle hooks. On migration, disable the old adapter only after the replacement installs successfully; keep legacy files and user data intact.
+### Hermes
 
-### Direct installation root amendment (2026-10-11)
+Hermes consumes the portable package. Its former Python adapter (tool gates, mode commands and persistence, child tracking, an OpenCode subprocess bridge) is retired: it duplicated host-owned lifecycle and trust and added Python and host-version maintenance. That loss of adapter enforcement is accepted. Migration disables the old adapter only after the replacement installs, and leaves user files intact.
 
-Keep `.claude-plugin/`, `.codex-plugin/`, `.cursor-plugin/`, `.devin-plugin/`, `.zcode-plugin/`, the portable manifest, and Kimi manifest directly under `packages/agent-plugins/`. Git/local loaders select this package root; npm archives expose the same resource layout. Generation tooling and manifest inputs remain under `generation/` and are excluded from publication. Track generated installation resources because Git consumers do not run the repository generator. This is one product and release version.
+## Security Boundaries
 
-This amendment replaces the earlier source/bundle split that introduced a nested `plugin/` installation directory and `publishConfig.directory`. That split made Git installation paths less conventional and duplicated semantic views already owned by core. Keeping a directly installable package preserves the familiar PostHog/Pstack layout while retaining canonical ownership. Portable v1 discovery is now deliberately utility-only. Native schemas and permission differences remain explicit; complete workflows use native command/context mechanisms rather than reintroducing root role skills.
-
-### Complete native mappings amendment (2026-10-11)
-
-Audit every supported surface independently and map each to its native agent, command, and policy mechanisms; the current per-host mapping lives in the [capability contract](../../agent-plugin-capabilities.md), not in this record. OMP and Devin load native resources without an executable adapter.
-
-Codex fixes portable discovery to root skills and does not activate native workflow files through the overlay selector. Marketplace installation therefore exposes utilities; the existing companion CLI installs complete TOMLs and a marked full policy/router/mode instruction block. Hermes retains the non-Python portable path with utility-only installation and optional manual host context setup. These are explicit capabilities, not implied parity.
-
-The source/bundle detour and its root fourteen-skill compatibility layout are superseded. Supported but unused hooks, automation facilities, settings, and MCP integrations are distinguished from unsupported or unverified component loading in the [capability contract](../../agent-plugin-capabilities.md). Do not add executable scaffolding merely because a host supports it.
-
-### Shared native profiles amendment (2026-10-12)
-
-Ship each role once as `agents/<role>.md`, and each workflow mode once as `commands/<mode>.md`, for every Markdown host. Read-only roles carry each host's control in one frontmatter block: `readonly` for Cursor, `disallowedTools: [Write, Edit]` for Claude Code, Kimi Code, and ZCode, and `subagents: []` for Kimi. Profiles omit `model`, which Claude Code, Cursor, and ZCode treat as the main conversation's model. Codex profiles are generated TOML beside the Markdown, because Codex loads only TOML agents installed by the companion CLI. Retire the per-host agent and command copies, the dispatcher-only `orchestrator` profile (a child profile cannot dispatch on most hosts, and the always-on context already routes), and Devin's mode skill transport (Devin has no plugin command component; its always-on policy routes mode keywords).
-
-Earlier sessions kept per-host copies on the assumption that hosts reject one another's keys and that Claude and Kimi tool names conflict. Evidence on 2026-10-12 disproved both: Claude Code and Kimi ignore unknown frontmatter fields, both accept a YAML tool list, and current Kimi names its file tools `Write` and `Edit` (the previously shipped `WriteFile` and `StrReplaceFile` matched nothing). A Cursor CLI probe loaded profiles carrying other hosts' keys unchanged. It also showed that Cursor does not enforce `readonly` for plugin-supplied profiles, although it does for project `.cursor/agents/` profiles, so Cursor plugin read-only is intent plus prompt guidance. Rules remain per host only where formats differ; see the shared session context amendment below.
-
-### Shared session context amendment (2026-10-13)
-
-Ship one root `AGENTS.md` for every host that reads a plain session context: Devin loads it always-on, Kimi Code through `systemPromptPath`, the maestria CLI wraps it in its managed block in Codex's `AGENTS.md`, and Hermes users add it manually. The four former files (`AGENTS.md`, `rules/kimi-code/bootstrap.md`, `rules/codex/instructions/AGENTS.md`, `rules/hermes/context.md`) were 95 to 97 percent identical and differed only in each host's integration note; those notes now sit under a Host Notes heading that tells the agent to skip the others. Only OMP (`rules/global.md`, with `alwaysApply` and `trigger` frontmatter) and Cursor (`rules/cursor/maestria-global.mdc`) keep their own rule files. The cost is a few dozen lines of other hosts' notes in each of those sessions; the file must stay under Kimi Code's 32 KB limit, which the generator enforces.
-
-### Four-role roster amendment (2026-10-15)
-
-Ship four specialist profiles: `adventurer`, `architect`, `builder`, and `reviewer`. A separate agent earns its place through isolated context, host-enforced tool limits, independent checking, or parallel work; methods that need none of those ship as bundled methodology skills that any role loads. Delegation history showed `diagnose` mostly running read-only diagnoses that builder then fixed, `planner` rarely used because architect already produced plans, and `writer` acting as a documentation-only builder, while builder, adventurer, reviewer, and architect each relied on their own context or tool limits. So `diagnose` and `plan` become bundled skills (adventurer or builder loads `diagnose`, architect loads `plan`), and documentation work moves to builder with the docs skills. Amended 2026-10-25: `plan` is retired because current models and host plan modes plan well; architect writes phased plans directly, and its durable rules (a tracker that closes tasks with evidence and a decision log for work spanning sessions, removal conditions for compatibility shims) live in the orchestrator and architect. The CLI removes retired Codex profiles through its managed-file manifest; Pi never overwrites or removes deployed agent files, so retired Pi agent files remain until the user deletes them, and the maestria dispatcher refuses them.
-
-### Slim commands and manifest reduction amendment (2026-11-17)
-
-The shared `commands/<mode>.md` set now carries only the mode body and the argument note; the generator no longer composes the router and policy into commands and no longer emits `modes/`. Policy and routing reach each host through its always-on rule, session file, or SessionStart hook. The package no longer ships `.zcode-plugin/plugin.json`; ZCode loads through `.claude-plugin/plugin.json` with auto-discovered `skills/`, `commands/`, `agents/`, and `hooks/hooks.json`. The Claude manifest relies on default `agents/` and `commands/` discovery instead of explicit file lists. Earlier sections above record the retired full-policy commands and the `.zcode-plugin` manifest as history; current inventory lives in source and the capability contract, not in this record.
+The consuming host owns discovery, activation, permissions, trust, sandboxing, lifecycle, delegation, and session state. A shared frontmatter key is a request each host honors on its own terms: Cursor enforces `readonly` for project `.cursor/agents/` profiles but not for plugin-supplied ones (CLI probe, 2026-10-12), and Kimi's write-tool exclusions are filters, not a shell sandbox. Role names and prompt text are not permission identities. Describing a hook, command, or automation in documentation does not implement it; runtime behavior needs a shipped resource and host configuration.
 
 ## Consequences
 
-- Users and maintainers share one declarative plugin identity and release lifecycle: `@maestria/agent-plugins`.
-- One shared profile and command set removes per-host copies; manifests select it explicitly where a host requires file lists, and per-host subfolders no longer exist to be swept by recursive discovery.
-- Host enforcement still differs: a shared key is a request that each host honors on its own terms, so the capability contract records which hosts enforce read-only.
-- Native dispatch, permissions, persistence, and trust remain host-owned; a portable package does not establish runtime parity.
-- Existing users update through their host installer or the maestria CLI; package names and source layout change.
-- More resources ship in one archive, so packed-artifact validation must check containment, reachability, and metadata, not just source-tree existence.
-- Devin and ZCode began as documented candidates; Devin discovery and ZCode loading are now evidenced in the capability contract. Live host verification remains separate from manifest and package validation.
-- Hermes loses adapter-level enforcement and mode persistence; its host owns trust and lifecycle. The former Python package also carried host-version coupling and subprocess-boundary maintenance, now removed with the adapter.
+- Users and maintainers share one plugin identity and release line, started above every retired package version so updates are not rejected as downgrades.
+- One shared profile and command set removes per-host copies.
+- Enforcement still differs by host, so the capability contract records it per host. A conforming package does not guarantee a client discovers or invokes every resource.
+- More resources ship in one archive, so packed-artifact checks cover containment, reachability, and metadata, not just the source tree.
+- Hermes loses adapter enforcement and mode persistence.
 
 ## Alternatives Considered
 
-- **Keep independent declarative packages:** preserves old source paths but retains redundant release and discovery surfaces.
+- **Keep independent declarative packages:** retains redundant release and discovery surfaces.
 - **One universal runtime adapter:** rejected because hosts expose different execution, permission, and lifecycle contracts.
-- **Per-host copies of identical profiles:** retired on 2026-10-12. The copies differed only in frontmatter that every host reads selectively, and their subfolders were themselves exposed to recursive discovery. Rules keep host folders because their formats genuinely differ.
-- **Maintain compatibility packages indefinitely:** rejected by the owner because current adoption does not justify that additional maintenance surface.
-
-## Supersession
-
-- **2026-10-10:** supersedes the separate-package topology in [CORE-022](ADR-CORE-022-agent-plugins-portable-projection.md) and the older Hermes, OMP, and Prime distribution claims in [CORE-020](ADR-CORE-020-hybrid-package-topology.md). Their portable-format and shared-code boundaries remain in force. The same consolidation supersedes the standalone package topology in [CR-001](../cursor/ADR-CR-001-cursor-plugin-architecture.md), while retaining its Cursor-specific integration decision.
-- **2026-10-10:** retires and consolidates Hermes records HM-000 through HM-004. The consequential rationale survives in the Hermes retirement passage above; the removed adapter's implementation details remain in Git history.
-- **2026-10-10:** consolidates the former Kimi distribution record KC-000. [KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) remains the owner of Kimi-specific integration boundaries. Removed identifiers are not reused.
+- **Per-host copies of identical profiles:** retired 2026-10-12; they differed only in frontmatter that every host reads selectively.
+- **A nested `plugin/` bundle directory with `publishConfig.directory`:** retired 2026-10-11 because it made Git install paths unconventional.
+- **Agent Plugins v1 as the canonical format, or runtime code in the portable package:** rejected because the format cannot express agents, commands, hooks, or permissions, and runtime code would make it client-specific.
+- **A Kimi Code or Cursor runtime adapter:** rejected because their declarative surfaces carry the methodology without host-version and release maintenance.
+- **Maintain compatibility packages indefinitely:** rejected by the owner because adoption does not justify the upkeep.
 
 ## Related Decisions
 
 - [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): canonical methodology and generated projections.
-- [CORE-022](ADR-CORE-022-agent-plugins-portable-projection.md): portable format and host-owned runtime boundaries. This decision supersedes its separate-package topology while preserving those boundaries.
-- [CORE-020](ADR-CORE-020-hybrid-package-topology.md): narrow sharing boundaries remain in force; CORE-034 supersedes its older Hermes, OMP, and Prime Agent distribution-status claims.
-- Host plugin references: [Claude Code components](https://code.claude.com/docs/en/plugins/components), [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins), [Cursor plugins](https://cursor.com/docs/reference/plugins.md), [Kimi Code plugins](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html) ([plugin agents](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins.html#plugin-agents)), [ZCode plugins](https://zcode.z.ai/en/docs/plugin), [Oh My Pi plugin documentation](https://omp.sh/docs/plugins), [Devin file format](https://docs.devin.ai/cli/extensibility/plugins/overview) ([Customize product guide](https://docs.devin.ai/product-guides/plugins)).
+- [CORE-020](ADR-CORE-020-hybrid-package-topology.md): narrow sharing boundaries.
+- [Agent Plugins v1](https://agent-plugins.org/specification) and [Agent Skills](https://agentskills.io/specification) specifications.
 
 ## Date
 
-2026-10-10; amended 2026-10-11, 2026-10-12, 2026-10-13, 2026-10-25, and 2026-11-17.
+2026-10-10; absorbed CORE-022 (2026-09-01), CR-001 (2026-07-21), and KC-001 (2026-06-12) on 2026-11-27.

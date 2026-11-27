@@ -18,13 +18,13 @@ The choices:
 
 **Choose: Option 3 - module-scope state, render at compaction time, include in the returned summary.**
 
-`MaestriaState` is maintained by event handlers: `before_agent_start` for `activeTask`, `tool_call` for file tracking, `subagent` tool invocations for `handoffHistory`, and `/review` for `reviewMode`.
+`MaestriaState` lives in the Pi adapter (`packages/pi/src/state.ts`) and is maintained by event handlers: `before_agent_start` for `activeTask`, `tool_call` for file tracking, `subagent` tool invocations for `handoffHistory`, and `/review` for `reviewMode`.
 
 On `session_before_compact`, the extension renders `MaestriaState` to a markdown summary returned as `compaction.summary`. The render includes ## Goal (activeTask), ## Completion Promise, ## Blockers, ## Files Modified, ## Files Read, ## Recent Handoffs, and ## Review State.
 
-The orchestrator prompt template has a "Post-Compaction Recovery" section instructing the LLM to read this block and resume. The `details` field is also populated with the structured `MaestriaState` object for future-proofing.
+The main loop's directives tell the model to read this block and resume. The `details` field is also populated with the structured `MaestriaState` object for future-proofing.
 
-**State Recovery:** advisory, not automatic; explicit orchestrator instructions mitigate misreads. Full persistence (surviving `/reload` and `/new`) requires `pi.appendEntry` and is deferred to v1.1.
+The adapter also writes the state as a `maestria_state` session entry with `pi.appendEntry` and restores it from the last valid entry on the branch, so it survives reloads. State recovery is advisory, not automatic; the main loop's instructions to read the block mitigate misreads.
 
 ## Consequences
 
@@ -32,28 +32,18 @@ The orchestrator prompt template has a "Post-Compaction Recovery" section instru
 - Positive: state renders as plain markdown, readable by the LLM.
 - Positive: the `details` field is populated for future-proofing.
 - Negative: state is advisory, not enforced; the LLM may misread it.
-- Negative: state doesn't survive `/reload` or `/new`.
 - Negative: blockers and handoffs are textual, not structured.
 
 ## Alternatives Considered
 
 - **Pi's default compaction** - generic; doesn't preserve maestria state.
 - **Append-only state** - not possible since `compaction.summary` is wholesale replacement.
-- **State persistence via `pi.appendEntry`** - would survive `/reload` but requires more code. Deferred to v1.1.
 
 ## References
 
 - Pi `session_before_compact` event documentation
 - Pi `CompactionEntry` structure documentation
 - OpenCode equivalent - its compaction hook for session state management
-
-## State Relocation and Deferred Persistence
-
-Moved 2026-09-11: the module-scope state and its renderer moved into the private `@maestria/shared-pi/state-core` module, then shared with the retired OMP package; see [ADR-CORE-020](../core/ADR-CORE-020-hybrid-package-topology.md).
-
-Moved 2026-11-17: with OMP retired, Pi was that module's only consumer, so the state and renderer now live in the Pi adapter (`packages/pi/src/state.ts`) and the compaction handlers beside them. The decision above is unchanged.
-
-Full session persistence surviving `/reload` and `/new` still requires `pi.appendEntry`; deferred to v1.1 (see ADR-PI-000 for v1.1 scope).
 
 ## Date
 
