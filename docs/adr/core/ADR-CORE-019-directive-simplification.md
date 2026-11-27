@@ -2,83 +2,58 @@
 
 ## Status
 
-Accepted (2026-08-22), Confidence: High. Consolidated 2026-10-03 with the global-rule scope, autonomy, review, routing, evidence, handoff, and incremental-delivery decisions made from 2026-06-12 through 2026-09-25. Earlier wording and superseded experiments remain in Git history.
+Accepted (2026-08-22), Confidence: High. Condensed 2026-11-27 to the decisions that still hold after the main loop ([CORE-035](ADR-CORE-035-main-loop-with-one-reviewer.md)) and the always-on split ([CORE-036](ADR-CORE-036-always-on-core-and-skill-map.md)); it absorbed the testing record CORE-028's evidence principle. Earlier pipeline, specialist, and review-briefing wording is in Git history.
 
 ## Context
 
-OpenCode sessions repeatedly stopped before PR creation without a tool or authorization failure, treated cancelled delegates as reviewer verdicts, and asked for approval on routine delivery. Repeated rules and dead skill references increased context without making the outcome clearer. A universal specialist pipeline also multiplied context, latency, and cost for small tasks; observed session costs varied substantially by model, so one delegation depth could not serve every host and model.
-
-Later audits found specialists selecting one slice without assigning the remainder, diagnosis running history searches regardless of symptoms, and checks repeated after their evidence was already sufficient. These were ownership and instruction problems. They did not justify relaxing host permissions, consequential authorization boundaries, or independent review.
+OpenCode sessions repeatedly stopped before creating a PR without any tool or authorization failure, treated cancelled delegates as reviewer verdicts, and asked for approval on routine delivery. Repeated rules and dead skill references grew the context without making the outcome clearer, and a universal specialist pipeline multiplied cost and latency for small tasks. Later audits found work split into slices with nobody owning the rest, investigation run regardless of symptoms, and checks repeated after their evidence was sufficient. These were ownership and instruction problems. They did not justify relaxing host permissions, authorization boundaries, or independent review.
 
 ## Decision
 
-### Scope and routing
+### Scope
 
-Global rules carry cross-cutting evidence, safety, authorization, review, and completion principles. Specialist prompts own domain methodology; host adapters own execution authority and enforcement. A rule that only repeats a host default does not earn always-loaded context. Independently loaded specialist prompts may repeat a binding constraint when standalone reliability requires it.
+Always-on rules carry what every turn needs: evidence, safety, authorization, review, and completion. Task-shaped method lives in skills, and host adapters own execution authority and enforcement. A rule that only repeats a host default does not earn always-on context.
 
-Choose the smallest safe route: direct work for familiar low-risk tasks, one focused specialist for a concrete outcome, or a full pipeline for genuine uncertainty or risk. The host decides whether direct execution is permitted. Explicit workflow modes govern their requested route without waiving safety or required review. Model economics inform judgment; this decision does not establish automatic price detection, a model-tier variable, or a telemetry-driven router.
+### Ownership and routing
 
-The assigned outcome stays owned until its acceptance evidence exists. A specialist that decomposes work names ownership for the remainder; finishing one slice cannot represent completion of the whole assignment. Investigation, skill loading, comparisons, and checks follow missing evidence and applicable risk. History can help diagnosis, but an old line alone does not establish a regression's origin.
+Take the smallest safe route: direct work for familiar low-risk tasks, more method for genuine uncertainty or risk. Workflow modes change the route without waiving safety or required review. Model cost informs judgment; there is no automatic price detection, model-tier variable, or telemetry router. The assigned outcome stays owned until its acceptance evidence exists, and whoever splits work names the owner of the remainder. Investigation and checks follow missing evidence; an old line in history does not by itself establish where a regression came from.
 
 ### Autonomy and delivery
 
-Routine in-scope execution and validated feature-branch commits, pushes, and PR creation proceed under existing authorization. Where repository and host capabilities support PRs, implementation completes with reviewed changes on a pushed branch and an open PR carrying its acceptance evidence. Research, planning, and explicitly local or read-only work end at their requested artifact. Merge, release, production, protected branches, and consequential changes remain distinct authorization boundaries controlled by the host and user.
+Routine in-scope work, feature-branch commits, pushes, and PR creation proceed under existing authorization. Implementation ends with reviewed changes on a pushed branch and an open PR carrying its acceptance evidence; research, planning, and explicitly local work end at their requested artifact. Merge, release, production, protected branches, and consequential changes stay separate authorization boundaries. Delivery method belongs to the main loop, not the global rules, because the reviewer receives the global rules but does not deliver; a test in `packages/core/tests/directives.test.ts` keeps it there.
 
-A failed or cancelled delegation is transport trouble, not a review verdict or lost authorization. Retry once with an adjusted brief, then report the concrete blocker. User-initiated cancellation is terminal. Repeated user rejection calls for approach reconsideration rather than repeated permission questions or the same attempted design.
-
-Validate coherent slices before committing them when they provide useful review or rollback points. Plan independently acceptable PR boundaries early; stack only actual dependencies. Intermediate commits do not establish acceptance or authorize shipping. The delivery owner verifies the integrated result, including later changes, and reuses still-valid checks. Show a proposed design when architect or planner work guides implementation; this is visibility, not an extra approval checkpoint.
+A failed or cancelled delegation is transport trouble, not a review verdict or lost authorization: retry once with an adjusted brief, then report the blocker. User cancellation is terminal. Repeated user rejection calls for a different approach, not repeated permission questions.
 
 ### Review and repair
 
-The implementer cannot approve its own required review. A reviewer independently inspects original requirements, relevant source and diff, and acceptance evidence; maker narrative alone is not a signal of correctness. Access scope should make that independent evidence reachable without requiring the reviewer to accept the maker's preferred diagnosis.
+The implementer cannot approve its own required review. The reviewer inspects the original requirements, source, diff, and acceptance evidence itself; the maker's narrative is not evidence. Use one review and, only when blockers exist, one repair and re-review, with at most three passes for one outcome across delegations. Minor, speculative, and out-of-scope findings do not trigger repair. An empty or blocked review is not approval.
 
-Use one independent review and one repair/re-review pass when material blockers exist. Further passes require a named unresolved blocker or a repair regression, with at most three passes for the same outcome across delegations. Minor, speculative, and out-of-scope findings do not trigger repair. Empty or blocked review is not approval; report unavailable evidence and an honest incomplete outcome. Preserve concise actionable findings and concrete failure reporting rather than relying on exact verdict phrases as runtime enforcement.
+### Evidence
 
-The historical review specification of 2026-07-28 explicitly excluded maker-authored handoffs, implementation summaries, self-assessments, interpreted test narratives, and access lists that leaked the maker's reasoning from reviewer briefs; raw pass/fail counts were allowed. Original requirements, pre-work acceptance criteria, and the diff were required. Inability to assess them was a requirements finding, not permission to substitute the maker's explanation. The orchestrator retained handoffs for lifecycle control. This filters agreement bias without another stage, but costs disciplined context preparation and remains advisory rather than mechanically enforced.
-
-The same decision blocked the normal commit flow after three passes with unresolved material fixes. It required surfacing attempted approaches, remaining findings, and the last attempted delta; proceeding required explicit user acknowledgment of that delta or architectural redesign. The delta and verdict stayed in the session summary even after an override. This failure-boundary checkpoint interrupts autonomy deliberately, avoiding silent shipping while allowing an accountable user choice; overrides still cannot waive safety, host authority, or protected-branch rules.
-
-These historical specifications were unique to the earlier decision record: the 2026-09-28 source audit found the canonical directives carrying the broader maker/checker, triage, repair-bound, and compact blocker contracts, rather than the explicit context exclusions and detailed failure exit. This consolidation preserves their rationale without claiming that the current runtime or directives implement those specifications. Verify operational behavior in the [canonical rules](../../../packages/core/agent-directives/rules.md) and [orchestrator](../../../packages/core/agent-directives/specialists/orchestrator.md).
-
-### Contracts and optional specifications
-
-Keep each behavioral contract in its canonical home, then project it through [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md). Skill catalogs name verified available skills; host discovery handles niche capabilities. PR preparation mechanics belong in the applicable delivery skill, with current tool capabilities checked when needed.
-
-Delegation carries a compact, format-agnostic handoff: outcome, context and constraints, acceptance and evidence, assumptions or blockers, and next step. Historically called Spec-Driven Delegation, this is contract-driven delegation; it requires neither a spec file nor a machine-validated fixed field count. Dispatch validation and host tool permissions remain separate mechanisms.
-
-An optional intent helper may reference an owning specification when persistence across steps reduces risk. External spec formats keep ownership of their files and checklists. The helper borrows read-only analysis, explicit ambiguity, append-only progress notes, and phased acceptance; it owns no storage, vendors no schema, rewrites no owning spec, and adds no specialist or auto-sync system. Tiny tasks can omit it.
-
-Testing policy and its reasons live in [CORE-028](ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md) and [the testing guide](../../testing.md). Deterministic source checks establish the contracts they exercise; prose checks cannot establish cross-host model behavior or measured gains.
-
-### Delivery-owner placement amendment (2026-10-15)
-
-Delivery ownership is orchestrator methodology, not a cross-cutting rule: workflow modes, continuation ownership, autonomous commit, push, and PR creation, PR slicing, and the PR skill pointer live in the canonical orchestrator, and the global rules keep what every role acts on (evidence, scope, testing, handoffs, review, repair, authorization, protected branches, commits, and background processes). Every host already composes the orchestrator with the global rules for its routing context: workflow commands, always-on rules and session context, Pi's injected skills, and OpenCode's `orchestrator` agent. Routing sessions keep the complete policy, while specialist profiles and per-request specialist context stop carrying rules they cannot act on. On OpenCode the plugin also sends the delivery sections to agents it does not bundle (OpenCode's own `build` and `plan`, or user-defined agents), because users run delivery work through them; a directly invoked specialist receives only the global rules and asks before pushing or opening a PR. A deterministic check keeps delivery-owner rules out of the global rules.
+Each behavioral contract has one canonical home and is projected through [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md). Deterministic checks establish machine-readable, sync, and safety contracts; they cannot establish cross-host model behavior. Exact wording or heading order is not preservation evidence: generated projections are checked by `check-sync`, runtime contracts by executable tests, and model behavior by [directive change review](../../directive-change-review.md). The testing procedure lives in [the testing guide](../../testing.md) and the `implement` skill.
 
 ## Consequences
 
-- Outcome ownership and explicit completion reduce delivery stalls, while coherent slices improve review and rollback.
-- Single-home rules and selective delegation reduce maintenance and context load. They give up some niche heuristics and structured handoffs, so agents must escalate when risk or missing evidence warrants it.
-- Independent review costs another context and may be advisory on hosts without runtime review gates. The methodology must describe that limitation honestly.
-- More judgment is required from models. Behavioral improvements need representative scenario evidence across hosts and model tiers; they are not guaranteed by shorter prompts.
-- Multi-PR work requires per-PR acceptance and integrated verification while sharing one bounded repair budget.
+- Outcome ownership and explicit completion reduce delivery stalls; coherent slices give review and rollback points.
+- Single-home rules and proportionate routing reduce context and maintenance, at the cost of more model judgment and escalation when risk warrants it.
+- Independent review costs another context and is advisory on hosts without runtime review gates; the methodology says so.
+- Behavioral improvements need scenario evidence across hosts and models; shorter prompts do not guarantee them.
 
 ## Alternatives Considered
 
-- **Patch repeated approval and stop-condition prose:** rejected because duplication and ambiguous ownership caused the stalls; another caveat would preserve them.
-- **Apply the full pipeline universally, or reserve cheap work for blitz alone:** rejected because delegation cost and host capability vary, and a user mode is not a model-economics policy.
-- **Solve autonomy through permissions alone:** rejected because the host owns those controls and clear completion still matters within permitted execution.
-- **Remove specialist methodology or use minimal principles alone:** rejected because role ownership, acceptance, independent review, and useful handoffs remain needed.
-- **Add separate mandatory test-authoring stages or a spec-owner role:** rejected because extra context hops and roles do not supply a missing architectural capability.
-- **Put every procedure in global rules or every obligation in optional skills:** rejected because the former bloats context while the latter can hide cross-role obligations behind an unloaded skill.
-- **Require design approval or a fixed spec header for every task:** rejected because ordinary authorization and task-sized evidence already define the needed boundary.
+- **Patch repeated approval and stop-condition prose:** rejected because duplication and unclear ownership caused the stalls.
+- **One pipeline for every task:** rejected because delegation cost and host capability vary.
+- **Solve autonomy through permissions alone:** rejected because hosts own permissions and clear completion still matters within them.
+- **Every procedure in global rules, or every obligation in optional skills:** rejected because the first bloats context and the second hides cross-role obligations behind an unloaded skill.
+- **Mandatory test-authoring stages or a spec-owner role:** rejected because extra roles and hops do not supply a missing capability.
+- **Design approval or a fixed spec header for every task:** rejected because ordinary authorization and task-sized evidence already set the boundary.
+- **Exact-wording pins as preservation evidence:** rejected because harmless edits break them and they cannot prove model behavior.
 
 ## Related Decisions
 
-- [CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md): canonical ownership and host projections.
 - [CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md): capability and enforcement claims.
-- [CORE-028](ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): behavior-first testing and evidence.
 - [OC-001](../opencode/ADR-OC-001-tool-permission-design.md): the OpenCode permission boundary.
 
 ## Date
 
-2026-08-22; consolidated 2026-10-03.
+2026-08-22; absorbed CORE-028 (2026-09-24) on 2026-11-27.

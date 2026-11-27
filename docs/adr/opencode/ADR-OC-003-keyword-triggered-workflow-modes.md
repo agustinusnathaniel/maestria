@@ -1,100 +1,43 @@
-# ADR-OC-003: Keyword-Triggered Workflow Modes - Hybrid Hook + Prompt, Denylist Config
+# ADR-OC-003: Keyword-Triggered Workflow Modes
 
 ## Status
 
-Accepted (2026-06-14). Amended 2026-10-14: from `@maestria/opencode` 0.9.0 the OpenCode adapter detects modes during V2 prompt admission instead of the V1 `chat.message` hook; see the V2 adapter amendment.
+Accepted (2026-06-14). Amended 2026-10-14: OpenCode detects modes during V2 prompt admission. Condensed 2026-11-27: mode behavior now follows the main loop ([CORE-035](../core/ADR-CORE-035-main-loop-with-one-reviewer.md)), and each mode's current text lives in `packages/core/agent-directives/commands/`.
 
 ## Context
 
-The orchestrator's default pipeline handles most work well, but three usage patterns don't fit it: full-pipeline methodical work with reviewer approval before sign-off; research-only investigation producing structured output then stopping; and fast implementation that skips optional ceremony while preserving safety, authorization, branch, validation, and required-review floors.
-
-Before this ADR, intent could only be expressed through ambiguous natural-language prompts ("take your time", "just explore", "ship it fast"), so research looked like a plan request and fast work triggered the full pipeline. A one-word, machine-detectable mechanism was needed to redirect the pipeline upfront.
+Most work fits the default route, but three intents do not: careful work with full method and a required review, research that must stop before changing anything, and fast work that skips optional ceremony while keeping safety, authorization, and required review. Natural-language hints ("take your time", "just explore", "ship it fast") were ambiguous, so research looked like a plan request and fast work got full ceremony. Users needed a one-word, machine-detectable way to set the route up front.
 
 ## Decision
 
-### Detect Three Keywords in a Prompt Hook
+Three plain-word keywords select a mode for the turn:
 
-| Mode | Keyword | Origin | Meaning | Pipeline Behavior |
-| --- | --- | --- | --- | --- |
-| Full pipeline | `fein` | German | Fine, precise, careful | Mandatory recon → design → build → review. Reviewer gate non-negotiable. |
-| Research only | `sonar` | Space/tech | Scan depths, map terrain | Read-only `@adventurer` or `@architect` research → STOP (`@planner` until the 2026-10-15 four-role roster, ADR-CORE-034). No builder calls or production-file writes. |
-| Fast implementation | `blitz` | German | Lightning, fast | Builder direct. Skip optional recon/design ceremony; required review remains. |
-
-### Detection Syntax
-
-| Rule | Value |
+| Mode | Meaning |
 | --- | --- |
-| Position | Anywhere in the message |
-| Detection mechanism | Word-boundary regex (`\bfein\b`, `\bsonar\b`, `\bblitz\b`) |
-| Multiple keywords | Most restrictive keyword wins (fein > sonar > blitz) |
-| Special characters / brackets / prefixes | None - plain words only |
-| Code blocks | Keywords inside code fences and `inline` backtick spans are excluded |
-| Stripped before orchestrator | Removed from message text |
+| `fein` | Full method: recon and design skills, implementation, required blind review. |
+| `sonar` | Research only: investigate and answer, change no files, dispatch no subagents, then stop. |
+| `blitz` | Direct work that skips optional recon and design; review only when required. |
 
-Plain words over bracketed syntax: lower friction (`fein: map the auth module` reads naturally), learnable by context, no prefix collision (the keywords are not common programming terms), and most-restrictive-wins handles mid-message rephrasing.
+Detection lives in code; behavior lives in prompts. The shared detector in `packages/shared/mode` matches whole words case-insensitively anywhere in the message, ignores matches inside fenced code and inline backticks, and picks the most restrictive mode when several appear (`fein` over `sonar` over `blitz`). An unclosed fence is not treated as code; that false positive is accepted. The adapter strips the keyword and prepends a `[MODE: <name>]` marker and the mode's prompt. Each mode prompt states its full behavior on its own, so changing a mode means editing one prompt.
 
-### Mechanism: Hybrid Hook + Prompt
+On OpenCode the V2 `session.hook("prompt")` admission hook expands a bare keyword before the message is stored, so the marker travels with the message across continuations, queued delivery, and reloads with no per-session cache; each new prompt selects its own mode. Explicit slash commands submit the same template and skip a second expansion. The global rules and `.maestria/` files are appended by separate `context` and `compaction` hooks, because V2 reference registration does not load file content as instructions. Adapters that persist a mode in session state document its lifetime and expose a reset such as Pi's `/mode-clear`.
 
-Detection lives in the hook; behavior lives in prompts plus orchestrator and global rules. No pipeline logic in TypeScript beyond detection.
-
-| Layer               | What it does                                         |
-| ------------------- | ---------------------------------------------------- |
-| Prompt hook         | Regex detection, keyword stripping, marker injection |
-| Mode prompt strings | Static prompt snippets for fein/sonar/blitz          |
-| Orchestrator rules  | Mode behavior definitions, pipeline overrides        |
-| Global rules        | Awareness bullet: "mode keywords change pipeline"    |
-
-The prompt hook (V1 `chat.message`, V2 `session.hook('prompt')`) tests each message, resolves multiples to the most restrictive mode, strips the keyword, and prepends the `[MODE: fein]` (or `sonar`/`blitz`) marker plus that mode's summary prompt. The marker is **re-injected every turn**, so the orchestrator receives the mode instruction fresh each time and mode changes mid-task carry no stale state. Other adapters may persist mode state and must document a clear/reset path.
-
-Mode is per-turn, not per-phase; conversation history tracks progress between turns. Adapters using session state must document its lifetime and expose a neutral reset such as `/mode-clear`. Each mode prompt fully describes its pipeline behavior without referencing the orchestrator's global CRITICAL RULES, so behavior changes require editing only the prompt strings at the cost of duplicating those rules.
-
-### Config Model: Denylist Only
-
-| Feature           | Value                                 |
-| ----------------- | ------------------------------------- |
-| Config shape      | `disabledKeywords: string[]`          |
-| Default           | All modes enabled                     |
-| Opt-out mechanism | User adds mode name to denylist       |
-| Allowlist         | None - not supported                  |
-| Default mode      | None - no fallback mode               |
-| Per-agent config  | None - mode applies globally per turn |
-
-The `modes.disabledKeywords` field is decoded by the plugin options schema in `packages/opencode/src/index.ts`, whose keyword literals come from the canonical mode keywords.
-
-Denylist over allowlist (a new mode works out of the box), no default mode (the standard pipeline is the implicit fallback), no per-agent overrides (mode governs the orchestrator's pipeline, not agent behavior).
-
-### ADR-Naming Compliance (ADR-CORE-002)
-
-The keywords are functional descriptors, not mythological or thematic: **fein** (German for "fine, precise"), **sonar** (technology metaphor for scanning without action), **blitz** (German for "lightning"). Functional naming tells you what the agent does.
-
-### What We Avoid
-
-| Anti-pattern                | Why Not                                                           |
-| --------------------------- | ----------------------------------------------------------------- |
-| Bracketed syntax (`[FEIN]`) | Noisy and mechanical; plain words read naturally.                 |
-| Hashtag prefixes (`#fein`)  | No advantage over plain words.                                    |
-| Case-sensitive matching     | `Fein`, `FEIN`, `fein` all trigger; lowercase is canonical.       |
-| Leftmost-wins               | Most-restrictive-wins lets users self-correct mid-message.        |
-| Persistent mode state       | OpenCode is per-turn; session-state adapters must document reset. |
-| Phase tracking              | Over-engineered; history handles it.                              |
-| Default / fallback mode     | Standard pipeline is the implicit default; keywords override.     |
-| Allowlist configuration     | New modes should not break setups; denylist is forward-safe.      |
-| Per-agent mode overrides    | Mode governs the orchestrator pipeline, not agents.               |
-
-## V2 adapter amendment (2026-10-09, updated 2026-10-14)
-
-From `@maestria/opencode` 0.9.0 this is the only OpenCode adapter; the V1 `chat.message` path ships only in 0.8.0 and earlier. OpenCode V2 uses the Effect `session.hook("prompt")` admission hook instead of V1's `chat.message`. Bare keywords expand into the marker, synced mode prompt, and stripped user text before durable admission. Explicit slash commands submit the same template and bypass repeat expansion. Attachment identities remain intact, while mention ranges invalidated by prefixing instructions are removed.
-
-The admitted message carries the mode across continuations, queued delivery, and plugin reloads. No per-session cache or FIFO eviction is needed; each new user prompt selects its own mode. The separate `context` and `compaction` hooks append bundled global rules and the project's `.maestria/` files because V2 reference registration does not load file content as instructions. Title and generate requests retain the host's own guidance.
+Configuration is a denylist only: `modes.disabledKeywords` turns modes off, every mode is on by default, and there is no default mode or per-agent override.
 
 ## Consequences
 
-One-word machine-detectable intent in plain words, with per-turn detection (mid-task switching, no stale state), a minimal auditable hook, a one-array denylist, and ADR-CORE-002 compliant naming, all without disturbing existing orchestrator behavior. Costs: three more concepts to learn; plain-word false positives (e.g., "sonar" in a code snippet); no hybrid shortcut ("research + build" needs two turns); a trivial per-message processing step. (Historical note: prompts lived in TypeScript for hook injection at the cost of a package rebuild to edit.)
+- One word sets intent, per turn, with no stale state between turns.
+- The detection hook stays small and auditable.
+- Users learn three terms; a keyword in ordinary prose can trigger a mode by accident; combining research and build takes two turns.
 
-## Lessons Learned
+## Alternatives Considered
 
-Plain words over brackets came from user-first reasoning; per-turn mode eliminates stale-state bugs (no session flag to reconcile across mid-session switches or compacted state); the hybrid split follows ADR-CORE-002 (minimal hooks) and ADR-OC-001 (policy in directives); mode prompts are orchestrator rules, not global rules, per ADR-CORE-019's cross-cutting-only filter; denylist config is forward-safe (a fourth mode reaches existing users automatically).
+- **Bracketed or prefixed syntax (`[FEIN]`, `#fein`):** rejected as noisier with no detection benefit.
+- **Leftmost keyword wins:** rejected because most-restrictive-wins lets users correct themselves mid-message.
+- **Persistent mode state with phase tracking:** rejected for OpenCode because per-turn detection avoids stale state and history already shows progress.
+- **An allowlist or default mode:** rejected because a denylist lets a new mode reach existing users, and the normal route is the implicit default.
+- **Per-agent mode overrides:** rejected because a mode governs the session's route, not individual agents.
 
 ## Date
 
-2026-06-14
+2026-06-14; amended 2026-10-14.

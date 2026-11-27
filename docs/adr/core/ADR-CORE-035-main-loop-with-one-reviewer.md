@@ -42,7 +42,7 @@ Host enforcement follows: OpenCode's orchestrator gets the writer tool set and m
 
 ## Supersession
 
-Supersedes [ADR-OC-008](../opencode/ADR-OC-008-orchestrator-main-loop.md), which folded OpenCode only.
+Supersedes OC-008, which folded OpenCode only; that record was removed on 2026-11-27 because this one carries its evidence.
 
 Amended by [CORE-036](ADR-CORE-036-always-on-core-and-skill-map.md).
 

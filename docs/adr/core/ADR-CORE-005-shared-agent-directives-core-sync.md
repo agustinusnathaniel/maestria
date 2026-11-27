@@ -1,98 +1,60 @@
-# ADR-CORE-005: Canonical Directives and Declarative Host Projections
+# ADR-CORE-005: Canonical Directives and Generated Host Projections
 
 ## Status
 
-Accepted (2026-06-23), Confidence: High. Consolidated 2026-10-03 with root-resolved tooling (2026-08-12), anchor preflight (2026-09-10), and fail-closed source resolution (2026-09-11). Amended 2026-10-12 with skill ownership tiers, 2026-10-13 with bundled methodology skills authored in core, and 2026-11-17 with one plan compiler for every generated package, which retires the config-driven engine, its anchor validation, and its git provenance check.
+Accepted (2026-06-23), Confidence: High. Last amended 2026-11-17: one plan compiler builds every generated package.
 
 ## Context
 
-OpenCode, Pi, and Kimi originally maintained independent copies of mostly identical specialist prompts, rules, and orchestration methodology. Manual porting and package-local shell transforms drifted. Differences in tool names, frontmatter, invocation syntax, and file layout were mechanical enough to project from one readable source once multiple hosts demonstrated the shared need.
-
-Literal replacements introduced another risk: an anchor could disappear or be rewritten by an earlier operation, leaving a silent no-op. Missing source files also produced empty or partial output. A check that discovered failure after writing earlier files could not protect the projection boundary.
+OpenCode, Pi, and Kimi once kept separate copies of mostly identical prompts, rules, and methodology, and manual porting drifted. The differences between hosts (tool names, frontmatter, invocation syntax, file layout) were mechanical enough to project from one readable source.
 
 ## Decision
 
-### Ownership and projection
+### Ownership
 
-Author shared prompts, rules, workflow modes, and skills only in `packages/core/agent-directives/`. Keep prose readable Markdown with canonical role tokens; host-specific tool syntax, frontmatter, and layouts belong in the generator: `scripts/native-adapter-files.ts` and `packages/opencode/generation/agents.ts` for the OpenCode and Pi adapters, and the consolidated generator's manifest inputs for declarative hosts (see [CORE-034](ADR-CORE-034-consolidated-declarative-plugin.md)). The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the maintained source layout.
+Author shared prompts, rules, workflow modes, and maestria's own method skills only in `packages/core/agent-directives/`, as readable Markdown with canonical role tokens. Host tool syntax, frontmatter, and layout belong to the generator. The [content ownership guide](../../../packages/core/agent-directives/README.md) owns the source layout.
 
-One monorepo-internal TypeScript sync tool derives host artifacts through content composition, frontmatter serialization, generated notices, and normalized output. Until 2026-11-17 it was a config-driven engine with defaults, per-file overrides, and preserved host-local content that did not know platform identities; it is now one plan compiler that names every output (see the 2026-11-17 amendment). Static frontmatter avoids another dynamic extension surface. Library YAML quoting is sufficient unless a host demonstrates a stricter need.
+### One plan compiler
 
-The orchestrator follows the same projection path because its methodology was also mostly duplicated; host-local integration is not a reason to maintain the entire prompt separately. Generated notices are unconditional. `scripts/sync-all` writes projections; `scripts/check-sync` regenerates and compares byte identity. Generated output is excluded from ordinary formatting so format and sync cannot repeatedly undo each other. Commands, flags, and exact composition are maintained in [the plan compiler](../../../scripts/sync-consolidated-plugin.ts) and its helper modules, rather than copied here.
+`scripts/sync-consolidated-plugin.ts` builds one explicit output plan per generated package: `@maestria/agent-plugins`, plus the OpenCode and Pi adapter files listed in `scripts/native-adapter-files.ts`. Every plan is built and its paths validated before any package is written; reading a missing canonical file or `## heading` throws before the first write. Stale removal touches only files carrying the generator's notice. Generated notices are unconditional, and generated output is excluded from formatting so format and sync cannot undo each other. `scripts/sync-all` writes; `scripts/check-sync` regenerates and compares bytes, which also reports any hand edit as drift.
 
-### Root-resolved development tooling
+The compiler replaced a config-driven engine with defaults, per-file overrides, anchor validation, and a git provenance check. Those served fixed compositions that the compiler now names directly; the one remaining text rewrite (`@role` to Pi's `/role`) cannot drop content, and `packages/core/tests/roster.test.ts` checks it and each adapter's agent set.
 
-Use one exact root-pinned `tsx` runner through `pnpm exec`, preserving each package's config working directory and the absolute script path. The root scripts discover package configs and are the supported shared entry points. A package-local `npx` invocation fell back to registry downloads when local tooling was missing and broke clean/offline CI. Per-package runner copies permit version drift; direct `node_modules` paths couple scripts to package-manager layout.
+### Development tooling
 
-The tool is not published: it runs only within this monorepo, so a publish/consume cycle adds versioning and release work without a consumer benefit. The cost is requiring the workspace installation rather than running sync from an isolated package.
+Run the generator through one root-pinned `tsx` via `pnpm exec`. A package-local `npx` fell back to registry downloads when tooling was missing and broke offline CI. The tool is not published because nothing outside this repository consumes it.
 
-### Consolidated compositions and whole-run preflight (2026-10-11)
+### Skill ownership
 
-The consolidated plugin compiler (`scripts/sync-consolidated-plugin.ts`) composes multiple canonical role, policy, router and mode inputs into native resources while retaining core ownership and shared normalization/frontmatter helpers. Until 2026-11-17, generic sync configs remained in use for the native adapters, and the root wrapper validated every discovered config with a read-only dry-run before any write. Detected processing errors return failure in dry-run and write modes as well as check mode, so output-file errors cannot silently bypass the preflight.
+- **Method skills** maestria's own workflow names (`architecture-plan`, `create-pull-request`, `diagnose`, `docs-update`, `handoff`, `implement`, `recon`, `review-loop`) are authored once under `skills/` and copied by `scripts/sync-bundled-skills.ts` into every maestria package, so no host has a directive pointing at a missing skill. Runtimes maestria does not package install them with `npx skills add agustinusnathaniel/maestria`, which follows the Claude marketplace entry's relative source.
+- **Generic engineering skills** live in their own repositories (for example `agustinusnathaniel/skills`). Directives may name them; users install them; maestria never vendors them.
 
-### Shared source plan and no-write preflight (retired 2026-11-17)
-
-This section described the config-driven engine and is kept as history; the plan compiler below replaced it.
-
-Resolve one ordered plan for validation and processing: primary Markdown in walk order, then secondary configured entries in declaration order. A missing source directory or configured file absent from both resolution locations throws `ConfigError` before any writes, cleanup, or removal. Missing inputs are not a verbose-only skip. Exit codes distinguish success (0), projection drift (1), and invalid configuration (2).
-
-Validate anchors before processing, counting matches immediately before each ordered replacement. A default operation must match somewhere across its swept files; a file operation must match in its own file. Empty and identity replacements are invalid even when they match. Dead and shadowed anchors produce deterministic diagnostics naming config, scope, file, anchor, and match count, with no output mutation. Scope remains internal to resolution rather than becoming another authoring field.
-
-### Skill ownership tiers (2026-10-12, amended 2026-10-13 and 2026-11-03)
-
-Every skill has one owner and one install path:
-
-- **Core utility skills** (`handoff`, `iteration-limits`) were projections, not authored files, until 2026-11-03, when [CORE-036](ADR-CORE-036-always-on-core-and-skill-map.md) moved their text out of `rules.md` and made `handoff` and `review-loop` (formerly `iteration-limits`) authored bundled skills. Each is generated from one `rules.md` section through one shared section extractor: the generic engine selects it with a per-file `section` option, the consolidated compiler with its own utility-to-section map. A missing heading fails before any write. Hand-authored copies had drifted: Pi still described a seven-field handoff contract after the fixed schema was retired, and `iteration-limits` carried stop rules the global policy lacked.
-- **Bundled methodology skills** (`create-pull-request`, `docs-update`) live once in core at `packages/core/agent-directives/skills/`, so core is the single authoring home for everything maestria writes. `scripts/sync-bundled-skills.ts` copies each into every maestria package (`@maestria/agent-plugins`, `@maestria/opencode`, `@maestria/pi`) with a provenance notice, and `scripts/check-sync` guards the copies, so they version with each package and no host has a directive pointing at a missing skill. The OpenCode plugin registers its copy through `skills.paths` in its config hook. Runtimes maestria does not package run `npx skills add agustinusnathaniel/maestria`: the skills CLI follows the relative `./packages/agent-plugins` source of the Claude marketplace entry to the plugin's four skills. There is no root `skills/` copy; it would be a fourth duplicate, and without a marketplace path the CLI's repository-wide fallback scan also offers the Pi adapter's internal `global-rules` and `orchestrator` skills. The relative source also means direct Claude marketplace installs come from the repository's default branch, as Cursor's already do; the maestria CLI still installs the npm release. Until 2026-10-13 the CLI installed them as optional companions through the pinned `skills` CLI; that left marketplace, Devin, ZCode, and Hermes users without skills the core rules name, and needed a second, unversioned Claude manifest. The CLI now only removes copies it installed earlier, using its ownership record.
-- **Generic engineering skills** live in their own repositories (for example `agustinusnathaniel/skills`). Directives may name them as on-trigger loads, users install them, and maestria never vendors them.
-
-Anything every role needs stays inline in core policy; a skill tier is never the only home of a cross-role obligation ([CORE-019](ADR-CORE-019-directive-simplification.md)).
-
-### One plan compiler (2026-11-17)
-
-The config-driven engine (`packages/core/scripts/sync.ts`, its config loader, plan, anchor, provenance, diff, and auto-clean libraries, and the two `sync.config.ts` files) served only OpenCode and Pi, which needed fourteen files built from a few fixed compositions. It is retired. `scripts/sync-consolidated-plugin.ts` now builds one explicit output plan per generated package: `@maestria/agent-plugins`, plus the OpenCode and Pi adapter files listed in `scripts/native-adapter-files.ts`. OpenCode's permission maps stay in its package, in `packages/opencode/generation/agents.ts`. Every plan is built and its paths validated before any package is written, and stale removal touches only files carrying the generator's notice, as it already did for the consolidated plugin. The port kept every generated byte unchanged.
-
-What each retired mechanism protected, and what protects it now:
-
-- **Configs, defaults, and per-file overrides:** the generator names each output and its canonical inputs directly, so no general configuration surface remains to validate.
-- **Anchor validation:** the only replacement left rewrites canonical `@role` mentions to Pi's `/role`; an absent mention needs no rewrite, so a dead anchor cannot drop content. `packages/core/tests/roster.test.ts` asserts that no Pi output keeps an `@role` mention.
-- **Missing inputs and sections:** reading a missing canonical file or `## heading` throws while the plan is built, before any write.
-- **Git provenance:** byte comparison already reports a hand-edited output as drift; the git check only distinguished hand edits that happened to match regenerated bytes, and could misfire when generator code changed.
-- **Auto-clean of every unlisted agent file:** the roster test asserts each adapter's `agents/*.md` set matches the canonical roster, and stale generated files are found by notice.
+An obligation every role needs stays in always-on policy; a skill is never its only home.
 
 ## Consequences
 
-- One source removes manual methodology porting; adding a host requires its own output plan in the compiler rather than changes to a universal runtime.
-- Declarative transformations and generated provenance make ownership reviewable, but maintainers must edit canonical sources and regenerate before delivery.
-- Fail-closed resolution and ordered preflight prevent silent or partial projections. Adding or renaming a projected output needs an explicit output-plan update.
-- Validation adds source reads; that cost buys evidence that every input a plan names exists before any write.
-- Root tooling avoids registry fallback and runner drift while depending on the workspace's package manager and installation.
-- Bundled skills add two generated copies per package to every release and make the packages larger; a change to a root skill ships only when each package releases.
-- Utility skills read as policy sections rather than curated checklists, and whatever a skill-only host needs from them must live in the source section, which keeps always-on policy slightly larger. Section headings become a generation contract.
-- Historical migrations needed careful preservation of host-specific patches; a mechanical projection does not establish equivalent runtime enforcement across hosts.
+- One source removes manual porting; adding a host means adding its output plan, not changing a universal runtime.
+- Maintainers must edit canonical sources and regenerate before delivery; section headings named by the compiler become a generation contract.
+- Bundled skills add generated copies to every package, and a skill change ships only when each package releases.
+- A mechanical projection does not establish equal runtime enforcement across hosts.
 
 ## Alternatives Considered
 
-- **Per-plugin shell scripts:** rejected because they duplicate transforms, portability work, and check/diff/error handling.
-- **Typed objects exporting prose:** rejected because content owners would edit TypeScript instead of readable Markdown.
-- **Conditional template engines:** rejected because host branches obscure prose and handle structural differences poorly.
-- **Symlinks to canonical files:** rejected because they cannot adapt frontmatter or tool syntax and complicate Windows and editor behavior.
-- **Publish a sync package:** rejected because the tool has no out-of-repository consumer.
-- **Warn on missing inputs or dead anchors:** rejected because warnings still permit incomplete output.
-- **Validate while writing:** rejected because a later error leaves earlier outputs changed.
-- **Check every default against every file:** rejected because defaults legitimately apply to only some files; scope-aware aggregation preserves that use.
-- **Keep configurable provenance or compatibility aliases without consumers:** rejected because unused private surface creates obligations without preserving a public contract.
-- **Git submodule or vendored copies of external skill repositories:** rejected because they couple releases to unrelated skills and repeat the copy layouts this generator already retired.
-- **Hand-authored utility skills beside the rules:** rejected because the two homes drifted.
-- **Move the methodology skills to the generic skills repository:** rejected because they are maestria-specific and the core rules depend on them.
-- **CLI-installed optional companions:** retired 2026-10-13 because hosts the CLI does not manage never received them, and a selection record, ownership preflight, and separate manifest existed only to work around that.
+- **Per-plugin shell scripts:** rejected because they duplicate transforms and check, diff, and error handling.
+- **Typed objects exporting prose, or conditional template engines:** rejected because owners would edit TypeScript, and host branches obscure prose.
+- **Symlinks to canonical files:** rejected because they cannot adapt frontmatter or tool syntax and misbehave on Windows and in editors.
+- **Warn on missing inputs, or validate while writing:** rejected because warnings permit incomplete output and a late error leaves earlier files changed.
+- **A general config-driven engine:** retired 2026-11-17; its configuration surface outlived the variation it was built for.
+- **Hand-authored skill copies beside the rules:** rejected after the two homes drifted.
+- **Move the method skills to the generic skills repository, or install them as CLI companions:** rejected because the rules depend on them, and hosts the CLI does not manage never received them.
+- **Vendor external skill repositories as submodules or copies:** rejected because it couples releases to unrelated skills.
 
 ## Related Decisions
 
 - [CORE-002](ADR-CORE-002-plugin-architecture.md): readable Markdown and native host registration.
-- [CORE-019](ADR-CORE-019-directive-simplification.md): single-home methodology and outcome ownership.
 - [CORE-020](ADR-CORE-020-hybrid-package-topology.md): host-neutral utilities and native adapters.
+- [CORE-036](ADR-CORE-036-always-on-core-and-skill-map.md): which text is always-on and which is a skill.
 
 ## Date
 
-2026-06-23; consolidated 2026-10-03; amended 2026-10-12, 2026-10-13, and 2026-11-17.
+2026-06-23; amended 2026-10-12, 2026-10-13, and 2026-11-17.

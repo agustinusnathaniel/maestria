@@ -25,6 +25,8 @@ Treat the tested unit or stack as a black box: pass inputs through its public bo
 
 Tautological and change-detector tests are harmful. They add maintenance cost without protecting the behavior that matters.
 
+Three related approaches were considered and rejected. Unit tests for every component, or a coverage target, reward implementation-shaped checks. Requiring E2E for every task ignores that simple deterministic work needs only a proportionate check. Pinning exact directive wording or heading order breaks on harmless edits and cannot prove model behavior: `scripts/check-sync` covers generated projections, and [directive change review](directive-change-review.md) covers model behavior.
+
 ## Select tests before implementation
 
 Before writing production code:
